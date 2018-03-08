@@ -10,7 +10,7 @@ module CI
             bot = CI::Slack::Bot.new(client.web_client)
 
             if history.present?
-              confirm_deploy(bot, history[:account], history[:repository], history[:branch], history[:environment])
+              confirm_deploy(bot, history[:account], history[:repository], history[:branch], history[:service])
             else
               bot.post_error('History does not exist.', data.user)
             end
@@ -18,8 +18,8 @@ module CI
 
           private
 
-          def confirm_deploy(bot, account, repository, branch, environment)
-            bot.post_confirm_deploy(account, repository, branch, environment, true)
+          def confirm_deploy(bot, account, repository, branch, service)
+            bot.post_confirm_deploy(account, repository, branch, service, true)
           end
         end
       end

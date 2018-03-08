@@ -17,26 +17,26 @@ module Slack
 
       begin
         history = CI::Deploy::History.new(deploy_job[:slack_user_id])
-        history.add(deploy_job[:account], deploy_job[:repository], deploy_job[:branch], deploy_job[:environment])
+        history.add(deploy_job[:account], deploy_job[:repository], deploy_job[:branch], deploy_job[:service])
 
         bot.post_detect_slack_deploy(
           deploy_job[:account],
           deploy_job[:repository],
           deploy_job[:branch],
-          deploy_job[:environment]
+          deploy_job[:service]
         )
 
-        cluster = deploy_client.config.cluster_name(deploy_job[:environment])
-        service = deploy_client.config.service_name(deploy_job[:environment])
+        cluster = deploy_client.config.cluster_name(deploy_job[:service])
+        service = deploy_client.config.service_name(deploy_job[:service])
 
         bot.post_started_deploy(
           deploy_client.options[:region],
           cluster,
-          deploy_job[:environment],
+          deploy_job[:service],
           jid,
           id
         )
-        task_definition = deploy_client.exec(deploy_job[:environment], Settings.slack.deploy_lock_timeout)
+        task_definition = deploy_client.exec(deploy_job[:service], Settings.slack.deploy_lock_timeout)
         bot.post_finished_deploy(cluster, service, task_definition, deploy_job[:slack_user_id])
       rescue => e
         bot.post_error(e.to_s, deploy_job[:slack_user_id], id)

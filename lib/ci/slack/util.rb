@@ -15,7 +15,7 @@ module CI
                      "#{history[:account]}/#{history[:repository]}"
                    end
 
-            text = "#{text} (#{history[:branch]}) - #{history[:environment]}"
+            text = "#{text} (#{history[:branch]}) - #{history[:service]}"
 
             options.push(text: text,
                          value: history[:id])
@@ -68,13 +68,13 @@ module CI
           branches
         end
 
-        def environment_options
+        def service_options
           options = []
 
-          environments = ::Settings.slack.interactive.environments
-          environments.each do |environment|
-            options.push(text: environment,
-                         value: environment)
+          services = ::Settings.slack.interactive.services
+          services.each do |service|
+            options.push(text: service,
+                         value: service)
           end
 
           options
