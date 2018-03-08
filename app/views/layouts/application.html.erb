@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>ECS CI</title>
+    <%= stylesheet_link_tag    "application" %>
+    <%= javascript_include_tag "application" %>
+    <%= csrf_meta_tags %>
+  </head>
+
+  <body>
+    <div class="title-bar" data-responsive-toggle="top-bar" data-hide-for="medium">
+      <button class="menu-icon" type="button" data-toggle></button>
+      <div class="title-bar-title">Menu</div>
+    </div>
+
+    <div class="top-bar" id="top-bar">
+      <div class="top-bar-left">
+        <ul class="medium-horizontal vertical dropdown menu" data-responsive-menu="accordion medium-dropdown">
+          <li class="menu-text">ECS CI</li>
+          <li><%= link_to('Deploy', logs_path) %></li>
+          <li><%= link_to('Sidekiq', '/sidekiq') %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="content">
+      <%= yield %>
+    </div>
+  </body>
+</html>

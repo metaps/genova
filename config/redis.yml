@@ -1,0 +1,6 @@
+default:
+  host: <%= ENV['REDIS_HOST'] %>
+  port: <%= ENV['REDIS_PORT'] %>
+  db: <%= ENV['REDIS_DB'] %>
+test:
+  db: 1

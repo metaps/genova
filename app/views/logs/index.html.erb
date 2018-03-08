@@ -1,0 +1,54 @@
+<h2>Deploy jobs</h2>
+<% if @deploy_jobs.size > 0 %>
+  <div class="table-scroll">
+    <table class="hover">
+      <thead>
+        <th>ID</th>
+        <th>Status</th>
+        <th>Account</th>
+        <th>Repository</th>
+        <th>Branch</th>
+        <th>Commit</th>
+        <th>Environment</th>
+        <th>Mode</th>
+        <th>Revision</th>
+        <th>Created at</th>
+      </thead>
+      <tbody>
+        <% @deploy_jobs.each do |deploy_job| %>
+          <tr>
+            <td><%= link_to(deploy_job[:id], log_path(deploy_job[:id])) %></td>
+            <td>
+              <% if deploy_job[:status] == 'success' %>
+                <i class="fa fa-check-circle" aria-hidden="true"></i>
+              <% elsif deploy_job[:status] == 'in_progress' %>
+                <i class="fa fa-refresh fa-spin" aria-hidden="true"></i>
+              <% elsif deploy_job[:status] == 'failure' %>
+                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+              <% end %>
+              <%= deploy_job[:status] %>
+            </td>
+            <td><%= deploy_job[:account] %></td>
+            <td><%= deploy_job[:repository] %></td>
+            <td><%= deploy_job[:branch].truncate(24) %></td>
+            <td>
+              <% if deploy_job[:commit_id].present? %>
+                <i class="fa fa-github" aria-hidden="true"></i>
+                <%= link_to(deploy_job[:commit_id][0, 7], "https://github.com/#{deploy_job[:account]}/#{deploy_job[:repository]}/commit/#{deploy_job[:commit_id]}") %>
+              <% end %>
+            </td>
+            <td><%= deploy_job[:environment] %></td>
+            <td><%= deploy_job[:mode] %></td>
+            <td><%= task_revision(deploy_job[:task_definition_arn]) %></td>
+            <td><%= deploy_job[:created_at] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <ul class="pagination text-right">
+      <%= paginate @deploy_jobs %>
+    </ul>
+  </div>
+<% else %>
+  <p>Logs does not exist.</p>
+<% end %>

@@ -1,0 +1,57 @@
+version: "2"
+services:
+  cron:
+    container_name: ecs-ci-cron
+    build: .
+    env_file: .env
+    command: /usr/local/bin/docker-cron-entrypoint.sh
+    volumes:
+      - .:/data/rails
+      - /var/run/docker.sock:/var/run/docker.sock
+  rails:
+    container_name: ecs-ci-rails
+    extends:
+      service: cron
+    command: /usr/local/bin/docker-rails-entrypoint.sh
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongo
+      - redis
+  sidekiq:
+    container_name: ecs-ci-sidekiq
+    extends:
+      service: cron
+    command: /usr/local/bin/docker-sidekiq-entrypoint.sh
+    depends_on:
+      - mongo
+      - redis
+  mongo:
+    container_name: ecs-ci-mongo
+    image: mongo:3.4.9
+    ports:
+      - 27017:27017
+  redis:
+    container_name: ecs-ci-redis
+    image: redis:3.2
+    ports:
+      - 6379:6379
+  c3vis:
+    container_name: ecs-ci-c3vis
+    env_file: .env
+    build:
+      context: etc/docker/c3vis
+      args:
+        AWS_REGION: ${AWS_REGION}
+        AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+        AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+    ports:
+      - 3001:3000
+  # slack:
+  #   container_name: ecs-ci-slack
+  #   build: etc/docker/slack
+  #   env_file: .env
+  #   ports:
+  #     - 9292:9292
+  #   depends_on:
+  #     - mongo

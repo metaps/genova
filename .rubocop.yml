@@ -1,0 +1,47 @@
+AllCops:
+  Exclude:
+  - 'db/**/*'
+  - 'tmp/**/*'
+  - 'vendor/**/*'
+  - 'etc/**/*'
+  TargetRubyVersion: 2.5
+
+AsciiComments:
+  Enabled: false
+AlignParameters:
+  Enabled: false
+CyclomaticComplexity:
+  Max: 7
+GlobalVars:
+  Enabled: false
+Style/RescueStandardError:
+  Enabled: false
+Style/BlockComments:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/ExtraSpacing:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/NumericLiterals:
+  Enabled: false
+Style/SymbolProc:
+  Enabled: false
+Metrics/AbcSize:
+  Max: 64
+Metrics/BlockLength:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/LineLength:
+  Enabled: false
+Metrics/MethodLength:
+  CountComments: false
+  Max: 64
+Metrics/ModuleLength:
+  Enabled: false
+Security/YAMLLoad:
+  Enabled: false
+Style/SpaceAroundOperators:
+  Enabled: false
