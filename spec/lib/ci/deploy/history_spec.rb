@@ -57,7 +57,7 @@ module CI
             expect(last[:account]).to eq('metaps')
             expect(last[:repository]).to eq('ecs-ci')
             expect(last[:branch]).to eq('master')
-            expect(last[:environment]).to eq('development')
+            expect(last[:service]).to eq('development')
           end
         end
 
@@ -70,7 +70,7 @@ module CI
             expect(last[:account]).to eq('metaps')
             expect(last[:repository]).to eq('ecs-ci')
             expect(last[:branch]).to eq('master')
-            expect(last[:environment]).to eq('production')
+            expect(last[:service]).to eq('production')
           end
         end
       end

@@ -17,9 +17,9 @@ module CI
         end
       end
 
-      describe 'post_choose_deploy_environment' do
+      describe 'post_choose_deploy_service' do
         it 'should be call bot' do
-          bot.post_choose_deploy_environment('account', 'repository', 'branch')
+          bot.post_choose_deploy_service('account', 'repository', 'branch')
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
@@ -28,7 +28,7 @@ module CI
         it 'should be call bot' do
           allow(bot).to receive(:compare_commit_ids).and_return(deployed_commit_id: '', current_commit_id: '')
 
-          bot.post_confirm_deploy('account', 'repository', 'branch', 'environment')
+          bot.post_confirm_deploy('account', 'repository', 'branch', 'service')
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
@@ -49,14 +49,14 @@ module CI
 
       describe 'post_detect_slack_deploy' do
         it 'should be call bot' do
-          bot.post_detect_slack_deploy('account', 'repository', 'branch', 'environment')
+          bot.post_detect_slack_deploy('account', 'repository', 'branch', 'service')
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
 
       describe 'post_started_deploy' do
         it 'should be call bot' do
-          bot.post_started_deploy('region', 'cluster', 'environment', 'jid', 'log_path')
+          bot.post_started_deploy('region', 'cluster', 'service', 'jid', 'log_path')
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end

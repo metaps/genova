@@ -12,7 +12,7 @@ module CI
               results = parse_args(match['expression'])
 
               if results[:mode] == :command
-                bot.post_confirm_deploy(results[:account], results[:repository], results[:branch], results[:environment], true)
+                bot.post_confirm_deploy(results[:account], results[:repository], results[:branch], results[:service], true)
               else
                 bot.post_choose_repository
               end
@@ -30,7 +30,7 @@ module CI
               account: nil,
               repository: nil,
               branch: nil,
-              environment: nil
+              service: nil
             }
 
             return results if expression.blank?
@@ -50,7 +50,7 @@ module CI
             end
 
             results[:branch] = args[1]
-            results[:environment] = args[2]
+            results[:service] = args[2]
 
             results
           end

@@ -9,12 +9,12 @@ module CI
           General
           -------
           deploy          - Run deploy in interactive mode.
-          deploy {repository} {branch} {environment}
+          deploy {repository} {branch} {service}
                           - Run deployment in command base.
                             repository: Repository name of GitHub (e.g. xxx-www).
                             branch: Branch naem of Repository (e.g. feature/xxx).
 
-                            environment: development or staging or production.
+                            service: development or staging or production.
           help            - Get this helpful message.
           history         - Show recently executed deploy command.
           redeploy        - Re-execute last deployment.

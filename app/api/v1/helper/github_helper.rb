@@ -22,12 +22,12 @@ module V1
         }
       end
 
-      def detect_auto_deploy_environment(account, repository, branch)
+      def detect_auto_deploy_service(account, repository, branch)
         config = CI::Github::Client.new(account, repository, branch).fetch_deploy_config
         config.dig(:auto_deploy, :branches, branch.to_sym)
       end
 
-      def create_deploy_job(account, repository, branch, environment)
+      def create_deploy_job(account, repository, branch, service)
         id = DeployJob.generate_id
         DeployJob.create(id: id,
                          status: CI::Deploy::Client.status.find_value(:in_progress).to_s,
@@ -35,7 +35,7 @@ module V1
                          account: account,
                          repository: repository,
                          branch: branch,
-                         environment: environment)
+                         service: service)
 
         id
       end

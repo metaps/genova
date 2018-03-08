@@ -26,10 +26,10 @@ When using ecs-ci, following configuration file is required for application.
 
 Browse [sample file](https://github.com/metaps/ecs-ci/wiki/Configuration#configdeployyml).
 
-### config/deploy/{environment}.yml
+### config/deploy/{service}.yml
 
 For ECS deployment [use ecs_deployer](https://rubygems.org/gems/ecs_deployer).
-Create a task definition file for each deployment environment.
+Create a task definition file for each deployment service.
 
 e.g.
 * config/deploy/development.yml

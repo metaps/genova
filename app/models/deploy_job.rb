@@ -11,7 +11,7 @@ class DeployJob
   field :account, type: String
   field :branch, type: String
   field :commit_id, type: String
-  field :environment, type: String
+  field :service, type: String
   field :interactive, type: Boolean
   field :profile, type: String
   field :push_only, type: Boolean
