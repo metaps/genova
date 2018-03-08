@@ -1,0 +1,33 @@
+deploy:
+  wait_timeout: 900
+
+github:
+  account: '' # github account
+  default_branch: 'master'
+  deploy_lock_timeout: 1800
+
+aws:
+  profile: 'default'
+  region: 'ap-northeast-1'
+  service:
+    ecr:
+      max_image_size: 30
+      read_timeout: 900
+
+sidekiq:
+  url: '{URL}'
+
+slack:
+  deploy_lock_timeout: 1800
+  command:
+    max_history: 5
+  interactive:
+    repositories:
+      # - selectable repository name
+    environments:
+      # - selectable ECS service name
+  message:
+    color:
+      interactive: '#3AA3E3'
+      info: '#3cb371'
+      error: '#cd5c5c'

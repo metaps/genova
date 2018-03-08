@@ -1,0 +1,29 @@
+development:
+  clients:
+    default:
+      database: <%= ENV['MONGO_DB'] %>
+      hosts:
+        - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
+  options:
+    raise_not_found_error: false
+    use_utc: true
+
+test:
+  clients:
+    default:
+      database: bot-server_test
+      hosts:
+        - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
+  options:
+    raise_not_found_error: false
+    use_utc: true
+
+production:
+  clients:
+    default:
+      database: <%= ENV['MONGO_DB'] %>
+      hosts:
+        - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
+  options:
+    raise_not_found_error: false
+    use_utc: true

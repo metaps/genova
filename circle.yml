@@ -1,0 +1,23 @@
+machine:
+  ruby:
+    version: 2.4.0
+  environment:
+    AWS_ACCOUNT_ID:
+    AWS_REGION:
+    AWS_AWS_ACCESS_KEY:
+    AWS_SECRET_KEY:
+    GITHUB_OAUTH_TOKEN:
+    GITHUB_SECRET_KEY:
+    RAILS_ENV: test
+    RAILS_SERVE_STATIC_FILES:
+    REDIS_HOST: localhost
+    REDIS_PORT: 6379
+    REDIS_DB: 0
+    SLACK_CLIENT_ID:
+    SLACK_CLIENT_SECRET:
+    SLACK_API_TOKEN:
+    SLACK_VERIFICATION_TOKEN: 'slack_verification_token'
+    SLACK_CHANNEL:
+    CI_URL:
+  pre:
+    - sudo service redis-server start
