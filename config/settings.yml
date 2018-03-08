@@ -24,7 +24,7 @@ slack:
   interactive:
     repositories:
       # - selectable repository name
-    environments:
+    services:
       # - selectable ECS service name
   message:
     color:

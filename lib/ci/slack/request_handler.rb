@@ -21,8 +21,8 @@ module CI
           when 'post_repository' then
             result = choose_deploy_branch
           when 'post_branch' then
-            result = choose_deploy_environment
-          when 'post_environment' then
+            result = choose_deploy_service
+          when 'post_service' then
             result = confirm_deploy
           when 'post_deploy' then
             result = execute_deploy
@@ -53,7 +53,7 @@ module CI
           result
         end
 
-        def choose_deploy_environment
+        def choose_deploy_service
           submit_value = @payload_body.dig(:actions, 0, :value)
 
           if submit_value == 'approve' || submit_value.nil?
@@ -61,7 +61,7 @@ module CI
             result = 'Branch: ' + selected_value
             query = @id_builder.query
 
-            @bot.post_choose_deploy_environment(query[:account], query[:repository], selected_value)
+            @bot.post_choose_deploy_service(query[:account], query[:repository], selected_value)
           else
             result = 'Cancelled.'
           end
@@ -71,7 +71,7 @@ module CI
 
         def confirm_deploy
           selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value) || 'development'
-          result = 'Environment: ' + selected_value
+          result = 'Service: ' + selected_value
           query = @id_builder.query
 
           @bot.post_confirm_deploy(query[:account], query[:repository], query[:branch], selected_value)
@@ -87,9 +87,9 @@ module CI
             value = CI::Deploy::History.new(slack_user_id).find(selected_value)
             result = "Repository: #{value[:account]}/#{value[:repository]}\n" \
                      "Branch: #{value[:branch]}\n" \
-                     "Environment: #{value[:environment]}"
+                     "Service: #{value[:service]}"
 
-            @bot.post_confirm_deploy(value[:account], value[:repository], value[:branch], value[:environment])
+            @bot.post_confirm_deploy(value[:account], value[:repository], value[:branch], value[:service])
 
           else
             result = 'Cancelled.'
@@ -108,10 +108,10 @@ module CI
             account = query[:account]
             repository = query[:repository]
             branch = query[:branch]
-            environment = query[:environment]
+            service = query[:service]
 
             @logger.info('Invoke Slack::DeployWorker')
-            @logger.info("account: #{account}, repository: #{repository}, branch: #{branch}, environment: #{environment}")
+            @logger.info("account: #{account}, repository: #{repository}, branch: #{branch}, service: #{service}")
 
             @bot.post_deploy_queue
 
@@ -124,7 +124,7 @@ module CI
                              account: account,
                              repository: repository,
                              branch: branch,
-                             environment: environment)
+                             service: service)
 
             ::Slack::DeployWorker.perform_async(id)
           else

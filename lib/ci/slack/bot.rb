@@ -71,28 +71,28 @@ module CI
         )
       end
 
-      def post_choose_deploy_environment(account, repository, branch)
+      def post_choose_deploy_service(account, repository, branch)
         query = {
           account: account,
           repository: repository,
           branch: branch
         }
-        callback_id = CI::Slack::CallbackIdBuilder.build('post_environment', query)
+        callback_id = CI::Slack::CallbackIdBuilder.build('post_service', query)
 
         @client.chat_postMessage(
           channel: @channel,
           response_type: 'in_channel',
           attachments: [
-            text: 'Target environment.',
+            text: 'Target service.',
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
             callback_id: callback_id,
             actions: [
               {
-                name: 'environment',
-                text: 'Pick a environment...',
+                name: 'service',
+                text: 'Pick a service...',
                 type: 'select',
-                options: CI::Slack::Util.environment_options,
+                options: CI::Slack::Util.service_options,
                 selected_options: [
                   {
                     text: 'development',
@@ -112,11 +112,11 @@ module CI
         )
       end
 
-      def post_confirm_deploy(account, repository, branch, environment, confirm = false)
+      def post_confirm_deploy(account, repository, branch, service, confirm = false)
         if confirm
           message = "Repository: #{account}/#{repository}\n" \
                     "Branch: #{branch}\n" \
-                    "Environment: #{environment}"
+                    "Service: #{service}"
 
           post_simple_message(message)
         end
@@ -125,10 +125,10 @@ module CI
           account: account,
           repository: repository,
           branch: branch,
-          environment: environment
+          service: service
         }
         callback_id = CI::Slack::CallbackIdBuilder.build('post_deploy', query)
-        compare_ids = compare_commit_ids(account, repository, branch, environment)
+        compare_ids = compare_commit_ids(account, repository, branch, service)
 
         compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                          'Commit ID is unchanged.'
@@ -210,7 +210,7 @@ module CI
         )
       end
 
-      def post_detect_slack_deploy(account, repository, branch, environment)
+      def post_detect_slack_deploy(account, repository, branch, service)
         url = "https://github.com/#{account}/#{repository}/tree/#{branch}"
         @client.chat_postMessage(
           channel: @channel,
@@ -227,17 +227,17 @@ module CI
               value: branch,
               short: true
             }, {
-              title: 'Environment',
-              value: environment,
+              title: 'Service',
+              value: service,
               short: true
             }]
           }]
         )
       end
 
-      def post_started_deploy(region, cluster, environment, jid, deploy_job_id)
+      def post_started_deploy(region, cluster, service, jid, deploy_job_id)
         url = "https://#{region}.console.aws.amazon.com" \
-              "/ecs/home?region=#{region}#/clusters/#{cluster}/services/#{environment}/tasks"
+              "/ecs/home?region=#{region}#/clusters/#{cluster}/services/#{service}/tasks"
 
         @client.chat_postMessage(
           channel: @channel,
@@ -254,8 +254,8 @@ module CI
               value: build_log_url(deploy_job_id),
               short: true
             }, {
-              title: 'Environment',
-              value: environment,
+              title: 'Service',
+              value: service,
               short: true
             }, {
               title: 'Sidekiq JID',
@@ -330,14 +330,14 @@ module CI
         string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")
       end
 
-      def compare_commit_ids(account, repository, branch, environment)
+      def compare_commit_ids(account, repository, branch, service)
         deploy_config = CI::Deploy::Config::DeployConfig.new(account, repository, branch)
         current_commit_id = CI::Github::Client.new(account, repository, branch).fetch_last_commit_id
         deployed_commit_id = nil
 
         service = @ecs.describe_services(
-          cluster: deploy_config.cluster_name(environment),
-          services: [deploy_config.service_name(environment)]
+          cluster: deploy_config.cluster_name(service),
+          services: [deploy_config.service_name(service)]
         ).services[0]
 
         if service.present? && service[:status] == 'ACTIVE'

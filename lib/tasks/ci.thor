@@ -14,7 +14,7 @@ class CI < Thor
   desc 'deploy', 'Deploy application to ECS.'
   option :account, required: false, desc: 'GitHub account'
   option :branch, required: false, default: 'master', aliases: :b, desc: 'Specify branch name.'
-  option :environment, required: false, default: 'development', aliases: :e, desc: 'Specify environment.'
+  option :service, required: false, default: 'development', aliases: :s, desc: 'Specify service.'
   option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
   option :mode, required: false, default: 'manual', desc: 'Deploy mode. (auto/manual)'
   option :profile, required: false, default: 'default', desc: 'AWS profile.'
@@ -27,7 +27,7 @@ class CI < Thor
     deploy_client = ::CI::Deploy::Client.new(options[:mode].to_sym, options[:repository], options.symbolize_keys)
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
 
-    deploy_client.exec(options[:environment])
+    deploy_client.exec(options[:service])
   end
 
   desc 'slack-greeting-test', 'Slack bot says Hello'

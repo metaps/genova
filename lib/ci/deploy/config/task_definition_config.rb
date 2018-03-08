@@ -4,8 +4,8 @@ module CI
       class TaskDefinitionConfig
         attr_reader :path
 
-        def initialize(repos_path, environment)
-          @path = Pathname(repos_path).join('config', 'deploy', "#{environment}.yml").to_s
+        def initialize(repos_path, service)
+          @path = Pathname(repos_path).join('config', 'deploy', "#{service}.yml").to_s
 
           unless File.exist?(@path)
             raise "Service definition is undefined. [#{@path}]"

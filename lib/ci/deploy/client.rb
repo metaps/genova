@@ -70,10 +70,10 @@ module CI
         Docker.logger = @logger
       end
 
-      # @param [String] environment
+      # @param [String] service
       # @param [Integer] lock_timeout
       # @return [Aws::ECS::Types::TaskDefinition]
-      def exec(environment, lock_timeout = nil)
+      def exec(service, lock_timeout = nil)
         watch_deploy do
           @logger.info('Start preparing for execute.')
 
@@ -88,14 +88,14 @@ module CI
 
           tag_revision = "build-#{@deploy_job.id}_#{commit_id}"
 
-          repository_names = build_images(environment)
+          repository_names = build_images(service)
           push_images(tag_revision, repository_names)
 
           if @options[:push_only]
             @deploy_job.finish_deploy
             result = nil
           else
-            task_definition = deploy(tag_revision, environment)
+            task_definition = deploy(tag_revision, service)
             cleanup_images(repository_names)
 
             @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
@@ -207,16 +207,16 @@ module CI
         raise e
       end
 
-      # @param [String] environment
+      # @param [String] service
       # @return [Array]
-      def build_images(environment)
+      def build_images(service)
         @logger.info('Started building image.')
 
         repository_names = []
         cipher = EcsDeployer::Util::Cipher.new(profile: @options[:profile], region: @options[:region])
 
-        params = @config.params.dig(:ecs_containers, environment.to_sym)
-        raise DeployConfigError, "'#{environment}' parameter is not defined in 'config/deploy.yml'." if params.nil?
+        params = @config.params.dig(:ecs_containers, service.to_sym)
+        raise DeployConfigError, "'#{service}' parameter is not defined in 'config/deploy.yml'." if params.nil?
 
         params.each do |container, param|
           build_args = ''
@@ -241,7 +241,7 @@ module CI
 
           raise DeployConfigError, "#{docker_filename} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          task_definition_config = CI::Deploy::Config::TaskDefinitionConfig.new(@repos_path, environment)
+          task_definition_config = CI::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service)
           container_definition = task_definition_config.read[:container_definitions].find { |i| i[:name] == container.to_s }
           repository_name = container_definition[:image].match(/\/([^:]+)/)[1]
 
@@ -294,13 +294,13 @@ module CI
       end
 
       # @param [String] tag_revision
-      # @param [String] # environment
+      # @param [String] # service
       # @return [Aws::ECS::Types::TaskDefinition]
-      def deploy(tag_revision, environment)
+      def deploy(tag_revision, service)
         @logger.info('Started deployment.')
 
         deploy_client = EcsDeployer::Client.new(
-          @config.cluster_name(environment),
+          @config.cluster_name(service),
           @logger,
           profile: @options[:profile],
           region: @options[:region]
@@ -308,13 +308,13 @@ module CI
         scheduled_task_definition = deploy_scheduled_task(
           deploy_client,
           tag_revision,
-          environment,
+          service,
           @config.params[:scheduled_tasks]
         )
         service_task_definition = deploy_service(
           deploy_client,
           tag_revision,
-          environment
+          service
         )
 
         task_definition = scheduled_task_definition if scheduled_task_definition.present?
@@ -333,10 +333,10 @@ module CI
 
       # @param [EcsDeployer::Client] deploy_client
       # @param [String] tag_revision
-      # @param [String] environment
+      # @param [String] service
       # @param [Hash] scheduled_tasks
       # @return [Aws::ECS::Types::TaskDefinition]
-      def deploy_scheduled_task(deploy_client, tag_revision, environment, scheduled_tasks)
+      def deploy_scheduled_task(deploy_client, tag_revision, service, scheduled_tasks)
         @logger.info('Started scheduled task deployment.')
 
         task_client = deploy_client.task
@@ -348,12 +348,12 @@ module CI
             targets = []
 
             scheduled_task[:targets].each do |target|
-              next unless target[:environment] == environment
+              next unless target[:service] == service
 
               task_definition_path = File.expand_path(target[:path], @config_base_path)
               task_definition = create_new_task(task_client, task_definition_path, tag_revision)
 
-              builder = scheduled_task_client.target_builder(target[:environment])
+              builder = scheduled_task_client.target_builder(target[:service])
               builder.role(target[:role]) if target[:role].present?
               builder.task_definition_arn = task_definition.task_definition_arn
               builder.task_role(target[:task_role]) if target[:task_role].present?
@@ -361,8 +361,8 @@ module CI
 
               if target[:overrides].present?
                 target[:overrides].each do |override|
-                  override_environment = override[:environment] || []
-                  builder.override_container(override[:name], override[:command], override_environment)
+                  override_service = override[:service] || []
+                  builder.override_container(override[:name], override[:command], override_service)
                 end
               end
 
@@ -379,7 +379,7 @@ module CI
                 description: scheduled_task[:description]
               )
             else
-              @logger.info("'#{environment}' target is undefined.")
+              @logger.info("'#{service}' target is undefined.")
             end
           end
         else
@@ -391,16 +391,16 @@ module CI
 
       # @param [EcsDeployer::Client] deploy_client
       # @param [String] tag_revision
-      # @param [String] environment
+      # @param [String] service
       # @return [Aws::ECS::Types::TaskDefinition]
-      def deploy_service(deploy_client, tag_revision, environment)
+      def deploy_service(deploy_client, tag_revision, service)
         @logger.info('Started serivce deployment.')
 
-        task_definition_path = CI::Deploy::Config::TaskDefinitionConfig.new(@repos_path, environment).path
+        task_definition_path = CI::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service).path
         task_definition = create_new_task(deploy_client.task, task_definition_path, tag_revision)
 
         service_client = deploy_client.service
-        service = @config.service_name(environment)
+        service = @config.service_name(service)
 
         if service_client.exist?(service)
           service_client.wait_timeout = Settings.deploy.wait_timeout

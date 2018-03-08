@@ -5,9 +5,9 @@ module CI
         @id = build_key(slack_user_id)
       end
 
-      def add(account, repository, branch, environment)
-        hash_id = Digest::SHA1.hexdigest("#{account}#{repository}#{branch}#{environment}")
-        value = build_value(hash_id, account, repository, branch, environment)
+      def add(account, repository, branch, service)
+        hash_id = Digest::SHA1.hexdigest("#{account}#{repository}#{branch}#{service}")
+        value = build_value(hash_id, account, repository, branch, service)
 
         $redis.lrem(@id, 1, value) if find(hash_id).present?
         $redis.lpush(@id, value)
@@ -45,13 +45,13 @@ module CI
         "history_#{slack_user_id}"
       end
 
-      def build_value(hash_id, account, repository, branch, environment)
+      def build_value(hash_id, account, repository, branch, service)
         Oj.dump(
           id: hash_id,
           account: account,
           repository: repository,
           branch: branch,
-          environment: environment
+          service: service
         )
       end
     end

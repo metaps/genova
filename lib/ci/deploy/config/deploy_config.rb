@@ -7,10 +7,22 @@ module CI
         def initialize(account, repository, branch)
           @repository = repository
           @params = CI::Github::Client.new(account, repository, branch).fetch_deploy_config
+
+          return if @params[:scheduled_tasks].nil?
+
+          # compatibility with deprecated parameters
+          @params[:scheduled_tasks].each do |task|
+            task[:targets].each do |target|
+              if target[:environment].present?
+                target[:service] = target[:environment]
+                target.delete(:environment)
+              end
+            end
+          end
         end
 
-        def cluster_name(environment)
-          service_mapping = @params.dig(:service_mappings, environment.to_sym)
+        def cluster_name(service)
+          service_mapping = @params.dig(:service_mappings, service.to_sym)
           return @params[:cluster] if service_mapping.nil?
 
           if service_mapping.class == String
@@ -23,15 +35,15 @@ module CI
           cluster
         end
 
-        def service_name(environment)
-          service_mapping = @params.dig(:service_mappings, environment.to_sym)
-          return environment if service_mapping.nil?
+        def service_name(service)
+          service_mapping = @params.dig(:service_mappings, service.to_sym)
+          return service if service_mapping.nil?
 
           if service_mapping.class == String
             service = service_mapping
           else
             service = service_mapping[:service]
-            service = environment if service.nil?
+            service = service if service.nil?
           end
 
           service
