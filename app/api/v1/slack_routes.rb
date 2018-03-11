@@ -13,7 +13,7 @@ module V1
       post :post do
         {
           response_type: 'in_channel',
-          text: CI::Slack::RequestHandler.handle_request(@payload_body, logger)
+          text: Genova::Slack::RequestHandler.handle_request(@payload_body, logger)
         }
       end
     end

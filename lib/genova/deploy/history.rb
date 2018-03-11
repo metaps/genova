@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Deploy
     class History
       def initialize(slack_user_id)

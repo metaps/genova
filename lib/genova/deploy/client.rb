@@ -17,7 +17,7 @@ module Git
   end
 end
 
-module CI
+module Genova
   module Deploy
     class Client
       extend Enumerize
@@ -47,12 +47,12 @@ module CI
             deploy_job[key] = value
           end
 
-          deploy_job.status = CI::Deploy::Client.status.find_value(:in_progress).to_s
+          deploy_job.status = Genova::Deploy::Client.status.find_value(:in_progress).to_s
           deploy_job.mode = mode
           deploy_job.repository = @repository
         end
 
-        @logger = CI::Logger::MongodbLogger.new(@deploy_job.id)
+        @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
         @logger.level = @options[:verbose] ? :debug : :info
         @logger.info('Initiaized deploy client.')
 
@@ -63,8 +63,8 @@ module CI
         @ecr_registry = ENV.fetch('AWS_ACCOUNT_ID') + '.dkr.ecr.ap-northeast-1.amazonaws.com'
         @config_base_path = Pathname(@repos_path).join('config')
 
-        @mutex = CI::Deploy::Mutex.new("deploy-lock_#{@options[:account]}:#{@repository}")
-        @config = CI::Deploy::Config::DeployConfig.new(@options[:account], @repository, @options[:branch])
+        @mutex = Genova::Deploy::Mutex.new("deploy-lock_#{@options[:account]}:#{@repository}")
+        @config = Genova::Deploy::Config::DeployConfig.new(@options[:account], @repository, @options[:branch])
 
         Docker.options[:read_timeout] = Settings.aws.service.ecr.read_timeout
         Docker.logger = @logger
@@ -81,7 +81,7 @@ module CI
           @deploy_job.start_deploy
 
           fetch_source
-          commit_id = CI::Github::Client.new(@options[:account], @repository, @options[:branch]).fetch_last_commit_id
+          commit_id = Genova::Github::Client.new(@options[:account], @repository, @options[:branch]).fetch_last_commit_id
 
           @deploy_job[:commit_id] = commit_id
           @deploy_job.save
@@ -241,13 +241,13 @@ module CI
 
           raise DeployConfigError, "#{docker_filename} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          task_definition_config = CI::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service)
+          task_definition_config = Genova::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service)
           container_definition = task_definition_config.read[:container_definitions].find { |i| i[:name] == container.to_s }
-          repository_name = container_definition[:image].match(/\/([^:]+)/)[1]
+          repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build_args}"
 
-          deploy_command = CI::Deploy::Command.new(work_dir: @repos_path, logger: @logger)
+          deploy_command = Genova::Deploy::Command.new(work_dir: @repos_path, logger: @logger)
           results = deploy_command.exec(command, docker_base_path)
 
           raise DockerBuildError if results[:stderr].present?
@@ -379,11 +379,11 @@ module CI
                 description: scheduled_task[:description]
               )
             else
-              @logger.info("'#{service}' target is undefined.")
+              @logger.info("'#{service}' target is not registered yet.")
             end
           end
         else
-          @logger.info('Scheduled task definition is undefined.')
+          @logger.info('Scheduled task definition target is not registered yet.')
         end
 
         task_definition
@@ -396,7 +396,7 @@ module CI
       def deploy_service(deploy_client, tag_revision, service)
         @logger.info('Started serivce deployment.')
 
-        task_definition_path = CI::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service).path
+        task_definition_path = Genova::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service).path
         task_definition = create_new_task(deploy_client.task, task_definition_path, tag_revision)
 
         service_client = deploy_client.service

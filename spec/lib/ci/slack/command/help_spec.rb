@@ -1,11 +1,11 @@
 require 'rails_helper'
 
-module CI
+module Genova
   module Slack
     module Command
       describe Help do
         def app
-          CI::Slack::Command::Help.instance
+          Genova::Slack::Command::Help.instance
         end
 
         subject { app }

@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Deploy
     class Error < RuntimeError; end
   end

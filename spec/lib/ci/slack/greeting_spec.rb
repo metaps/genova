@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-module CI
+module Genova
   module Slack
     describe Greeting do
       describe 'hello' do
@@ -10,7 +10,7 @@ module CI
           allow(::Slack::Web::Client).to receive(:new).and_return(slack_web_client_mock)
           allow(slack_web_client_mock).to receive(:chat_postMessage)
 
-          CI::Slack::Greeting.hello
+          Genova::Slack::Greeting.hello
           expect(slack_web_client_mock).to have_received(:chat_postMessage).once
         end
       end

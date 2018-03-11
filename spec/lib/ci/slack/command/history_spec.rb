@@ -1,23 +1,23 @@
 require 'rails_helper'
 
-module CI
+module Genova
   module Slack
     module Command
       describe History do
         def app
-          CI::Slack::Command::History.instance
+          Genova::Slack::Command::History.instance
         end
 
         subject { app }
-        let(:bot_mock) { double('CI::Slack::Bot') }
+        let(:bot_mock) { double('Genova::Slack::Bot') }
 
         before do
-          allow(CI::Slack::Bot).to receive(:new).and_return(bot_mock)
+          allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
         end
 
         context 'when history exists' do
           it 'should be sent history to slack' do
-            allow(CI::Slack::Util).to receive(:history_options).and_return([text: 'text', value: 'value'])
+            allow(Genova::Slack::Util).to receive(:history_options).and_return([text: 'text', value: 'value'])
             allow(bot_mock).to receive(:post_choose_history)
 
             expect(message: "#{SlackRubyBot.config.user} history", channel: 'channel').to not_respond
@@ -27,7 +27,7 @@ module CI
 
         context 'when history does not exists' do
           it 'should be sent error to slack' do
-            allow(CI::Slack::Util).to receive(:history_options).and_return([])
+            allow(Genova::Slack::Util).to receive(:history_options).and_return([])
             allow(bot_mock).to receive(:post_error)
 
             expect(message: "#{SlackRubyBot.config.user} history", channel: 'channel').to not_respond

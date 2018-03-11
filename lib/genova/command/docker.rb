@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Command
     class Docker
       class << self

@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Slack
     module Command
       class Deploy < SlackRubyBot::Commands::Base
@@ -6,7 +6,7 @@ module CI
           def call(client, data, match)
             logger.info "Execute deploy command: (UNAME: #{client.owner}, user=#{data.user})"
 
-            bot = CI::Slack::Bot.new(client.web_client)
+            bot = Genova::Slack::Bot.new(client.web_client)
 
             begin
               results = parse_args(match['expression'])

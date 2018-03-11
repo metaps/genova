@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-module CI
+module Genova
   module Slack
     describe Bot do
-      let(:bot) { CI::Slack::Bot.new }
+      let(:bot) { Genova::Slack::Bot.new }
       let(:slack_web_client_mock) { double('::Slack::Web::Client') }
 
       before do
@@ -13,7 +13,7 @@ module CI
 
       describe 'initialize' do
         it 'should be return instance' do
-          expect(bot).to be_a(CI::Slack::Bot)
+          expect(bot).to be_a(Genova::Slack::Bot)
         end
       end
 

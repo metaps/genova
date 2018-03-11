@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Deploy
     module Config
       class DeployConfig
@@ -6,7 +6,7 @@ module CI
 
         def initialize(account, repository, branch)
           @repository = repository
-          @params = CI::Github::Client.new(account, repository, branch).fetch_deploy_config
+          @params = Genova::Github::Client.new(account, repository, branch).fetch_deploy_config
 
           return if @params[:scheduled_tasks].nil?
 

@@ -1,4 +1,4 @@
-class CI < Thor
+class Genova < Thor
   no_commands do
     def invoke_command(command, *args)
       @logger = Logger.new(STDOUT)
@@ -6,9 +6,9 @@ class CI < Thor
     end
   end
 
-  desc 'docker-gc', 'Delete old containers and images. This program is running on CI server.'
+  desc 'docker-gc', 'Delete old containers and images. This program is running on Genova.'
   def docker_gc
-    ::CI::Command::Docker.gc
+    ::Genova::Command::Docker.gc
   end
 
   desc 'deploy', 'Deploy application to ECS.'
@@ -24,7 +24,7 @@ class CI < Thor
   option :ssh_secret_key_path, required: false, default: "#{ENV.fetch('HOME')}/.ssh/id_rsa", desc: 'Private key for accessing GitHub.'
   option :verbose, required: false, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
   def deploy
-    deploy_client = ::CI::Deploy::Client.new(options[:mode].to_sym, options[:repository], options.symbolize_keys)
+    deploy_client = ::Genova::Deploy::Client.new(options[:mode].to_sym, options[:repository], options.symbolize_keys)
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
 
     deploy_client.exec(options[:service])
@@ -32,7 +32,7 @@ class CI < Thor
 
   desc 'slack-greeting-test', 'Slack bot says Hello'
   def slack_greeting_test
-    ::CI::Slack::Greeting.hello
+    ::Genova::Slack::Greeting.hello
     @logger.info('Sent message.')
   end
 
