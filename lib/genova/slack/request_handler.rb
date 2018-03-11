@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Slack
     class RequestHandler
       class << self
@@ -8,8 +8,8 @@ module CI
           @payload_body = payload_body
           @logger = logger
 
-          @bot = CI::Slack::Bot.new
-          @id_builder = CI::Slack::CallbackIdBuilder.new(CGI.unescapeHTML(@payload_body[:callback_id]))
+          @bot = Genova::Slack::Bot.new
+          @id_builder = Genova::Slack::CallbackIdBuilder.new(CGI.unescapeHTML(@payload_body[:callback_id]))
 
           execute
         end
@@ -84,7 +84,7 @@ module CI
           slack_user_id = @payload_body[:user][:id]
 
           if selected_value.present?
-            value = CI::Deploy::History.new(slack_user_id).find(selected_value)
+            value = Genova::Deploy::History.new(slack_user_id).find(selected_value)
             result = "Repository: #{value[:account]}/#{value[:repository]}\n" \
                      "Branch: #{value[:branch]}\n" \
                      "Service: #{value[:service]}"
@@ -117,8 +117,8 @@ module CI
 
             id = DeployJob.generate_id
             DeployJob.create(id: id,
-                             status: CI::Deploy::Client.status.find_value(:in_progress).to_s,
-                             mode: CI::Deploy::Client.mode.find_value(:slack).to_s,
+                             status: Genova::Deploy::Client.status.find_value(:in_progress).to_s,
+                             mode: Genova::Deploy::Client.mode.find_value(:slack).to_s,
                              slack_user_id: @payload_body[:user][:id],
                              slack_user_name: @payload_body[:user][:name],
                              account: account,

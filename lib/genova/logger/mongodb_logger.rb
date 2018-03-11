@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Logger
     class MongodbLogger < ::Logger
       def initialize(id)

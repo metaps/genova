@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Github
     class Client
       def initialize(account, repository, branch)

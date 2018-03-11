@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Slack
     module Command
       class Redeploy < SlackRubyBot::Commands::Base
@@ -6,8 +6,8 @@ module CI
           def call(client, data, _match)
             logger.info "Execute redeploy command: (UNAME: #{client.owner}, user=#{data.user})"
 
-            history = CI::Deploy::History.new(data.user).last
-            bot = CI::Slack::Bot.new(client.web_client)
+            history = Genova::Deploy::History.new(data.user).last
+            bot = Genova::Slack::Bot.new(client.web_client)
 
             if history.present?
               confirm_deploy(bot, history[:account], history[:repository], history[:branch], history[:service])

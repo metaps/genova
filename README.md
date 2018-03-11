@@ -1,10 +1,10 @@
-# ECS CI
+# Genova
 
-![CircleCI](https://circleci.com/gh/metaps/ecs-ci/tree/develop.svg?style=shield&circle-token=3540dace3d93567ec1388d5359cccd1efb43a6d5)
+![CircleCI](https://circleci.com/gh/metaps/genova/tree/develop.svg?style=shield&circle-token=3540dace3d93567ec1388d5359cccd1efb43a6d5)
 
 ## Description
 
-This package provides CI environment for ECS.
+This package provides ECS deployment function.
 
   * Application deployment to ECS
     * Command base deploy
@@ -20,11 +20,11 @@ This package provides CI environment for ECS.
 
 ## Setup ECS Application
 
-When using ecs-ci, following configuration file is required for application.
+When using Genova, following configuration file is required for application.
 
 ### config/deploy.yml
 
-Browse [sample file](https://github.com/metaps/ecs-ci/wiki/Configuration#configdeployyml).
+Browse [sample file](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
 
 ### config/deploy/{service}.yml
 
@@ -38,11 +38,11 @@ e.g.
 
 Browse [sample file](https://github.com/naomichi-y/ecs_deployer#task-definition).
 
-## Setup CI Server
+## Setup Genova
 
 ```bash
-$ git clone https://github.com/metaps/ecs-ci.git
-$ cd ecs-ci
+$ git clone https://github.com/metaps/genova.git
+$ cd genova
 
 # Change settings (SLACK_*, GITHUB_* variables is optional)
 $ cp config/settings.yml config/settings.local.yml
@@ -62,11 +62,11 @@ Application is started with following port.
 ### Deploy
 
 ```bash
-$ cd ecs-ci
-$ docker-compose run --rm rails thor ci help deploy
+$ cd genova
+$ docker-compose run --rm rails thor genova help deploy
 
 # e.g.
-$ docker-compose run --rm rails thor ci:deploy -r {repository}
+$ docker-compose run --rm rails thor genova:deploy -r {repository}
 ```
 
 ### Slack interactive deploy
@@ -85,7 +85,7 @@ If you want to deploy from Slack, you need to create a [Slack app](https://api.s
 5. Connect to mongo container and confirm oauth key is created.
 
 ```bash
-$ docker exec -it ecs-ci-mongo /bin/bash
+$ docker exec -it genova-mongo /bin/bash
 $ mongo
 > show dbs;
 admin                   0.000GB

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-module CI
+module Genova
   module Command
     describe Docker do
     end

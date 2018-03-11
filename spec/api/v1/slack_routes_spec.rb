@@ -16,7 +16,7 @@ module V1
 
         context 'when callback_id is valid' do
           it 'should be return success' do
-            allow(CI::Slack::RequestHandler).to receive(:handle_request)
+            allow(Genova::Slack::RequestHandler).to receive(:handle_request)
             post '/api/v1/slack/post', params: payload_body
 
             expect(response).to have_http_status :created
@@ -26,7 +26,7 @@ module V1
 
         context 'when callback_id is invalid' do
           it 'should be return error' do
-            allow(CI::Slack::RequestHandler).to receive(:handle_request).and_raise('No route.')
+            allow(Genova::Slack::RequestHandler).to receive(:handle_request).and_raise('No route.')
             post '/api/v1/slack/post', params: payload_body
 
             expect(response).to have_http_status :internal_server_error

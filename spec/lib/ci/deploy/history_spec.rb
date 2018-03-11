@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-module CI
+module Genova
   module Deploy
     describe History do
-      let(:history) { CI::Deploy::History.new('user_id') }
+      let(:history) { Genova::Deploy::History.new('user_id') }
 
       before do
         $redis.flushall
@@ -13,7 +13,7 @@ module CI
       describe 'add' do
         context 'when adding key for first' do
           it 'should be return one history' do
-            history.add('metaps', 'ecs-ci', 'master', 'development')
+            history.add('metaps', 'genova', 'master', 'development')
 
             expect(history.list.size).to eq(1)
           end
@@ -21,8 +21,8 @@ module CI
 
         context 'when adding key for second (new key)' do
           it 'should be return two history' do
-            history.add('metaps', 'ecs-ci', 'master', 'development')
-            history.add('metaps', 'ecs-ci', 'master', 'production')
+            history.add('metaps', 'genova', 'master', 'development')
+            history.add('metaps', 'genova', 'master', 'production')
 
             expect(history.list.size).to eq(2)
           end
@@ -30,8 +30,8 @@ module CI
 
         context 'when adding key for second (exist key)' do
           it 'should be return one history' do
-            history.add('metaps', 'ecs-ci', 'master', 'development')
-            history.add('metaps', 'ecs-ci', 'master', 'development')
+            history.add('metaps', 'genova', 'master', 'development')
+            history.add('metaps', 'genova', 'master', 'development')
 
             expect(history.list.size).to eq(1)
           end
@@ -39,9 +39,9 @@ module CI
 
         context 'when history holdings is exceeded' do
           it 'should be delete old history' do
-            history.add('metaps', 'ecs-ci', 'feature/3', 'development')
-            history.add('metaps', 'ecs-ci', 'feature/2', 'development')
-            history.add('metaps', 'ecs-ci', 'feature/1', 'development')
+            history.add('metaps', 'genova', 'feature/3', 'development')
+            history.add('metaps', 'genova', 'feature/2', 'development')
+            history.add('metaps', 'genova', 'feature/1', 'development')
 
             expect(history.list.size).to eq(2)
           end
@@ -51,11 +51,11 @@ module CI
       describe 'last' do
         context 'when adding key for first' do
           it 'should be return last value' do
-            history.add('metaps', 'ecs-ci', 'master', 'development')
+            history.add('metaps', 'genova', 'master', 'development')
             last = history.last
 
             expect(last[:account]).to eq('metaps')
-            expect(last[:repository]).to eq('ecs-ci')
+            expect(last[:repository]).to eq('genova')
             expect(last[:branch]).to eq('master')
             expect(last[:service]).to eq('development')
           end
@@ -63,12 +63,12 @@ module CI
 
         context 'when adding key for second (first key)' do
           it 'should be return last value' do
-            history.add('metaps', 'ecs-ci', 'master', 'development')
-            history.add('metaps', 'ecs-ci', 'master', 'production')
+            history.add('metaps', 'genova', 'master', 'development')
+            history.add('metaps', 'genova', 'master', 'production')
             last = history.last
 
             expect(last[:account]).to eq('metaps')
-            expect(last[:repository]).to eq('ecs-ci')
+            expect(last[:repository]).to eq('genova')
             expect(last[:branch]).to eq('master')
             expect(last[:service]).to eq('production')
           end

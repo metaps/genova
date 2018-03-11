@@ -7,14 +7,14 @@ module Github
     def perform(id)
       deploy_job = DeployJob.find(id)
 
-      deploy_client = CI::Deploy::Client.new(
-        CI::Deploy::Client.mode.find_value(:auto).to_sym,
+      deploy_client = Genova::Deploy::Client.new(
+        Genova::Deploy::Client.mode.find_value(:auto).to_sym,
         deploy_job[:repository],
         account: deploy_job[:account],
         branch: deploy_job[:branch],
         deploy_job_id: id
       )
-      bot = CI::Slack::Bot.new
+      bot = Genova::Slack::Bot.new
 
       begin
         deploy_config = deploy_client.config.params

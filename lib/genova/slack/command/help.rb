@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Slack
     module Command
       class Help < SlackRubyBot::Commands::Base

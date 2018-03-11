@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Deploy
     module Config
       class TaskDefinitionConfig
@@ -6,10 +6,7 @@ module CI
 
         def initialize(repos_path, service)
           @path = Pathname(repos_path).join('config', 'deploy', "#{service}.yml").to_s
-
-          unless File.exist?(@path)
-            raise "Service definition is undefined. [#{@path}]"
-          end
+          raise "Service definition is undefined. [#{@path}]" unless File.exist?(@path)
         end
 
         def read

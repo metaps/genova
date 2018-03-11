@@ -9,7 +9,7 @@ module Github
         account: account,
         repository: repository
       }
-      callback_id = CI::Slack::CallbackIdBuilder.build('post_branch', query)
+      callback_id = Genova::Slack::CallbackIdBuilder.build('post_branch', query)
 
       data = {
         channel: ENV.fetch('SLACK_CHANNEL'),
@@ -25,7 +25,7 @@ module Github
               name: 'branch',
               text: 'Pick a branch...',
               type: 'select',
-              options: CI::Slack::Util.branch_options(account, repository),
+              options: Genova::Slack::Util.branch_options(account, repository),
               selected_options: [
                 {
                   text: 'master',

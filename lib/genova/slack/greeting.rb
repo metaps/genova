@@ -1,8 +1,8 @@
-module CI
+module Genova
   module Slack
     class Greeting
       def self.hello
-        bot = CI::Slack::Bot.new
+        bot = Genova::Slack::Bot.new
         bot.post_simple_message('Hello world')
       end
     end
