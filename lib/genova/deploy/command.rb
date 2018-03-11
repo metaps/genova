@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Deploy
     class Command
       def initialize(options = {})

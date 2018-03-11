@@ -34,7 +34,7 @@ class DeployJob
   end
 
   def finish_deploy(task_definition_arn: nil)
-    self.status = CI::Deploy::Client.status.find_value(:success).to_s
+    self.status = Genova::Deploy::Client.status.find_value(:success).to_s
     self.task_definition_arn = task_definition_arn
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f
@@ -42,7 +42,7 @@ class DeployJob
   end
 
   def cancel_deploy
-    self.status = CI::Deploy::Client.status.find_value(:failure).to_s
+    self.status = Genova::Deploy::Client.status.find_value(:failure).to_s
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
 

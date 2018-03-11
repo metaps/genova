@@ -1,11 +1,11 @@
-module CI
+module Genova
   module Slack
     class Util
       class << self
         def history_options(slack_user_id)
           options = []
 
-          histories = CI::Deploy::History.new(slack_user_id).list
+          histories = Genova::Deploy::History.new(slack_user_id).list
           histories.each do |history|
             history = Oj.load(history)
 
@@ -45,8 +45,8 @@ module CI
         end
 
         def branch_options(account, repository, max_size = 20)
-          deploy_client = CI::Deploy::Client.new(
-            CI::Deploy::Client.mode.find_value(:slack_interactive).to_sym,
+          deploy_client = Genova::Deploy::Client.new(
+            Genova::Deploy::Client.mode.find_value(:slack_interactive).to_sym,
             repository,
             account: account,
             branch: nil

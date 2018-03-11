@@ -1,23 +1,23 @@
 require 'rails_helper'
 
-module CI
+module Genova
   module Deploy
     describe Client do
       before(:each) do
         DeployJob.delete_all
       end
 
-      let(:deploy_config_mock) { double('CI::Deploy::Config::DeployConfig') }
+      let(:deploy_config_mock) { double('Genova::Deploy::Config::DeployConfig') }
       let(:deploy_client) do
         allow(Aws::ECR::Client).to receive(:new).and_return(double(Aws::ECR::Client))
         allow(File).to receive(:exist?).with('id_rsa').and_return(true)
         allow(EcsDeployer::Client).to receive(:new)
 
-        allow_any_instance_of(CI::Github::Client).to receive(:fetch_last_commit_id)
-        allow(CI::Deploy::Config::DeployConfig).to receive(:new)
+        allow_any_instance_of(Genova::Github::Client).to receive(:fetch_last_commit_id)
+        allow(Genova::Deploy::Config::DeployConfig).to receive(:new)
 
         allow(deploy_config_mock).to receive(:cluster_name).and_return('cluster_name')
-        client = Client.new(CI::Deploy::Client.mode.find_value(:manual).to_sym, 'sandbox', ssh_secret_key_path: 'id_rsa')
+        client = Client.new(Genova::Deploy::Client.mode.find_value(:manual).to_sym, 'sandbox', ssh_secret_key_path: 'id_rsa')
         allow(client).to receive(:config).and_return(deploy_config_mock)
 
         client
@@ -122,7 +122,7 @@ module CI
       end
 
       describe 'deploy_config' do
-        it 'should be return CI::Deploy::Config::DeployConfig' do
+        it 'should be return Genova::Deploy::Config::DeployConfig' do
           expect(deploy_client.config).to eq(deploy_config_mock)
         end
       end

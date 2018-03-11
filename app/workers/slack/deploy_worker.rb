@@ -6,17 +6,17 @@ module Slack
 
     def perform(id)
       deploy_job = DeployJob.find(id)
-      deploy_client = CI::Deploy::Client.new(
-        CI::Deploy::Client.mode.find_value(:slack).to_sym,
+      deploy_client = Genova::Deploy::Client.new(
+        Genova::Deploy::Client.mode.find_value(:slack).to_sym,
         deploy_job[:repository],
         account: deploy_job[:account],
         branch: deploy_job[:branch],
         deploy_job_id: id
       )
-      bot = CI::Slack::Bot.new
+      bot = Genova::Slack::Bot.new
 
       begin
-        history = CI::Deploy::History.new(deploy_job[:slack_user_id])
+        history = Genova::Deploy::History.new(deploy_job[:slack_user_id])
         history.add(deploy_job[:account], deploy_job[:repository], deploy_job[:branch], deploy_job[:service])
 
         bot.post_detect_slack_deploy(

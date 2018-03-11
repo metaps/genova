@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Slack
     class CallbackIdBuilder
       attr_reader :uri, :query

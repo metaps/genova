@@ -1,4 +1,4 @@
-module CI
+module Genova
   module Slack
     class Bot
       def initialize(client = nil)
@@ -57,7 +57,7 @@ module CI
                 name: 'repository',
                 text: 'Pick a repository...',
                 type: 'select',
-                options: CI::Slack::Util.repository_options
+                options: Genova::Slack::Util.repository_options
               },
               {
                 name: 'submit',
@@ -77,7 +77,7 @@ module CI
           repository: repository,
           branch: branch
         }
-        callback_id = CI::Slack::CallbackIdBuilder.build('post_service', query)
+        callback_id = Genova::Slack::CallbackIdBuilder.build('post_service', query)
 
         @client.chat_postMessage(
           channel: @channel,
@@ -92,7 +92,7 @@ module CI
                 name: 'service',
                 text: 'Pick a service...',
                 type: 'select',
-                options: CI::Slack::Util.service_options,
+                options: Genova::Slack::Util.service_options,
                 selected_options: [
                   {
                     text: 'development',
@@ -127,7 +127,7 @@ module CI
           branch: branch,
           service: service
         }
-        callback_id = CI::Slack::CallbackIdBuilder.build('post_deploy', query)
+        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', query)
         compare_ids = compare_commit_ids(account, repository, branch, service)
 
         compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
@@ -182,7 +182,7 @@ module CI
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Sidekiq',
-              value: "#{ENV.fetch('CI_URL')}/sidekiq",
+              value: "#{ENV.fetch('GENOVA_URL')}/sidekiq",
               short: true
             }]
           }]
@@ -323,7 +323,7 @@ module CI
       end
 
       def build_log_url(deploy_job_id)
-        "#{ENV.fetch('CI_URL')}/logs/#{deploy_job_id}"
+        "#{ENV.fetch('GENOVA_URL')}/logs/#{deploy_job_id}"
       end
 
       def escape_emoji(string)
@@ -331,8 +331,8 @@ module CI
       end
 
       def compare_commit_ids(account, repository, branch, service)
-        deploy_config = CI::Deploy::Config::DeployConfig.new(account, repository, branch)
-        current_commit_id = CI::Github::Client.new(account, repository, branch).fetch_last_commit_id
+        deploy_config = Genova::Deploy::Config::DeployConfig.new(account, repository, branch)
+        current_commit_id = Genova::Github::Client.new(account, repository, branch).fetch_last_commit_id
         deployed_commit_id = nil
 
         service = @ecs.describe_services(

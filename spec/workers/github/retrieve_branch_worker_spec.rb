@@ -4,7 +4,7 @@ module Github
   describe RetrieveBranchWorker do
     describe 'perform' do
       before do
-        allow(CI::Slack::Util).to receive(:branch_options)
+        allow(Genova::Slack::Util).to receive(:branch_options)
         allow(RestClient).to receive(:post)
 
         subject.perform('account', 'repository', 'response_url')

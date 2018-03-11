@@ -29,7 +29,7 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# CI needs '--sort=--authordate' option.
+# Reauired '--sort=---authordate' option of Git package.
 RUN curl -LO https://github.com/git/git/archive/v2.15.1.tar.gz \
   && tar zxvf v2.15.1.tar.gz \
   && cd git-2.15.1 \
@@ -60,11 +60,11 @@ COPY . /data/rails
 
 # cron container settings
 COPY ./etc/docker/cron/docker-cron-entrypoint.sh /usr/local/bin/docker-cron-entrypoint.sh
-COPY ./etc/docker/cron/ecs-ci-cron /etc/cron.d/ecs-ci-cron
+COPY ./etc/docker/cron/cron.d/genova /etc/cron.d/genova
 COPY ./etc/docker/cron/cron /etc/pam.d/cron
 COPY ./etc/docker/cron/.ssh /root/.ssh
 COPY ./etc/docker/cron/logrotate.d/rails /etc/logrotate.d/rails
-RUN chmod 644 /etc/cron.d/ecs-ci-cron \
+RUN chmod 644 /etc/cron.d/genova \
   && chmod 644 /etc/logrotate.d/rails \
   && chmod 700 /root/.ssh \
   && chmod 400 /root/.ssh/id_rsa
