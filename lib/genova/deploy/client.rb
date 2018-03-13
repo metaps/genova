@@ -219,33 +219,18 @@ module Genova
         raise DeployConfigError, "'#{service}' parameter is not defined in 'config/deploy.yml'." if params.nil?
 
         params.each do |container, param|
-          build_args = ''
+          build = parse_docker_build(param[:build], cipher)
 
-          if param[:build].is_a?(String)
-            context = param[:build] || '.'
-            docker_filename = 'Dockerfile'
-          else
-            context = param[:build][:context] || '.'
-            docker_filename = param[:build][:dockerfile] || 'DockerFile'
+          docker_base_path = File.expand_path(build[:context], @config_base_path)
+          docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
 
-            if param[:build][:args].is_a?(Hash)
-              param[:build][:args].each do |key, value|
-                value = cipher.decrypt(value) if cipher.encrypt_value?(value)
-                build_args += " --build-arg #{key}=#{value}"
-              end
-            end
-          end
-
-          docker_base_path = File.expand_path(context, @config_base_path)
-          docker_file_path = Pathname(docker_base_path).join(docker_filename).to_s
-
-          raise DeployConfigError, "#{docker_filename} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
+          raise DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
           task_definition_config = Genova::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service)
           container_definition = task_definition_config.read[:container_definitions].find { |i| i[:name] == container.to_s }
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
-          command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build_args}"
+          command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
 
           deploy_command = Genova::Deploy::Command.new(work_dir: @repos_path, logger: @logger)
           results = deploy_command.exec(command, docker_base_path)
@@ -256,6 +241,32 @@ module Genova
         end
 
         repository_names
+      end
+
+      # @param [Hash] build
+      # @param [EcsDeployer::Util::Cipher] cipher
+      # @return [Hash]
+      def parse_docker_build(build, cipher)
+        result = {
+          build_args: ''
+        }
+
+        if build.is_a?(String)
+          result[:context] = build || '.'
+          result[:docker_filename] = 'Dockerfile'
+        else
+          result[:context] = build[:context] || '.'
+          result[:docker_filename] = build[:dockerfile] || 'DockerFile'
+
+          if build[:args].is_a?(Hash)
+            build[:args].each do |key, value|
+              value = cipher.decrypt(value) if cipher.encrypt_value?(value)
+              result[:build_args] += " --build-arg #{key}=#{value}"
+            end
+          end
+        end
+
+        result
       end
 
       # @param [String] tag_revision
@@ -339,54 +350,60 @@ module Genova
       def deploy_scheduled_task(deploy_client, tag_revision, service, scheduled_tasks)
         @logger.info('Started scheduled task deployment.')
 
-        task_client = deploy_client.task
         task_definition = nil
 
         if @config.params[:scheduled_tasks].present?
           scheduled_tasks.each do |scheduled_task|
-            scheduled_task_client = deploy_client.scheduled_task
-            targets = []
-
-            scheduled_task[:targets].each do |target|
-              next unless target[:service] == service
-
-              task_definition_path = File.expand_path(target[:path], @config_base_path)
-              task_definition = create_new_task(task_client, task_definition_path, tag_revision)
-
-              builder = scheduled_task_client.target_builder(target[:service])
-              builder.role(target[:role]) if target[:role].present?
-              builder.task_definition_arn = task_definition.task_definition_arn
-              builder.task_role(target[:task_role]) if target[:task_role].present?
-              builder.task_count = target[:task_count] || 1
-
-              if target[:overrides].present?
-                target[:overrides].each do |override|
-                  override_service = override[:service] || []
-                  builder.override_container(override[:name], override[:command], override_service)
-                end
-              end
-
-              targets << builder.to_hash
-            end
-
-            if targets.count.positive?
-              @logger.info("Update '#{scheduled_task[:rule]}' rule.")
-
-              scheduled_task_client.update(
-                scheduled_task[:rule],
-                scheduled_task[:expression],
-                targets,
-                description: scheduled_task[:description]
-              )
-            else
-              @logger.info("'#{service}' target is not registered yet.")
-            end
+            update_scheduled_task(deploy_client, tag_revision, service, scheduled_task)
           end
         else
           @logger.info('Scheduled task definition target is not registered yet.')
         end
 
         task_definition
+      end
+
+      # @param [EcsDeployer::Client] deploy_client
+      # @param [String] tag_revision
+      # @param [String] service
+      # @param [Hash] scheduled_task
+      def update_scheduled_task(deploy_client, tag_revision, service, scheduled_task)
+        task_client = deploy_client.task
+        scheduled_task_client = deploy_client.scheduled_task
+        targets = []
+
+        scheduled_task[:targets].each do |target|
+          next unless target[:service] == service
+
+          task_definition_path = File.expand_path(target[:path], @config_base_path)
+          task_definition = create_new_task(task_client, task_definition_path, tag_revision)
+
+          builder = scheduled_task_client.target_builder(target[:service])
+          builder.role(target[:role]) if target[:role].present?
+          builder.task_definition_arn = task_definition.task_definition_arn
+          builder.task_role(target[:task_role]) if target[:task_role].present?
+          builder.task_count = target[:task_count] || 1
+
+          if target[:overrides].present?
+            target[:overrides].each do |override|
+              override_service = override[:service] || []
+              builder.override_container(override[:name], override[:command], override_service)
+            end
+          end
+
+          targets << builder.to_hash
+        end
+
+        return @logger.info("'#{service}' target is not registered yet.") if targets.count.zero?
+
+        @logger.info("Update '#{scheduled_task[:rule]}' rule.")
+
+        scheduled_task_client.update(
+          scheduled_task[:rule],
+          scheduled_task[:expression],
+          targets,
+          description: scheduled_task[:description]
+        )
       end
 
       # @param [EcsDeployer::Client] deploy_client
