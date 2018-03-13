@@ -1,6 +1,6 @@
 machine:
   ruby:
-    version: 2.4.0
+    version: 2.5.0
   environment:
     AWS_ACCOUNT_ID:
     AWS_REGION:
@@ -19,5 +19,3 @@ machine:
     SLACK_VERIFICATION_TOKEN: 'slack_verification_token'
     SLACK_CHANNEL:
     CI_URL:
-  pre:
-    - sudo service redis-server start
