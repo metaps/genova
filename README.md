@@ -1,6 +1,6 @@
 # Genova
 
-![CircleCI](https://circleci.com/gh/metaps/genova/tree/develop.svg?style=shield&circle-token=3540dace3d93567ec1388d5359cccd1efb43a6d5)
+[![Maintainability](https://api.codeclimate.com/v1/badges/b1d9269868e13bd658a2/maintainability)](https://codeclimate.com/github/metaps/genova/maintainability)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 ## Description
