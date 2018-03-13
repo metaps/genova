@@ -26,6 +26,7 @@ slack:
       # - selectable repository name
     services:
       # - selectable ECS service name
+    branch_limit: 20
   message:
     color:
       interactive: '#3AA3E3'

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 module Genova
   module Deploy
-    describe Client do
+    describe Client, :logged_in => true do
       before(:each) do
         DeployJob.delete_all
       end
@@ -19,6 +19,8 @@ module Genova
         allow(deploy_config_mock).to receive(:cluster_name).and_return('cluster_name')
         client = Client.new(Genova::Deploy::Client.mode.find_value(:manual).to_sym, 'sandbox', ssh_secret_key_path: 'id_rsa')
         allow(client).to receive(:config).and_return(deploy_config_mock)
+
+        allow(Settings.github.account).to receive(:[]).and_return('metaps')
 
         client
       end

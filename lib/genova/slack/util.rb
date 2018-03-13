@@ -27,12 +27,12 @@ module Genova
         def repository_options
           options = []
 
-          repositories = ::Settings.slack.interactive.repositories
+          repositories = Settings.slack.interactive.repositories || []
           repositories.each do |repository|
             split = repository.split('/')
 
             value = if split.size == 1
-                      "#{::Settings.github.account}/#{split[0]}"
+                      "#{Settings.github.account}/#{split[0]}"
                     else
                       repository.to_s
                     end
@@ -44,12 +44,11 @@ module Genova
           options
         end
 
-        def branch_options(account, repository, max_size = 20)
+        def branch_options(account, repository, branch_limit = Settings.slack.interactive.branch_limit)
           deploy_client = Genova::Deploy::Client.new(
             Genova::Deploy::Client.mode.find_value(:slack_interactive).to_sym,
             repository,
-            account: account,
-            branch: nil
+            account: account
           )
           deploy_client.fetch_repository
 
@@ -58,7 +57,7 @@ module Genova
 
           deploy_client.fetch_branches.each do |branch|
             next if branch.name.include?('>')
-            break if size >= max_size
+            break if size >= branch_limit
 
             size += 1
             branches.push(text: branch.name,
@@ -71,7 +70,7 @@ module Genova
         def service_options
           options = []
 
-          services = ::Settings.slack.interactive.services
+          services = Settings.slack.interactive.services || []
           services.each do |service|
             options.push(text: service,
                          value: service)
