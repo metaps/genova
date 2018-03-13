@@ -18,4 +18,4 @@ machine:
     SLACK_API_TOKEN:
     SLACK_VERIFICATION_TOKEN: 'slack_verification_token'
     SLACK_CHANNEL:
-    CI_URL:
+    GENOVA_URL:
