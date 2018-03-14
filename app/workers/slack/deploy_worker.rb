@@ -5,6 +5,8 @@ module Slack
     sidekiq_options queue: :slack_deploy, retry: false
 
     def perform(id)
+      logger.info('Started Slack::DeployWorker')
+
       deploy_job = DeployJob.find(id)
       deploy_client = Genova::Deploy::Client.new(
         Genova::Deploy::Client.mode.find_value(:slack).to_sym,

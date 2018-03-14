@@ -111,6 +111,8 @@ module Genova
 
       def fetch_repository
         watch_deploy do
+          @logger.info('Started git fetch.')
+
           return if Dir.exist?(@repos_path)
 
           uri = "git@github.com:#{@options[:account]}/#{@repository}.git"
@@ -486,10 +488,10 @@ module Genova
       end
     end
 
-    class SshInvalidPrivateKeyError < Deploy::Error; end
-    class DeployLockError < Deploy::Error; end
-    class DeployConfigError < Deploy::Error; end
-    class DockerBuildError < Deploy::Error; end
-    class DockerImageError < Deploy::Error; end
+    class SshInvalidPrivateKeyError < Error; end
+    class DeployLockError < Error; end
+    class DeployConfigError < Error; end
+    class DockerBuildError < Error; end
+    class DockerImageError < Error; end
   end
 end

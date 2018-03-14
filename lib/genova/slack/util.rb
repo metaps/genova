@@ -67,10 +67,15 @@ module Genova
           branches
         end
 
-        def service_options
+        def service_options(account, repository, branch)
+          github = Genova::Github::Client.new(account, repository, branch)
+          ecs_containers = github.fetch_deploy_config[:ecs_containers] || {}
+
+          services = ecs_containers.keys
+          services.delete(:default)
+
           options = []
 
-          services = Settings.slack.interactive.services || []
           services.each do |service|
             options.push(text: service,
                          value: service)

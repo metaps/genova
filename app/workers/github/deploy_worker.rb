@@ -5,6 +5,8 @@ module Github
     sidekiq_options queue: :auto_deploy, retry: false
 
     def perform(id)
+      logger.info('Started Github::DeployWorker')
+
       deploy_job = DeployJob.find(id)
 
       deploy_client = Genova::Deploy::Client.new(

@@ -92,7 +92,7 @@ module Genova
                 name: 'service',
                 text: 'Pick a service...',
                 type: 'select',
-                options: Genova::Slack::Util.service_options,
+                options: Genova::Slack::Util.service_options(account, repository, branch),
                 selected_options: [
                   {
                     text: 'development',
@@ -401,6 +401,6 @@ module Genova
       end
     end
 
-    class TaskDefinitionNotFoundError < Deploy::Error; end
+    class TaskDefinitionNotFoundError < Error; end
   end
 end

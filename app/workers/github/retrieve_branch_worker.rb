@@ -5,6 +5,8 @@ module Github
     sidekiq_options queue: :detect_branches, retry: false
 
     def perform(account, repository, response_url)
+      logger.info('Started Github::RetrieveBranchWorker')
+
       query = {
         account: account,
         repository: repository

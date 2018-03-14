@@ -57,7 +57,7 @@ module Genova
           submit_value = @payload_body.dig(:actions, 0, :value)
 
           if submit_value == 'approve' || submit_value.nil?
-            selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value) || 'master'
+            selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value) || Settings.github.default_branch
             result = 'Branch: ' + selected_value
             query = @id_builder.query
 
