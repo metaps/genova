@@ -8,7 +8,12 @@ class Genova < Thor
 
   desc 'docker-gc', 'Delete old containers and images. This program is running on Genova.'
   def docker_gc
-    ::Genova::Command::Docker.gc
+    id = ::Genova::Sidekiq::Queue.new.add({foo: 'bar'})
+    job = ::Genova::Sidekiq::Queue.new.find(id)
+    job.update(status: ::Genova::Sidekiq::Queue.status.find_value(:complete))
+    job = ::Genova::Sidekiq::Queue.new.find(id)
+    puts job.status
+    #::Genova::Command::Docker.gc
   end
 
   desc 'deploy', 'Deploy application to ECS.'

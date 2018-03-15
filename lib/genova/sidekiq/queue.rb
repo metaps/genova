@@ -17,18 +17,10 @@ module Genova
       end
 
       def find(id)
-        result = $redis.hgetall(id)
-        raise QueueNotFoundError, "#{id} is not found." if result.nil?
+        values = $redis.hgetall(id)
+        raise QueueNotFoundError, "#{id} is not found." if values.nil?
 
-        result.symbolize_keys
-      end
-
-      def update_status(id, status)
-        values = find(id)
-        return if values.nil?
-
-        values[:status] = status
-        $redis.mapped_hmset(id, values)
+        Genova::Sidekiq::Job.new(id, values.symbolize_keys)
       end
     end
 

@@ -48,14 +48,12 @@ module Genova
             @logger.info('Invoke Github::RetrieveBranchWorker')
             @logger.info("account: #{split[0]}, repository: #{split[1]}, response_url: #{@payload_body[:response_url]}")
 
-            entity = {
+            queue = Genova::Sidekiq::Queue.new
+            id = queue.add(
               account: split[0],
               repository: split[1],
               response_url: @payload_body[:response_url]
-            }
-
-            queue = Genova::Sidekiq::Queue.new
-            id = queue.add(entity)
+            )
             ::Github::RetrieveBranchWorker.perform_async(id)
 
             Thread.new do
@@ -67,7 +65,7 @@ module Genova
                 next if Time.new.utc.to_i - start_time < WAIT_LONG_TIME
                 job = queue.find(id)
 
-                if job[:status] == Genova::Sidekiq::Queue.status.find_value(:in_progress)
+                if job.status == Genova::Sidekiq::Queue.status.find_value(:in_progress)
                   Genova::Slack::Bot.new.post_simple_message('Retrieving repository. It takes time because the repository is large. Please wait for a while...')
                 end
 

@@ -3,7 +3,6 @@ AllCops:
   - 'bin/**/*'
   - 'db/**/*'
   - 'tmp/**/*'
-  - 'vendor/**/*'
   - 'etc/**/*'
   TargetRubyVersion: 2.5
 

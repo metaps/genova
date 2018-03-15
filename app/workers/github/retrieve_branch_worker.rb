@@ -11,13 +11,12 @@ module Github
       logger.info('Started Github::RetrieveBranchWorker')
 
       queue = Genova::Sidekiq::Queue.new
-      queue.update_status(id, Genova::Sidekiq::Queue.status.find_value(:in_progress))
-
       job = queue.find(id)
+      job.update(status: Genova::Sidekiq::Queue.status.find_value(:in_progress))
 
       query = {
-        account: job[:account],
-        repository: job[:repository]
+        account: job.account,
+        repository: job.repository
       }
       callback_id = Genova::Slack::CallbackIdBuilder.build('post_branch', query)
 
@@ -35,7 +34,7 @@ module Github
               name: 'branch',
               text: 'Pick a branch...',
               type: 'select',
-              options: Genova::Slack::Util.branch_options(job[:account], job[:repository]),
+              options: Genova::Slack::Util.branch_options(job.account, job.repository),
               selected_options: [
                 {
                   text: 'master',
@@ -61,8 +60,8 @@ module Github
         ]
       }
 
-      RestClient.post(job[:response_url], data.to_json)
-      queue.update_status(id, Genova::Sidekiq::Queue.status.find_value(:complete))
+      RestClient.post(job.response_url, data.to_json)
+      job.update(status: Genova::Sidekiq::Queue.status.find_value(:complete))
     end
   end
 end
