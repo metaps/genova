@@ -135,6 +135,8 @@ If you want to execute deploy from GitHub push, register webhook URL.
     * Active: Checked
 2. Add GitHub access token to `.env`.
 ```yaml
+GITHUB_OAUTH_TOKEN=***
+GITHUB_SECRET_KEY=***
 SLACK_API_TOKEN=***
 ```
 3. Add `auto_deploy` parameter to `deploy.yml`.
