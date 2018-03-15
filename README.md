@@ -12,7 +12,7 @@ This package provides ECS deployment function.
     * Command base deploy
     * Slack interactive deploy
     * GitHub push detect deploy
-* Image build and Push to ECR
+* Image build and push to ECR
 * Support task definition for deployment
     * Encryption of environemnt variables
 * Regular cleanup of repository on ECR
