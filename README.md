@@ -70,7 +70,9 @@ Please open http://localhost:3000/ in the browser.
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png?" width="80%">
 
-### Deploy
+## Deploy
+
+### Command base deploy
 
 ```bash
 $ cd genova
