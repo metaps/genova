@@ -32,7 +32,7 @@ Browse [sample file](https://github.com/metaps/genova/wiki/Configuration#configd
 
 ### config/deploy/{service}.yml
 
-For ECS deployment [use ecs_deployer](https://rubygems.org/gems/ecs_deployer).
+For ECS deployment use [ecs_deployer](https://rubygems.org/gems/ecs_deployer).
 Create a task definition file for each deployment service.
 
 e.g.
