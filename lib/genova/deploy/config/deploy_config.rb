@@ -6,7 +6,7 @@ module Genova
 
         def initialize(account, repository, branch)
           @repository = repository
-          @params = Genova::Github::Client.new(account, repository, branch).fetch_deploy_config
+          @params = Genova::Git::LocalRepositoryManager.new(account, repository, branch).open_deploy_config
 
           return if @params[:scheduled_tasks].nil?
 

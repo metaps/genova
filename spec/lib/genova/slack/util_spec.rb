@@ -19,13 +19,12 @@ module Genova
 
       describe 'branch_options' do
         it 'should be return branch list' do
-          git_branch_mock = double('Git::Branch')
-          allow(git_branch_mock).to receive(:name).and_return('feature/branch')
+          repository_manager_mock = double('Genova::Git::LocalRepositoryMangaer')
+          branch_mock = double('Git::Branch')
 
-          deploy_client_mock = double('Genova::Deploy::Client')
-          allow(deploy_client_mock).to receive(:fetch_repository)
-          allow(deploy_client_mock).to receive(:fetch_branches).and_return([git_branch_mock])
-          allow(Genova::Deploy::Client).to receive(:new).and_return(deploy_client_mock)
+          allow(branch_mock).to receive(:name).and_return('feature/branch')
+          allow(repository_manager_mock).to receive(:origin_branches).and_return([branch_mock])
+          allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
 
           results = Genova::Slack::Util.branch_options('account', 'repository')
           expect(results[0][:text]).to eq('feature/branch')

@@ -1,22 +1,3 @@
-module Git
-  class Lib
-    alias __branches_all__ branches_all
-
-    def branches_all
-      arr = []
-
-      # Add '--sort=--authordate' parameter
-      command_lines('branch', ['-a', '--sort=-authordate']).each do |b|
-        current = (b[0, 2] == '* ')
-        arr << [b.gsub('* ', '').strip, current]
-      end
-      arr
-    end
-
-    private :__branches_all__
-  end
-end
-
 module Genova
   module Deploy
     class Client
@@ -27,7 +8,7 @@ module Genova
       IMAGE_TAG_LATEST = 'latest'.freeze
 
       enumerize :status, in: %i[in_progress success failure]
-      enumerize :mode, in: %i[manual auto slack slack_interactive]
+      enumerize :mode, in: %i[manual auto slack]
 
       attr_reader :options, :config
 
@@ -56,15 +37,15 @@ module Genova
         @logger.level = @options[:verbose] ? :debug : :info
         @logger.info('Initiaized deploy client.')
 
-        @repos_root_path = Rails.root.join('tmp', 'repos', @options[:account]).to_s
-        @repos_path = Pathname(@repos_root_path).join(@repository).to_s
-
         @ecr = Aws::ECR::Client.new(profile: @options[:profile], region: @options[:region])
         @ecr_registry = ENV.fetch('AWS_ACCOUNT_ID') + '.dkr.ecr.ap-northeast-1.amazonaws.com'
-        @config_base_path = Pathname(@repos_path).join('config')
 
         @mutex = Genova::Deploy::Mutex.new("deploy-lock_#{@options[:account]}:#{@repository}")
         @config = Genova::Deploy::Config::DeployConfig.new(@options[:account], @repository, @options[:branch])
+
+        Genova::Git::LocalRepositoryManager.logger = @logger
+        @repository_manager = Genova::Git::LocalRepositoryManager.new(@options[:account], @repository, @options[:branch])
+        @config_base_path = Pathname(@repository_manager.path).join('config').to_s
 
         Docker.options[:read_timeout] = Settings.aws.service.ecr.read_timeout
         Docker.logger = @logger
@@ -80,8 +61,8 @@ module Genova
           lock(lock_timeout)
           @deploy_job.start_deploy
 
-          fetch_source
-          commit_id = Genova::Github::Client.new(@options[:account], @repository, @options[:branch]).fetch_last_commit_id
+          @repository_manager.update
+          commit_id = @repository_manager.remote_last_commit_id
 
           @deploy_job[:commit_id] = commit_id
           @deploy_job.save
@@ -106,27 +87,6 @@ module Genova
 
           unlock
           result
-        end
-      end
-
-      def fetch_repository
-        watch_deploy do
-          @logger.info('Started git fetch.')
-
-          return if Dir.exist?(@repos_path)
-
-          uri = "git@github.com:#{@options[:account]}/#{@repository}.git"
-
-          FileUtils.mkdir_p(@repos_root_path) unless Dir.exist?(@repos_root_path)
-          Git.clone(uri, '', path: @repos_path)
-        end
-      end
-
-      def fetch_branches
-        watch_deploy do
-          git = Git.open(@repos_path, log: @logger)
-          git.fetch
-          git.branches.remote
         end
       end
 
@@ -159,24 +119,6 @@ module Genova
 
       def unlock
         @mutex.unlock
-      end
-
-      # @return [Boolean]
-      def fetch_source
-        result = false
-        watch_deploy do
-          @logger.info('Retrieving repository.')
-          fetch_repository
-
-          git = Git.open(@repos_path, log: @logger)
-          git.fetch
-          git.checkout(@options[:branch]) unless git.branch == @options[:branch]
-          git.reset_hard("origin/#{@options[:branch]}")
-
-          result = true
-        end
-
-        result
       end
 
       # @param [Hash] options
@@ -228,13 +170,13 @@ module Genova
 
           raise DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          task_definition_config = Genova::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service)
+          task_definition_config = Genova::Deploy::Config::TaskDefinitionConfig.new(@repository_manager.path, service)
           container_definition = task_definition_config.read[:container_definitions].find { |i| i[:name] == container.to_s }
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
 
-          deploy_command = Genova::Deploy::Command.new(work_dir: @repos_path, logger: @logger)
+          deploy_command = Genova::Deploy::Command.new(work_dir: @repository_manager.path, logger: @logger)
           results = deploy_command.exec(command, docker_base_path)
 
           raise DockerBuildError if results[:stderr].present?
@@ -415,7 +357,7 @@ module Genova
       def deploy_service(deploy_client, tag_revision, service)
         @logger.info('Started serivce deployment.')
 
-        task_definition_path = Genova::Deploy::Config::TaskDefinitionConfig.new(@repos_path, service).path
+        task_definition_path = Genova::Deploy::Config::TaskDefinitionConfig.new(@repository_manager.path, service).path
         task_definition = create_new_task(deploy_client.task, task_definition_path, tag_revision)
 
         service_client = deploy_client.service

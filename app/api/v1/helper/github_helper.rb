@@ -23,8 +23,8 @@ module V1
       end
 
       def detect_auto_deploy_service(account, repository, branch)
-        config = Genova::Github::Client.new(account, repository, branch).fetch_deploy_config
-        config.dig(:auto_deploy, :branches, branch.to_sym)
+        deploy_config = load_deploy_config(account, repository, branch)
+        deploy_config.dig(:auto_deploy, :branches, branch.to_sym)
       end
 
       def create_deploy_job(account, repository, branch, service)
@@ -38,6 +38,18 @@ module V1
                          service: service)
 
         id
+      end
+
+      private
+
+      def load_deploy_config(account, repository, branch)
+        octokit = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
+        resource = octokit.contents(
+          "#{account}/#{repository}",
+          ref: branch,
+          path: 'config/deploy.yml'
+        )
+        YAML.load(Base64.decode64(resource.attrs[:content])).deep_symbolize_keys
       end
     end
   end

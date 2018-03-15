@@ -45,18 +45,11 @@ module Genova
         end
 
         def branch_options(account, repository, branch_limit = Settings.slack.interactive.branch_limit)
-          deploy_client = Genova::Deploy::Client.new(
-            Genova::Deploy::Client.mode.find_value(:slack_interactive).to_sym,
-            repository,
-            account: account
-          )
-          deploy_client.fetch_repository
-
+          repository_manager = Genova::Git::LocalRepositoryManager.new(account, repository)
           branches = []
           size = 0
 
-          deploy_client.fetch_branches.each do |branch|
-            next if branch.name.include?('>')
+          repository_manager.origin_branches.each do |branch|
             break if size >= branch_limit
 
             size += 1
@@ -68,8 +61,8 @@ module Genova
         end
 
         def service_options(account, repository, branch)
-          github = Genova::Github::Client.new(account, repository, branch)
-          ecs_containers = github.fetch_deploy_config[:ecs_containers] || {}
+          deploy_config = Genova::Git::LocalRepositoryManager.new(account, repository, branch).open_deploy_config
+          ecs_containers = deploy_config[:ecs_containers] || {}
 
           services = ecs_containers.keys
           services.delete(:default)

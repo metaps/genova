@@ -19,7 +19,9 @@ module Genova
 
       describe 'post_choose_deploy_service' do
         it 'should be call bot' do
-          allow_any_instance_of(Genova::Github::Client).to receive(:fetch_deploy_config).and_return({})
+          repository_manager_mock = double(Genova::Git::LocalRepositoryManager)
+          allow(repository_manager_mock).to receive(:open_deploy_config).and_return({})
+          allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
 
           bot.post_choose_deploy_service('account', 'repository', 'branch')
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once

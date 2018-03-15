@@ -5,6 +5,13 @@ module Genova
     describe Client, logged_in: true do
       before(:each) do
         DeployJob.delete_all
+
+        repository_manager_mock = double('Genova::Git::LocalRepositoryMangaer')
+        allow(repository_manager_mock).to receive(:path).and_return('')
+        allow(repository_manager_mock).to receive(:update)
+        allow(repository_manager_mock).to receive(:origin_last_commit_id)
+
+        allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
       end
 
       let(:deploy_config_mock) { double('Genova::Deploy::Config::DeployConfig') }
@@ -13,7 +20,6 @@ module Genova
         allow(File).to receive(:exist?).with('id_rsa').and_return(true)
         allow(EcsDeployer::Client).to receive(:new)
 
-        allow_any_instance_of(Genova::Github::Client).to receive(:fetch_last_commit_id)
         allow(Genova::Deploy::Config::DeployConfig).to receive(:new)
 
         allow(deploy_config_mock).to receive(:cluster_name).and_return('cluster_name')
@@ -49,7 +55,6 @@ module Genova
       describe 'exec' do
         context 'when "push_only" option is false' do
           it 'should be deploy' do
-            allow_any_instance_of(Client).to receive(:fetch_source)
             allow(File).to receive(:exist?).and_return(true)
             allow(File).to receive(:read).and_return('{}')
 
@@ -78,7 +83,6 @@ module Genova
             options = deploy_client.instance_variable_get(:@options)
             options[:push_only] = true
 
-            allow_any_instance_of(Client).to receive(:fetch_source)
             allow(File).to receive(:exist?).and_return(true)
             allow(File).to receive(:read).and_return('{}')
 
@@ -94,38 +98,6 @@ module Genova
             expect(deploy_client).to have_received(:build_images)
             expect(deploy_client).to have_received(:push_images)
           end
-        end
-      end
-
-      describe 'fetch_repository' do
-        context 'when not exist repository' do
-          it 'should be clone repository' do
-            allow(Dir).to receive(:exist?).with("#{Rails.root}/tmp/repos/metaps/sandbox").and_return(false)
-            allow(Dir).to receive(:exist?).with("#{Rails.root}/tmp/repos/metaps").and_return(true)
-            allow(Git).to receive(:clone)
-
-            deploy_client.fetch_repository
-            expect(Git).to have_received(:clone).once
-          end
-        end
-      end
-
-      describe 'fetch_branches' do
-        it 'should be return remote branches' do
-          git_branches_mock = double(Git::Branches)
-          allow(git_branches_mock).to receive(:remote).and_return([])
-
-          git_mock = double(Git)
-          allow(git_mock).to receive(:fetch)
-          allow(git_mock).to receive(:branches).and_return(git_branches_mock)
-          allow(Git).to receive(:open).and_return(git_mock)
-          expect(deploy_client.fetch_branches.class).to eq(Array)
-        end
-      end
-
-      describe 'deploy_config' do
-        it 'should be return Genova::Deploy::Config::DeployConfig' do
-          expect(deploy_client.config).to eq(deploy_config_mock)
         end
       end
     end
