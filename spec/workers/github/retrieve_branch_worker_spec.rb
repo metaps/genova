@@ -7,7 +7,10 @@ module Github
         allow(Genova::Slack::Util).to receive(:branch_options)
         allow(RestClient).to receive(:post)
 
-        subject.perform({})
+        job = Genova::Sidekiq::Job.new('id', account: '', repository: '', response_url: '')
+        allow_any_instance_of(Genova::Sidekiq::Queue).to receive(:find).and_return(job)
+
+        subject.perform('')
       end
 
       it 'shuold be in queeue' do
