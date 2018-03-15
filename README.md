@@ -58,10 +58,7 @@ $ docker-compose build
 $ docker-compose up [-d]
 ```
 
-Application is started with following port.
-
-* Genova console: http://localhost:3000/
-* [c3vis](https://github.com/ExpediaDotCom/c3vis): http://localhost:3001/
+Please open http://localhost:3000/ in the browser.
 
 ## Genova console
 
