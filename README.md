@@ -75,6 +75,8 @@ $ docker-compose run --rm rails thor genova:deploy -r {repository}
 
 If you want to deploy from Slack, you need to create a [Slack app](https://api.slack.com/apps).
 
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/slack_deploy.png" width="50%">
+
 1. Register Slack app.
 2. Add key to `.env` file.
     * `SLACK_CLIENT_ID`
