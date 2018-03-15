@@ -58,7 +58,18 @@ module Genova
       def open_deploy_config
         clone
 
-        YAML.load(File.read(Pathname(@path).join('config/deploy.yml'))).deep_symbolize_keys
+        path = Pathname(@path).join('config/deploy.yml')
+        YAML.load(File.read(path)).deep_symbolize_keys
+      end
+
+      def task_definition_config_path(service)
+        Pathname(@path).join('config', 'deploy', "#{service}.yml")
+      end
+
+      def open_task_definition_config(service)
+        clone
+
+        YAML.load(File.read(task_definition_config_path(service))).deep_symbolize_keys
       end
 
       def origin_branches

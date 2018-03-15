@@ -62,7 +62,7 @@ module Genova
           @deploy_job.start_deploy
 
           @repository_manager.update
-          commit_id = @repository_manager.remote_last_commit_id
+          commit_id = @repository_manager.origin_last_commit_id
 
           @deploy_job[:commit_id] = commit_id
           @deploy_job.save
@@ -170,8 +170,8 @@ module Genova
 
           raise DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          task_definition_config = Genova::Deploy::Config::TaskDefinitionConfig.new(@repository_manager.path, service)
-          container_definition = task_definition_config.read[:container_definitions].find { |i| i[:name] == container.to_s }
+          task_definition_config = @repository_manager.open_task_definition_config(service)
+          container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
@@ -357,7 +357,7 @@ module Genova
       def deploy_service(deploy_client, tag_revision, service)
         @logger.info('Started serivce deployment.')
 
-        task_definition_path = Genova::Deploy::Config::TaskDefinitionConfig.new(@repository_manager.path, service).path
+        task_definition_path = @repository_manager.task_definition_config_path(service)
         task_definition = create_new_task(deploy_client.task, task_definition_path, tag_revision)
 
         service_client = deploy_client.service
