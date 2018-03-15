@@ -58,8 +58,11 @@ $ docker-compose up [-d]
 
 Application is started with following port.
 
-* Rails: http://localhost:3000/
+* Genova console: http://localhost:3000/
 * c3vis: http://localhost:3001/
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="50%">
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="50%">
 
 ### Deploy
 
