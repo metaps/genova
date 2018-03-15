@@ -2,7 +2,7 @@ require 'rails_helper'
 
 module Genova
   module Deploy
-    describe Client, :logged_in => true do
+    describe Client, logged_in: true do
       before(:each) do
         DeployJob.delete_all
       end

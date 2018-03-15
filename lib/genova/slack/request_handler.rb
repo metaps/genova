@@ -1,6 +1,9 @@
 module Genova
   module Slack
     class RequestHandler
+      WAIT_INTERVAL = 3
+      WAIT_LONG_TIME = 6
+
       class << self
         def handle_request(payload_body, logger)
           return if payload_body.blank?
@@ -45,7 +48,32 @@ module Genova
             @logger.info('Invoke Github::RetrieveBranchWorker')
             @logger.info("account: #{split[0]}, repository: #{split[1]}, response_url: #{@payload_body[:response_url]}")
 
-            ::Github::RetrieveBranchWorker.perform_async(split[0], split[1], @payload_body[:response_url])
+            entity = {
+              account: split[0],
+              repository: split[1],
+              response_url: @payload_body[:response_url]
+            }
+
+            queue = Genova::Sidekiq::Queue.new
+            id = queue.add(entity)
+            ::Github::RetrieveBranchWorker.perform_async(id)
+
+            Thread.new do
+              start_time = Time.new.utc.to_i
+
+              loop do
+                sleep(WAIT_INTERVAL)
+
+                next if Time.new.utc.to_i - start_time < WAIT_LONG_TIME
+                job = queue.find(id)
+
+                if job[:status] == Genova::Sidekiq::Queue.status.find_value(:in_progress)
+                  Genova::Slack::Bot.new.post_simple_message('Retrieving repository. It takes time because the repository is large. Please wait for a while...')
+                end
+
+                break
+              end
+            end
           else
             result = 'Cancelled.'
           end

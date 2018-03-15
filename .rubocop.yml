@@ -1,5 +1,6 @@
 AllCops:
   Exclude:
+  - 'bin/**/*'
   - 'db/**/*'
   - 'tmp/**/*'
   - 'vendor/**/*'

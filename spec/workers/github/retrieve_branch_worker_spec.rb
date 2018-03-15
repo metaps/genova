@@ -7,7 +7,7 @@ module Github
         allow(Genova::Slack::Util).to receive(:branch_options)
         allow(RestClient).to receive(:post)
 
-        subject.perform('account', 'repository', 'response_url')
+        subject.perform({})
       end
 
       it 'shuold be in queeue' do
