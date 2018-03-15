@@ -61,8 +61,8 @@ Application is started with following port.
 * Genova console: http://localhost:3000/
 * c3vis: http://localhost:3001/
 
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png?2" width="80%">
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png?2" width="80%">
 
 ### Deploy
 
