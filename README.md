@@ -24,6 +24,8 @@ This package provides ECS deployment function.
 * Docker
 * Docker Compose
 
+Source code must be managed on GitHub.
+
 ## Setup ECS Application
 
 When using Genova, following configuration file is required for application.
