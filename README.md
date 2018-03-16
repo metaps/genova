@@ -9,8 +9,8 @@
 * [Description](#description)
 * [Required middleware](#required-middleware)
 * [Setup ECS Application](#setup-ecs-application)
-  * [config/deploy.yml](#configdeployyml)
-  * [config/deploy/{service}.yml](#configdeployserviceyml)
+  * [Deploy config](#deploy-config)
+  * [Taks definition config](#task-definition-config)
 * [Setup Genova](#setup-genova)
 * [Genova console](#genova-console)
   * [Deploy list](#deploy-list)
@@ -46,20 +46,21 @@ Source code must be managed on GitHub.
 
 When using Genova, please create following configuration file in application.
 
-### config/deploy.yml
+### Deploy config
 
+Create `config/dpeloy.yml` file.
 Please refer to [sample](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
 
-### config/deploy/{service}.yml
+### Task definition config
 
 ECS deployment uses [ecs_deployer](https://rubygems.org/gems/ecs_deployer).
 
 Create task definition file for each service to be deployed. File name uses service name of ECS.
 
 e.g.
-* config/deploy/development.yml
-* config/deploy/staging.yml
-* config/deploy/production.yml
+* `config/deploy/development.yml`
+* `config/deploy/staging.yml`
+* `config/deploy/production.yml`
 
 Please refer to [sample](https://github.com/naomichi-y/ecs_deployer#task-definition).
 
