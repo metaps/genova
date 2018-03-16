@@ -48,14 +48,11 @@ When using Genova, please create following configuration file in application.
 
 ### Deploy config
 
-Create `config/dpeloy.yml` file.
-Please refer to [sample](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
+Create `config/dpeloy.yml` file. Please refer to [sample](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
 
 ### Task definition config
 
-ECS deployment uses [ecs_deployer](https://rubygems.org/gems/ecs_deployer).
-
-Create task definition file for each service to be deployed. File name uses service name of ECS.
+ECS deployment uses [ecs_deployer](https://rubygems.org/gems/ecs_deployer). Create task definition file for each service to be deployed. File name uses service name of ECS.
 
 e.g.
 * `config/deploy/development.yml`
