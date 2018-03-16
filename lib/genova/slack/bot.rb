@@ -333,7 +333,7 @@ module Genova
       def compare_commit_ids(account, repository, branch, service)
         deploy_config = Genova::Deploy::Config::DeployConfig.new(account, repository, branch)
 
-        current_commit_id = Genova::Git::LocalRepositoryManager.new(account, repository, branch).remote_last_commit_id
+        current_commit_id = Genova::Git::LocalRepositoryManager.new(account, repository, branch).origin_last_commit_id
         deployed_commit_id = nil
 
         service = @ecs.describe_services(
