@@ -4,41 +4,64 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/b1d9269868e13bd658a2/maintainability)](https://codeclimate.com/github/metaps/genova/maintainability)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
+## Table of contents
+
+* [Description](#description)
+* [Required middleware](#required-middleware)
+* [Setup ECS Application](#setup-ecs-application)
+  * [config/deploy.yml](#configdeployyml)
+  * [config/deploy/{service}.yml](#configdeployserviceyml)
+* [Setup Genova](#setup-genova)
+* [Genova console](#genova-console)
+  * [Deploy list](#deploy-list)
+  * [Deploy log](#deploy-log)
+* [Deploy](#deploy)
+  * [Command base deploy](#command-base-deploy)
+  * [Slack interactive deploy](#slack-interactive-deploy)
+  * [GitHub push detect deploy](#github-push-detect-deploy)
+
 ## Description
 
 This package provides ECS deployment function.
 
-  * Application deployment to ECS
-    * Command base deploy
-    * Slack interactive deploy
-    * GitHub push detect deploy
-  * Support task definition for deployment
-    * Encryption of environemnt variables
+* YAML based task definition
+  * Support encryption of environment variables by [KMS](https://aws.amazon.com/kms/)
+* Image build and push to ECR
+* Application deployment to ECS
+  * Command base deploy
+  * Slack interactive deploy
+  * GitHub push detect deploy
+* Regular cleanup of repository on ECR
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
 
 ## Required middleware
 
 * Docker
 * Docker Compose
 
+Source code must be managed on GitHub.
+
 ## Setup ECS Application
 
-When using Genova, following configuration file is required for application.
+When using Genova, please create following configuration file in application.
 
 ### config/deploy.yml
 
-Browse [sample file](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
+Please refer to [sample](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
 
 ### config/deploy/{service}.yml
 
-For ECS deployment [use ecs_deployer](https://rubygems.org/gems/ecs_deployer).
-Create a task definition file for each deployment service.
+ECS deployment uses [ecs_deployer](https://rubygems.org/gems/ecs_deployer).
+
+Create task definition file for each service to be deployed. File name uses service name of ECS.
 
 e.g.
 * config/deploy/development.yml
 * config/deploy/staging.yml
 * config/deploy/production.yml
 
-Browse [sample file](https://github.com/naomichi-y/ecs_deployer#task-definition).
+Please refer to [sample](https://github.com/naomichi-y/ecs_deployer#task-definition).
 
 ## Setup Genova
 
@@ -46,22 +69,32 @@ Browse [sample file](https://github.com/naomichi-y/ecs_deployer#task-definition)
 $ git clone https://github.com/metaps/genova.git
 $ cd genova
 
-# Change settings (SLACK_*, GITHUB_* variables is optional)
+# See https://github.com/metaps/genova/wiki/Configuration
 $ cp config/settings.yml config/settings.local.yml
 $ cp .env.default .env
-# Create secret key to access GitHub
-$ etc/docker/cron/.ssh/id_rsa
+
+# Create secret key for GitHub
+$ echo {YOUR_SECRET_KEY} >> etc/docker/cron/.ssh/id_rsa
 
 $ docker-compose build
-$ docker-compose up [-d]
+$ docker-compose up
 ```
 
-Application is started with following port.
+Please open http://localhost:3000/ in the browser.
 
-* Rails: http://localhost:3000/
-* c3vis: http://localhost:3001/
+## Genova console
 
-### Deploy
+### Deploy list
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
+
+### Deploy log
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
+
+## Deploy
+
+### Command base deploy
 
 ```bash
 $ cd genova
@@ -74,6 +107,8 @@ $ docker-compose run --rm rails thor genova:deploy -r {repository}
 ### Slack interactive deploy
 
 If you want to deploy from Slack, you need to create a [Slack app](https://api.slack.com/apps).
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/slack_deploy.png" width="50%">
 
 1. Register Slack app.
 2. Add key to `.env` file.
@@ -117,11 +152,13 @@ If you want to execute deploy from GitHub push, register webhook URL.
 
     * Payload URL: `http://{YOUR_HOST}/api/v1/github/push`
     * Content type: `application/json`
-    * Secret: {YOUR_SECRET_KEY}
+    * Secret: `{GITHUB_SECRET_KEY}`
     * Which events would you like to trigger this webhook?: `Just the push event.`
     * Active: Checked
 2. Add GitHub access token to `.env`.
 ```yaml
+GITHUB_OAUTH_TOKEN=***
+GITHUB_SECRET_KEY=***
 SLACK_API_TOKEN=***
 ```
 3. Add `auto_deploy` parameter to `deploy.yml`.
