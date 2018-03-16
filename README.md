@@ -4,6 +4,22 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/b1d9269868e13bd658a2/maintainability)](https://codeclimate.com/github/metaps/genova/maintainability)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
+## Table of contents
+
+* [Description](#description)
+* [Required middleware](#required-middleware)
+* [Setup ECS Application](#setup-ecs-application)
+  * [config/deploy.yml](#configdeployyml)
+  * [config/deploy/{service}.yml](#configdeployserviceyml)
+* [Setup Genova](#setup-genova)
+* [Genova console](#genova-console)
+  * [Deploy list](#deploy-list)
+  * [Deploy log](#deploy-log)
+* [Deploy](#deploy)
+  * [Command base deploy](#command-base-deploy)
+  * [Slack interactive deploy](#slack-interactive-deploy)
+  * [GitHub push detect deploy](#github-push-detect-deploy)
+
 ## Description
 
 This package provides ECS deployment function.
