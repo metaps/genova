@@ -48,7 +48,7 @@ When using Genova, please create following configuration file in application.
 
 ### config/deploy.yml
 
-Please refer to [sample].(https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
+Please refer to [sample](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
 
 ### config/deploy/{service}.yml
 
