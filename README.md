@@ -17,6 +17,8 @@ This package provides ECS deployment function.
     * Encryption of environemnt variables
 * Regular cleanup of repository on ECR
 
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
+
 ## Required middleware
 
 * Docker
@@ -64,11 +66,11 @@ Please open http://localhost:3000/ in the browser.
 
 ### Deploy list
 
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png?" width="80%">
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
 
 ### Deploy log
 
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png?" width="80%">
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
 
 ## Deploy
 
