@@ -96,7 +96,12 @@ module Genova
         end
 
         def confirm_deploy
-          selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value) || 'development'
+          selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
+
+          if selected_value.nil?
+            selected_value = @payload_body.dig(:original_message, :attachments, 0, :actions, 0, :selected_options, 0, :value)
+          end
+
           result = 'Service: ' + selected_value
           query = @id_builder.query
 
