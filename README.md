@@ -4,9 +4,10 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/b1d9269868e13bd658a2/maintainability)](https://codeclimate.com/github/metaps/genova/maintainability)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
+This package provides ECS deployment function.
+
 ## Table of contents
 
-* [Description](#description)
 * [Features](#features)
 * [Required middleware](#required-middleware)
 * [Setup ECS Application](#setup-ecs-application)
@@ -20,10 +21,6 @@
   * [Command base deploy](#command-base-deploy)
   * [Slack interactive deploy](#slack-interactive-deploy)
   * [GitHub push detect deploy](#github-push-detect-deploy)
-
-## Description
-
-This package provides ECS deployment function.
 
 ## Features
 
