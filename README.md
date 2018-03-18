@@ -14,9 +14,6 @@ This package provides ECS deployment function.
   * [Deploy config](#deploy-config)
   * [Taks definition config](#task-definition-config)
 * [Setup Genova](#setup-genova)
-* [Genova console](#genova-console)
-  * [Deploy list](#deploy-list)
-  * [Deploy log](#deploy-log)
 * [Deploy](#deploy)
   * [Command base deploy](#command-base-deploy)
   * [Slack interactive deploy](#slack-interactive-deploy)
@@ -34,6 +31,11 @@ This package provides ECS deployment function.
 * Regular cleanup of repository on ECR
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
+
+### Genova console
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
 
 ## Required middleware
 
@@ -79,16 +81,6 @@ $ docker-compose up
 ```
 
 Please open http://localhost:3000/ in the browser.
-
-## Genova console
-
-### Deploy list
-
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
-
-### Deploy log
-
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
 
 ## Deploy
 
