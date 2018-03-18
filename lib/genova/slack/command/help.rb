@@ -10,11 +10,10 @@ module Genova
           -------
           deploy          - Run deploy in interactive mode.
           deploy {repository} {branch} {service}
-                          - Run deployment in command base.
-                            repository: Repository name of GitHub (e.g. xxx-www).
-                            branch: Branch naem of Repository (e.g. feature/xxx).
-
-                            service: development or staging or production.
+                          - Run deploy in command mode.
+                            repository: Target repository (e.g. xxx-www).
+                            branch: Target branch (e.g. feature/xxx).
+                            service: ECS Service name.
           help            - Get this helpful message.
           history         - Show recently executed deploy command.
           redeploy        - Re-execute last deployment.
