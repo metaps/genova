@@ -7,6 +7,7 @@
 ## Table of contents
 
 * [Description](#description)
+* [Features](#features)
 * [Required middleware](#required-middleware)
 * [Setup ECS Application](#setup-ecs-application)
   * [Deploy config](#deploy-config)
@@ -23,6 +24,8 @@
 ## Description
 
 This package provides ECS deployment function.
+
+## Features
 
 * YAML based task definition
   * Support encryption of environment variables by [KMS](https://aws.amazon.com/kms/)
