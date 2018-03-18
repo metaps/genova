@@ -34,7 +34,12 @@ This package provides ECS deployment function.
 
 ### Genova console
 
+Genova provides web console.
+
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
+
+You can check deployment status.
+
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
 
 ## Required middleware
