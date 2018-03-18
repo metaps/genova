@@ -96,7 +96,7 @@ $ cd genova
 $ docker-compose run --rm rails thor genova help deploy
 
 # e.g.
-$ docker-compose run --rm rails thor genova:deploy -r {repository}
+$ docker-compose run --rm rails thor genova:deploy -r {repository} -s {service}
 ```
 
 ### Slack interactive deploy
