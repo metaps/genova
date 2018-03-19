@@ -79,6 +79,16 @@ module Genova
         }
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_service', query)
         options = Genova::Slack::Util.service_options(account, repository, branch)
+        selected_options = []
+
+        if options.size > 0
+          selected_options = [
+            {
+              text: options[0][:text],
+              value: options[0][:value]
+            }
+          ]
+        end
 
         @client.chat_postMessage(
           channel: @channel,
@@ -94,12 +104,7 @@ module Genova
                 text: 'Pick a service...',
                 type: 'select',
                 options: options,
-                selected_options: [
-                  {
-                    text: options[0][:text],
-                    value: options[0][:value]
-                  }
-                ]
+                selected_options: selected_options
               },
               {
                 name: 'submit',
