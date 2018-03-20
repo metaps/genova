@@ -96,7 +96,7 @@ $ cd genova
 $ docker-compose run --rm rails thor genova help deploy
 
 # e.g.
-$ docker-compose run --rm rails thor genova:deploy -r {repository} -s {service}
+$ docker-compose run --rm rails thor genova:deploy -r {repository} -c {cluster} -s {service}
 ```
 
 ### Slack interactive deploy
@@ -105,16 +105,24 @@ If you want to deploy from Slack, you need to create a [Slack app](https://api.s
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/slack_deploy.png" width="50%">
 
-1. Register Slack app.
-2. Add key to `.env` file.
+1. Execute `docker-compose stop`.
+2. Register [Slack app](https://api.slack.com/apps).
+    * Interactive Components
+      * `Request URL: http://{YOUR_HOST}/api/v1/slack/post`
+    * Bot Users
+      * `Add a Bot User`
+    * Install App
+      * `Install App to Workspace`
+3. Add bot to channel
+4. Add key to `.env` file.
     * `SLACK_CLIENT_ID`
     * `SLACK_CLIENT_SECRET`
     * `SLACK_API_TOKEN`
     * `SLACK_CHANNEL`
     * `SLACK_VERIFICATION_TOKEN`
-3. Open `docker-compose.yml` and uncomment `slack`.
-4. Execute `docker-compose up`.
-5. Connect to mongo container and confirm oauth key is created.
+5. Open `docker-compose.yml` and uncomment `slack`.
+6. Execute `docker-compose up`.
+7. Connect to mongo container and confirm OAuth key was created.
 
 ```bash
 $ docker exec -it genova-mongo /bin/bash
@@ -131,12 +139,12 @@ teams
 { "_id" : ObjectId("59cb507945a1d50005001b0a"), "active" : true, "token" : "***", "team_id" : "***", "name" : "Metaps", "domain" : "metaps", "updated_at" : ISODate("2017-09-27T07:17:13.545Z"), "created_at" : ISODate("2017-09-27T07:17:13.545Z") }
 ```
 
-6. Open `docker-compose.yml` and comment out `slack`.
-7. Execute `docker-compose up`.
-8. Open Slack and check command can be executed.
+8. Open `docker-compose.yml` and comment out `slack`.
+9. Execute `docker-compose up`.
+10. Open Slack and check command can be executed.
 
 ```
-@{user} help
+@{YOUR_BOT} help
 ```
 
 ### GitHub push detect deploy

@@ -37,7 +37,6 @@ module Slack
         )
 
         bot.post_started_deploy(
-          region: deploy_client.options[:region],
           cluster: deploy_job[:cluster],
           service: deploy_job[:service],
           jid: jid,

@@ -14,7 +14,7 @@ class Genova < Thor
   desc 'deploy', 'Deploy application to ECS.'
   option :account, required: false, desc: 'GitHub account'
   option :branch, required: false, default: 'master', aliases: :b, desc: 'Specify branch name.'
-  option :cluster, required: false, aliases: :c, desc: 'Specify cluster.'
+  option :cluster, required: true, aliases: :c, desc: 'Specify cluster.'
   option :service, required: true, aliases: :s, desc: 'Specify service.'
   option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
   option :mode, required: false, default: 'manual', desc: 'Deploy mode. (auto/manual)'

@@ -2,7 +2,7 @@ module Genova
   module Deploy
     class History
       def initialize(slack_user_id)
-        @id = build_key(slack_user_id)
+        @id = "history_#{slack_user_id}"
       end
 
       def add(params)
@@ -44,12 +44,6 @@ module Genova
         result = $redis.lindex(@id, 0)
         result = Oj.load(result) if result.present?
         result
-      end
-
-      private
-
-      def build_key(slack_user_id)
-        "history_#{slack_user_id}"
       end
     end
   end
