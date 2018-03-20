@@ -135,7 +135,13 @@ module Genova
           service: params[:service]
         }
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', query)
-        compare_ids = compare_commit_ids(params[:account], params[:repository], params[:branch], params[:cluster], params[:service])
+        compare_ids = compare_commit_ids(
+          account: params[:account],
+          repository: params[:repository],
+          branch: params[:branch],
+          cluster: params[:cluster],
+          service: params[:service]
+        )
 
         compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                          'Commit ID is unchanged.'
@@ -247,8 +253,9 @@ module Genova
       end
 
       def post_started_deploy(params)
-        url = "https://#{params[:region]}.console.aws.amazon.com" \
-              "/ecs/home?region=#{params[:region]}#/clusters/#{params[:cluster]}/services/#{params[:service]}/tasks"
+        region = Settings.aws.region
+        url = "https://#{region}.console.aws.amazon.com" \
+              "/ecs/home?region=#{region}#/clusters/#{params[:cluster]}/services/#{params[:service]}/tasks"
 
         @client.chat_postMessage(
           channel: @channel,
@@ -263,10 +270,6 @@ module Genova
             }, {
               title: 'Log',
               value: build_log_url(params[:deploy_job_id]),
-              short: true
-            }, {
-              title: 'Service',
-              value: params[:service],
               short: true
             }, {
               title: 'Sidekiq JID',
@@ -341,15 +344,15 @@ module Genova
         string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")
       end
 
-      def compare_commit_ids(account, repository, branch, cluster, service)
-        repository_manager = Genova::Git::LocalRepositoryManager.new(account, repository, branch)
+      def compare_commit_ids(params)
+        repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository], params[:branch])
         current_commit_id = repository_manager.origin_last_commit_id
         deploy_config = repository_manager.open_deploy_config
         deployed_commit_id = nil
 
         service = @ecs.describe_services(
-          cluster: cluster,
-          services: [service]
+          cluster: params[:cluster],
+          services: [params[:service]]
         ).services[0]
 
         if service.present? && service[:status] == 'ACTIVE'

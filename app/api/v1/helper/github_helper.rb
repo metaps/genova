@@ -24,11 +24,11 @@ module V1
 
       def detect_auto_deploy_service(account, repository, branch)
         deploy_config = load_deploy_config(account, repository, branch)
-        result = deploy_config.dig(:auto_deploy).find { |k, _v| k[:branch] == branch }
+        target = deploy_config.dig(:auto_deploy).find { |k, _v| k[:branch] == branch }
 
         {
-          cluster: result[:cluster],
-          service: result[:service]
+          cluster: target[:cluster],
+          service: target[:service]
         }
       end
 

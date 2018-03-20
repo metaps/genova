@@ -12,11 +12,11 @@ module Genova
               results = parse_args(match['expression'])
 
               if results[:mode] == :command
-                # todo
                 bot.post_confirm_deploy(
                   account: results[:account],
                   repository: results[:repository],
                   branch: results[:branch],
+                  cluster: results[:cluster],
                   service: results[:service],
                   confirm: true
                 )
@@ -40,6 +40,7 @@ module Genova
               account: nil,
               repository: nil,
               branch: nil,
+              cluster: nil,
               service: nil
             }
 
@@ -60,7 +61,10 @@ module Genova
             end
 
             results[:branch] = args[1]
-            results[:service] = args[2]
+
+            split = args[2].split(':')
+            results[:cluster] = split[0]
+            results[:service] = split[1]
 
             results
           end
