@@ -10,16 +10,16 @@ module Genova
             bot = Genova::Slack::Bot.new(client.web_client)
 
             if history.present?
-              confirm_deploy(bot, history[:account], history[:repository], history[:branch], history[:service])
+              bot.post_confirm_deploy(
+                account: history[:account],
+                repository: history[:repository],
+                branch: history[:branch],
+                cluster: history[:cluster],
+                service: history[:service]
+              )
             else
-              bot.post_error('History does not exist.', data.user)
+              bot.post_error(message: 'History does not exist.', slack_user_id: data.user)
             end
-          end
-
-          private
-
-          def confirm_deploy(bot, account, repository, branch, service)
-            bot.post_confirm_deploy(account, repository, branch, service, true)
           end
         end
       end

@@ -12,13 +12,23 @@ module Genova
               results = parse_args(match['expression'])
 
               if results[:mode] == :command
-                bot.post_confirm_deploy(results[:account], results[:repository], results[:branch], results[:service], true)
+                bot.post_confirm_deploy(
+                  account: results[:account],
+                  repository: results[:repository],
+                  branch: results[:branch],
+                  cluster: results[:cluster],
+                  service: results[:service],
+                  confirm: true
+                )
               else
                 bot.post_choose_repository
               end
             rescue => e
               logger.error(e)
-              bot.post_error(e.message, data.user)
+              bot.post_error(
+                message: e.message,
+                slack_user_id: data.user
+              )
             end
           end
 
@@ -30,6 +40,7 @@ module Genova
               account: nil,
               repository: nil,
               branch: nil,
+              cluster: nil,
               service: nil
             }
 
@@ -50,7 +61,10 @@ module Genova
             end
 
             results[:branch] = args[1]
-            results[:service] = args[2]
+
+            split = args[2].split(':')
+            results[:cluster] = split[0]
+            results[:service] = split[1]
 
             results
           end

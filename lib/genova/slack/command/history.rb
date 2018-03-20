@@ -10,9 +10,9 @@ module Genova
             bot = Genova::Slack::Bot.new(client.web_client)
 
             if !options.empty?
-              bot.post_choose_history(options)
+              bot.post_choose_history(options: options)
             else
-              bot.post_error('History does not exist.', data.user)
+              bot.post_error(message: 'History does not exist.', slack_user_id: data.user)
             end
           end
         end

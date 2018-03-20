@@ -24,18 +24,24 @@ module V1
 
       def detect_auto_deploy_service(account, repository, branch)
         deploy_config = load_deploy_config(account, repository, branch)
-        deploy_config.dig(:auto_deploy, :branches, branch.to_sym)
+        target = deploy_config.dig(:auto_deploy).find { |k, _v| k[:branch] == branch }
+
+        {
+          cluster: target[:cluster],
+          service: target[:service]
+        }
       end
 
-      def create_deploy_job(account, repository, branch, service)
+      def create_deploy_job(params)
         id = DeployJob.generate_id
         DeployJob.create(id: id,
                          status: Genova::Deploy::Client.status.find_value(:in_progress).to_s,
                          mode: Genova::Deploy::Client.mode.find_value(:auto).to_s,
-                         account: account,
-                         repository: repository,
-                         branch: branch,
-                         service: service)
+                         account: params[:account],
+                         repository: params[:repository],
+                         branch: params[:branch],
+                         cluster: params[:cluster],
+                         service: params[:service])
 
         id
       end
