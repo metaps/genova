@@ -105,7 +105,8 @@ module Genova
           result = 'Service: ' + selected_value
           query = @id_builder.query
 
-          @bot.post_confirm_deploy(query[:account], query[:repository], query[:branch], selected_value)
+          split = selected_value.split(':')
+          @bot.post_confirm_deploy(query[:account], query[:repository], query[:branch], split[0], split[1])
 
           result
         end
@@ -118,9 +119,10 @@ module Genova
             value = Genova::Deploy::History.new(slack_user_id).find(selected_value)
             result = "Repository: #{value[:account]}/#{value[:repository]}\n" \
                      "Branch: #{value[:branch]}\n" \
+                     "Cluster: #{value[:cluster]}\n" \
                      "Service: #{value[:service]}"
 
-            @bot.post_confirm_deploy(value[:account], value[:repository], value[:branch], value[:service])
+            @bot.post_confirm_deploy(value[:account], value[:repository], value[:branch], value[:cluster], value[:service])
 
           else
             result = 'Cancelled.'
@@ -139,10 +141,11 @@ module Genova
             account = query[:account]
             repository = query[:repository]
             branch = query[:branch]
+            cluster = query[:cluster]
             service = query[:service]
 
             @logger.info('Invoke Slack::DeployWorker')
-            @logger.info("account: #{account}, repository: #{repository}, branch: #{branch}, service: #{service}")
+            @logger.info("account: #{account}, repository: #{repository}, branch: #{branch}, cluster: #{cluster}, service: #{service}")
 
             @bot.post_deploy_queue
 
@@ -155,6 +158,7 @@ module Genova
                              account: account,
                              repository: repository,
                              branch: branch,
+                             cluster: cluster,
                              service: service)
 
             ::Slack::DeployWorker.perform_async(id)

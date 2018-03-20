@@ -5,9 +5,9 @@ module Genova
         @id = build_key(slack_user_id)
       end
 
-      def add(account, repository, branch, service)
-        hash_id = Digest::SHA1.hexdigest("#{account}#{repository}#{branch}#{service}")
-        value = build_value(hash_id, account, repository, branch, service)
+      def add(account, repository, branch, cluster, service)
+        hash_id = Digest::SHA1.hexdigest("#{account}#{repository}#{branch}#{cluster}#{service}")
+        value = build_value(hash_id, account, repository, branch, cluster, service)
 
         $redis.lrem(@id, 1, value) if find(hash_id).present?
         $redis.lpush(@id, value)
@@ -45,12 +45,13 @@ module Genova
         "history_#{slack_user_id}"
       end
 
-      def build_value(hash_id, account, repository, branch, service)
+      def build_value(hash_id, account, repository, branch, cluster, service)
         Oj.dump(
           id: hash_id,
           account: account,
           repository: repository,
           branch: branch,
+          cluster: cluster,
           service: service
         )
       end
