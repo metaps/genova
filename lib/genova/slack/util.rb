@@ -15,10 +15,9 @@ module Genova
                      "#{history[:account]}/#{history[:repository]}"
                    end
 
-            text = "#{text} (#{history[:branch]}) - #{history[:service]}"
+            text = "#{text} (#{history[:branch]}) - #{history[:cluster]}:#{history[:service]}"
 
-            options.push(text: text,
-                         value: history[:id])
+            options.push(text: text, value: history[:id])
           end
 
           options
@@ -37,8 +36,7 @@ module Genova
                       repository.to_s
                     end
 
-            options.push(text: repository,
-                         value: value)
+            options.push(text: repository, value: value)
           end
 
           options
@@ -53,25 +51,25 @@ module Genova
             break if size >= branch_limit
 
             size += 1
-            branches.push(text: branch.name,
-                          value: branch.name)
+            branches.push(text: branch.name, value: branch.name)
           end
 
           branches
         end
 
         def service_options(account, repository, branch)
-          deploy_config = Genova::Git::LocalRepositoryManager.new(account, repository, branch).open_deploy_config
-          ecs_containers = deploy_config[:ecs_containers] || {}
-
-          services = ecs_containers.keys
-          services.delete(:default)
-
           options = []
 
-          services.each do |service|
-            options.push(text: service,
-                         value: service)
+          deploy_config = Genova::Git::LocalRepositoryManager.new(account, repository, branch).open_deploy_config
+          deploy_config[:clusters].each do |cluster_params|
+            cluster = cluster_params[:name]
+            services = cluster_params[:services].keys
+            services.delete(:default)
+
+            services.each do |service|
+              value = "#{cluster}:#{service}"
+              options.push(text: value, value: value)
+            end
           end
 
           options

@@ -12,10 +12,16 @@ module V1
       # POST /api/v1/github/push
       post :push do
         result = parse(@payload_body)
-        service = detect_auto_deploy_service(result[:account], result[:repository], result[:branch])
-        return unless service.present?
+        target = detect_auto_deploy_service(result[:account], result[:repository], result[:branch])
+        return unless target.present?
 
-        id = create_deploy_job(result[:account], result[:repository], result[:branch], service)
+        id = create_deploy_job(
+          account: result[:account],
+          repository: result[:repository],
+          branch: result[:branch],
+          cluster: target[:cluster],
+          service: target[:service]
+        )
         jid = Github::DeployWorker.perform_async(id)
 
         { result: 'success', jid: jid }

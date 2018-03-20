@@ -9,11 +9,12 @@ module Genova
           General
           -------
           deploy          - Run deploy in interactive mode.
-          deploy {repository} {branch} {service}
+          deploy {repository} {branch} {cluster}:{service}
                           - Run deploy in command mode.
                             repository: Target repository (e.g. xxx-www).
                             branch: Target branch (e.g. feature/xxx).
-                            service: ECS Service name.
+                            cluster: ECS cluster name.
+                            service: ECS service name.
           help            - Get this helpful message.
           history         - Show recently executed deploy command.
           redeploy        - Re-execute last deployment.

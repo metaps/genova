@@ -14,6 +14,7 @@ class Genova < Thor
   desc 'deploy', 'Deploy application to ECS.'
   option :account, required: false, desc: 'GitHub account'
   option :branch, required: false, default: 'master', aliases: :b, desc: 'Specify branch name.'
+  option :cluster, required: true, aliases: :c, desc: 'Specify cluster.'
   option :service, required: true, aliases: :s, desc: 'Specify service.'
   option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
   option :mode, required: false, default: 'manual', desc: 'Deploy mode. (auto/manual)'
@@ -54,7 +55,7 @@ class Genova < Thor
     signature = 'sha1=' + OpenSSL::HMAC.hexdigest(sha1, ENV.fetch('GITHUB_SECRET_KEY'), payload_body)
 
     headers = { x_hub_signature: signature }
-    result = RestClient.post('http://localhost:3000/api/v1/github/push', payload_body, headers)
+    result = RestClient.post('http://rails:3000/api/v1/github/push', payload_body, headers)
 
     @logger.info('Sent deploy notification to Slack.')
     @logger.info(result)
