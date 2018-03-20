@@ -12,6 +12,7 @@ module Genova
               results = parse_args(match['expression'])
 
               if results[:mode] == :command
+                # todo
                 bot.post_confirm_deploy(results[:account], results[:repository], results[:branch], results[:service], true)
               else
                 bot.post_choose_repository

@@ -9,6 +9,7 @@
         <th>Repository</th>
         <th>Branch</th>
         <th>Commit</th>
+        <th>Cluster</th>
         <th>Service</th>
         <th>Mode</th>
         <th>Revision</th>
@@ -37,6 +38,7 @@
                 <%= link_to(deploy_job[:commit_id][0, 7], "https://github.com/#{deploy_job[:account]}/#{deploy_job[:repository]}/commit/#{deploy_job[:commit_id]}") %>
               <% end %>
             </td>
+            <td><%= deploy_job[:cluster] %></td>
             <td><%= deploy_job[:service] %></td>
             <td><%= deploy_job[:mode] %></td>
             <td><%= task_revision(deploy_job[:task_definition_arn]) %></td>

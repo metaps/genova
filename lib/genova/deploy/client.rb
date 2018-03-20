@@ -41,7 +41,6 @@ module Genova
         @ecr_registry = ENV.fetch('AWS_ACCOUNT_ID') + '.dkr.ecr.ap-northeast-1.amazonaws.com'
 
         @mutex = Genova::Deploy::Mutex.new("deploy-lock_#{@options[:account]}:#{@repository}")
-        @config = Genova::Deploy::Config::DeployConfig.new(@options[:account], @repository, @options[:branch])
 
         Genova::Git::LocalRepositoryManager.logger = @logger
         @repository_manager = Genova::Git::LocalRepositoryManager.new(@options[:account], @repository, @options[:branch])
@@ -62,21 +61,26 @@ module Genova
           @deploy_job.start_deploy
 
           @repository_manager.update
+          config = @repository_manager.open_deploy_config
+          cluster = @options[:cluster] || config[:default_cluster]
+          cluster_config = config[:clusters].find{ |k, _v| k[:name] == cluster }
+
           commit_id = @repository_manager.origin_last_commit_id
 
           @deploy_job[:commit_id] = commit_id
+          @deploy_job[:cluster] = cluster
           @deploy_job.save
 
           tag_revision = "build-#{@deploy_job.id}_#{commit_id}"
 
-          repository_names = build_images(service)
+          repository_names = build_images(service, cluster_config)
           push_images(tag_revision, repository_names)
 
           if @options[:push_only]
             @deploy_job.finish_deploy
             result = nil
           else
-            task_definition = deploy(tag_revision, service)
+            task_definition = deploy(tag_revision, cluster, service, cluster_config)
             cleanup_images(repository_names)
 
             @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
@@ -152,18 +156,18 @@ module Genova
       end
 
       # @param [String] service
+      # @param [Hash] cluster_config
       # @return [Array]
-      def build_images(service)
+      def build_images(service, cluster_config)
         @logger.info('Started building image.')
 
         repository_names = []
         cipher = EcsDeployer::Util::Cipher.new(profile: @options[:profile], region: @options[:region])
 
-        params = @config.params.dig(:ecs_containers, service.to_sym)
-        raise DeployConfigError, "'#{service}' parameter is not defined in 'config/deploy.yml'." if params.nil?
-
-        params.each do |container, param|
-          build = parse_docker_build(param[:build], cipher)
+        containers_config = cluster_config[:services][service.to_sym][:containers]
+        containers_config.each do |params|
+          container = params[:name]
+          build = parse_docker_build(params[:build], cipher)
 
           docker_base_path = File.expand_path(build[:context], @config_base_path)
           docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
@@ -249,13 +253,15 @@ module Genova
       end
 
       # @param [String] tag_revision
-      # @param [String] # service
+      # @param [String] cluster
+      # @param [String] service
+      # @param [Hash] cluster_config
       # @return [Aws::ECS::Types::TaskDefinition]
-      def deploy(tag_revision, service)
+      def deploy(tag_revision, cluster, service, cluster_config)
         @logger.info('Started deployment.')
 
         deploy_client = EcsDeployer::Client.new(
-          @config.cluster_name(service),
+          cluster,
           @logger,
           profile: @options[:profile],
           region: @options[:region]
@@ -264,7 +270,7 @@ module Genova
           deploy_client,
           tag_revision,
           service,
-          @config.params[:scheduled_tasks]
+          cluster_config
         )
         service_task_definition = deploy_service(
           deploy_client,
@@ -289,15 +295,15 @@ module Genova
       # @param [EcsDeployer::Client] deploy_client
       # @param [String] tag_revision
       # @param [String] service
-      # @param [Hash] scheduled_tasks
+      # @param [Hash] cluster_config
       # @return [Aws::ECS::Types::TaskDefinition]
-      def deploy_scheduled_task(deploy_client, tag_revision, service, scheduled_tasks)
+      def deploy_scheduled_task(deploy_client, tag_revision, service, cluster_config)
         @logger.info('Started scheduled task deployment.')
 
         task_definition = nil
 
-        if @config.params[:scheduled_tasks].present?
-          scheduled_tasks.each do |scheduled_task|
+        if cluster_config[:scheduled_tasks].present?
+          cluster_config[:scheduled_tasks].each do |scheduled_task|
             update_scheduled_task(deploy_client, tag_revision, service, scheduled_task)
           end
         else
@@ -361,7 +367,6 @@ module Genova
         task_definition = create_new_task(deploy_client.task, task_definition_path, tag_revision)
 
         service_client = deploy_client.service
-        service = @config.service_name(service)
 
         if service_client.exist?(service)
           service_client.wait_timeout = Settings.deploy.wait_timeout

@@ -27,7 +27,7 @@ module Genova
             actions: [
               {
                 name: 'history',
-                text: 'Pick a command...',
+                text: 'Pick command...',
                 type: 'select',
                 options: options
               },
@@ -55,7 +55,7 @@ module Genova
             actions: [
               {
                 name: 'repository',
-                text: 'Pick a repository...',
+                text: 'Pick repository...',
                 type: 'select',
                 options: Genova::Slack::Util.repository_options
               },
@@ -94,14 +94,13 @@ module Genova
           channel: @channel,
           response_type: 'in_channel',
           attachments: [
-            text: 'Target service.',
+            text: 'Target cluster and service.',
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
             callback_id: callback_id,
             actions: [
               {
                 name: 'service',
-                text: 'Pick a service...',
                 type: 'select',
                 options: options,
                 selected_options: selected_options
@@ -118,10 +117,11 @@ module Genova
         )
       end
 
-      def post_confirm_deploy(account, repository, branch, service, confirm = false)
+      def post_confirm_deploy(account, repository, branch, cluster, service, confirm = false)
         if confirm
           message = "Repository: #{account}/#{repository}\n" \
                     "Branch: #{branch}\n" \
+                    "Cluster: #{cluster}\n" \
                     "Service: #{service}"
 
           post_simple_message(message)
@@ -131,10 +131,11 @@ module Genova
           account: account,
           repository: repository,
           branch: branch,
+          cluster: cluster,
           service: service
         }
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', query)
-        compare_ids = compare_commit_ids(account, repository, branch, service)
+        compare_ids = compare_commit_ids(account, repository, branch, cluster, service)
 
         compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                          'Commit ID is unchanged.'
@@ -216,7 +217,7 @@ module Genova
         )
       end
 
-      def post_detect_slack_deploy(account, repository, branch, service)
+      def post_detect_slack_deploy(account, repository, branch, cluster, service)
         url = "https://github.com/#{account}/#{repository}/tree/#{branch}"
         @client.chat_postMessage(
           channel: @channel,
@@ -231,6 +232,10 @@ module Genova
             }, {
               title: 'Branch',
               value: branch,
+              short: true
+            }, {
+              title: 'Cluster',
+              value: cluster,
               short: true
             }, {
               title: 'Service',
@@ -336,22 +341,22 @@ module Genova
         string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")
       end
 
-      def compare_commit_ids(account, repository, branch, service)
-        deploy_config = Genova::Deploy::Config::DeployConfig.new(account, repository, branch)
-
-        current_commit_id = Genova::Git::LocalRepositoryManager.new(account, repository, branch).origin_last_commit_id
+      def compare_commit_ids(account, repository, branch, cluster, service)
+        repository_manager = Genova::Git::LocalRepositoryManager.new(account, repository, branch)
+        current_commit_id = repository_manager.origin_last_commit_id
+        deploy_config = repository_manager.open_deploy_config
         deployed_commit_id = nil
 
         service = @ecs.describe_services(
-          cluster: deploy_config.cluster_name(service),
-          services: [deploy_config.service_name(service)]
+          cluster: cluster,
+          services: [service]
         ).services[0]
 
         if service.present? && service[:status] == 'ACTIVE'
           deployed_commit_id = image_id(service[:task_definition])
 
-        elsif deploy_config.params[:scheduled_tasks].present?
-          rule = deploy_config.params[:scheduled_tasks][0][:rule]
+        elsif deploy_config[:scheduled_tasks].present?
+          rule = deploy_config[:scheduled_tasks][0][:rule]
           cloud_watch_events = Aws::CloudWatchEvents::Client.new(region: Settings.aws.region)
 
           begin
