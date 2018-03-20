@@ -223,8 +223,8 @@ module Genova
         )
       end
 
-      def post_detect_slack_deploy(account, repository, branch, cluster, service)
-        url = "https://github.com/#{account}/#{repository}/tree/#{branch}"
+      def post_detect_slack_deploy(params)
+        url = "https://github.com/#{params[:account]}/#{params[:repository]}/tree/#{params[:branch]}"
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
@@ -233,19 +233,19 @@ module Genova
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Repository',
-              value: "<#{url}|#{account}/#{repository}>",
+              value: "<#{url}|#{params[:account]}/#{params[:repository]}>",
               short: true
             }, {
               title: 'Branch',
-              value: branch,
+              value: params[:branch],
               short: true
             }, {
               title: 'Cluster',
-              value: cluster,
+              value: params[:cluster],
               short: true
             }, {
               title: 'Service',
-              value: service,
+              value: params[:service],
               short: true
             }]
           }]

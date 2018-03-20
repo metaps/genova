@@ -22,7 +22,7 @@ module V1
 
         it 'should be return success' do
           allow(Github::DeployWorker).to receive(:perform_async)
-          allow_any_instance_of(Helper::GithubHelper).to receive(:detect_auto_deploy_service).and_return('development')
+          allow_any_instance_of(Helper::GithubHelper).to receive(:detect_auto_deploy_service).and_return(cluster: 'default', service: 'development')
 
           post '/api/v1/github/push', params: payload_body, headers: headers
           expect(response).to have_http_status :created
