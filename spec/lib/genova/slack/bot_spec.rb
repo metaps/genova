@@ -20,10 +20,14 @@ module Genova
       describe 'post_choose_deploy_service' do
         it 'should be call bot' do
           repository_manager_mock = double(Genova::Git::LocalRepositoryManager)
-          allow(repository_manager_mock).to receive(:open_deploy_config).and_return({})
+          allow(repository_manager_mock).to receive(:open_deploy_config).and_return({ clusters: [] })
           allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
 
-          bot.post_choose_deploy_service('account', 'repository', 'branch')
+          bot.post_choose_deploy_service(
+            account: 'account',
+            repository: 'repository',
+            branch: 'branch'
+          )
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
@@ -32,7 +36,13 @@ module Genova
         it 'should be call bot' do
           allow(bot).to receive(:compare_commit_ids).and_return(deployed_commit_id: '', current_commit_id: '')
 
-          bot.post_confirm_deploy('account', 'repository', 'branch', 'service')
+          bot.post_confirm_deploy(
+            account: 'account',
+            repository: 'repository',
+            branch: 'branch',
+            cluster: 'cluster',
+            service: 'service'
+          )
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
@@ -46,21 +56,36 @@ module Genova
 
       describe 'post_detect_auto_deploy' do
         it 'should be call bot' do
-          bot.post_detect_auto_deploy('account', 'registry', 'branch')
+          bot.post_detect_auto_deploy(
+            account: 'account',
+            repository: 'registry',
+            branch: 'branch'
+          )
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
 
       describe 'post_detect_slack_deploy' do
         it 'should be call bot' do
-          bot.post_detect_slack_deploy('account', 'repository', 'branch', 'service')
+          bot.post_detect_slack_deploy(
+            account: 'account',
+            repository: 'repository',
+            branch: 'branch',
+            cluster: 'default',
+            service: 'service'
+          )
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
 
       describe 'post_started_deploy' do
         it 'should be call bot' do
-          bot.post_started_deploy('region', 'cluster', 'service', 'jid', 'log_path')
+          bot.post_started_deploy(
+            cluster: 'cluster',
+            service: 'service',
+            jid: 'jid',
+            deploy_job_id: 'deploy_job_id'
+          )
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end

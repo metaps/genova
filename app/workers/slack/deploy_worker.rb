@@ -29,11 +29,11 @@ module Slack
         )
 
         bot.post_detect_slack_deploy(
-          deploy_job[:account],
-          deploy_job[:repository],
-          deploy_job[:branch],
-          deploy_job[:cluster],
-          deploy_job[:service]
+          account: deploy_job[:account],
+          repository: deploy_job[:repository],
+          branch: deploy_job[:branch],
+          cluster: deploy_job[:cluster],
+          service: deploy_job[:service]
         )
 
         bot.post_started_deploy(
