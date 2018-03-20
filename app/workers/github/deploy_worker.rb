@@ -20,13 +20,30 @@ module Github
       bot = Genova::Slack::Bot.new
 
       begin
-        bot.post_detect_auto_deploy(deploy_job[:account], deploy_job[:repository], deploy_job[:branch])
-        bot.post_started_deploy(deploy_client.options[:region], deploy_job[:cluster], deploy_job[:service], jid, id)
+        bot.post_detect_auto_deploy(
+          account: deploy_job[:account],
+          repository: deploy_job[:repository],
+          branch: deploy_job[:branch]
+        )
+        bot.post_started_deploy(
+          region: deploy_client.options[:region],
+          cluster: deploy_job[:cluster],
+          service: deploy_job[:service],
+          jid: jid,
+          deploy_job_id: id
+        )
         task_definition = deploy_client.exec(deploy_job[:service], Settings.github.deploy_lock_timeout)
 
-        bot.post_finished_deploy(deploy_job[:cluster], deploy_job[:service], task_definition)
+        bot.post_finished_deploy(
+          cluster: deploy_job[:cluster],
+          service: deploy_job[:service],
+          task_definition: task_definition
+        )
       rescue => e
-        bot.post_error(e.to_s, nil, id)
+        bot.post_error(
+          message: e.to_s,
+          deploy_job_id: id
+        )
         deploy_client.cancel_deploy
         raise e
       end

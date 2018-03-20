@@ -66,7 +66,7 @@ module Genova
                 job = queue.find(id)
 
                 if job.status == Genova::Sidekiq::Queue.status.find_value(:in_progress)
-                  Genova::Slack::Bot.new.post_simple_message('Retrieving repository. It takes time because the repository is large. Please wait for a while...')
+                  Genova::Slack::Bot.new.post_simple_message(message: 'Retrieving repository. It takes time because the repository is large. Please wait for a while...')
                 end
 
                 break
@@ -87,7 +87,11 @@ module Genova
             result = 'Branch: ' + selected_value
             query = @id_builder.query
 
-            @bot.post_choose_deploy_service(query[:account], query[:repository], selected_value)
+            @bot.post_choose_deploy_service(
+              account: query[:account],
+              repository: query[:repository],
+              branch: selected_value
+            )
           else
             result = 'Cancelled.'
           end
@@ -106,7 +110,13 @@ module Genova
           query = @id_builder.query
 
           split = selected_value.split(':')
-          @bot.post_confirm_deploy(query[:account], query[:repository], query[:branch], split[0], split[1])
+          @bot.post_confirm_deploy(
+            account: query[:account],
+            repository: query[:repository],
+            branch: query[:branch],
+            cluster: split[0],
+            service: split[1]
+          )
 
           result
         end
@@ -122,7 +132,13 @@ module Genova
                      "Cluster: #{value[:cluster]}\n" \
                      "Service: #{value[:service]}"
 
-            @bot.post_confirm_deploy(value[:account], value[:repository], value[:branch], value[:cluster], value[:service])
+            @bot.post_confirm_deploy(
+              account: value[:account],
+              repository: value[:repository],
+              branch: value[:branch],
+              cluster: value[:cluster],
+              service: value[:service]
+            )
 
           else
             result = 'Cancelled.'

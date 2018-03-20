@@ -67,7 +67,7 @@ module Genova
             services.delete(:default)
 
             services.each do |service|
-              value = "#{cluster}:#{service.to_s}"
+              value = "#{cluster}:#{service}"
               options.push(text: value, value: value)
             end
           end

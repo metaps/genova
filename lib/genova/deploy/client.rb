@@ -10,7 +10,7 @@ module Genova
       enumerize :status, in: %i[in_progress success failure]
       enumerize :mode, in: %i[manual auto slack]
 
-      attr_reader :options, :config
+      attr_reader :options
 
       # @param [Symbol] mode
       # @param [String] repository
@@ -63,7 +63,7 @@ module Genova
           @repository_manager.update
           config = @repository_manager.open_deploy_config
           cluster = @options[:cluster] || config[:default_cluster]
-          cluster_config = config[:clusters].find{ |k, _v| k[:name] == cluster }
+          cluster_config = config[:clusters].find { |k, _v| k[:name] == cluster }
 
           commit_id = @repository_manager.origin_last_commit_id
 
