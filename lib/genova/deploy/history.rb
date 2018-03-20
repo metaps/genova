@@ -5,11 +5,18 @@ module Genova
         @id = build_key(slack_user_id)
       end
 
-      def add(account, repository, branch, cluster, service)
-        hash_id = Digest::SHA1.hexdigest("#{account}#{repository}#{branch}#{cluster}#{service}")
-        value = build_value(hash_id, account, repository, branch, cluster, service)
+      def add(params)
+        id = Digest::SHA1.hexdigest("#{params[:account]}#{params[:repository]}#{params[:branch]}#{params[:cluster]}#{params[:service]}")
+        value = Oj.dump(
+          id: id,
+          account: params[:account],
+          repository: params[:repository],
+          branch: params[:branch],
+          cluster: params[:cluster],
+          service: params[:service]
+        )
 
-        $redis.lrem(@id, 1, value) if find(hash_id).present?
+        $redis.lrem(@id, 1, value) if find(id).present?
         $redis.lpush(@id, value)
         $redis.rpop(@id) if $redis.llen(@id) > Settings.slack.command.max_history
       end
@@ -43,17 +50,6 @@ module Genova
 
       def build_key(slack_user_id)
         "history_#{slack_user_id}"
-      end
-
-      def build_value(hash_id, account, repository, branch, cluster, service)
-        Oj.dump(
-          id: hash_id,
-          account: account,
-          repository: repository,
-          branch: branch,
-          cluster: cluster,
-          service: service
-        )
       end
     end
   end

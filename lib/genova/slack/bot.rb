@@ -7,15 +7,15 @@ module Genova
         @ecs = Aws::ECS::Client.new(region: Settings.aws.region)
       end
 
-      def post_simple_message(message)
+      def post_simple_message(params)
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
-          text: escape_emoji(message)
+          text: escape_emoji(params[:message])
         )
       end
 
-      def post_choose_history(options)
+      def post_choose_history(params)
         @client.chat_postMessage(
           channel: @channel,
           response_type: 'in_channel',
@@ -29,7 +29,7 @@ module Genova
                 name: 'history',
                 text: 'Pick command...',
                 type: 'select',
-                options: options
+                options: params[:options]
               },
               {
                 name: 'submit',
@@ -71,17 +71,17 @@ module Genova
         )
       end
 
-      def post_choose_deploy_service(account, repository, branch)
+      def post_choose_deploy_service(params)
         query = {
-          account: account,
-          repository: repository,
-          branch: branch
+          account: params[:account],
+          repository: params[:repository],
+          branch: params[:branch]
         }
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_service', query)
-        options = Genova::Slack::Util.service_options(account, repository, branch)
+        options = Genova::Slack::Util.service_options(params[:account], params[:repository], params[:branch])
         selected_options = []
 
-        if options.size > 0
+        if options.size.positive?
           selected_options = [
             {
               text: options[0][:text],
@@ -117,32 +117,32 @@ module Genova
         )
       end
 
-      def post_confirm_deploy(account, repository, branch, cluster, service, confirm = false)
-        if confirm
-          message = "Repository: #{account}/#{repository}\n" \
-                    "Branch: #{branch}\n" \
-                    "Cluster: #{cluster}\n" \
-                    "Service: #{service}"
+      def post_confirm_deploy(params)
+        if params[:confirm]
+          message = "Repository: #{params[:account]}/#{params[:repository]}\n" \
+                    "Branch: #{params[:branch]}\n" \
+                    "Cluster: #{params[:cluster]}\n" \
+                    "Service: #{params[:service]}"
 
-          post_simple_message(message)
+          post_simple_message(message: message)
         end
 
         query = {
-          account: account,
-          repository: repository,
-          branch: branch,
-          cluster: cluster,
-          service: service
+          account: params[:account],
+          repository: params[:repository],
+          branch: params[:branch],
+          cluster: params[:cluster],
+          service: params[:service]
         }
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', query)
-        compare_ids = compare_commit_ids(account, repository, branch, cluster, service)
+        compare_ids = compare_commit_ids(params[:account], params[:repository], params[:branch], params[:cluster], params[:service])
 
         compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                          'Commit ID is unchanged.'
                        elsif compare_ids[:deployed_commit_id].nil?
                          'Deployed task does not exist.'
                        else
-                         "<https://github.com/#{account}/#{repository}/" \
+                         "<https://github.com/#{params[:account]}/#{params[:repository]}/" \
                          "compare/#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}|" \
                          "#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}>"
                        end
@@ -196,8 +196,8 @@ module Genova
         )
       end
 
-      def post_detect_auto_deploy(account, repository, branch)
-        url = "https://github.com/#{account}/#{repository}/tree/#{branch}"
+      def post_detect_auto_deploy(params)
+        url = "https://github.com/#{params[:account]}/#{params[:repository]}/tree/#{params[:branch]}"
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
@@ -206,11 +206,11 @@ module Genova
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Repository',
-              value: "<#{url}|#{account}/#{repository}>",
+              value: "<#{url}|#{params[:account]}/#{params[:repository]}>",
               short: true
             }, {
               title: 'Branch',
-              value: branch,
+              value: params[:branch],
               short: true
             }]
           }]
@@ -246,9 +246,9 @@ module Genova
         )
       end
 
-      def post_started_deploy(region, cluster, service, jid, deploy_job_id)
-        url = "https://#{region}.console.aws.amazon.com" \
-              "/ecs/home?region=#{region}#/clusters/#{cluster}/services/#{service}/tasks"
+      def post_started_deploy(params)
+        url = "https://#{params[:region]}.console.aws.amazon.com" \
+              "/ecs/home?region=#{params[:region]}#/clusters/#{params[:cluster]}/services/#{params[:service]}/tasks"
 
         @client.chat_postMessage(
           channel: @channel,
@@ -262,34 +262,34 @@ module Genova
               short: true
             }, {
               title: 'Log',
-              value: build_log_url(deploy_job_id),
+              value: build_log_url(params[:deploy_job_id]),
               short: true
             }, {
               title: 'Service',
-              value: service,
+              value: params[:service],
               short: true
             }, {
               title: 'Sidekiq JID',
-              value: jid,
+              value: params[:jid],
               short: true
             }]
           }]
         )
       end
 
-      def post_finished_deploy(cluster, service, task_definition, slack_user_id = nil)
-        task_definition_arn = escape_emoji(task_definition.task_definition_arn)
+      def post_finished_deploy(params)
+        task_definition_arn = escape_emoji(params[:task_definition].task_definition_arn)
 
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
-          text: build_mension(slack_user_id),
+          text: build_mension(params[:slack_user_id]),
           attachments: [{
             text: 'Deployment is complete.',
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'DNS',
-              value: elb_dns(cluster, service),
+              value: elb_dns(params[:cluster], params[:service]),
               short: true
             }, {
               title: 'New task definition ARNs',
@@ -300,17 +300,17 @@ module Genova
         )
       end
 
-      def post_error(message, slack_user_id = nil, deploy_job_id = nil)
+      def post_error(params)
         fields = [{
           title: 'Message',
-          value: escape_emoji(message),
+          value: escape_emoji(params[:message]),
           short: true
         }]
 
-        if deploy_job_id.present?
+        if params[:deploy_job_id].present?
           fields << {
             title: 'Log',
-            value: build_log_url(deploy_job_id),
+            value: build_log_url(params[:deploy_job_id]),
             short: true
           }
         end

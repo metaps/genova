@@ -13,13 +13,22 @@ module Genova
 
               if results[:mode] == :command
                 # todo
-                bot.post_confirm_deploy(results[:account], results[:repository], results[:branch], results[:service], true)
+                bot.post_confirm_deploy(
+                  account: results[:account],
+                  repository: results[:repository],
+                  branch: results[:branch],
+                  service: results[:service],
+                  confirm: true
+                )
               else
                 bot.post_choose_repository
               end
             rescue => e
               logger.error(e)
-              bot.post_error(e.message, data.user)
+              bot.post_error(
+                message: e.message,
+                slack_user_id: data.user
+              )
             end
           end
 
