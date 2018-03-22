@@ -30,7 +30,7 @@ module Genova
           when 'post_deploy' then
             result = execute_deploy
           else
-            raise 'No route.'
+            raise RoutingError, 'No route.'
           end
 
           result
@@ -185,6 +185,8 @@ module Genova
           result
         end
       end
+
+      class RoutingError < Error; end
     end
   end
 end

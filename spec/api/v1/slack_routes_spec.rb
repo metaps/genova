@@ -25,8 +25,12 @@ module V1
         end
 
         context 'when callback_id is invalid' do
+          let(:bot_mock) { double('Genova::Slack::Bot') }
           it 'should be return error' do
-            allow(Genova::Slack::RequestHandler).to receive(:handle_request).and_raise('No route.')
+            allow(bot_mock).to receive(:post_error)
+
+            allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+            allow(Genova::Slack::RequestHandler).to receive(:handle_request).and_raise(Genova::Slack::RequestHandler::RoutingError.new('No route.'))
             post '/api/v1/slack/post', params: payload_body
 
             expect(response).to have_http_status :internal_server_error

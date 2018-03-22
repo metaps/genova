@@ -18,12 +18,12 @@ module Genova
 
       def find(id)
         values = $redis.hgetall(id)
-        raise QueueNotFoundError, "#{id} is not found." if values.nil?
+        raise QueueError, "#{id} is not found." if values.nil?
 
         Genova::Sidekiq::Job.new(id, values.symbolize_keys)
       end
     end
 
-    class QueueNotFoundError < Error; end
+    class QueueError < Error; end
   end
 end

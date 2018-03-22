@@ -6,23 +6,24 @@ module Genova
           ```
           I am ECS deploy Bot.
 
-          General
-          -------
-          deploy          - Run deploy in interactive mode.
+          Usage
+          -----
+          deploy          - Run service deployment in interactive mode.
           deploy {repository} {branch} {cluster}:{service}
-                          - Run deploy in command mode.
-                            repository: Target repository (e.g. xxx-www).
-                            branch: Target branch (e.g. feature/xxx).
-                            cluster: ECS cluster name.
-                            service: ECS service name.
+                          - Run service deployment in command mode.
+                            repository: Source repository.
+                            branch: Source branch.
+                            cluster: Cluster name of deployment destination.
+                            service: Service name of deployment destination.
           help            - Get this helpful message.
-          history         - Show recently executed deploy command.
-          redeploy        - Re-execute last deployment.
+          history         - Show execution history of deployment.
+          redeploy        - Run previous deployment again.
           ```
         DOC
 
-        def self.call(client, data, _match)
-          logger.info "Execute help command: (UNAME: #{client.owner}, user=#{data.user})"
+        def self.call(client, data, match)
+          logger.info("Execute help command: (UNAME: #{client.owner}, user=#{data.user})")
+          logger.info("Input command: #{match['command']} #{match['expression']}")
 
           client.say(channel: data.channel, text: HELP)
         end

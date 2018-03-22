@@ -266,8 +266,8 @@ module Genova
         scheduled_task_definition = deploy_scheduled_task(
           deploy_client,
           tag_revision,
-          service,
-          cluster_config
+          cluster_config,
+          service
         )
         service_task_definition = deploy_service(
           deploy_client,
@@ -291,17 +291,17 @@ module Genova
 
       # @param [EcsDeployer::Client] deploy_client
       # @param [String] tag_revision
-      # @param [String] service
+      # @param [String] depend_service
       # @param [Hash] cluster_config
       # @return [Aws::ECS::Types::TaskDefinition]
-      def deploy_scheduled_task(deploy_client, tag_revision, service, cluster_config)
+      def deploy_scheduled_task(deploy_client, tag_revision, cluster_config, depend_service)
         @logger.info('Started scheduled task deployment.')
 
         task_definition = nil
 
         if cluster_config[:scheduled_tasks].present?
           cluster_config[:scheduled_tasks].each do |scheduled_task|
-            update_scheduled_task(deploy_client, tag_revision, service, scheduled_task)
+            update_scheduled_task(deploy_client, tag_revision, scheduled_task, depend_service)
           end
         else
           @logger.info('Scheduled task definition target is not registered yet.')
@@ -312,20 +312,20 @@ module Genova
 
       # @param [EcsDeployer::Client] deploy_client
       # @param [String] tag_revision
-      # @param [String] service
       # @param [Hash] scheduled_task
-      def update_scheduled_task(deploy_client, tag_revision, service, scheduled_task)
+      # @param [String] depend_service
+      def update_scheduled_task(deploy_client, tag_revision, scheduled_task, depend_service)
         task_client = deploy_client.task
         scheduled_task_client = deploy_client.scheduled_task
         targets = []
 
         scheduled_task[:targets].each do |target|
-          next unless target[:service] == service
+          next unless target[:depend_service] == depend_service
 
           task_definition_path = File.expand_path(target[:path], @config_base_path)
           task_definition = create_new_task(task_client, task_definition_path, tag_revision)
 
-          builder = scheduled_task_client.target_builder(target[:service])
+          builder = scheduled_task_client.target_builder(target[:name])
           builder.role(target[:role]) if target[:role].present?
           builder.task_definition_arn = task_definition.task_definition_arn
           builder.task_role(target[:task_role]) if target[:task_role].present?
@@ -333,15 +333,15 @@ module Genova
 
           if target[:overrides].present?
             target[:overrides].each do |override|
-              override_service = override[:service] || []
-              builder.override_container(override[:name], override[:command], override_service)
+              override_environment = override[:environment] || []
+              builder.override_container(override[:name], override[:command], override_environment)
             end
           end
 
           targets << builder.to_hash
         end
 
-        return @logger.info("'#{service}' target is not registered yet.") if targets.count.zero?
+        return @logger.info("'#{depend_service}' target is not registered yet.") if targets.count.zero?
 
         @logger.info("Update '#{scheduled_task[:rule]}' rule.")
 
@@ -430,12 +430,12 @@ module Genova
           end
         end
       end
-    end
 
-    class SshInvalidPrivateKeyError < Error; end
-    class DeployLockError < Error; end
-    class DeployConfigError < Error; end
-    class DockerBuildError < Error; end
-    class DockerImageError < Error; end
+      class SshInvalidPrivateKeyError < Error; end
+      class DeployLockError < Error; end
+      class DeployConfigError < Error; end
+      class DockerBuildError < Error; end
+      class DockerImageError < Error; end
+    end
   end
 end

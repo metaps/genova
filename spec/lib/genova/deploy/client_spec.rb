@@ -10,7 +10,7 @@ module Genova
         allow(repository_manager_mock).to receive(:path).and_return('')
         allow(repository_manager_mock).to receive(:update)
         allow(repository_manager_mock).to receive(:origin_last_commit_id)
-        allow(repository_manager_mock).to receive(:open_deploy_config).and_return({ clusters: [] })
+        allow(repository_manager_mock).to receive(:open_deploy_config).and_return(clusters: [])
 
         allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
       end
