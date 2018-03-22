@@ -3,8 +3,9 @@ module Genova
     module Command
       class Redeploy < SlackRubyBot::Commands::Base
         class << self
-          def call(client, data, _match)
-            logger.info "Execute redeploy command: (UNAME: #{client.owner}, user=#{data.user})"
+          def call(client, data, match)
+            logger.info("Execute redeploy command: (UNAME: #{client.owner}, user=#{data.user})")
+            logger.info("Input command: #{match['command']} #{match['expression']}")
 
             history = Genova::Deploy::History.new(data.user).last
             bot = Genova::Slack::Bot.new(client.web_client)
@@ -15,14 +16,18 @@ module Genova
                 repository: history[:repository],
                 branch: history[:branch],
                 cluster: history[:cluster],
-                service: history[:service]
+                service: history[:service],
+                confirm: true
               )
             else
-              bot.post_error(message: 'History does not exist.', slack_user_id: data.user)
+              e = RedeployError.new('History does not exist.')
+              bot.post_error(error: e, slack_user_id: data.user)
             end
           end
         end
       end
+
+      class RedeployError < Error; end
     end
   end
 end

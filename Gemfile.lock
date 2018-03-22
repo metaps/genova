@@ -982,6 +982,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activesupport
   aws-sdk (~> 3.0.0)
   better_errors
   binding_of_caller

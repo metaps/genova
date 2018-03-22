@@ -4,7 +4,8 @@ module Genova
       class Deploy < SlackRubyBot::Commands::Base
         class << self
           def call(client, data, match)
-            logger.info "Execute deploy command: (UNAME: #{client.owner}, user=#{data.user})"
+            logger.info("Execute deploy command: (UNAME: #{client.owner}, user=#{data.user})")
+            logger.info("Input command: #{match['command']} #{match['expression']}")
 
             bot = Genova::Slack::Bot.new(client.web_client)
 
@@ -25,8 +26,9 @@ module Genova
               end
             rescue => e
               logger.error(e)
+
               bot.post_error(
-                message: e.message,
+                error: e,
                 slack_user_id: data.user
               )
             end
@@ -35,21 +37,15 @@ module Genova
           private
 
           def parse_args(expression)
+            return { mode: :interactive } if expression.blank?
+
             results = {
-              mode: :interactive,
-              account: nil,
-              repository: nil,
-              branch: nil,
-              cluster: nil,
-              service: nil
+              mode: :command
             }
 
-            return results if expression.blank?
-
             args = expression.split(' ')
-            raise 'Parameter is invalid' unless args.size == 3
+            raise DeployError, 'Parameter is incorrect.' unless args.size == 3
 
-            results[:mode] = :command
             split = args[0].split('/')
 
             if split.size == 2
@@ -63,6 +59,9 @@ module Genova
             results[:branch] = args[1]
 
             split = args[2].split(':')
+
+            raise DeployError, 'Wrong specification of third argument. Please check `help`.' unless split.size == 2
+
             results[:cluster] = split[0]
             results[:service] = split[1]
 
@@ -70,6 +69,8 @@ module Genova
           end
         end
       end
+
+      class DeployError < Error; end
     end
   end
 end

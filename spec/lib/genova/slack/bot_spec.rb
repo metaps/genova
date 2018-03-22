@@ -20,7 +20,7 @@ module Genova
       describe 'post_choose_deploy_service' do
         it 'should be call bot' do
           repository_manager_mock = double(Genova::Git::LocalRepositoryManager)
-          allow(repository_manager_mock).to receive(:open_deploy_config).and_return({ clusters: [] })
+          allow(repository_manager_mock).to receive(:open_deploy_config).and_return(clusters: [])
           allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
 
           bot.post_choose_deploy_service(

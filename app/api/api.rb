@@ -13,6 +13,10 @@ module API
 
     rescue_from :all do |e|
       logger.fatal(e.to_s + ':' + e.backtrace.to_s)
+
+      bot = Genova::Slack::Bot.new
+      bot.post_error(error: e)
+
       error! e, 500
     end
 

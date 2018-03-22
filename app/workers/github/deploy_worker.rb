@@ -40,7 +40,7 @@ module Github
         )
       rescue => e
         bot.post_error(
-          message: e.to_s,
+          error: e,
           deploy_job_id: id
         )
         deploy_client.cancel_deploy

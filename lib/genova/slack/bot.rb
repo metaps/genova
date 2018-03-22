@@ -127,21 +127,15 @@ module Genova
           post_simple_message(message: message)
         end
 
-        query = {
+        data = {
           account: params[:account],
           repository: params[:repository],
           branch: params[:branch],
           cluster: params[:cluster],
           service: params[:service]
         }
-        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', query)
-        compare_ids = compare_commit_ids(
-          account: params[:account],
-          repository: params[:repository],
-          branch: params[:branch],
-          cluster: params[:cluster],
-          service: params[:service]
-        )
+        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', data)
+        compare_ids = compare_commit_ids(data)
 
         compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                          'Commit ID is unchanged.'
@@ -305,23 +299,31 @@ module Genova
 
       def post_error(params)
         fields = [{
+          title: 'Name',
+          value: escape_emoji(params[:error].class.to_s)
+        }, {
           title: 'Message',
-          value: escape_emoji(params[:message]),
-          short: true
+          value: escape_emoji(params[:error].message)
         }]
+
+        if params[:error].backtrace.present?
+          fields << {
+            title: 'Backtrace',
+            value: "```\n#{params[:error].backtrace.to_s.truncate(512)}```\n"
+          }
+        end
 
         if params[:deploy_job_id].present?
           fields << {
-            title: 'Log',
-            value: build_log_url(params[:deploy_job_id]),
-            short: true
+            title: 'Deploy Job ID',
+            value: build_log_url(params[:deploy_job_id])
           }
         end
 
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
-          text: build_mension(slack_user_id),
+          text: build_mension(params[:slack_user_id]),
           attachments: [{
             text: 'Exception occurred.',
             color: Settings.slack.message.color.error,
@@ -347,19 +349,26 @@ module Genova
       def compare_commit_ids(params)
         repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository], params[:branch])
         current_commit_id = repository_manager.origin_last_commit_id
-        deploy_config = repository_manager.open_deploy_config
         deployed_commit_id = nil
 
-        service = @ecs.describe_services(
-          cluster: params[:cluster],
-          services: [params[:service]]
-        ).services[0]
+        deploy_config = repository_manager.open_deploy_config
+        cluster_config = deploy_config[:clusters].find { |k, _v| k[:name] == params[:cluster] }
 
-        if service.present? && service[:status] == 'ACTIVE'
+        service_config = cluster_config[:services][params[:service].to_sym]
+        scheduled_tasks_config = cluster_config[:scheduled_tasks]
+
+        if service_config.present?
+          service = @ecs.describe_services(
+            cluster: params[:cluster],
+            services: [params[:service]]
+          ).services[0]
+
+          raise ServiceError, 'Service not found.' unless service.present? && service[:status] == 'ACTIVE'
+
           deployed_commit_id = image_id(service[:task_definition])
 
-        elsif deploy_config[:scheduled_tasks].present?
-          rule = deploy_config[:scheduled_tasks][0][:rule]
+        elsif scheduled_tasks_config.present?
+          rule = scheduled_tasks_config[0][:rule]
           cloud_watch_events = Aws::CloudWatchEvents::Client.new(region: Settings.aws.region)
 
           begin
@@ -370,7 +379,7 @@ module Genova
           end
 
         else
-          raise TaskDefinitionNotFoundError, 'Task defintion does not exist.'
+          raise DeployTargetUndefinedError
         end
 
         {
@@ -414,8 +423,9 @@ module Genova
 
         dns_name
       end
-    end
 
-    class TaskDefinitionNotFoundError < Error; end
+      class ServiceError < Error; end
+      class DeployTargetUndefinedError < Error; end
+    end
   end
 end

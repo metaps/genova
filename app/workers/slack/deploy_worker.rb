@@ -51,7 +51,7 @@ module Slack
         )
       rescue => e
         bot.post_error(
-          message: e.to_s,
+          error: e,
           slack_user_id: deploy_job[:slack_user_id],
           deploy_job_id: id
         )
