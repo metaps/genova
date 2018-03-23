@@ -31,17 +31,17 @@ class Genova < Thor
     deploy_client.exec(options[:service])
   end
 
-  desc 'slack-greeting-test', 'Slack bot says Hello'
-  def slack_greeting_test
-    ::Genova::Slack::Greeting.hello
+  desc 'debug-slack-greeting', 'Slack bot says Hello'
+  def debug_slack_greeting
+    ::Genova::Slack::Bot.new.post_simple_message(message: 'Hello')
     @logger.info('Sent message.')
   end
 
-  desc 'github-pushed-test', 'Emulate GitHub push'
+  desc 'debug-github-push', 'Emulate GitHub push'
   option :account, required: false, desc: 'GitHub account'
   option :branch, required: false, default: 'master', aliases: :b, desc: 'Specify branch name.'
   option :repository, required: true, aliases: :r, desc: 'GitHub repository.'
-  def github_pushed_test
+  def debug_github_push
     account = options[:account] || Settings.github.account
     post_data = {
       repository: {
