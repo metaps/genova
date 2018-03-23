@@ -8,16 +8,22 @@ module Genova
 
           Usage
           -----
-          deploy          - Run service deployment in interactive mode.
+          deploy
+            Run service & scheduled task deployment in interactive mode.
           deploy {repository} {branch} {cluster}:{service}
-                          - Run service deployment in command mode.
-                            repository: Source repository.
-                            branch: Source branch.
-                            cluster: Cluster name of deployment destination.
-                            service: Service name of deployment destination.
-          help            - Get this helpful message.
-          history         - Show execution history of deployment.
-          redeploy        - Run previous deployment again.
+            Run service & scheduled task deployment in command mode.
+              repository: Source repository.
+              branch: Source branch.
+              cluster: Cluster name of deployment destination.
+              service: Service name of deployment destination.
+          deploy-scheduled-task
+            Run scheduled task deployment in command mode. (Not implemented yet!)
+          help
+            Get this helpful message.
+          history
+            Show execution history of deployment.
+          redeploy
+            Run previous deployment again.
           ```
         DOC
 

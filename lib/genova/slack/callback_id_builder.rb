@@ -13,10 +13,12 @@ module Genova
         callback_id.query = query.to_param
 
         result = callback_id.to_s
-        raise 'Failed to generate Callback ID. Character string exceeds 200 characters.' if result.size > 200
+        raise CallbackIdBuildError.new('Failed to generate Callback ID. Character string exceeds 200 characters.') if result.size > 200
 
         result
       end
     end
+
+    class CallbackIdBuildError < Error; end
   end
 end

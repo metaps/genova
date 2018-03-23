@@ -63,7 +63,7 @@ module Genova
           deploy_config = Genova::Git::LocalRepositoryManager.new(account, repository, branch).open_deploy_config
           deploy_config[:clusters].each do |cluster_params|
             cluster = cluster_params[:name]
-            raise ServiceError, 'Service is not defined.' if cluster_params[:services].nil?
+            raise Genova::Config::DeployConfigError, 'Service is not defined.' if cluster_params[:services].nil?
 
             services = cluster_params[:services].keys
             services.delete(:default)
@@ -77,8 +77,6 @@ module Genova
           options
         end
       end
-
-      class ServiceError < Error; end
     end
   end
 end
