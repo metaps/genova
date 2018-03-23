@@ -2,7 +2,7 @@ module Genova
   module Config
     class DeployConfig < BaseConfig
       def cluster(cluster)
-        params = @params[:clusters].find { |k, _v| k[:name] == cluster }
+        params = (@params[:clusters] || []).find { |k, _v| k[:name] == cluster }
         raise DeployConfigError, 'Cluster is undefined.' if params.nil?
 
         params
