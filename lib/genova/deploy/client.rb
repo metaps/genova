@@ -135,7 +135,7 @@ module Genova
 
         return if File.exist?(options[:ssh_secret_key_path])
 
-        raise SshInvalidPrivateKeyError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
+        raise PrivateKeyNotFoundError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
       end
 
       def watch_deploy
@@ -227,7 +227,7 @@ module Genova
         pushed_size = 0
         repository_names.each do |repository_name|
           if ecr_repositories.find { |item| item[:repository_name] == repository_name }.nil?
-            raise DockerImageError, "Repository '#{repository_name}' does not exist in ECR."
+            raise ImagePushError, "Repository '#{repository_name}' does not exist in ECR."
           end
 
           repo_tag_latest = "#{@ecr_registry}/#{repository_name}:#{IMAGE_TAG_LATEST}"
@@ -246,7 +246,7 @@ module Genova
           pushed_size += 1
         end
 
-        raise DockerImageError, 'Push image is not found.' if pushed_size.zero?
+        raise ImagePushError, 'Push image is not found.' if pushed_size.zero?
       end
 
       # @param [String] tag_revision
@@ -431,10 +431,10 @@ module Genova
         end
       end
 
-      class SshInvalidPrivateKeyError < Error; end
+      class PrivateKeyNotFoundError < Error; end
       class DeployLockError < Error; end
       class DockerBuildError < Error; end
-      class DockerImageError < Error; end
+      class ImagePushError < Error; end
     end
   end
 end
