@@ -351,36 +351,13 @@ module Genova
         current_commit_id = repository_manager.origin_last_commit_id
         deployed_commit_id = nil
 
-        deploy_config = repository_manager.open_deploy_config
-        cluster_config = deploy_config[:clusters].find { |k, _v| k[:name] == params[:cluster] }
+        service = @ecs.describe_services(
+          cluster: params[:cluster],
+          services: [params[:service]]
+        ).services[0]
 
-        service_config = cluster_config[:services][params[:service].to_sym]
-        scheduled_tasks_config = cluster_config[:scheduled_tasks]
-
-        if service_config.present?
-          service = @ecs.describe_services(
-            cluster: params[:cluster],
-            services: [params[:service]]
-          ).services[0]
-
-          raise ServiceError, 'Service not found.' unless service.present? && service[:status] == 'ACTIVE'
-
-          deployed_commit_id = image_id(service[:task_definition])
-
-        elsif scheduled_tasks_config.present?
-          rule = scheduled_tasks_config[0][:rule]
-          cloud_watch_events = Aws::CloudWatchEvents::Client.new(region: Settings.aws.region)
-
-          begin
-            task_definition_arn = cloud_watch_events.list_targets_by_rule(rule: rule).targets[0].ecs_parameters.task_definition_arn
-            deployed_commit_id = image_id(task_definition_arn)
-          rescue Aws::CloudWatchEvents::Errors::ResourceNotFoundException
-            deployed_commit_id = nil
-          end
-
-        else
-          raise DeployTargetUndefinedError
-        end
+        raise Genova::Config::DeployConfigError, 'Service is not found.' unless service.present? && service[:status] == 'ACTIVE'
+        deployed_commit_id = image_id(service[:task_definition])
 
         {
           current_commit_id: current_commit_id,
@@ -423,9 +400,6 @@ module Genova
 
         dns_name
       end
-
-      class ServiceError < Error; end
-      class DeployTargetUndefinedError < Error; end
     end
   end
 end

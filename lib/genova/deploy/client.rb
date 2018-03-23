@@ -60,7 +60,7 @@ module Genova
 
           @repository_manager.update
           config = @repository_manager.open_deploy_config
-          cluster_config = config[:clusters].find { |k, _v| k[:name] == @options[:cluster] }
+          cluster_config = config.cluster(@options[:cluster])
 
           commit_id = @repository_manager.origin_last_commit_id
 
@@ -70,7 +70,7 @@ module Genova
 
           tag_revision = "build-#{@deploy_job.id}_#{commit_id}"
 
-          repository_names = build_images(service, cluster_config)
+          repository_names = build_images(service, config.service(@options[:cluster], service))
           push_images(tag_revision, repository_names)
 
           if @options[:push_only]
@@ -153,15 +153,15 @@ module Genova
       end
 
       # @param [String] service
-      # @param [Hash] cluster_config
+      # @param [Hash] service_config
       # @return [Array]
-      def build_images(service, cluster_config)
+      def build_images(service, service_config)
         @logger.info('Started building image.')
 
         repository_names = []
         cipher = EcsDeployer::Util::Cipher.new(profile: @options[:profile], region: @options[:region])
 
-        containers_config = cluster_config[:services][service.to_sym][:containers]
+        containers_config = service_config[:containers]
         containers_config.each do |params|
           container = params[:name]
           build = parse_docker_build(params[:build], cipher)
@@ -169,7 +169,7 @@ module Genova
           docker_base_path = File.expand_path(build[:context], @config_base_path)
           docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
 
-          raise DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
+          raise Genova::Config::DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
           task_definition_config = @repository_manager.open_task_definition_config(service)
           container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
@@ -433,7 +433,6 @@ module Genova
 
       class SshInvalidPrivateKeyError < Error; end
       class DeployLockError < Error; end
-      class DeployConfigError < Error; end
       class DockerBuildError < Error; end
       class DockerImageError < Error; end
     end

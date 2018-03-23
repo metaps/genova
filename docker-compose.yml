@@ -36,17 +36,6 @@ services:
     image: redis:3.2
     ports:
       - 6379:6379
-  c3vis:
-    container_name: genova-c3vis
-    env_file: .env
-    build:
-      context: etc/docker/c3vis
-      args:
-        AWS_REGION: ${AWS_REGION}
-        AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
-        AWS_SECRET_KEY: ${AWS_SECRET_KEY}
-    ports:
-      - 3001:3000
   # slack:
   #   container_name: genova-slack
   #   build: etc/docker/slack
