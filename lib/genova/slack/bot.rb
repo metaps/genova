@@ -127,15 +127,15 @@ module Genova
           post_simple_message(message: message)
         end
 
-        data = {
+        datum = {
           account: params[:account],
           repository: params[:repository],
           branch: params[:branch],
           cluster: params[:cluster],
           service: params[:service]
         }
-        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', data)
-        compare_ids = compare_commit_ids(data)
+        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', datum)
+        compare_ids = compare_commit_ids(datum)
 
         compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                          'Commit ID is unchanged.'
