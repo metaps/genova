@@ -6,9 +6,9 @@ class Genova < Thor
     end
   end
 
-  desc 'docker-gc', 'Delete old containers and images. This program is running on Genova.'
-  def docker_gc
-    ::Genova::Command::Docker.gc
+  desc 'docker-cleanup', 'Delete old containers and images. This program is running on Genova.'
+  def docker_cleanup
+    ::Genova::Command::DockerCleanup.exec
   end
 
   desc 'deploy', 'Deploy application to ECS.'

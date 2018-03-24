@@ -1,3 +1,6 @@
+docker:
+  image_cleanup_interval: 20
+
 deploy:
   wait_timeout: 900
 
