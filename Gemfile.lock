@@ -42,7 +42,7 @@ GEM
       public_suffix (>= 2.0.2, < 4.0)
     arel (8.0.0)
     ast (2.4.0)
-    aws-partitions (1.71.0)
+    aws-partitions (1.72.0)
     aws-sdk (3.0.1)
       aws-sdk-resources (~> 3)
     aws-sdk-acm (1.3.0)
@@ -60,7 +60,7 @@ GEM
     aws-sdk-applicationdiscoveryservice (1.1.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
-    aws-sdk-appstream (1.6.0)
+    aws-sdk-appstream (1.7.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
     aws-sdk-appsync (1.1.0)
@@ -117,7 +117,7 @@ GEM
     aws-sdk-cloudwatchlogs (1.2.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
-    aws-sdk-codebuild (1.6.0)
+    aws-sdk-codebuild (1.7.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
     aws-sdk-codecommit (1.3.0)
@@ -187,7 +187,7 @@ GEM
     aws-sdk-ecr (1.3.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
-    aws-sdk-ecs (1.11.0)
+    aws-sdk-ecs (1.12.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
     aws-sdk-efs (1.0.1)
@@ -343,7 +343,7 @@ GEM
     aws-sdk-pricing (1.0.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
-    aws-sdk-rds (1.14.0)
+    aws-sdk-rds (1.15.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
     aws-sdk-redshift (1.2.0)
@@ -787,7 +787,7 @@ GEM
       sawyer (~> 0.8.0, >= 0.5.3)
     oj (3.5.0)
     parallel (1.12.1)
-    parser (2.5.0.4)
+    parser (2.5.0.5)
       ast (~> 2.4.0)
     powerpack (0.1.1)
     public_suffix (3.0.2)
@@ -822,8 +822,8 @@ GEM
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
-    rails-html-sanitizer (1.0.3)
-      loofah (~> 2.0)
+    rails-html-sanitizer (1.0.4)
+      loofah (~> 2.2, >= 2.2.2)
     railties (5.1.5)
       actionpack (= 5.1.5)
       activesupport (= 5.1.5)
@@ -881,8 +881,6 @@ GEM
       unicode-display_width (~> 1.0, >= 1.0.1)
     ruby-progressbar (1.9.0)
     ruby_dep (1.5.0)
-    runtime_command (1.0.4)
-      highline
     safe_yaml (1.0.4)
     sass (3.4.25)
     sass-rails (5.0.7)
@@ -1013,7 +1011,6 @@ DEPENDENCIES
   rspec-rails
   rspec-sidekiq
   rubocop
-  runtime_command
   sass-rails
   sidekiq
   sidekiq-limit_fetch
