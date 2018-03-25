@@ -1,25 +1,25 @@
 module Genova
   module Sidekiq
     class Job
-      def initialize(id, values = {})
+      def initialize(id, options = {})
         @id = id
-        @values = values
+        @options = options
 
         singleton_class.class_eval { attr_accessor 'id' }
         send('id=', id)
 
-        values.each do |name, value|
+        options.each do |name, value|
           singleton_class.class_eval { attr_accessor name }
           send("#{name}=", value)
         end
       end
 
-      def update(values)
-        values.each do |name, value|
-          @values[name] = value
+      def update(options)
+        options.each do |name, value|
+          @options[name] = value
         end
 
-        $redis.mapped_hmset(@id, @values)
+        $redis.mapped_hmset(@id, @options)
       end
     end
   end

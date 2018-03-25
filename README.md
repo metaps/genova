@@ -44,7 +44,7 @@ You can check deployment status.
 
 ## Required middleware
 
-* Docker
+* Docker >=1.13
 * Docker Compose
 
 Source code must be managed on GitHub.
