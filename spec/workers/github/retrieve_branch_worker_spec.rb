@@ -20,11 +20,11 @@ module Github
         subject.perform(job.id)
       end
 
-      it 'shuold be in queeue' do
+      it 'should be in queeue' do
         is_expected.to be_processed_in(:detect_branches)
       end
 
-      it 'shuold be no retry' do
+      it 'should be no retry' do
         is_expected.to be_retryable(false)
       end
     end
