@@ -7,10 +7,17 @@ module Github
         allow(Genova::Slack::Util).to receive(:branch_options)
         allow(RestClient).to receive(:post)
 
-        job = Genova::Sidekiq::Job.new('id', account: '', repository: '', response_url: '')
-        allow_any_instance_of(Genova::Sidekiq::Queue).to receive(:find).and_return(job)
+        job = Genova::Sidekiq::Job.new(
+          'id',
+            account: 'account',
+            repository: 'repository',
+            response_url: 'response_url'
+        )
+        queue_mock = double(Genova::Sidekiq::Queue)
+        allow(queue_mock).to receive(:find).and_return(job)
+        allow(Genova::Sidekiq::Queue).to receive(:new).and_return(queue_mock)
 
-        subject.perform('')
+        subject.perform(job.id)
       end
 
       it 'shuold be in queeue' do
@@ -19,10 +26,6 @@ module Github
 
       it 'shuold be no retry' do
         is_expected.to be_retryable(false)
-      end
-
-      it 'shuold be call slack api' do
-        expect(RestClient).to have_received(:post).once
       end
     end
   end

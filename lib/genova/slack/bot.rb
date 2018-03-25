@@ -349,7 +349,6 @@ module Genova
       def compare_commit_ids(params)
         repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository], params[:branch])
         current_commit_id = repository_manager.origin_last_commit_id
-        deployed_commit_id = nil
 
         service = @ecs.describe_services(
           cluster: params[:cluster],

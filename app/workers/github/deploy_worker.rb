@@ -19,33 +19,24 @@ module Github
       )
       bot = Genova::Slack::Bot.new
 
-      begin
-        bot.post_detect_auto_deploy(
-          account: deploy_job[:account],
-          repository: deploy_job[:repository],
-          branch: deploy_job[:branch]
-        )
-        bot.post_started_deploy(
-          cluster: deploy_job[:cluster],
-          service: deploy_job[:service],
-          jid: jid,
-          deploy_job_id: id
-        )
-        task_definition = deploy_client.exec(deploy_job[:service], Settings.github.deploy_lock_timeout)
+      bot.post_detect_auto_deploy(
+        account: deploy_job[:account],
+        repository: deploy_job[:repository],
+        branch: deploy_job[:branch]
+      )
+      bot.post_started_deploy(
+        cluster: deploy_job[:cluster],
+        service: deploy_job[:service],
+        jid: jid,
+        deploy_job_id: id
+      )
+      task_definition = deploy_client.exec(deploy_job[:service], Settings.github.deploy_lock_timeout)
 
-        bot.post_finished_deploy(
-          cluster: deploy_job[:cluster],
-          service: deploy_job[:service],
-          task_definition: task_definition
-        )
-      rescue => e
-        bot.post_error(
-          error: e,
-          deploy_job_id: id
-        )
-        deploy_client.cancel_deploy
-        raise e
-      end
+      bot.post_finished_deploy(
+        cluster: deploy_job[:cluster],
+        service: deploy_job[:service],
+        task_definition: task_definition
+      )
     end
   end
 end

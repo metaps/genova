@@ -18,46 +18,36 @@ module Slack
       )
       bot = Genova::Slack::Bot.new
 
-      begin
-        history = Genova::Deploy::History.new(deploy_job[:slack_user_id])
-        history.add(
-          account: deploy_job[:account],
-          repository: deploy_job[:repository],
-          branch: deploy_job[:branch],
-          cluster: deploy_job[:cluster],
-          service: deploy_job[:service]
-        )
+      history = Genova::Deploy::History.new(deploy_job[:slack_user_id])
+      history.add(
+        account: deploy_job[:account],
+        repository: deploy_job[:repository],
+        branch: deploy_job[:branch],
+        cluster: deploy_job[:cluster],
+        service: deploy_job[:service]
+      )
 
-        bot.post_detect_slack_deploy(
-          account: deploy_job[:account],
-          repository: deploy_job[:repository],
-          branch: deploy_job[:branch],
-          cluster: deploy_job[:cluster],
-          service: deploy_job[:service]
-        )
+      bot.post_detect_slack_deploy(
+        account: deploy_job[:account],
+        repository: deploy_job[:repository],
+        branch: deploy_job[:branch],
+        cluster: deploy_job[:cluster],
+        service: deploy_job[:service]
+      )
 
-        bot.post_started_deploy(
-          cluster: deploy_job[:cluster],
-          service: deploy_job[:service],
-          jid: jid,
-          deploy_job_id: id
-        )
-        task_definition = deploy_client.exec(deploy_job[:service], Settings.slack.deploy_lock_timeout)
-        bot.post_finished_deploy(
-          cluster: deploy_job[:cluster],
-          service: deploy_job[:service],
-          task_definition: task_definition,
-          slack_user_id: deploy_job[:slack_user_id]
-        )
-      rescue => e
-        bot.post_error(
-          error: e,
-          slack_user_id: deploy_job[:slack_user_id],
-          deploy_job_id: id
-        )
-        deploy_client.cancel_deploy
-        raise e
-      end
+      bot.post_started_deploy(
+        cluster: deploy_job[:cluster],
+        service: deploy_job[:service],
+        jid: jid,
+        deploy_job_id: id
+      )
+      task_definition = deploy_client.exec(deploy_job[:service], Settings.slack.deploy_lock_timeout)
+      bot.post_finished_deploy(
+        cluster: deploy_job[:cluster],
+        service: deploy_job[:service],
+        task_definition: task_definition,
+        slack_user_id: deploy_job[:slack_user_id]
+      )
     end
   end
 end

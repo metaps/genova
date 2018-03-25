@@ -2,7 +2,7 @@ require 'rails_helper'
 
 module Genova
   module Command
-    describe Docker do
+    describe DockerCleanup do
     end
   end
 end

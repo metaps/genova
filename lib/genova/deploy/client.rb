@@ -177,8 +177,8 @@ module Genova
 
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
 
-          deploy_command = Genova::Deploy::Command.new(work_dir: @repository_manager.path, logger: @logger)
-          results = deploy_command.exec(command, docker_base_path)
+          executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
+          results = executor.command(command)
 
           raise DockerBuildError if results[:stderr].present?
 
