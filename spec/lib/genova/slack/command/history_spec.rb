@@ -4,11 +4,6 @@ module Genova
   module Slack
     module Command
       describe History do
-        def app
-          Genova::Slack::Command::History.instance
-        end
-
-        subject { app }
         let(:bot_mock) { double('Genova::Slack::Bot') }
 
         before do
