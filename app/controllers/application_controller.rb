@@ -3,21 +3,14 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
 
-  def render_404(exception = nil)
-    if exception
-      logger.fatal(exception.to_s)
-      logger.fatal(exception.backtrace)
-    end
-
+  def render_404
     @title = '404 Page Not Found'
     render template: 'errors/error', status: 404, layout: 'application'
   end
 
-  def render_500(exception = nil)
-    if exception
-      logger.fatal(exception.to_s)
-      logger.fatal(exception.backtrace)
-    end
+  def render_500(error = nil)
+    logger.fatal(error.to_s)
+    logger.fatal(error.backtrace)
 
     @title = '500 Internal Server Error'
     render template: 'errors/error', status: 500, layout: 'application'
