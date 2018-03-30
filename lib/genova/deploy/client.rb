@@ -199,7 +199,7 @@ module Genova
           result[:docker_filename] = 'Dockerfile'
         else
           result[:context] = build[:context] || '.'
-          result[:docker_filename] = build[:dockerfile] || 'DockerFile'
+          result[:docker_filename] = build[:dockerfile] || 'Dockerfile'
 
           if build[:args].is_a?(Hash)
             build[:args].each do |key, value|
