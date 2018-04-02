@@ -8,7 +8,7 @@ module Genova
 
       describe 'command' do
         context 'when command was successful.' do
-          it 'shuold be return stdout' do
+          it 'should be return stdout' do
             allow(io_mock).to receive(:write)
             allow(io_mock).to receive(:close)
 
@@ -23,7 +23,7 @@ module Genova
         end
 
         context 'when command was failure.' do
-          it 'shuold be raise error' do
+          it 'should be raise error' do
             allow(io_mock).to receive(:write)
             allow(io_mock).to receive(:close)
 
@@ -38,7 +38,7 @@ module Genova
         end
 
         context 'when forcibly terminated' do
-          it 'shuold be raise error' do
+          it 'should be raise error' do
             allow(io_mock).to receive(:write)
             allow(io_mock).to receive(:close)
 

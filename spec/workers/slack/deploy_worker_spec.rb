@@ -27,11 +27,11 @@ module Slack
         subject.perform('deploy_job_id')
       end
 
-      it 'shuold be in queeue' do
+      it 'should be in queeue' do
         is_expected.to be_processed_in(:slack_deploy)
       end
 
-      it 'shuold be no retry' do
+      it 'should be no retry' do
         is_expected.to be_retryable(false)
       end
     end
