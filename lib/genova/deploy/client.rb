@@ -133,6 +133,7 @@ module Genova
         options[:verbose] ||= false
         options[:ssh_secret_key_path] ||= "#{ENV.fetch('HOME')}/.ssh/id_rsa"
 
+        raise GitAccountUndefinedError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
         return if File.exist?(options[:ssh_secret_key_path])
 
         raise PrivateKeyNotFoundError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
@@ -429,6 +430,7 @@ module Genova
         end
       end
 
+      class GitAccountUndefinedError < Error; end
       class PrivateKeyNotFoundError < Error; end
       class DeployLockError < Error; end
       class ImagePushError < Error; end
