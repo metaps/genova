@@ -205,7 +205,7 @@ module Genova
           if build[:args].is_a?(Hash)
             build[:args].each do |key, value|
               value = cipher.decrypt(value) if cipher.encrypt_value?(value)
-              result[:build_args] += " --build-arg #{key}=#{value}"
+              result[:build_args] += " --build-arg #{key}='#{value}'"
             end
           end
         end
