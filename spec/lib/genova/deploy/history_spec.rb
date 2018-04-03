@@ -6,7 +6,7 @@ module Genova
       let(:history) { Genova::Deploy::History.new('user_id') }
 
       before do
-        $redis.flushall
+        Redis.current.flushall
         allow(Settings.slack.command).to receive(:max_history).and_return(2)
       end
 
