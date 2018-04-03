@@ -16,13 +16,13 @@ module Genova
           service: params[:service]
         )
 
-        $redis.lrem(@id, 1, value) if find(id).present?
-        $redis.lpush(@id, value)
-        $redis.rpop(@id) if $redis.llen(@id) > Settings.slack.command.max_history
+        Redis.current.lrem(@id, 1, value) if find(id).present?
+        Redis.current.lpush(@id, value)
+        Redis.current.rpop(@id) if Redis.current.llen(@id) > Settings.slack.command.max_history
       end
 
       def list
-        $redis.lrange(@id, 0, Settings.slack.command.max_history - 1)
+        Redis.current.lrange(@id, 0, Settings.slack.command.max_history - 1)
       end
 
       def find(hash_id)
@@ -41,7 +41,7 @@ module Genova
       end
 
       def last
-        result = $redis.lindex(@id, 0)
+        result = Redis.current.lindex(@id, 0)
         result = Oj.load(result) if result.present?
         result
       end
