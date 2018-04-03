@@ -19,7 +19,7 @@ module Genova
           @options[name] = value
         end
 
-        $redis.mapped_hmset(@id, @options)
+        Redis.current.mapped_hmset(@id, @options)
       end
     end
   end
