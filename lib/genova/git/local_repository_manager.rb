@@ -93,7 +93,7 @@ module Genova
       private
 
       def git_client
-        ::Git.open(@path, log: @logger)
+        ::Git.open(@path, log: Genova::Git::LocalRepositoryManager.logger)
       end
     end
   end
