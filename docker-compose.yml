@@ -7,6 +7,7 @@ services:
     volumes:
       - .:/data/rails
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${GITHUB_PEM}:/root/.ssh/id_rsa
   rails:
     container_name: genova-rails
     extends:
