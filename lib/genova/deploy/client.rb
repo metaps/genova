@@ -179,9 +179,7 @@ module Genova
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
 
           executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
-          results = executor.command(command)
-
-          raise DockerBuildError if results[:stderr].present?
+          executor.command(command)
 
           repository_names.push(repository_name)
         end
