@@ -179,7 +179,9 @@ module Genova
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
 
           executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
-          executor.command(command)
+          results = executor.command(command)
+
+          raise DockerBuildError if results[:stderr].present?
 
           repository_names.push(repository_name)
         end
@@ -433,6 +435,7 @@ module Genova
       class GitAccountUndefinedError < Error; end
       class PrivateKeyNotFoundError < Error; end
       class DeployLockError < Error; end
+      class DockerBuildError < Error; end
       class ImagePushError < Error; end
     end
   end
