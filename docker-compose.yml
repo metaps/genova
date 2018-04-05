@@ -1,18 +1,17 @@
 version: "2"
 services:
-  cron:
-    container_name: genova-cron
+  base:
+    container_name: genova-base
     build: .
     env_file: .env
-    command: /usr/local/bin/docker-cron-entrypoint.sh
     volumes:
       - .:/data/rails
       - /var/run/docker.sock:/var/run/docker.sock
   rails:
     container_name: genova-rails
     extends:
-      service: cron
-    command: /usr/local/bin/docker-rails-entrypoint.sh
+      service: base
+    build: ./etc/docker/rails
     ports:
       - 3000:3000
     depends_on:
@@ -21,11 +20,16 @@ services:
   sidekiq:
     container_name: genova-sidekiq
     extends:
-      service: cron
-    command: /usr/local/bin/docker-sidekiq-entrypoint.sh
+      service: base
+    build: ./etc/docker/sidekiq
     depends_on:
       - mongo
       - redis
+  cron:
+    container_name: genova-cron
+    extends:
+      service: base
+    build: ./etc/docker/cron
   mongo:
     container_name: genova-mongo
     image: mongo:3.4.9
@@ -38,7 +42,7 @@ services:
       - 6379:6379
   # slack:
   #   container_name: genova-slack
-  #   build: etc/docker/slack
+  #   build: ./etc/docker/slack
   #   env_file: .env
   #   ports:
   #     - 9292:9292
