@@ -54,6 +54,9 @@ RUN gem update --system 2.7.0 \
   && gem install bundler \
   && bundle install -j4 --path /usr/local/bundle
 
+COPY ./etc/docker/rails/.ssh /root/.ssh
+RUN chmod 700 /root/.ssh && chmod 600 /root/.ssh/id_rsa
+
 COPY ./etc/docker/rails/docker-entrypoint-rails.sh /usr/local/bin/docker-entrypoint-rails.sh
 COPY ./etc/docker/cron/docker-entrypoint-cron.sh /usr/local/bin/docker-entrypoint-cron.sh
 COPY ./etc/docker/sidekiq/docker-entrypoint-sidekiq.sh /usr/local/bin/docker-entrypoint-sidekiq.sh
