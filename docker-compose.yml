@@ -11,7 +11,7 @@ services:
     container_name: genova-rails
     extends:
       service: base
-    build: ./etc/docker/rails
+    command: /usr/local/bin/docker-entrypoint-rails.sh
     ports:
       - 3000:3000
     depends_on:
@@ -21,7 +21,7 @@ services:
     container_name: genova-sidekiq
     extends:
       service: base
-    build: ./etc/docker/sidekiq
+    command: /usr/local/bin/docker-entrypoint-sidekiq.sh
     depends_on:
       - mongo
       - redis
@@ -29,7 +29,7 @@ services:
     container_name: genova-cron
     extends:
       service: base
-    build: ./etc/docker/cron
+    command: /usr/local/bin/docker-entrypoint-cron.sh
   mongo:
     container_name: genova-mongo
     image: mongo:3.4.9
