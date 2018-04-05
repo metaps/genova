@@ -20,9 +20,9 @@ module Slack
         allow(bot_mock).to receive(:post_finished_deploy)
         allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
 
-        deploy_client_mock = double(Genova::Deploy::Client)
+        deploy_client_mock = double(Genova::Client)
         allow(deploy_client_mock).to receive(:exec)
-        allow(Genova::Deploy::Client).to receive(:new).and_return(deploy_client_mock)
+        allow(Genova::Client).to receive(:new).and_return(deploy_client_mock)
 
         subject.perform('deploy_job_id')
       end

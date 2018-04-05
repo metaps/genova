@@ -25,7 +25,7 @@ class Genova < Thor
   option :ssh_secret_key_path, required: false, default: "#{ENV.fetch('HOME')}/.ssh/id_rsa", desc: 'Private key for accessing GitHub.'
   option :verbose, required: false, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
   def deploy
-    deploy_client = ::Genova::Deploy::Client.new(options[:mode].to_sym, options[:repository], options.symbolize_keys)
+    deploy_client = ::Genova::Client.new(options[:mode].to_sym, options[:repository], options.symbolize_keys)
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
 
     deploy_client.exec(options[:service])

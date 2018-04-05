@@ -32,7 +32,7 @@ module Genova
         allow(EcsDeployer::Client).to receive(:new)
 
         client = Client.new(
-          Genova::Deploy::Client.mode.find_value(:manual).to_sym,
+          Genova::Client.mode.find_value(:manual).to_sym,
           'sandbox',
             ssh_secret_key_path: 'id_rsa',
             cluster: 'sandbox'

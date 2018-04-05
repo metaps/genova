@@ -8,8 +8,8 @@ module Github
       logger.info('Started Github::DeployWorker')
 
       deploy_job = DeployJob.find(id)
-      deploy_client = Genova::Deploy::Client.new(
-        Genova::Deploy::Client.mode.find_value(:auto).to_sym,
+      deploy_client = Genova::Client.new(
+        Genova::Client.mode.find_value(:auto).to_sym,
         deploy_job[:repository],
         account: deploy_job[:account],
         branch: deploy_job[:branch],
