@@ -5,7 +5,7 @@ module Genova
         def history_options(slack_user_id)
           options = []
 
-          histories = Genova::Deploy::History.new(slack_user_id).list
+          histories = Genova::Slack::History.new(slack_user_id).list
           histories.each do |history|
             history = Oj.load(history)
 

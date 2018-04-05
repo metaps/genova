@@ -7,7 +7,7 @@ module Genova
             logger.info("Execute redeploy command: (UNAME: #{client.owner}, user=#{data.user})")
             logger.info("Input command: #{match['command']} #{match['expression']}")
 
-            history = Genova::Deploy::History.new(data.user).last
+            history = Genova::Slack::History.new(data.user).last
             bot = Genova::Slack::Bot.new(client.web_client)
 
             if history.present?
