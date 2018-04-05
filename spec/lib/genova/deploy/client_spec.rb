@@ -10,7 +10,18 @@ module Genova
         allow(repository_manager_mock).to receive(:path).and_return('')
         allow(repository_manager_mock).to receive(:update)
         allow(repository_manager_mock).to receive(:origin_last_commit_id)
-        allow(repository_manager_mock).to receive(:open_deploy_config).and_return(clusters: [])
+
+        deploy_config = Genova::Config::DeployConfig.new(
+          clusters: [
+            {
+              name: 'sandbox',
+              services: {
+                development: {}
+              }
+            }
+          ]
+        )
+        allow(repository_manager_mock).to receive(:open_deploy_config).and_return(deploy_config)
 
         allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
       end
@@ -20,7 +31,12 @@ module Genova
         allow(File).to receive(:exist?).with('id_rsa').and_return(true)
         allow(EcsDeployer::Client).to receive(:new)
 
-        client = Client.new(Genova::Deploy::Client.mode.find_value(:manual).to_sym, 'sandbox', ssh_secret_key_path: 'id_rsa')
+        client = Client.new(
+          Genova::Deploy::Client.mode.find_value(:manual).to_sym,
+          'sandbox',
+            ssh_secret_key_path: 'id_rsa',
+            cluster: 'sandbox'
+        )
         allow(Settings.github.account).to receive(:[]).and_return('metaps')
 
         client
