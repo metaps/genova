@@ -8,14 +8,12 @@ RUN apt-get update && apt-get install -y \
     locales \
     apt-transport-https \
     ca-certificates \
-    curl \
     gnupg2 \
     software-properties-common \
     libcurl4-gnutls-dev \
     libexpat1-dev \
     libz-dev libssl-dev \
     gettext \
-    cron \
     logrotate \
     vim \
   && apt-get remove -y git
@@ -57,22 +55,6 @@ RUN gem update --system 2.7.0 \
   && bundle install -j4 --path /usr/local/bundle
 
 COPY . /data/rails
-
-# cron container settings
-COPY ./etc/docker/cron/docker-cron-entrypoint.sh /usr/local/bin/docker-cron-entrypoint.sh
-COPY ./etc/docker/cron/cron.d/genova /etc/cron.d/genova
-COPY ./etc/docker/cron/cron /etc/pam.d/cron
-COPY ./etc/docker/cron/.ssh /root/.ssh
-COPY ./etc/docker/cron/logrotate.d/rails /etc/logrotate.d/rails
-RUN chmod 644 /etc/cron.d/genova \
-  && chmod 644 /etc/logrotate.d/rails \
-  && chmod 700 /root/.ssh \
-  && chmod 400 /root/.ssh/id_rsa
-
-# rails container settings
-COPY ./etc/docker/rails/docker-rails-entrypoint.sh /usr/local/bin/docker-rails-entrypoint.sh
-
-# sidekiq container settings
-COPY ./etc/docker/sidekiq/docker-sidekiq-entrypoint.sh /usr/local/bin/docker-sidekiq-entrypoint.sh
-
 VOLUME /data/rails
+
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
