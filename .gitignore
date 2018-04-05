@@ -36,4 +36,3 @@ dump.rdb
 /config/environments/*.local.yml
 /.env
 /public/assets/*
-/etc/docker/rails/.ssh/id_rsa
