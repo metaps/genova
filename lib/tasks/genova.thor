@@ -12,15 +12,15 @@ class Genova < Thor
   end
 
   desc 'deploy', 'Deploy application to ECS.'
-  option :account, required: false, desc: 'GitHub account'
-  option :branch, required: false, default: 'master', aliases: :b, desc: 'Specify branch name.'
+  option :account, required: false, default: Settings.github.account, desc: 'GitHub account'
+  option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Specify branch name.'
   option :cluster, required: true, aliases: :c, desc: 'Specify cluster.'
   option :service, required: true, aliases: :s, desc: 'Specify service.'
   option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
   option :mode, required: false, default: 'manual', desc: 'Deploy mode. (auto/manual)'
-  option :profile, required: false, default: 'default', desc: 'AWS profile.'
+  option :profile, required: false, default: Settings.aws.profile, desc: 'AWS profile.'
   option :push_only, required: false, default: false, type: :boolean, desc: 'Push image to ECR. Deployment will not be executed.'
-  option :region, required: false, default: 'ap-northeast-1', desc: 'Specify ECR region.'
+  option :region, required: false, default: Settings.aws.region, desc: 'Specify ECR region.'
   option :repository, required: true, aliases: :r, desc: 'GitHub repository.'
   option :ssh_secret_key_path, required: false, default: "#{ENV.fetch('HOME')}/.ssh/id_rsa", desc: 'Private key for accessing GitHub.'
   option :verbose, required: false, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
@@ -38,11 +38,10 @@ class Genova < Thor
   end
 
   desc 'debug-github-push', 'Emulate GitHub push'
-  option :account, required: false, desc: 'GitHub account'
-  option :branch, required: false, default: 'master', aliases: :b, desc: 'Specify branch name.'
-  option :repository, required: true, aliases: :r, desc: 'GitHub repository.'
+  option :account, required: false, default: Settings.github.account, desc: 'GitHub account'
+  option :repository, required: true, aliases: :r, desc: 'Source repository.'
+  option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
   def debug_github_push
-    account = options[:account] || Settings.github.account
     post_data = {
       repository: {
         full_name: "#{account}/#{options[:repository]}"
@@ -59,5 +58,14 @@ class Genova < Thor
 
     @logger.info('Sent deploy notification to Slack.')
     @logger.info(result)
+  end
+
+  desc 'debug-update-source', 'Retrieve latest source'
+  option :account, required: false, default: Settings.github.account, desc: 'GitHub account'
+  option :repository, required: true, aliases: :r, desc: 'Source repository.'
+  option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
+  def debug_update_source
+    manager = ::Genova::Git::LocalRepositoryManager.new(options[:account], options[:repository], options[:branch])
+    manager.update
   end
 end
