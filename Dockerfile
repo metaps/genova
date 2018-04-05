@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libexpat1-dev \
     libz-dev libssl-dev \
     gettext \
+    cron \
     logrotate \
     vim \
   && apt-get remove -y git
@@ -54,8 +55,11 @@ RUN gem update --system 2.7.0 \
   && gem install bundler \
   && bundle install -j4 --path /usr/local/bundle
 
-COPY ./etc/docker/rails/.ssh /root/.ssh
-RUN chmod 700 /root/.ssh && chmod 600 /root/.ssh/id_rsa
+COPY ./etc/docker/base/.vimrc /root/.vimrc
+COPY ./etc/docker/cron/cron.d/genova /etc/cron.d/genova
+COPY ./etc/docker/cron/cron /etc/pam.d/cron
+COPY ./etc/docker/cron/logrotate.d/rails /etc/logrotate.d/rails
+RUN chmod 644 /etc/cron.d/genova && chmod 644 /etc/logrotate.d/rails
 
 COPY ./etc/docker/rails/docker-entrypoint-rails.sh /usr/local/bin/docker-entrypoint-rails.sh
 COPY ./etc/docker/cron/docker-entrypoint-cron.sh /usr/local/bin/docker-entrypoint-cron.sh
