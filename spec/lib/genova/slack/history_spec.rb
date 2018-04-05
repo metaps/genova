@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-module ::Genova
-  module Deploy
+module Genova
+  module Slack
     describe History do
-      let(:history) { Genova::Deploy::History.new('user_id') }
+      let(:history) { Genova::Slack::History.new('user_id') }
 
       before do
         Redis.current.flushall

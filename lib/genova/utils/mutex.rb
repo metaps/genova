@@ -1,5 +1,5 @@
 module Genova
-  module Deploy
+  module Utils
     class Mutex
       def initialize(key, ttl = 1800)
         @key = key

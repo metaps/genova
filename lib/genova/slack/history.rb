@@ -1,5 +1,5 @@
 module ::Genova
-  module Deploy
+  module Slack
     class History
       def initialize(slack_user_id)
         @id = "history_#{slack_user_id}"
