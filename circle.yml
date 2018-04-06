@@ -2,6 +2,7 @@ machine:
   ruby:
     version: 2.5.0
   environment:
+    GITHUB_PEM:
     SECRET_KEY_BASE: '706833b954341da0b5404cc145413a29903596b8b41eaa395102babf36d432511c21ec834ac263a80c0c90cde96191503d235d9353cba27c1dffed18381a9167'
     AWS_ACCOUNT_ID:
     AWS_REGION:
@@ -20,3 +21,13 @@ machine:
     SLACK_VERIFICATION_TOKEN: 'slack_verification_token'
     SLACK_CHANNEL:
     GENOVA_URL:
+    CC_TEST_REPORTER_ID: 8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235
+dependencies:
+  post:
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+    - chmod +x ./cc-test-reporter
+test:
+  pre:
+    - ./cc-test-reporter before-build
+  post:
+    - ./cc-test-reporter after-build --exit-code $EXIT_CODE
