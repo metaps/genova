@@ -23,9 +23,7 @@ if ENV['CIRCLE_ARTIFACTS']
   SimpleCov.coverage_dir(dir)
 end
 
-SimpleCov.start 'rails' do
-  coverage_dir 'tmp/coverage'
-end
+SimpleCov.start
 
 require 'json_spec'
 require 'slack-ruby-bot/rspec'
