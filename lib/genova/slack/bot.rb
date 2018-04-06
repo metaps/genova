@@ -316,7 +316,7 @@ module Genova
         if params[:deploy_job_id].present?
           fields << {
             title: 'Deploy Job ID',
-            value: build_log_url(params[:deploy_job_id])
+            value: params[:deploy_job_id]
           }
         end
 
