@@ -13,10 +13,7 @@ module Github
             repository: 'repository',
             response_url: 'response_url'
         )
-        queue_mock = double(Genova::Sidekiq::Queue)
-        allow(queue_mock).to receive(:find).and_return(job)
-        allow(Genova::Sidekiq::Queue).to receive(:new).and_return(queue_mock)
-
+        allow(Genova::Sidekiq::Queue).to receive(:find).and_return(job)
         subject.perform(job.id)
       end
 
