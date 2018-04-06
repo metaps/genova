@@ -8,7 +8,6 @@ end
 gem 'aws-sdk', '~> 3.0.0'
 gem 'config'
 gem 'docker-api'
-gem 'dotenv-rails'
 gem 'ecs_deployer', '2.1.9'
 gem 'enumerize'
 
@@ -34,7 +33,6 @@ gem 'rest-client'
 gem 'sass-rails'
 gem 'sidekiq'
 gem 'sidekiq-limit_fetch'
-gem 'slack-ruby-bot'
 gem 'slack-ruby-bot-server'
 gem 'therubyracer', platforms: :ruby
 gem 'uglifier', '>= 1.3.0'
@@ -51,7 +49,6 @@ end
 
 group :test do
   # http://qiita.com/Anorlondo448/items/95946ebb071a4c3500fb
-  gem 'rails-controller-testing'
   gem 'rspec-sidekiq'
   gem 'vcr'
   gem 'webmock'

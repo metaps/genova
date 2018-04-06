@@ -5,7 +5,6 @@ RSpec.describe LogsController, type: :controller do
     it 'should be return success' do
       get :index
       expect(response).to have_http_status(:ok)
-      expect(response).to render_template('logs/index')
     end
   end
 

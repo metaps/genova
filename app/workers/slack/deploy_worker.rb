@@ -8,8 +8,8 @@ module Slack
       logger.info('Started Slack::DeployWorker')
 
       deploy_job = DeployJob.find(id)
-      deploy_client = Genova::Deploy::Client.new(
-        Genova::Deploy::Client.mode.find_value(:slack).to_sym,
+      deploy_client = Genova::Client.new(
+        Genova::Client.mode.find_value(:slack).to_sym,
         deploy_job[:repository],
         account: deploy_job[:account],
         branch: deploy_job[:branch],
@@ -18,7 +18,7 @@ module Slack
       )
       bot = Genova::Slack::Bot.new
 
-      history = Genova::Deploy::History.new(deploy_job[:slack_user_id])
+      history = Genova::Slack::History.new(deploy_job[:slack_user_id])
       history.add(
         account: deploy_job[:account],
         repository: deploy_job[:repository],

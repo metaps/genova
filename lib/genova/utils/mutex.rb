@@ -1,5 +1,5 @@
 module Genova
-  module Deploy
+  module Utils
     class Mutex
       def initialize(key, ttl = 1800)
         @key = key
@@ -7,20 +7,20 @@ module Genova
       end
 
       def lock
-        $redis.multi do
-          return false unless $redis.setnx(@key, true)
-          $redis.expire(@key, @ttl)
+        Redis.current.multi do
+          return false unless Redis.current.setnx(@key, true)
+          Redis.current.expire(@key, @ttl)
         end
 
         true
       end
 
       def locked?
-        $redis.get(@key) || false
+        Redis.current.get(@key) || false
       end
 
       def unlock
-        $redis.del(@key) == 1
+        Redis.current.del(@key) == 1
       end
     end
   end
