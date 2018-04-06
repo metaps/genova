@@ -78,9 +78,6 @@ $ cd genova
 $ cp config/settings.yml config/settings.local.yml
 $ cp .env.default .env
 
-# Create secret key for GitHub
-$ echo {YOUR_SECRET_KEY} >> etc/docker/cron/.ssh/id_rsa
-
 $ docker-compose build
 $ docker-compose up
 ```

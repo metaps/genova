@@ -1,12 +1,12 @@
 require 'rails_helper'
 
 module Genova
-  module Deploy
+  module Slack
     describe History do
-      let(:history) { Genova::Deploy::History.new('user_id') }
+      let(:history) { Genova::Slack::History.new('user_id') }
 
       before do
-        $redis.flushall
+        Redis.current.flushall
         allow(Settings.slack.command).to receive(:max_history).and_return(2)
       end
 

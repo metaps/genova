@@ -1,26 +1,28 @@
 module Genova
   module Sidekiq
     class Queue
-      ENTITY_EXPIRE = 1800
-
       extend Enumerize
       enumerize :status, in: %i[standby in_progress complete]
 
-      def add(values = {})
-        id = "job_#{Time.new.utc.to_i}"
-        values[:status] = Genova::Sidekiq::Queue.status.find_value(:standby)
+      class << self
+        ENTITY_EXPIRE = 1800
 
-        $redis.mapped_hmset(id, values)
-        $redis.expire(id, ENTITY_EXPIRE)
+        def add(values = {})
+          id = "job_#{Time.new.utc.to_i}"
+          values[:status] = Genova::Sidekiq::Queue.status.find_value(:standby)
 
-        id
-      end
+          Redis.current.mapped_hmset(id, values)
+          Redis.current.expire(id, ENTITY_EXPIRE)
 
-      def find(id)
-        values = $redis.hgetall(id)
-        raise QueueError, "#{id} is not found." if values.nil?
+          id
+        end
 
-        Genova::Sidekiq::Job.new(id, values.symbolize_keys)
+        def find(id)
+          values = Redis.current.hgetall(id)
+          raise QueueError, "#{id} is not found." if values.nil?
+
+          Genova::Sidekiq::Job.new(id, values.symbolize_keys)
+        end
       end
     end
 
