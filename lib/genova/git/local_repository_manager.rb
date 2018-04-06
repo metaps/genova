@@ -60,7 +60,7 @@ module Genova
       end
 
       def task_definition_config_path(service)
-        Pathname(@path).join('config', 'deploy', "#{service}.yml")
+        Pathname(@path).join('config', 'deploy', "#{service}.yml").to_s
       end
 
       def open_task_definition_config(service)
