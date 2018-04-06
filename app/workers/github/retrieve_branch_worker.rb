@@ -10,8 +10,7 @@ module Github
     def perform(id)
       logger.info('Started Github::RetrieveBranchWorker')
 
-      queue = Genova::Sidekiq::Queue.new
-      job = queue.find(id)
+      job = Genova::Sidekiq::Queue.find(id)
       job.update(status: Genova::Sidekiq::Queue.status.find_value(:in_progress))
 
       query = {
