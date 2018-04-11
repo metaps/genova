@@ -29,7 +29,7 @@ module Genova
         @branch = branch
         @path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
 
-        Genova::Git::LocalRepositoryManager.logger = Logger.new(STDOUT) if Genova::Git::LocalRepositoryManager.logger.nil?
+        Genova::Git::LocalRepositoryManager.logger = ::Logger.new(STDOUT) if Genova::Git::LocalRepositoryManager.logger.nil?
       end
 
       def clone
