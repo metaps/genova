@@ -38,7 +38,7 @@ module Genova
 
       describe 'open_deploy_config' do
         it 'should be return config' do
-          allow(::Git).to receive(:clone)
+          allow(manager).to receive(:update)
           allow(File).to receive(:read).and_return('{}')
 
           expect(manager.open_deploy_config).to be_a(Genova::Config::DeployConfig)
@@ -53,7 +53,7 @@ module Genova
 
       describe 'open_task_definition_config' do
         it 'should be return config' do
-          allow(::Git).to receive(:clone)
+          allow(manager).to receive(:update)
           allow(File).to receive(:read).and_return('{}')
 
           expect(manager.open_task_definition_config('service')).to be_a(Genova::Config::TaskDefinitionConfig)

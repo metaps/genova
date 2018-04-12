@@ -60,7 +60,6 @@ module Genova
         update
 
         path = Pathname(@path).join('config/deploy.yml')
-
         params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
       end
