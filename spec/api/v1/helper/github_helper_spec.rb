@@ -5,6 +5,10 @@ module V1
     describe GithubHelper do
       include ::V1::Helper::GithubHelper
 
+      before(:each) do
+        DeployJob.delete_all
+      end
+
       describe 'detect_auto_deploy_service' do
         context 'when auto_deploy section does not exist' do
           it 'should be return nil' do
