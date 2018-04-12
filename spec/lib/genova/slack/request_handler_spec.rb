@@ -35,7 +35,6 @@ module Genova
             allow(bot_mock).to receive(:post_confirm_deploy)
             allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
             Genova::Slack::RequestHandler.handle_request(payload_body, ::Logger.new(nil))
-
           end
         end
 
@@ -66,7 +65,7 @@ module Genova
 
         context 'when invoke undefined route' do
           it 'should be raise error' do
-            expect{ Genova::Slack::RequestHandler.handle_request({ callback_id: 'undefined' }, ::Logger.new(nil)) }.to raise_error(Genova::Slack::RequestHandler::RoutingError)
+            expect { Genova::Slack::RequestHandler.handle_request({ callback_id: 'undefined' }, ::Logger.new(nil)) }.to raise_error(Genova::Slack::RequestHandler::RoutingError)
           end
         end
       end

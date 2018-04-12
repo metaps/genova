@@ -14,7 +14,7 @@ module Genova
               repository: 'repository',
               branch: 'branch',
               cluster: 'cluster',
-              service: 'service',
+              service: 'service'
             )
             allow(Genova::Slack::History).to receive(:new).and_return(history_mock)
 
