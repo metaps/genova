@@ -17,6 +17,7 @@ module Genova
 
       @repository = repository
       @options = options
+      @task_definitions = {}
 
       id = @options[:deploy_job_id] || DeployJob.generate_id
 
@@ -147,9 +148,8 @@ module Genova
       @logger.error(e.message)
       @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
       @logger.error("Detected error of command. {\"deploy id\": #{@deploy_job.id}}")
-      cancel_deploy
 
-      raise e
+      cancel_deploy
     end
 
     # @param [String] service
@@ -261,20 +261,22 @@ module Genova
         profile: @options[:profile],
         region: @options[:region]
       )
-      scheduled_task_definition = deploy_scheduled_task(
-        deploy_client,
-        tag_revision,
-        cluster_config,
-        service
-      )
-      service_task_definition = deploy_service(
+
+      if cluster_config[:scheduled_tasks].present?
+        deploy_scheduled_task(
+          deploy_client,
+          tag_revision,
+          cluster_config,
+          service
+        )
+      end
+
+      task_definition = deploy_service(
         deploy_client,
         tag_revision,
         service
       )
 
-      task_definition = scheduled_task_definition if scheduled_task_definition.present?
-      task_definition = service_task_definition if service_task_definition.present?
       task_definition
     end
 
@@ -283,8 +285,12 @@ module Genova
     # @param [String] tag_revision
     # @return [Aws::ECS::Types::TaskDefinition]
     def create_new_task(task_client, task_definition_path, tag_revision)
-      @created_task = task_client.register(task_definition_path, tag: tag_revision) if @created_task.nil?
-      @created_task
+      unless @task_definitions.include?(task_definition_path)
+        task_definition = { task_definition_path: task_client.register(task_definition_path, tag: tag_revision) }
+        @task_definitions[task_definition_path] = task_definition
+      end
+
+      @task_definitions[task_definition_path]
     end
 
     # @param [EcsDeployer::Client] deploy_client
@@ -295,17 +301,9 @@ module Genova
     def deploy_scheduled_task(deploy_client, tag_revision, cluster_config, depend_service)
       @logger.info('Started scheduled task deployment.')
 
-      task_definition = nil
-
-      if cluster_config[:scheduled_tasks].present?
-        cluster_config[:scheduled_tasks].each do |scheduled_task|
-          update_scheduled_task(deploy_client, tag_revision, scheduled_task, depend_service)
-        end
-      else
-        @logger.info('Scheduled task definition target is not registered yet.')
+      cluster_config[:scheduled_tasks].each do |scheduled_task|
+        update_scheduled_task(deploy_client, tag_revision, scheduled_task, depend_service)
       end
-
-      task_definition
     end
 
     # @param [EcsDeployer::Client] deploy_client
