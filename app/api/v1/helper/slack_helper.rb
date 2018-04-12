@@ -5,7 +5,7 @@ module V1
 
       def verify_signature?
         data = payload_to_json
-        data[:token].present? && data[:token] == ENV.fetch('SLACK_VERIFICATION_TOKEN')
+        data.include?(:token) && data[:token] == ENV.fetch('SLACK_VERIFICATION_TOKEN')
       end
 
       def payload_to_json

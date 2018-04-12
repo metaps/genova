@@ -313,7 +313,7 @@ module Genova
           }
         end
 
-        if params[:deploy_job_id].present?
+        if params.include?(:deploy_job_id)
           fields << {
             title: 'Deploy Job ID',
             value: params[:deploy_job_id]
