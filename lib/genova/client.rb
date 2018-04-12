@@ -286,8 +286,7 @@ module Genova
     # @return [Aws::ECS::Types::TaskDefinition]
     def create_new_task(task_client, task_definition_path, tag_revision)
       unless @task_definitions.include?(task_definition_path)
-        task_definition = { task_definition_path: task_client.register(task_definition_path, tag: tag_revision) }
-        @task_definitions[task_definition_path] = task_definition
+        @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag_revision)
       end
 
       @task_definitions[task_definition_path]
