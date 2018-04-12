@@ -262,7 +262,7 @@ module Genova
         region: @options[:region]
       )
 
-      if cluster_config[:scheduled_tasks].present?
+      if cluster_config.include?(:scheduled_tasks)
         deploy_scheduled_task(
           deploy_client,
           tag_revision,
@@ -322,12 +322,12 @@ module Genova
         task_definition = create_new_task(task_client, task_definition_path, tag_revision)
 
         builder = scheduled_task_client.target_builder(target[:name])
-        builder.role(target[:role]) if target[:role].present?
+        builder.role(target[:role]) if target.include?(:target)
         builder.task_definition_arn = task_definition.task_definition_arn
-        builder.task_role(target[:task_role]) if target[:task_role].present?
+        builder.task_role(target[:task_role]) if target.include?(:task_role)
         builder.task_count = target[:task_count] || 1
 
-        if target[:overrides].present?
+        if target.include?(:overrides)
           target[:overrides].each do |override|
             override_environment = override[:environment] || []
             builder.override_container(override[:name], override[:command], override_environment)
