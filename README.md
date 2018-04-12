@@ -24,12 +24,18 @@ This package provides ECS deployment function.
 
 * YAML based task definition
   * Support encryption of environment variables by [KMS](https://aws.amazon.com/kms/)
-* Image build and push to ECR
-* Application deployment to ECS
+* Supports multiple deployment methods
   * Command base deploy
   * Slack interactive deploy
   * GitHub push detect deploy
-* Regular cleanup of repository on ECR
+* Provide web console
+* Deployment execution
+  * Build image
+  * Push image to ECR
+  * Create service
+  * Update service
+  * Support scheduled event
+  * Regular cleanup of repository on ECR
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
 
