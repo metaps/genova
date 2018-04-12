@@ -25,7 +25,7 @@
   <div class="row">
     <div class="small-4 large-2 columns parameter-id">Commit</div>
     <div class="small-8 large-10 columns">
-      <% if @deploy_job[:commit_id].present? %>
+      <% if @deploy_job.include?(:commit_id) %>
         <i class="fa fa-github" aria-hidden="true"></i>
         <%= link_to(@deploy_job[:commit_id][0, 7], "https://github.com/#{@deploy_job[:account]}/#{@deploy_job[:repository]}/commit/#{@deploy_job[:commit_id]}") %>
       <% end %>

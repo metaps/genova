@@ -10,7 +10,7 @@ module Genova
           allow(bot_mock).to receive(:post_error)
           allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
 
-          expect{ Genova::Sidekiq::ErrorHandler.notify(RuntimeError.new, {job: {}}) }.to_not raise_error
+          expect { Genova::Sidekiq::ErrorHandler.notify(RuntimeError.new, job: {}) }.to_not raise_error
         end
       end
     end
