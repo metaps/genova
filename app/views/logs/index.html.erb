@@ -33,7 +33,7 @@
             <td><%= deploy_job[:repository] %></td>
             <td><%= deploy_job[:branch].truncate(24) %></td>
             <td>
-              <% if deploy_job.include?(:commit_id) %>
+              <% if deploy_job[:commit_id].present? %>
                 <i class="fa fa-github" aria-hidden="true"></i>
                 <%= link_to(deploy_job[:commit_id][0, 7], "https://github.com/#{deploy_job[:account]}/#{deploy_job[:repository]}/commit/#{deploy_job[:commit_id]}") %>
               <% end %>
