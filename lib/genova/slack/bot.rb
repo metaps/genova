@@ -136,16 +136,23 @@ module Genova
         }
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', datum)
         compare_ids = compare_commit_ids(datum)
+        fields = []
 
-        compare_text = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
-                         'Commit ID is unchanged.'
-                       elsif compare_ids[:deployed_commit_id].nil?
-                         'Deployed task does not exist.'
-                       else
-                         "<https://github.com/#{params[:account]}/#{params[:repository]}/" \
-                         "compare/#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}|" \
-                         "#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}>"
-                       end
+        if compare_ids.present?
+          value = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
+                    'Commit ID is unchanged.'
+                  else
+                    "<https://github.com/#{params[:account]}/#{params[:repository]}/" \
+                    "compare/#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}|" \
+                    "#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}>"
+                  end
+
+          fields << {
+            title: 'Git compare',
+            value: value,
+            short: true
+          }
+        end
 
         @client.chat_postMessage(
           channel: @channel,
@@ -155,11 +162,7 @@ module Genova
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
             callback_id: callback_id,
-            fields: [{
-              title: 'Git compare',
-              value: compare_text,
-              short: true
-            }],
+            fields: fields,
             actions: [
               {
                 name: 'submit',
@@ -348,19 +351,18 @@ module Genova
 
       def compare_commit_ids(params)
         repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository], params[:branch])
-        current_commit_id = repository_manager.origin_last_commit_id
+        current_commit_id = repository_manager.origin_last_commit_id.to_s
 
         service = @ecs.describe_services(
           cluster: params[:cluster],
           services: [params[:service]]
         ).services[0]
 
-        raise Genova::Config::DeployConfigError, 'Service is not found.' unless service.present? && service[:status] == 'ACTIVE'
-        deployed_commit_id = image_id(service[:task_definition])
+        return unless service.present? && service[:status] == 'ACTIVE'
 
         {
           current_commit_id: current_commit_id,
-          deployed_commit_id: deployed_commit_id
+          deployed_commit_id: image_id(service[:task_definition])
         }
       end
 
