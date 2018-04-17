@@ -30,7 +30,7 @@ This package provides ECS deployment function.
   * GitHub push detect deploy
 * Provide web console
 * Deployment execution
-  * Build image
+  * Build image from repository on GitHub
   * Push image to ECR
   * Create service
   * Update service
