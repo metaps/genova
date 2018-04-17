@@ -10,4 +10,5 @@ production:
   <<: *default
 
 test:
+  <<: *default
   db: 1
