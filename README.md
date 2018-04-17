@@ -35,7 +35,7 @@ This package provides ECS deployment function.
   * Create service
   * Update service
   * Support scheduled event
-  * Regular cleanup of repository on ECR
+  * Rotation cleanup of repository on ECR
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
 
