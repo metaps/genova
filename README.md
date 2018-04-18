@@ -5,7 +5,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/b1d9269868e13bd658a2/test_coverage)](https://codeclimate.com/github/metaps/genova/test_coverage)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
-This package provides ECS deployment function.
+This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function.
 
 ## Table of contents
 
@@ -31,7 +31,7 @@ This package provides ECS deployment function.
 * Provide web console
 * Deployment execution
   * Build image from repository on GitHub
-  * Push image to ECR
+  * Push image to [ECR](https://aws.amazon.com/ecr/)
   * Create service
   * Update service
   * Support scheduled event
