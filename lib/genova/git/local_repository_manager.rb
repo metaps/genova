@@ -21,15 +21,13 @@ module Genova
   module Git
     class LocalRepositoryManager
       attr_reader :path
-      class_attribute :logger
 
-      def initialize(account, repository, branch = Settings.github.default_branch)
+      def initialize(account, repository, branch = Settings.github.default_branch, options = {})
         @account = account
         @repository = repository
         @branch = branch
         @path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
-
-        Genova::Git::LocalRepositoryManager.logger = ::Logger.new(STDOUT) if Genova::Git::LocalRepositoryManager.logger.nil?
+        @logger = options[:logger] || ::Logger.new(STDOUT)
       end
 
       def clone
@@ -90,7 +88,7 @@ module Genova
       private
 
       def git_client
-        ::Git.open(@path, log: Genova::Git::LocalRepositoryManager.logger)
+        ::Git.open(@path, log: @logger)
       end
     end
   end

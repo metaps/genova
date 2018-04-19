@@ -8,13 +8,14 @@ module Slack
       logger.info('Started Slack::DeployWorker')
 
       deploy_job = DeployJob.find(id)
-      deploy_client = Genova::Client.new(
+      client = Genova::Client.new(
         Genova::Client.mode.find_value(:slack).to_sym,
         deploy_job[:repository],
         account: deploy_job[:account],
         branch: deploy_job[:branch],
         cluster: deploy_job[:cluster],
-        deploy_job_id: id
+        deploy_job_id: id,
+        lock_timeout: Settings.github.deploy_lock_timeout
       )
       bot = Genova::Slack::Bot.new
 
@@ -41,7 +42,7 @@ module Slack
         jid: jid,
         deploy_job_id: id
       )
-      task_definition = deploy_client.exec(deploy_job[:service], Settings.slack.deploy_lock_timeout)
+      task_definition = client.deploy(deploy_job[:service])
       bot.post_finished_deploy(
         cluster: deploy_job[:cluster],
         service: deploy_job[:service],
