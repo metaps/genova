@@ -54,6 +54,8 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 
+  Aws.config[:stub_responses] = true
+
   config.before do
     allow(Settings.github).to receive(:account).and_return('metaps')
   end
