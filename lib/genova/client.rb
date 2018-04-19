@@ -52,43 +52,51 @@ module Genova
     # @param [Integer] lock_timeout
     # @return [Aws::ECS::Types::TaskDefinition]
     def exec(service, lock_timeout = nil)
-      watch_deploy do
-        @logger.info('Start preparing for execute.')
+      @logger.info('Start preparing for execute.')
 
-        lock(lock_timeout)
-        @deploy_job.start_deploy
+      lock(lock_timeout)
+      @deploy_job.start_deploy
 
-        @repository_manager.update
-        deploy_config = @repository_manager.open_deploy_config
-        cluster_config = deploy_config.cluster(@options[:cluster])
+      @repository_manager.update
+      deploy_config = @repository_manager.open_deploy_config
+      cluster_config = deploy_config.cluster(@options[:cluster])
 
-        commit_id = @repository_manager.origin_last_commit_id
+      commit_id = @repository_manager.origin_last_commit_id
 
-        @deploy_job[:commit_id] = commit_id
-        @deploy_job[:cluster] = @options[:cluster]
-        @deploy_job.save
+      @deploy_job[:commit_id] = commit_id
+      @deploy_job[:cluster] = @options[:cluster]
+      @deploy_job.save
 
-        tag_revision = "build-#{@deploy_job.id}_#{commit_id}"
+      tag_revision = "build-#{@deploy_job.id}_#{commit_id}"
 
-        repository_names = build_images(service, deploy_config.service(@options[:cluster], service))
-        push_images(tag_revision, repository_names)
+      repository_names = build_images(service, deploy_config.service(@options[:cluster], service))
+      push_images(tag_revision, repository_names)
 
-        if @options[:push_only]
-          @deploy_job.finish_deploy
-          result = nil
-        else
-          task_definition = deploy(tag_revision, service, cluster_config)
-          cleanup_images(repository_names)
+      if @options[:push_only]
+        @deploy_job.finish_deploy
+        result = nil
+      else
+        task_definition = deploy(tag_revision, service, cluster_config)
+        cleanup_images(repository_names)
 
-          @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
-          result = task_definition
-        end
-
-        @logger.info('Execute completed successfully.')
-
-        unlock
-        result
+        @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
+        result = task_definition
       end
+
+      @logger.info('Execute completed successfully.')
+
+      unlock
+      result
+
+      rescue Interrupt
+        @logger.error("Detected abort of command. {\"deploy id\": #{@deploy_job.id}}")
+        cancel_deploy
+      rescue => e
+        @logger.error(e.message)
+        @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
+        @logger.error("Detected error of command. {\"deploy id\": #{@deploy_job.id}}")
+
+        cancel_deploy
     end
 
     def cancel_deploy
@@ -101,20 +109,18 @@ module Genova
 
     # @param [Integer] lock_timeout
     def lock(lock_timeout = nil)
-      watch_deploy do
-        waiting_time = 0
+      waiting_time = 0
 
-        while @mutex.locked? || !@mutex.lock
-          if lock_timeout.nil? || waiting_time >= lock_timeout
-            cancel_deploy
-            raise DeployLockError, "Other deployment is in progress. [#{@repository}]"
-          end
-
-          @logger.warn("Deploy locked. Retry in #{LOCK_WAIT_INTERVAL} seconds.")
-
-          sleep(LOCK_WAIT_INTERVAL)
-          waiting_time += LOCK_WAIT_INTERVAL
+      while @mutex.locked? || !@mutex.lock
+        if lock_timeout.nil? || waiting_time >= lock_timeout
+          cancel_deploy
+          raise DeployLockError, "Other deployment is in progress. [#{@repository}]"
         end
+
+        @logger.warn("Deploy locked. Retry in #{LOCK_WAIT_INTERVAL} seconds.")
+
+        sleep(LOCK_WAIT_INTERVAL)
+        waiting_time += LOCK_WAIT_INTERVAL
       end
     end
 
@@ -137,19 +143,6 @@ module Genova
       return if File.exist?(options[:ssh_secret_key_path])
 
       raise PrivateKeyNotFoundError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
-    end
-
-    def watch_deploy
-      yield
-    rescue Interrupt
-      @logger.error("Detected abort of command. {\"deploy id\": #{@deploy_job.id}}")
-      cancel_deploy
-    rescue => e
-      @logger.error(e.message)
-      @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
-      @logger.error("Detected error of command. {\"deploy id\": #{@deploy_job.id}}")
-
-      cancel_deploy
     end
 
     # @param [String] service

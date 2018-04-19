@@ -362,11 +362,11 @@ module Genova
 
         {
           current_commit_id: current_commit_id,
-          deployed_commit_id: image_id(service[:task_definition])
+          deployed_commit_id: deployed_commit_id(service[:task_definition])
         }
       end
 
-      def image_id(task_definition_arn)
+      def deployed_commit_id(task_definition_arn)
         container_definition = @ecs.describe_task_definition(
           task_definition: task_definition_arn
         ).task_definition.container_definitions[0]
