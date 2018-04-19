@@ -19,7 +19,6 @@ class Genova < Thor
   option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
   option :mode, required: false, default: 'manual', desc: 'Deploy mode. (auto/manual)'
   option :profile, required: false, default: Settings.aws.profile, desc: 'AWS profile.'
-  option :push_only, required: false, default: false, type: :boolean, desc: 'Push image to ECR. Deployment will not be executed.'
   option :region, required: false, default: Settings.aws.region, desc: 'Specify ECR region.'
   option :repository, required: true, aliases: :r, desc: 'GitHub repository.'
   option :ssh_secret_key_path, required: false, default: "#{ENV.fetch('HOME')}/.ssh/id_rsa", desc: 'Private key for accessing GitHub.'
@@ -28,7 +27,7 @@ class Genova < Thor
     deploy_client = ::Genova::Client.new(options[:mode].to_sym, options[:repository], options.symbolize_keys)
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
 
-    deploy_client.exec(options[:service])
+    deploy_client.deploy(options[:service])
   end
 
   desc 'debug-slack-greeting', 'Slack bot says Hello'

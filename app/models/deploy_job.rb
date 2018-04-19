@@ -15,7 +15,6 @@ class DeployJob
   field :service, type: String
   field :interactive, type: Boolean
   field :profile, type: String
-  field :push_only, type: Boolean
   field :region, type: String
   field :verbose, type: String
   field :ssh_secret_key_path, type: String
