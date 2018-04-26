@@ -19,32 +19,11 @@ module Genova
         allow(ecs_deployer_mock).to receive(:service).and_return(service_client_mock)
         allow(ecs_deployer_mock).to receive(:task).and_return(task_client_mock)
         allow(EcsDeployer::Client).to receive(:new).and_return(ecs_deployer_mock)
-
-        deploy_config = Genova::Config::DeployConfig.new(
-          clusters: [
-            {
-              name: 'cluster',
-              services: {
-                service: {
-                  formation: {
-                    cluster: 'cluster',
-                    service_name: 'service_name',
-                    task_definition: 'task_definition',
-                    desired_count: 1
-                  }
-                }
-              }
-            }
-          ]
-        )
-        local_repository_manager_mock = double(Genova::Git::LocalRepositoryManager)
-
-        allow(local_repository_manager_mock).to receive(:open_deploy_config).and_return(deploy_config)
-        allow(local_repository_manager_mock).to receive(:task_definition_config_path)
-        allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(local_repository_manager_mock)
       end
 
       describe 'deploy_service' do
+        include_context 'load local_repository_manager_mock'
+
         let(:repository_manager) { Genova::Git::LocalRepositoryManager.new('account', 'repository', 'master') }
         let(:client)  { Genova::Ecs::Client.new('cluster', repository_manager, region: 'region') }
 

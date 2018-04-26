@@ -8,7 +8,7 @@ module Genova
         @ecr = Aws::ECR::Client.new(profile: params[:profile], region: params[:region])
         @registry = ENV.fetch('AWS_ACCOUNT_ID') + '.dkr.ecr.ap-northeast-1.amazonaws.com'
 
-        @logger = params[:logger] || Logger.new(STDOUT)
+        @logger = params[:logger] || ::Logger.new(STDOUT)
 
         ::Docker.options[:read_timeout] = Settings.aws.service.ecr.read_timeout
         ::Docker.logger = @logger
