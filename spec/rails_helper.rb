@@ -58,6 +58,48 @@ RSpec.configure do |config|
 
   config.before do
     allow(Settings.github).to receive(:account).and_return('metaps')
+
+  end
+end
+
+shared_context 'load local_repository_manager_mock' do
+  let(:deploy_config) do
+    Genova::Config::DeployConfig.new(
+      clusters: [
+        {
+          name: 'cluster',
+          services: {
+            service: {
+              formation: {
+                cluster: 'cluster',
+                service_name: 'service_name',
+                task_definition: 'task_definition',
+                desired_count: 1
+              }
+            }
+          }
+        }
+      ]
+    )
+  end
+  let(:task_definition_config) do
+    Genova::Config::TaskDefinitionConfig.new(
+      container_definitions: [
+        {
+          name: 'app',
+          image: 'xxx/app:revision_tag'
+        }
+      ]
+    )
+  end
+  let(:local_repository_manager_mock) { double(Genova::Git::LocalRepositoryManager) }
+
+  before do
+    allow(local_repository_manager_mock).to receive(:open_deploy_config).and_return(deploy_config)
+    allow(local_repository_manager_mock).to receive(:open_task_definition_config).and_return(task_definition_config)
+    allow(local_repository_manager_mock).to receive(:path).and_return('path')
+    allow(local_repository_manager_mock).to receive(:task_definition_config_path)
+    allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(local_repository_manager_mock)
   end
 end
 
