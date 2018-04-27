@@ -54,7 +54,7 @@ module V1
           client_mock = double(Octokit::Client)
           resource_mock = double(Sawyer::Resource)
 
-          allow(resource_mock).to receive(:attrs).and_return({content: Base64.encode64('{}')})
+          allow(resource_mock).to receive(:attrs).and_return(content: Base64.encode64('{}'))
           allow(client_mock).to receive(:contents).and_return(resource_mock)
           allow(Octokit::Client).to receive(:new).and_return(client_mock)
 

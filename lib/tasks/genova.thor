@@ -17,16 +17,15 @@ class Genova < Thor
   option :cluster, required: true, aliases: :c, desc: 'Specify cluster.'
   option :service, required: true, aliases: :s, desc: 'Specify service.'
   option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
-  option :mode, required: false, default: 'manual', desc: 'Deploy mode. (auto/manual)'
   option :profile, required: false, default: Settings.aws.profile, desc: 'AWS profile.'
   option :region, required: false, default: Settings.aws.region, desc: 'Specify ECR region.'
   option :repository, required: true, aliases: :r, desc: 'GitHub repository.'
   option :ssh_secret_key_path, required: false, default: "#{ENV.fetch('HOME')}/.ssh/id_rsa", desc: 'Private key for accessing GitHub.'
   option :verbose, required: false, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
   def deploy
-    deploy_client = ::Genova::Client.new(options[:mode].to_sym, options[:repository], options.symbolize_keys)
-    return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
+    deploy_client = ::Genova::Client.new(options.symbolize_keys)
 
+    return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
     deploy_client.deploy(options[:service])
   end
 
