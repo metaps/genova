@@ -9,8 +9,8 @@ module Github
 
       deploy_job = DeployJob.find(id)
       client = Genova::Client.new(
-        Genova::Client.mode.find_value(:auto).to_sym,
-        deploy_job[:repository],
+        mode: Genova::Client.mode.find_value(:auto).to_sym,
+        repository: deploy_job[:repository],
         account: deploy_job[:account],
         branch: deploy_job[:branch],
         cluster: deploy_job[:cluster],
