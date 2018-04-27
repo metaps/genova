@@ -5,7 +5,8 @@ module Genova
     enumerize :status, in: %i[in_progress success failure]
     enumerize :mode, in: %i[manual auto slack]
 
-    def initialize(mode, repository, options = {})
+    def initialize(options = {})
+      options[:mode] ||= Genova::Client.mode.find_value(:manual).to_sym
       options[:account] ||= Settings.github.account
       options[:branch] ||= Settings.github.default_branch
       options[:interactive] ||= false
@@ -16,14 +17,9 @@ module Genova
       options[:lock_wait_interval] = 60
       options[:force] ||= false
 
-      raise GitAccountUndefinedError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
+      validate(options)
 
-      unless File.exist?(options[:ssh_secret_key_path])
-        raise PrivateKeyNotFoundError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
-      end
-
-      @mode = mode
-      @repository = repository
+      @repository = options[:repository]
       @options = options
 
       id = @options[:deploy_job_id] || DeployJob.generate_id
@@ -34,7 +30,7 @@ module Genova
         end
 
         deploy_job.status = Genova::Client.status.find_value(:in_progress).to_s
-        deploy_job.mode = mode
+        deploy_job.mode = options[:mode]
         deploy_job.repository = @repository
       end
 
@@ -81,21 +77,28 @@ module Genova
 
       unlock
       task_definition
+    rescue Interrupt
+      @logger.error("Detected abort of command. {\"deploy id\": #{@deploy_job.id}}")
+      cancel
+    rescue => e
+      @logger.error(e.message)
+      @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
+      @logger.error("Detected error of command. {\"deploy id\": #{@deploy_job.id}}")
 
-      rescue Interrupt
-        @logger.error("Detected abort of command. {\"deploy id\": #{@deploy_job.id}}")
-        cancel
-      rescue => e
-        @logger.error(e.message)
-        @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
-        @logger.error("Detected error of command. {\"deploy id\": #{@deploy_job.id}}")
-
-        cancel
-
-        raise e unless @mode == Genova::Client.mode.find_value(:manual)
+      cancel
+      raise e unless @mode == Genova::Client.mode.find_value(:manual)
     end
 
     private
+
+    def validate(options)
+      raise OptionValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
+      raise OptionValidateError, 'Please specify repository name.' if options[:repository].nil?
+      raise OptionValidateError, 'Please specify cluster name.' if options[:cluster].nil?
+
+      return if File.exist?(options[:ssh_secret_key_path])
+      raise OptionValidateError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
+    end
 
     def lock(lock_timeout = nil)
       return if @options[:force]
@@ -192,8 +195,7 @@ module Genova
       @logger.info('Deployment has been canceled.')
     end
 
-    class GitAccountUndefinedError < Error; end
-    class PrivateKeyNotFoundError < Error; end
+    class OptionValidateError < Error; end
     class DeployLockError < Error; end
     class DockerBuildError < Error; end
     class ImagePushError < Error; end

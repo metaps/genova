@@ -1,4 +1,4 @@
-module ::Genova
+module Genova
   module Slack
     class History
       def initialize(slack_user_id)
