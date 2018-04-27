@@ -58,7 +58,6 @@ RSpec.configure do |config|
 
   config.before do
     allow(Settings.github).to receive(:account).and_return('metaps')
-
   end
 end
 
@@ -99,6 +98,8 @@ shared_context 'load local_repository_manager_mock' do
     allow(local_repository_manager_mock).to receive(:open_task_definition_config).and_return(task_definition_config)
     allow(local_repository_manager_mock).to receive(:path).and_return('path')
     allow(local_repository_manager_mock).to receive(:task_definition_config_path)
+    allow(local_repository_manager_mock).to receive(:origin_last_commit_id)
+    allow(local_repository_manager_mock).to receive(:update)
     allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(local_repository_manager_mock)
   end
 end
