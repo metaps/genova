@@ -7,6 +7,8 @@ module Genova
     let(:docker_client_mock) { double(Genova::Docker::Client) }
 
     before do
+      allow(File).to receive(:exist?).with("#{ENV.fetch('HOME')}/.ssh/id_rsa").and_return(true)
+
       allow(ecr_client_mock).to receive(:authenticate)
       allow(ecr_client_mock).to receive(:push_image)
       allow(ecr_client_mock).to receive(:cleanup_image)
