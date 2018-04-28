@@ -8,18 +8,8 @@ module Github
       logger.info('Started Github::DeployWorker')
 
       deploy_job = DeployJob.find(id)
-      client = Genova::Client.new(
-        mode: Genova::Client.mode.find_value(:auto).to_sym,
-        repository: deploy_job[:repository],
-        account: deploy_job[:account],
-        branch: deploy_job[:branch],
-        cluster: deploy_job[:cluster],
-        service: deploy_job[:service],
-        deploy_job_id: id,
-        lock_timeout: Settings.github.deploy_lock_timeout
-      )
-      bot = Genova::Slack::Bot.new
 
+      bot = Genova::Slack::Bot.new
       bot.post_detect_auto_deploy(
         account: deploy_job[:account],
         repository: deploy_job[:repository],
@@ -30,6 +20,17 @@ module Github
         service: deploy_job[:service],
         jid: jid,
         deploy_job_id: id
+      )
+
+      client = Genova::Client.new(
+        mode: Genova::Client.mode.find_value(:auto).to_sym,
+        repository: deploy_job[:repository],
+        account: deploy_job[:account],
+        branch: deploy_job[:branch],
+        cluster: deploy_job[:cluster],
+        service: deploy_job[:service],
+        deploy_job_id: id,
+        lock_timeout: Settings.github.deploy_lock_timeout
       )
       task_definition = client.deploy(deploy_job[:service])
 
