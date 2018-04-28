@@ -19,6 +19,7 @@
 require 'simplecov'
 
 SimpleCov.start do
+  add_filter 'config'
   add_filter 'lib/genova/slack/commands.rb'
   add_filter 'spec'
 end
