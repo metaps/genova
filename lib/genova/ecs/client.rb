@@ -4,7 +4,6 @@ module Genova
       def initialize(cluster, repository_manager, options = {})
         @cluster = cluster
         @repository_manager = repository_manager
-        @cluster_config = @repository_manager.open_deploy_config.cluster(@cluster)
 
         @ecs = Aws::ECS::Client.new(profile: options[:profile], region: options[:region])
         @logger = options[:logger] || ::Logger.new(STDOUT)
@@ -22,9 +21,10 @@ module Genova
         task_definition = create_task(@deployer_client.task, task_definition_path, tag_revision)
 
         service_client = @deployer_client.service
+        cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
 
         unless service_client.exist?(service)
-          formation_config = @cluster_config[:services][service.to_sym][:formation]
+          formation_config = cluster_config[:services][service.to_sym][:formation]
           raise Genova::Config::DeployConfigError, "Service is not registered. [#{service}]" if formation_config.nil?
 
           create_service(service, task_definition, formation_config)
@@ -37,7 +37,8 @@ module Genova
       end
 
       def deploy_scheduled_tasks(depend_service, tag_revision)
-        @cluster_config[:scheduled_tasks].each do |scheduled_task|
+        cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
+        cluster_config[:scheduled_tasks].each do |scheduled_task|
           task_client = @deployer_client.task
           scheduled_task_client = @deployer_client.scheduled_task
           config_base_path = Pathname(@repository_manager.path).join('config').to_s

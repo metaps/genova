@@ -36,12 +36,12 @@ module Genova
         end
       end
 
-      describe 'open_deploy_config' do
+      describe 'load_deploy_config' do
         it 'should be return config' do
           allow(manager).to receive(:update)
           allow(File).to receive(:read).and_return('{}')
 
-          expect(manager.open_deploy_config).to be_a(Genova::Config::DeployConfig)
+          expect(manager.load_deploy_config).to be_a(Genova::Config::DeployConfig)
         end
       end
 
@@ -51,12 +51,12 @@ module Genova
         end
       end
 
-      describe 'open_task_definition_config' do
+      describe 'load_task_definition_config' do
         it 'should be return config' do
           allow(manager).to receive(:update)
           allow(File).to receive(:read).and_return('{}')
 
-          expect(manager.open_task_definition_config('service')).to be_a(Genova::Config::TaskDefinitionConfig)
+          expect(manager.load_task_definition_config('service')).to be_a(Genova::Config::TaskDefinitionConfig)
         end
       end
     end

@@ -39,6 +39,8 @@ module Genova
       end
 
       def update
+        clone
+
         git = git_client
         git.fetch
         git.clean(force: true, d: true)
@@ -46,7 +48,7 @@ module Genova
         git.reset_hard("origin/#{@branch}")
       end
 
-      def open_deploy_config
+      def load_deploy_config
         update
 
         path = Pathname(@path).join('config/deploy.yml')
@@ -58,7 +60,7 @@ module Genova
         Pathname(@path).join('config', 'deploy', "#{service}.yml").to_s
       end
 
-      def open_task_definition_config(service)
+      def load_task_definition_config(service)
         update
 
         params = YAML.load(File.read(task_definition_config_path(service))).deep_symbolize_keys
@@ -66,6 +68,8 @@ module Genova
       end
 
       def origin_branches
+        clone
+
         git = git_client
         git.fetch
 
@@ -80,6 +84,8 @@ module Genova
 
       # @return [Git::Object::Commit]
       def origin_last_commit_id
+        clone
+
         git = git_client
         git.fetch
         git.remote.branch(@branch).gcommit.log(1).first
