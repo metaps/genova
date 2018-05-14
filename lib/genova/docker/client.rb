@@ -25,7 +25,7 @@ module Genova
 
           raise Genova::Config::DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          task_definition_config = @repository_manager.open_task_definition_config(service)
+          task_definition_config = @repository_manager.load_task_definition_config(service)
           container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 

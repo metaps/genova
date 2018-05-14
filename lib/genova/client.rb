@@ -136,7 +136,7 @@ module Genova
         region: @options[:region]
       )
 
-      deploy_config = @repository_manager.open_deploy_config
+      deploy_config = @repository_manager.load_deploy_config
       docker_client.build_images(service, deploy_config.service(@options[:cluster], service))
     end
 
@@ -154,7 +154,7 @@ module Genova
     end
 
     def update(service, tag_revision)
-      deploy_config = @repository_manager.open_deploy_config
+      deploy_config = @repository_manager.load_deploy_config
       cluster_config = deploy_config.cluster(@options[:cluster])
 
       if cluster_config.include?(:scheduled_tasks)
