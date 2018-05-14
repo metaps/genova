@@ -16,9 +16,10 @@ module Genova
       options[:lock_wait_interval] = 60
 
       raise GitAccountUndefinedError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
-      return if File.exist?(options[:ssh_secret_key_path])
 
-      raise PrivateKeyNotFoundError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
+      unless File.exist?(options[:ssh_secret_key_path])
+        raise PrivateKeyNotFoundError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
+      end
 
       @repository = repository
       @options = options
