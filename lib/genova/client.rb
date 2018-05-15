@@ -21,6 +21,7 @@ module Genova
         raise PrivateKeyNotFoundError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
       end
 
+      @mode = mode
       @repository = repository
       @options = options
 
@@ -89,6 +90,8 @@ module Genova
         @logger.error("Detected error of command. {\"deploy id\": #{@deploy_job.id}}")
 
         cancel
+
+        raise e unless @mode == Genova::Client.mode.find_value(:manual)
     end
 
     private
