@@ -18,7 +18,11 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 require 'simplecov'
 
-SimpleCov.start
+SimpleCov.start do
+  add_filter 'config'
+  add_filter 'lib/genova/slack/commands.rb'
+  add_filter 'spec'
+end
 
 require 'json_spec'
 require 'slack-ruby-bot/rspec'
