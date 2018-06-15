@@ -14,6 +14,7 @@ module Genova
       options[:verbose] ||= false
       options[:ssh_secret_key_path] ||= "#{ENV.fetch('HOME')}/.ssh/id_rsa"
       options[:lock_wait_interval] = 60
+      options[:force] = false
 
       raise GitAccountUndefinedError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
 
@@ -97,6 +98,8 @@ module Genova
     private
 
     def lock(lock_timeout = nil)
+      return if @options[:force]
+
       waiting_time = 0
 
       while @mutex.locked? || !@mutex.lock
@@ -113,6 +116,7 @@ module Genova
     end
 
     def unlock
+      return if @options[:force]
       @mutex.unlock
     end
 
