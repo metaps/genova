@@ -1,7 +1,8 @@
 module Genova
   module Docker
     class Client
-      def initialize(repository_manager, options = {})
+      def initialize(cluster, repository_manager, options = {})
+        @cluster = cluster
         @repository_manager = repository_manager
         @logger = options[:logger] || ::Logger.new(STDOUT)
         @cipher = EcsDeployer::Util::Cipher.new(profile: options[:profile], region: options[:region])
@@ -25,7 +26,7 @@ module Genova
 
           raise Genova::Config::DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          task_definition_config = @repository_manager.load_task_definition_config(service)
+          task_definition_config = @repository_manager.load_task_definition_config(@cluster, service)
           container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 

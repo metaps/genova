@@ -137,6 +137,7 @@ module Genova
 
       @repository_manager.update
       docker_client = Genova::Docker::Client.new(
+        @options[:cluster],
         @repository_manager,
         logger: @logger,
         profile: @options[:profile],
