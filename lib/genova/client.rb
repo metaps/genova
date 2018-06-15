@@ -14,7 +14,7 @@ module Genova
       options[:verbose] ||= false
       options[:ssh_secret_key_path] ||= "#{ENV.fetch('HOME')}/.ssh/id_rsa"
       options[:lock_wait_interval] = 60
-      options[:force] = false
+      options[:force] ||= false
 
       raise GitAccountUndefinedError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
 
