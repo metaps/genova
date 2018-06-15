@@ -4,7 +4,7 @@ module Genova
   module Docker
     describe Client do
       let(:repository_manager) { Genova::Git::LocalRepositoryManager.new('account', 'repository', 'master') }
-      let(:docker_client) { Genova::Docker::Client.new(repository_manager, region: 'region') }
+      let(:docker_client) { Genova::Docker::Client.new('cluster', repository_manager, region: 'region') }
 
       describe 'build_tag_revision' do
         it 'should be return tag revision' do
