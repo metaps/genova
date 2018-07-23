@@ -78,9 +78,6 @@ Please refer to [sample](https://github.com/naomichi-y/ecs_deployer#task-definit
 ## Setup Genova
 
 ```bash
-$ git clone https://github.com/metaps/genova.git
-$ cd genova
-
 # See https://github.com/metaps/genova/wiki/Configuration
 $ cp config/settings.yml config/settings.local.yml
 $ cp .env.default .env
@@ -96,7 +93,6 @@ Please open http://localhost:3000/ in the browser.
 ### Command base deploy
 
 ```bash
-$ cd genova
 $ docker-compose run --rm rails thor genova help deploy
 
 # e.g.
