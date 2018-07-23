@@ -17,7 +17,7 @@ module Genova
       end
 
       def deploy_service(service, tag_revision)
-        task_definition_path = @repository_manager.task_definition_config_path(service)
+        task_definition_path = @repository_manager.task_definition_config_path(@cluster, service)
         task_definition = create_task(@deployer_client.task, task_definition_path, tag_revision)
 
         service_client = @deployer_client.service

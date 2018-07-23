@@ -56,14 +56,19 @@ module Genova
         Genova::Config::DeployConfig.new(params)
       end
 
-      def task_definition_config_path(service)
+      def task_definition_config_path(cluster, service)
+        params = load_deploy_config.cluster(cluster)
+        path = params.dig(:services, service.to_sym, :path)
+
+        return Pathname(@path).join('config', path).to_s if path.present?
+
         Pathname(@path).join('config', 'deploy', "#{service}.yml").to_s
       end
 
-      def load_task_definition_config(service)
+      def load_task_definition_config(cluster, service)
         update
 
-        params = YAML.load(File.read(task_definition_config_path(service))).deep_symbolize_keys
+        params = YAML.load(File.read(task_definition_config_path(cluster, service))).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
       end
 
