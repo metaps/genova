@@ -24,7 +24,7 @@ module Genova
         repositories = @ecr.describe_repositories[:repositories]
 
         if repositories.find { |item| item[:repository_name] == repository_name }.nil?
-          raise Genova::Client::ImagePushError, "Repository '#{repository_name}' does not exist in ECR."
+          @ecr.create_repository(repository_name: repository_name)
         end
 
         repo_tag_latest = "#{@registry}/#{repository_name}:#{IMAGE_TAG_LATEST}"
