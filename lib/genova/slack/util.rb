@@ -26,7 +26,7 @@ module Genova
         def repository_options
           options = []
 
-          repositories = Settings.slack.interactive.repositories || []
+          repositories = Settings.github.repositories.map { |h| h[:name] } || []
           repositories.each do |repository|
             split = repository.split('/')
 
