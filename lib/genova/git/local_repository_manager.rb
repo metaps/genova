@@ -20,22 +20,25 @@ end
 module Genova
   module Git
     class LocalRepositoryManager
-      attr_reader :path
+      attr_reader :repos_path, :base_path
 
       def initialize(account, repository, branch = Settings.github.default_branch, options = {})
         @account = account
         @repository = repository
         @branch = branch
-        @path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
+        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
         @logger = options[:logger] || ::Logger.new(STDOUT)
+
+        param = Settings.github.repositories.find { |k, _v| k[:name] == @repository }
+        @base_path = param.nil? ? @repos_path : Pathname(@repos_path).join(param[:base_path] || '').to_s
       end
 
       def clone
-        return if Dir.exist?("#{@path}/.git")
+        return if Dir.exist?("#{@repos_path}/.git")
         uri = "git@github.com:#{@account}/#{@repository}.git"
 
-        FileUtils.mkdir_p(@path) unless Dir.exist?(@path)
-        ::Git.clone(uri, '', path: @path)
+        FileUtils.mkdir_p(@repos_path) unless Dir.exist?(@repos_path)
+        ::Git.clone(uri, '', path: @repos_path)
       end
 
       def update
@@ -51,7 +54,7 @@ module Genova
       def load_deploy_config
         update
 
-        path = Pathname(@path).join('config/deploy.yml')
+        path = Pathname(@base_path).join('config/deploy.yml')
         params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
       end
@@ -60,9 +63,9 @@ module Genova
         params = load_deploy_config.cluster(cluster)
         path = params.dig(:services, service.to_sym, :path)
 
-        return Pathname(@path).join('config', path).to_s if path.present?
+        return Pathname(@base_path).join('config', path).to_s if path.present?
 
-        Pathname(@path).join('config', 'deploy', "#{service}.yml").to_s
+        Pathname(@base_path).join('config', 'deploy', "#{service}.yml").to_s
       end
 
       def load_task_definition_config(cluster, service)
@@ -99,7 +102,7 @@ module Genova
       private
 
       def git_client
-        ::Git.open(@path, log: @logger)
+        ::Git.open(@repos_path, log: @logger)
       end
     end
   end
