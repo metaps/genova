@@ -5,10 +5,16 @@ module Genova
     describe Util do
       describe 'repository_options' do
         it 'should be return repository list' do
-          allow(Settings.slack.interactive).to receive(:repositories).and_return([
-                                                                                   'repository',
-                                                                                   'metaps/repository'
-                                                                                 ])
+          allow(Settings.github).to receive(:repositories).and_return(
+            [
+              {
+                name: 'repository'
+              },
+              {
+                name: 'metaps/repository'
+              }
+            ]
+          )
           results = Genova::Slack::Util.repository_options
           expect(results[0][:text]).to eq('repository')
           expect(results[0][:value]).to eq('metaps/repository')
