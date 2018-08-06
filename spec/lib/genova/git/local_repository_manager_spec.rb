@@ -53,7 +53,7 @@ module Genova
 
       describe 'task_definition_config_path' do
         it 'should be return task definition path' do
-          expect(manager.task_definition_config_path('cluster', 'service')).to eq(manager.path + '/config/deploy/service.yml')
+          expect(manager.task_definition_config_path('cluster', 'service')).to eq(manager.base_path + '/config/deploy/service.yml')
         end
       end
 
