@@ -41,7 +41,7 @@ module Genova
         cluster_config[:scheduled_tasks].each do |scheduled_task|
           task_client = @deployer_client.task
           scheduled_task_client = @deployer_client.scheduled_task
-          config_base_path = Pathname(@repository_manager.path).join('config').to_s
+          config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
           targets = []
 
           scheduled_task[:targets].each do |target|

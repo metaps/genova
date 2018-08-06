@@ -10,6 +10,7 @@ github:
   deploy_lock_timeout: 1800
   repositories: # repository settings
   - name: ''
+    base_path: ''
 
 aws:
   profile: 'default'
