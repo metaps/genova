@@ -28,15 +28,7 @@ module Genova
 
           repositories = Settings.github.repositories.map { |h| h[:name] } || []
           repositories.each do |repository|
-            split = repository.split('/')
-
-            value = if split.size == 1
-                      "#{Settings.github.account}/#{split[0]}"
-                    else
-                      repository.to_s
-                    end
-
-            options.push(text: repository, value: value)
+            options.push(text: repository, value: repository)
           end
 
           options
