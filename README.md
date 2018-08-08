@@ -117,7 +117,7 @@ If you want to deploy from Slack, you need to create a [Slack app](https://api.s
 4. Add key to `.env` file.
     * `SLACK_CLIENT_ID`
     * `SLACK_CLIENT_SECRET`
-    * `SLACK_API_TOKEN`
+    * `SLACK_API_TOKEN` (Bot User OAuth Access Token)
     * `SLACK_CHANNEL`
     * `SLACK_VERIFICATION_TOKEN`
 5. Open `docker-compose.yml` and uncomment `slack`.
