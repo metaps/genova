@@ -24,12 +24,14 @@ module Genova
 
       def initialize(account, repository, branch = Settings.github.default_branch, options = {})
         @account = account
-        @repository = repository
         @branch = branch
-        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
         @logger = options[:logger] || ::Logger.new(STDOUT)
 
-        param = Settings.github.repositories.find { |k, _v| k[:name] == @repository }
+        param = Settings.github.repositories.find { |k, _v|
+          k[:name] == repository || k[:repository] == repository
+        }
+        @repository = param.present? && param[:repository] || repository
+        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
         @base_path = param.nil? ? @repos_path : Pathname(@repos_path).join(param[:base_path] || '').to_s
       end
 
@@ -55,6 +57,8 @@ module Genova
         update
 
         path = Pathname(@base_path).join('config/deploy.yml')
+#        raise Genova::Config::DeployConfigError, "File does not exist. [#{path}]" unless File.exist?(path)
+
         params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
       end
@@ -71,7 +75,10 @@ module Genova
       def load_task_definition_config(cluster, service)
         update
 
-        params = YAML.load(File.read(task_definition_config_path(cluster, service))).deep_symbolize_keys
+        path = task_definition_config_path(cluster, service)
+        raise Genova::Config::DeployConfigError, "File does not exist. [#{path}]" unless File.exist?(path)
+
+        params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
       end
 

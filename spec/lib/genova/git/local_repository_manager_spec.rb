@@ -61,6 +61,7 @@ module Genova
         it 'should be return config' do
           allow(manager).to receive(:update)
           allow(File).to receive(:read).and_return('{}')
+          allow(File).to receive(:exist?).and_return(true)
 
           expect(manager.load_task_definition_config('cluster', 'service')).to be_a(Genova::Config::TaskDefinitionConfig)
         end
