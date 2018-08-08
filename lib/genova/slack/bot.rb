@@ -139,10 +139,13 @@ module Genova
         fields = []
 
         if compare_ids.present?
+          param = Settings.github.repositories.find { |k, _v| k[:name] == params[:repository] }
+          repository = param[:repository] || param[:name]
+
           value = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                     'Commit ID is unchanged.'
                   else
-                    "<https://github.com/#{params[:account]}/#{params[:repository]}/" \
+                    "<https://github.com/#{params[:account]}/#{repository}/" \
                     "compare/#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}|" \
                     "#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}>"
                   end
