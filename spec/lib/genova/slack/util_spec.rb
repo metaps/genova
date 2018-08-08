@@ -10,16 +10,11 @@ module Genova
               {
                 name: 'repository'
               },
-              {
-                name: 'metaps/repository'
-              }
             ]
           )
           results = Genova::Slack::Util.repository_options
           expect(results[0][:text]).to eq('repository')
-          expect(results[0][:value]).to eq('metaps/repository')
-          expect(results[1][:text]).to eq('metaps/repository')
-          expect(results[1][:value]).to eq('metaps/repository')
+          expect(results[0][:value]).to eq('repository')
         end
       end
 

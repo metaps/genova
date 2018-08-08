@@ -34,6 +34,13 @@ module Genova
 
       describe 'post_confirm_deploy' do
         it 'should be call bot' do
+          allow(Settings.github).to receive(:repositories).and_return(
+            [
+              {
+                name: 'repository'
+              }
+            ]
+          )
           allow(bot).to receive(:compare_commit_ids).and_return(deployed_commit_id: '', current_commit_id: '')
 
           bot.post_confirm_deploy(
