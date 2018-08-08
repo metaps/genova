@@ -8,6 +8,9 @@ github:
   account: '' # github account
   default_branch: 'master'
   deploy_lock_timeout: 1800
+  repositories: # repository settings
+  - name: ''
+    base_path: ''
 
 aws:
   profile: 'default'
@@ -25,8 +28,6 @@ slack:
   command:
     max_history: 5
   interactive:
-    repositories:
-      # - selectable repository name
     branch_limit: 20
   message:
     color:
