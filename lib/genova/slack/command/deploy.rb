@@ -46,16 +46,8 @@ module Genova
             args = expression.split(' ')
             raise DeployError, 'Parameter is incorrect.' unless args.size == 3
 
-            split = args[0].split('/')
-
-            if split.size == 2
-              results[:account] = split[0]
-              results[:repository] = split[1]
-            else
-              results[:account] = Settings.github.account
-              results[:repository] = split[0]
-            end
-
+            results[:account] = Settings.github.account
+            results[:repository] = args[0]
             results[:branch] = args[1]
 
             split = args[2].split(':')

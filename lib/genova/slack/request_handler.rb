@@ -39,14 +39,13 @@ module Genova
 
           if selected_repository.present?
             result = "Repository: #{selected_repository}"
-            split = selected_repository.split('/')
 
             @logger.info('Invoke Github::RetrieveBranchWorker')
-            @logger.info("account: #{split[0]}, repository: #{split[1]}, response_url: #{@payload_body[:response_url]}")
+            @logger.info("account: #{Settings.github.account}, repository: #{selected_repository}, response_url: #{@payload_body[:response_url]}")
 
             id = Genova::Sidekiq::Queue.add(
-              account: split[0],
-              repository: split[1],
+              account: Settings.github.account,
+              repository: selected_repository,
               response_url: @payload_body[:response_url]
             )
             ::Github::RetrieveBranchWorker.perform_async(id)
