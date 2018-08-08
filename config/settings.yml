@@ -5,12 +5,18 @@ deploy:
   wait_timeout: 900
 
 github:
-  account: '' # github account
+  account: '' # Github account.
   default_branch: 'master'
   deploy_lock_timeout: 1800
-  repositories: # repository settings
+  # If you change the base_path or alias name, you need to specify parameter.
+  # This parameter is also used in repository list of Slack interactive deploy.
+  repositories:
+    # Repository name or alias name. Name must be specified uniquely.
   - name: ''
+    # Base path to build image. (optional)
     base_path: ''
+    # Repository name. (optional)
+    repository: ''
 
 aws:
   profile: 'default'
