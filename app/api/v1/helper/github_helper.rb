@@ -15,11 +15,12 @@ module V1
         data = Oj.load(payload_body, symbol_keys: true)
         full_name = data[:repository][:full_name].split('/')
 
-        {
+        result = {
           account: full_name[0],
           repository: full_name[1],
-          branch: data[:ref].slice(11..data[:ref].size)
         }
+        result[:branch] = data[:ref].slice(11..data[:ref].size) if data[:ref].present?
+        result
       end
 
       def detect_auto_deploy_service(account, repository, branch)
