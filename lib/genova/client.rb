@@ -70,17 +70,14 @@ module Genova
       image_tag = build_image_tag(@deploy_job.id, commit_id)
       task_definition = @ecs_client.deploy_service(@options[:service], image_tag)
 
-      if Settings.github.tag
-        git_tag = build_git_tag(@deploy_job.id)
-        client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
-        client.create_release("#{@options[:account]}/#{@options[:repository]}", git_tag, :target_commitish => commit_id)
-      end
+      create_git_tag(commit_id) if Settings.github.tag
 
       @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
       @logger.info('Deployment succeeded.')
 
       unlock
       task_definition
+
     rescue Interrupt
       @logger.error("Interrupt was detected. {\"deploy id\": #{@deploy_job.id}}")
       cancel
@@ -94,14 +91,6 @@ module Genova
     end
 
     private
-
-    def build_image_tag(deploy_job_id, commit_id)
-      "build-#{deploy_job_id}_#{commit_id}"
-    end
-
-    def build_git_tag(deploy_job_id)
-      "build-#{deploy_job_id}"
-    end
 
     def validate_options(options)
       raise OptionValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
@@ -139,6 +128,17 @@ module Genova
       @mutex.unlock
       @deploy_job.cancel_deploy
       @logger.info('Deployment has been canceled.')
+    end
+
+    def build_image_tag(deploy_job_id, commit_id)
+      "build-#{deploy_job_id}_#{commit_id}"
+    end
+
+    def create_git_tag(commit_id)
+      git_tag = "build-#{@deploy_job.id}"
+
+      client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
+      client.create_release("#{@options[:account]}/#{@options[:repository]}", git_tag, :target_commitish => commit_id)
     end
 
     class OptionValidateError < Error; end
