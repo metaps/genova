@@ -7,10 +7,6 @@ module Genova
         @cipher = EcsDeployer::Util::Cipher.new(profile: options[:profile], region: options[:region])
       end
 
-      def self.build_tag_revision(deploy_job_id, commit_id)
-        "build-#{deploy_job_id}_#{commit_id}"
-      end
-
       def build_images(containers_config, task_definition_path)
         repository_names = []
 

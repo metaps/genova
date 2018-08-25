@@ -1,22 +1,3 @@
-module Git
-  class Lib
-    alias __branches_all__ branches_all
-
-    def branches_all
-      arr = []
-
-      # Add '--sort=--authordate' parameter
-      command_lines('branch', ['-a', '--sort=-authordate']).each do |b|
-        current = (b[0, 2] == '* ')
-        arr << [b.gsub('* ', '').strip, current]
-      end
-      arr
-    end
-
-    private :__branches_all__
-  end
-end
-
 module Genova
   module Git
     class LocalRepositoryManager
@@ -51,6 +32,8 @@ module Genova
         git.clean(force: true, d: true)
         git.checkout(@branch) if git.branch != @branch
         git.reset_hard("origin/#{@branch}")
+
+        git.log(1).to_s
       end
 
       def load_deploy_config
@@ -88,15 +71,6 @@ module Genova
         end
 
         branches
-      end
-
-      # @return [Git::Object::Commit]
-      def origin_last_commit_id
-        clone
-
-        git = git_client
-        git.fetch
-        git.remote.branch(@branch).gcommit.log(1).first
       end
 
       private

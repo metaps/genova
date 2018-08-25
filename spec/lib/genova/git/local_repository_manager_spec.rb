@@ -32,6 +32,7 @@ module Genova
           allow(git_mock).to receive(:clean)
           allow(git_mock).to receive(:checkout)
           allow(git_mock).to receive(:reset_hard)
+          allow(git_mock).to receive(:log)
           allow(::Git).to receive(:open).and_return(git_mock)
 
           manager.update

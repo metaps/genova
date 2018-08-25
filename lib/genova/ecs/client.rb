@@ -28,11 +28,11 @@ module Genova
       end
 
       def ready
-        @repository_manager.update
         @ecr_client.authenticate
+        @repository_manager.update
       end
 
-      def deploy_service(service, tag_revision)
+      def deploy_service(service, image_tag)
         deploy_config = @repository_manager.load_deploy_config
         service_config = deploy_config.service(@cluster, service)
 
@@ -42,14 +42,14 @@ module Genova
         pushed_size = 0
 
         repository_names.each do |repository_name|
-          @ecr_client.push_image(tag_revision, repository_name)
+          @ecr_client.push_image(image_tag, repository_name)
           pushed_size += 1
         end
 
         raise ImagePushError, 'Push image is not found.' if pushed_size.zero?
 
         task_definition_path = @repository_manager.task_definition_config_path(service_config[:path])
-        task_definition = create_task(@deploy_client.task, task_definition_path, tag_revision)
+        task_definition = create_task(@deploy_client.task, task_definition_path, image_tag)
 
         service_client = @deploy_client.service
         cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
@@ -65,16 +65,14 @@ module Genova
         service_client.update(service, task_definition)
 
         # Deprecated
-        deploy_scheduled_tasks(service, tag_revision) if cluster_config.include?(:scheduled_tasks)
+        deploy_scheduled_tasks(service, image_tag) if cluster_config.include?(:scheduled_tasks)
 
-        repository_names.each do |repository_name|
-          @ecr_client.destroy_image(repository_name)
-        end
+        @ecr_client.destroy_images(repository_names)
 
         task_definition
       end
 
-      def deploy_scheduled_tasks(depend_service, tag_revision)
+      def deploy_scheduled_tasks(depend_service, image_tag)
         cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
         cluster_config[:scheduled_tasks].each do |scheduled_task|
           task_client = @deploy_client.task
@@ -86,7 +84,7 @@ module Genova
             next unless target[:depend_service] == depend_service
 
             task_definition_path = File.expand_path(target[:path], config_base_path)
-            task_definition = create_task(task_client, task_definition_path, tag_revision)
+            task_definition = create_task(task_client, task_definition_path, image_tag)
 
             builder = scheduled_task_client.target_builder(target[:name])
             builder.role(target[:role]) if target.include?(:target)
@@ -129,9 +127,9 @@ module Genova
         nil
       end
 
-      def create_task(task_client, task_definition_path, tag_revision)
+      def create_task(task_client, task_definition_path, image_tag)
         unless @task_definitions.include?(task_definition_path)
-          @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag_revision)
+          @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: image_tag)
         end
 
         @task_definitions[task_definition_path]

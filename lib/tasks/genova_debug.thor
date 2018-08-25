@@ -19,7 +19,7 @@ class GenovaDebug < Thor
   def github_push
     post_data = {
       repository: {
-        full_name: "#{account}/#{options[:repository]}"
+        full_name: "#{options[:account]}/#{options[:repository]}"
       },
       ref: "refs/heads/#{options[:branch]}"
     }

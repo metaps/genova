@@ -6,12 +6,6 @@ module Genova
       let(:repository_manager) { Genova::Git::LocalRepositoryManager.new('account', 'repository', 'master') }
       let(:docker_client) { Genova::Docker::Client.new(repository_manager, region: 'region') }
 
-      describe 'build_tag_revision' do
-        it 'should be return tag revision' do
-          expect(Genova::Docker::Client.build_tag_revision('deploy_job_id', 'commit_id')).to eq('build-deploy_job_id_commit_id')
-        end
-      end
-
       describe 'build_images' do
         include_context 'load local_repository_manager_mock'
 

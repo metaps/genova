@@ -22,7 +22,7 @@ module Genova
 
         ecr_client_mock = double(Genova::Ecr::Client)
         allow(ecr_client_mock).to receive(:push_image)
-        allow(ecr_client_mock).to receive(:destroy_image)
+        allow(ecr_client_mock).to receive(:destroy_images)
         allow(Genova::Ecr::Client).to receive(:new).and_return(ecr_client_mock)
 
         docker_client_mock = double(Genova::Docker::Client)
