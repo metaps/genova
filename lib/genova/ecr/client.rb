@@ -4,7 +4,7 @@ module Genova
       BATCH_DELETE_MAX_IMAGE_SIZE = 100
       IMAGE_TAG_LATEST = 'latest'.freeze
 
-      def initialize(params)
+      def initialize(params = {})
         @ecr = Aws::ECR::Client.new
         @registry = ENV.fetch('AWS_ACCOUNT_ID') + '.dkr.ecr.ap-northeast-1.amazonaws.com'
 
