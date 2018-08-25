@@ -14,6 +14,7 @@ module Slack
         account: deploy_job[:account],
         branch: deploy_job[:branch],
         cluster: deploy_job[:cluster],
+        service: deploy_job[:service],
         deploy_job_id: id,
         lock_timeout: Settings.github.deploy_lock_timeout
       )
@@ -42,7 +43,7 @@ module Slack
         jid: jid,
         deploy_job_id: id
       )
-      task_definition = client.deploy(deploy_job[:service])
+      task_definition = client.run
       bot.post_finished_deploy(
         cluster: deploy_job[:cluster],
         service: deploy_job[:service],

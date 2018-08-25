@@ -32,7 +32,7 @@ module Github
         deploy_job_id: id,
         lock_timeout: Settings.github.deploy_lock_timeout
       )
-      task_definition = client.deploy(deploy_job[:service])
+      task_definition = client.run
 
       bot.post_finished_deploy(
         cluster: deploy_job[:cluster],

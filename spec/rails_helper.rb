@@ -74,7 +74,8 @@ shared_context 'load local_repository_manager_mock' do
                 service_name: 'service_name',
                 task_definition: 'task_definition',
                 desired_count: 1
-              }
+              },
+              path: 'path'
             }
           }
         }
