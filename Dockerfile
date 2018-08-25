@@ -16,8 +16,7 @@ RUN apt-get update && apt-get install -y \
     gettext \
     cron \
     logrotate \
-    vim \
-  && apt-get remove -y git
+    vim
 RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
   && add-apt-repository \
     "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
@@ -28,18 +27,6 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Reauired '--sort=---authordate' option of Git package.
-RUN curl -LO https://github.com/git/git/archive/v2.15.1.tar.gz \
-  && tar zxvf v2.15.1.tar.gz \
-  && cd git-2.15.1 \
-  && make configure \
-  && ./configure --prefix=/usr \
-  && make install \
-  && make all \
-  && rm -Rf git-2.15.1 \
-  && cd .. \
-  && rm v2.15.1.tar.gz \
-  && rm -Rf git-2.15.1
 RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8 \
   && mkdir -p /data/rails
 

@@ -57,14 +57,26 @@ module Genova
     def run
       @logger.info('Start deploy.')
 
-      pre_process
-      tag_revision = Genova::Docker::Client.build_tag_revision(@deploy_job.id, @deploy_job[:commit_id])
+      lock(@options[:lock_timeout])
 
-      @ecs_client.ready
-      task_definition = @ecs_client.deploy_service(@options[:service], tag_revision)
+      @deploy_job.start_deploy
 
-      post_process(task_definition)
+      commit_id = @ecs_client.ready
+      @logger.info("Commit ID: #{commit_id}")
 
+      @deploy_job[:commit_id] = commit_id
+      @deploy_job[:cluster] = @options[:cluster]
+
+      image_tag = build_image_tag(@deploy_job.id, commit_id)
+      task_definition = @ecs_client.deploy_service(@options[:service], image_tag)
+
+      if Settings.github.tag
+        git_tag = build_git_tag(@deploy_job.id)
+        client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
+        client.create_release("#{@options[:account]}/#{@options[:repository]}", git_tag, :target_commitish => commit_id)
+      end
+
+      @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
       @logger.info('Deployment succeeded.')
 
       unlock
@@ -82,6 +94,14 @@ module Genova
     end
 
     private
+
+    def build_image_tag(deploy_job_id, commit_id)
+      "build-#{deploy_job_id}_#{commit_id}"
+    end
+
+    def build_git_tag(deploy_job_id)
+      "build-#{deploy_job_id}"
+    end
 
     def validate_options(options)
       raise OptionValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
@@ -113,20 +133,6 @@ module Genova
     def unlock
       return if @options[:force]
       @mutex.unlock
-    end
-
-    def pre_process
-      @logger.info('Started pre process')
-
-      lock(@options[:lock_timeout])
-
-      @deploy_job.start_deploy
-      @deploy_job[:commit_id] = @repository_manager.origin_last_commit_id
-      @deploy_job[:cluster] = @options[:cluster]
-    end
-
-    def post_process(task_definition)
-      @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
     end
 
     def cancel

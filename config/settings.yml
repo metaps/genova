@@ -5,9 +5,16 @@ deploy:
   wait_timeout: 900
 
 github:
-  account: '' # Github account.
+  # GitHub account.
+  account: ''
+
+  # Create a tag after deployment.
+  # If you enable it, please specify GITHUB_OAUTH_TOKEN environment.
+  tag: false
+
   default_branch: 'master'
   deploy_lock_timeout: 1800
+
   # If you change the base_path or alias name, you need to specify parameter.
   # This parameter is also used in repository list of Slack interactive deploy.
   repositories:

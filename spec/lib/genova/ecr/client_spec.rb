@@ -28,12 +28,12 @@ module Genova
           allow(image_mock).to receive(:push)
           allow(::Docker::Image).to receive(:get).and_return(image_mock)
 
-          ecr_client.push_image('tag_revision', 'repository')
+          ecr_client.push_image('image_tag', 'repository')
           expect(image_mock).to have_received(:push).twice
         end
       end
 
-      describe 'destroy_image' do
+      describe 'destroy_images' do
         it 'should be destroy image' do
           image_detail_mocks = []
 
@@ -59,7 +59,7 @@ module Genova
 
           allow(Settings.aws.service.ecr).to receive(:max_image_size).and_return(3)
 
-          expect { ecr_client.destroy_image('repository_name') }.to_not raise_error
+          expect { ecr_client.destroy_images(['repository_name']) }.to_not raise_error
         end
       end
     end
