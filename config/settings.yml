@@ -26,8 +26,6 @@ github:
     repository: ''
 
 aws:
-  profile: 'default'
-  region: 'ap-northeast-1'
   service:
     ecr:
       max_image_size: 30

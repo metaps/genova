@@ -9,22 +9,11 @@ module Genova
 
         @deploy_client = EcsDeployer::Client.new(
           @cluster,
-          @logger,
-          profile: options[:profile],
-          region: options[:region]
+          @logger
         )
-        @docker_client = Genova::Docker::Client.new(
-          @repository_manager,
-          logger: @logger,
-          profile: options[:profile],
-          region: options[:region]
-        )
-        @ecs_client = Aws::ECS::Client.new(profile: options[:profile], region: options[:region])
-        @ecr_client = Genova::Ecr::Client.new(
-          logger: @logger,
-          profile: options[:profile],
-          region: options[:region]
-        )
+        @docker_client = Genova::Docker::Client.new(@repository_manager, logger: @logger)
+        @ecs_client = Aws::ECS::Client.new
+        @ecr_client = Genova::Ecr::Client.new(logger: @logger)
       end
 
       def ready

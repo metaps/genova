@@ -9,8 +9,6 @@ module Genova
       options[:mode] ||= Genova::Client.mode.find_value(:manual).to_sym
       options[:account] ||= Settings.github.account
       options[:branch] ||= Settings.github.default_branch
-      options[:profile] ||= Settings.aws.profile
-      options[:region] ||= Settings.aws.region
       options[:verbose] ||= false
       options[:ssh_secret_key_path] ||= "#{ENV.fetch('HOME')}/.ssh/id_rsa"
       options[:lock_wait_interval] = 60
@@ -45,13 +43,7 @@ module Genova
         @options[:branch],
         logger: @logger
       )
-      @ecs_client = Genova::Ecs::Client.new(
-        @options[:cluster],
-        @repository_manager,
-        logger: @logger,
-        profile: @options[:profile],
-        region: @options[:region]
-      )
+      @ecs_client = Genova::Ecs::Client.new(@options[:cluster], @repository_manager, logger: @logger)
     end
 
     def run

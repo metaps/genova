@@ -5,7 +5,7 @@ module Genova
       IMAGE_TAG_LATEST = 'latest'.freeze
 
       def initialize(params)
-        @ecr = Aws::ECR::Client.new(profile: params[:profile], region: params[:region])
+        @ecr = Aws::ECR::Client.new
         @registry = ENV.fetch('AWS_ACCOUNT_ID') + '.dkr.ecr.ap-northeast-1.amazonaws.com'
 
         @logger = params[:logger] || ::Logger.new(STDOUT)
