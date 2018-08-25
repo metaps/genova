@@ -56,10 +56,16 @@ RUN gem update --system 2.7.0 \
   && bundle install -j4 --path /usr/local/bundle
 
 COPY ./etc/docker/base/.vimrc /root/.vimrc
+COPY ./etc/docker/base/.ssh /root/.ssh
+RUN chmod 700 /root/.ssh
+
 COPY ./etc/docker/cron/cron.d/genova /etc/cron.d/genova
 COPY ./etc/docker/cron/cron /etc/pam.d/cron
 COPY ./etc/docker/cron/logrotate.d/rails /etc/logrotate.d/rails
 RUN chmod 644 /etc/cron.d/genova && chmod 644 /etc/logrotate.d/rails
+
+RUN chmod 644 /etc/cron.d/genova \
+  && chmod 644 /etc/logrotate.d/rails
 
 COPY ./etc/docker/rails/docker-entrypoint-rails.sh /usr/local/bin/docker-entrypoint-rails.sh
 COPY ./etc/docker/cron/docker-entrypoint-cron.sh /usr/local/bin/docker-entrypoint-cron.sh
