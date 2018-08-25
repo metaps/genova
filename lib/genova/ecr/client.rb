@@ -41,7 +41,7 @@ module Genova
         @logger.info("Pushed image. {\"tag\": #{repo_tag_version}}")
       end
 
-      def cleanup_image(repository_name)
+      def destroy_image(repository_name)
         images = {}
         next_token = nil
 

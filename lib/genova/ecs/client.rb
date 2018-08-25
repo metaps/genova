@@ -4,23 +4,54 @@ module Genova
       def initialize(cluster, repository_manager, options = {})
         @cluster = cluster
         @repository_manager = repository_manager
-
-        @ecs = Aws::ECS::Client.new(profile: options[:profile], region: options[:region])
         @logger = options[:logger] || ::Logger.new(STDOUT)
-        @deployer_client = EcsDeployer::Client.new(
-          cluster,
+        @task_definitions = {}
+
+        @deploy_client = EcsDeployer::Client.new(
+          @cluster,
           @logger,
           profile: options[:profile],
           region: options[:region]
         )
-        @task_definitions = {}
+        @docker_client = Genova::Docker::Client.new(
+          @repository_manager,
+          logger: @logger,
+          profile: options[:profile],
+          region: options[:region]
+        )
+        @ecs_client = Aws::ECS::Client.new(profile: options[:profile], region: options[:region])
+        @ecr_client = Genova::Ecr::Client.new(
+          logger: @logger,
+          profile: options[:profile],
+          region: options[:region]
+        )
+      end
+
+      def ready
+        @repository_manager.update
+        @ecr_client.authenticate
       end
 
       def deploy_service(service, tag_revision)
-        task_definition_path = @repository_manager.task_definition_config_path(@cluster, service)
-        task_definition = create_task(@deployer_client.task, task_definition_path, tag_revision)
+        deploy_config = @repository_manager.load_deploy_config
+        service_config = deploy_config.service(@cluster, service)
 
-        service_client = @deployer_client.service
+        raise Genova::Config::DeployConfigError, 'You need to specify :path parameter in deploy.yml' if service_config[:path].nil?
+
+        repository_names = @docker_client.build_images(service_config[:containers], service_config[:path])
+        pushed_size = 0
+
+        repository_names.each do |repository_name|
+          @ecr_client.push_image(tag_revision, repository_name)
+          pushed_size += 1
+        end
+
+        raise ImagePushError, 'Push image is not found.' if pushed_size.zero?
+
+        task_definition_path = @repository_manager.task_definition_config_path(service_config[:path])
+        task_definition = create_task(@deploy_client.task, task_definition_path, tag_revision)
+
+        service_client = @deploy_client.service
         cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
 
         unless service_client.exist?(service)
@@ -33,14 +64,21 @@ module Genova
         service_client.wait_timeout = Settings.deploy.wait_timeout
         service_client.update(service, task_definition)
 
+        # Deprecated
+        deploy_scheduled_tasks(service, tag_revision) if cluster_config.include?(:scheduled_tasks)
+
+        repository_names.each do |repository_name|
+          @ecr_client.destroy_image(repository_name)
+        end
+
         task_definition
       end
 
       def deploy_scheduled_tasks(depend_service, tag_revision)
         cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
         cluster_config[:scheduled_tasks].each do |scheduled_task|
-          task_client = @deployer_client.task
-          scheduled_task_client = @deployer_client.scheduled_task
+          task_client = @deploy_client.task
+          scheduled_task_client = @deploy_client.scheduled_task
           config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
           targets = []
 
@@ -86,7 +124,7 @@ module Genova
         formation_config[:service_name] = service
         formation_config[:task_definition] = task_definition.task_definition_arn
 
-        @ecs.create_service(formation_config)
+        @ecs_client.create_service(formation_config)
 
         nil
       end

@@ -37,9 +37,6 @@ gem 'slack-ruby-bot-server'
 gem 'therubyracer', platforms: :ruby
 gem 'uglifier', '>= 1.3.0'
 
-# Use Capistrano for deployment
-# gem 'capistrano-rails', group: :development
-
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platform: :mri
@@ -57,6 +54,7 @@ end
 group :development do
   # gem 'web-console', '>= 3.3.0'
   # gem 'listen', '~> 3.0.5'
+  gem 'brakeman'
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'json_spec'
@@ -64,6 +62,3 @@ group :development do
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
 end
-
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
