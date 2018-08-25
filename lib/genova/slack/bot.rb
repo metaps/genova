@@ -290,10 +290,6 @@ module Genova
             text: 'Deployment is complete.',
             color: Settings.slack.message.color.info,
             fields: [{
-              title: 'DNS',
-              value: elb_dns(params[:cluster], params[:service]),
-              short: true
-            }, {
               title: 'New task definition ARNs',
               value: task_definition_arn,
               short: true
@@ -373,35 +369,6 @@ module Genova
           task_definition: task_definition_arn
         ).task_definition.container_definitions[0]
         container_definition[:image][-40..-1]
-      end
-
-      def elb_dns(cluster, service)
-        services = @ecs.describe_services(cluster: cluster, services: [service])
-        load_balancer = services.dig(:services, 0, :load_balancers, 0)
-
-        return if load_balancer.nil?
-
-        # CLB
-        if load_balancer.target_group_arn.nil?
-          elb = Aws::ElasticLoadBalancing::Client.new
-          lb_description = elb.describe_load_balancers(load_balancer_names: [service]).load_balancer_descriptions[0]
-          dns_name = lb_description.dns_name
-
-        # ALB
-        else
-          elb = Aws::ElasticLoadBalancingV2::Client.new
-
-          target_group = elb.describe_target_groups(
-            target_group_arns: [load_balancer.target_group_arn]
-          ).dig(:target_groups).first
-          load_balancer = elb.describe_load_balancers(
-            load_balancer_arns: target_group.load_balancer_arns
-          ).dig(:load_balancers).first
-
-          dns_name = load_balancer.dns_name
-        end
-
-        dns_name
       end
     end
   end
