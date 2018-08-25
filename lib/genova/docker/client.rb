@@ -4,7 +4,7 @@ module Genova
       def initialize(repository_manager, options = {})
         @repository_manager = repository_manager
         @logger = options[:logger] || ::Logger.new(STDOUT)
-        @cipher = EcsDeployer::Util::Cipher.new(profile: options[:profile], region: options[:region])
+        @cipher = EcsDeployer::Util::Cipher.new
       end
 
       def build_images(containers_config, task_definition_path)

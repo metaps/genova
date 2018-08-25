@@ -4,7 +4,7 @@ module Genova
       def initialize(client = nil)
         @client = client || ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
         @channel = ENV.fetch('SLACK_CHANNEL')
-        @ecs = Aws::ECS::Client.new(region: Settings.aws.region)
+        @ecs = Aws::ECS::Client.new
       end
 
       def post_simple_message(params)
@@ -253,9 +253,8 @@ module Genova
       end
 
       def post_started_deploy(params)
-        region = Settings.aws.region
-        url = "https://#{region}.console.aws.amazon.com" \
-              "/ecs/home?region=#{region}#/clusters/#{params[:cluster]}/services/#{params[:service]}/tasks"
+        url = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com" \
+              "/ecs/home?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{params[:cluster]}/services/#{params[:service]}/tasks"
 
         @client.chat_postMessage(
           channel: @channel,
@@ -384,13 +383,13 @@ module Genova
 
         # CLB
         if load_balancer.target_group_arn.nil?
-          elb = Aws::ElasticLoadBalancing::Client.new(region: Settings.aws.region)
+          elb = Aws::ElasticLoadBalancing::Client.new
           lb_description = elb.describe_load_balancers(load_balancer_names: [service]).load_balancer_descriptions[0]
           dns_name = lb_description.dns_name
 
         # ALB
         else
-          elb = Aws::ElasticLoadBalancingV2::Client.new(region: Settings.aws.region)
+          elb = Aws::ElasticLoadBalancingV2::Client.new
 
           target_group = elb.describe_target_groups(
             target_group_arns: [load_balancer.target_group_arn]

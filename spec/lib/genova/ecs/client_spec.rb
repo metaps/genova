@@ -34,7 +34,7 @@ module Genova
         include_context 'load local_repository_manager_mock'
 
         let(:repository_manager) { Genova::Git::LocalRepositoryManager.new('account', 'repository', 'master') }
-        let(:client)  { Genova::Ecs::Client.new('cluster', repository_manager, region: 'region') }
+        let(:client)  { Genova::Ecs::Client.new('cluster', repository_manager) }
 
         it 'should be return Aws::ECS::Types::TaskDefinition' do
           expect(client.deploy_service('service', 'tag_revision').to_s).to eq(double(Aws::ECS::Types::TaskDefinition).to_s)
