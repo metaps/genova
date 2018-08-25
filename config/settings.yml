@@ -8,7 +8,7 @@ github:
   # GitHub account.
   account: ''
 
-  # Create a tag after deployment.
+  # Create tag after deployment.
   # If you enable it, please specify GITHUB_OAUTH_TOKEN environment.
   tag: false
 
