@@ -53,7 +53,7 @@ module Genova
 
       describe 'task_definition_config_path' do
         it 'should be return task definition path' do
-          expect(manager.task_definition_config_path('cluster', 'service')).to eq(manager.base_path + '/config/deploy/service.yml')
+          expect(manager.task_definition_config_path('./deploy/path.yml')).to eq(manager.base_path + '/config/deploy/path.yml')
         end
       end
 
@@ -63,7 +63,7 @@ module Genova
           allow(File).to receive(:read).and_return('{}')
           allow(File).to receive(:exist?).and_return(true)
 
-          expect(manager.load_task_definition_config('cluster', 'service')).to be_a(Genova::Config::TaskDefinitionConfig)
+          expect(manager.load_task_definition_config('path')).to be_a(Genova::Config::TaskDefinitionConfig)
         end
       end
 

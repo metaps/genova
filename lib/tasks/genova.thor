@@ -22,12 +22,12 @@ class Genova < Thor
   option :repository, required: true, aliases: :r, desc: 'GitHub repository.'
   option :ssh_secret_key_path, required: false, default: "#{ENV.fetch('HOME')}/.ssh/id_rsa", desc: 'Private key for accessing GitHub.'
   option :verbose, required: false, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
-  option :force, required: false, default: false, type: :boolean, aliases: :f, desc: 'Forced execution.'
+  option :force, required: false, default: false, type: :boolean, aliases: :f, desc: 'Ignore deploy lock and force deploy.'
   def deploy
-    deploy_client = ::Genova::Client.new(options.symbolize_keys)
-
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
-    deploy_client.deploy(options[:service])
+
+    client = ::Genova::Client.new(options.symbolize_keys)
+    client.run
   end
 
   desc 'debug-slack-greeting', 'Slack bot says Hello'

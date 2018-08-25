@@ -17,7 +17,7 @@ module V1
 
         result = {
           account: full_name[0],
-          repository: full_name[1],
+          repository: full_name[1]
         }
         result[:branch] = data[:ref].slice(11..data[:ref].size) if data[:ref].present?
         result

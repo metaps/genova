@@ -15,7 +15,7 @@ module Github
       allow(slack_bot_mock).to receive(:post_finished_deploy)
       allow(Genova::Slack::Bot).to receive(:new).and_return(slack_bot_mock)
 
-      allow(client_mock).to receive(:deploy)
+      allow(client_mock).to receive(:run)
       allow(Genova::Client).to receive(:new).and_return(client_mock)
     end
 

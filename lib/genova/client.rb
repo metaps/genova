@@ -9,7 +9,6 @@ module Genova
       options[:mode] ||= Genova::Client.mode.find_value(:manual).to_sym
       options[:account] ||= Settings.github.account
       options[:branch] ||= Settings.github.default_branch
-      options[:interactive] ||= false
       options[:profile] ||= Settings.aws.profile
       options[:region] ||= Settings.aws.region
       options[:verbose] ||= false
@@ -17,7 +16,7 @@ module Genova
       options[:lock_wait_interval] = 60
       options[:force] ||= false
 
-      validate(options)
+      validate_options(options)
 
       @repository = options[:repository]
       @options = options
@@ -46,11 +45,6 @@ module Genova
         @options[:branch],
         logger: @logger
       )
-      @ecr_client = Genova::Ecr::Client.new(
-        logger: @logger,
-        profile: @options[:profile],
-        region: @options[:region]
-      )
       @ecs_client = Genova::Ecs::Client.new(
         @options[:cluster],
         @repository_manager,
@@ -60,30 +54,28 @@ module Genova
       )
     end
 
-    def deploy(service)
-      @logger.info('Start execute.')
+    def run
+      @logger.info('Start deploy.')
 
       pre_process
-
-      repository_names = build_images(service)
       tag_revision = Genova::Docker::Client.build_tag_revision(@deploy_job.id, @deploy_job[:commit_id])
-      push_images(repository_names, tag_revision)
-      task_definition = update(service, tag_revision)
-      cleanup_images(repository_names)
+
+      @ecs_client.ready
+      task_definition = @ecs_client.deploy_service(@options[:service], tag_revision)
 
       post_process(task_definition)
 
-      @logger.info('Execute completed successfully.')
+      @logger.info('Deployment succeeded.')
 
       unlock
       task_definition
     rescue Interrupt
-      @logger.error("Detected abort of command. {\"deploy id\": #{@deploy_job.id}}")
+      @logger.error("Interrupt was detected. {\"deploy id\": #{@deploy_job.id}}")
       cancel
     rescue => e
       @logger.error(e.message)
       @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
-      @logger.error("Detected error of command. {\"deploy id\": #{@deploy_job.id}}")
+      @logger.error("Interrupt was error. {\"deploy id\": #{@deploy_job.id}}")
 
       cancel
       raise e unless @mode == Genova::Client.mode.find_value(:manual)
@@ -91,7 +83,7 @@ module Genova
 
     private
 
-    def validate(options)
+    def validate_options(options)
       raise OptionValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
       raise OptionValidateError, 'Please specify repository name.' if options[:repository].nil?
       raise OptionValidateError, 'Please specify cluster name.' if options[:cluster].nil?
@@ -131,58 +123,6 @@ module Genova
       @deploy_job.start_deploy
       @deploy_job[:commit_id] = @repository_manager.origin_last_commit_id
       @deploy_job[:cluster] = @options[:cluster]
-
-      @ecr_client.authenticate
-    end
-
-    def build_images(service)
-      @logger.info('Started build')
-
-      @repository_manager.update
-      docker_client = Genova::Docker::Client.new(
-        @options[:cluster],
-        @repository_manager,
-        logger: @logger,
-        profile: @options[:profile],
-        region: @options[:region]
-      )
-
-      deploy_config = @repository_manager.load_deploy_config
-      docker_client.build_images(service, deploy_config.service(@options[:cluster], service))
-    end
-
-    def push_images(repository_names, tag_revision)
-      @logger.info('Started push images')
-
-      pushed_size = 0
-
-      repository_names.each do |repository_name|
-        @ecr_client.push_image(tag_revision, repository_name)
-        pushed_size += 1
-      end
-
-      raise ImagePushError, 'Push image is not found.' if pushed_size.zero?
-    end
-
-    def update(service, tag_revision)
-      deploy_config = @repository_manager.load_deploy_config
-      cluster_config = deploy_config.cluster(@options[:cluster])
-
-      if cluster_config.include?(:scheduled_tasks)
-        @logger.info('Started scheduled task deployment.')
-        @ecs_client.deploy_scheduled_tasks(service, tag_revision)
-      end
-
-      @logger.info('Started serivce deployment.')
-      @ecs_client.deploy_service(service, tag_revision)
-    end
-
-    def cleanup_images(repository_names)
-      @logger.info('Started image cleanup.')
-
-      repository_names.each do |repository_name|
-        @ecr_client.cleanup_image(repository_name)
-      end
     end
 
     def post_process(task_definition)
