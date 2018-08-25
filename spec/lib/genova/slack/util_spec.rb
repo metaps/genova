@@ -9,7 +9,7 @@ module Genova
             [
               {
                 name: 'repository'
-              },
+              }
             ]
           )
           results = Genova::Slack::Util.repository_options
