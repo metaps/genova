@@ -35,7 +35,8 @@ This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function
   * Create service
   * Update service
   * Support scheduled event
-  * Rotation cleanup of repository on ECR
+  * Delete old image from ECR
+  * Tagging GitHub
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
 
