@@ -31,9 +31,6 @@ aws:
       max_image_size: 30
       read_timeout: 900
 
-sidekiq:
-  url: '{URL}'
-
 slack:
   deploy_lock_timeout: 1800
   command:
