@@ -29,6 +29,25 @@ class DeployJob
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
 
+  def initialize(params)
+    super
+
+    self.id = DeployJob.generate_id
+    self.mode = params[:mode] || Genova::Client.mode.find_value(:manual).to_sym
+    self.account = params[:account] ||= Settings.github.account
+    self.branch = params[:branch] || Settings.github.default_branch
+    self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
+  end
+
+  def valid
+    raise ValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if self.account.empty?
+    raise ValidateError, 'Please specify repository name.' if self.repository.nil?
+    raise ValidateError, 'Please specify cluster name.' if self.cluster.nil?
+
+    return if File.exist?(self.ssh_secret_key_path)
+    raise ValidateError, "Private key does not exist. [#{self.ssh_secret_key_path}"
+  end
+
   def start
     self.started_at = Time.now.utc
     save
@@ -49,4 +68,6 @@ class DeployJob
 
     save
   end
+
+  class ValidateError < Genova::Error; end
 end

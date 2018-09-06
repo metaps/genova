@@ -5,45 +5,28 @@ module Genova
     enumerize :status, in: %i[in_progress success failure]
     enumerize :mode, in: %i[manual auto slack]
 
-    def initialize(options = {})
-      options[:mode] ||= Genova::Client.mode.find_value(:manual).to_sym
-      options[:account] ||= Settings.github.account
-      options[:branch] ||= Settings.github.default_branch
-      options[:verbose] ||= false
-      options[:ssh_secret_key_path] ||= "#{ENV.fetch('HOME')}/.ssh/id_rsa"
-      options[:lock_wait_interval] = 60
-      options[:force] ||= false
-
-      validate_options(options)
-
-      @repository = options[:repository]
+    def initialize(deploy_job, options = {})
       @options = options
+      @options[:lock_wait_interval] = options[:lock_wait_interval] || 60
 
-      id = @options[:deploy_job_id] || DeployJob.generate_id
-
-      @deploy_job = DeployJob.find_or_create_by(id: id) do |deploy_job|
-        @options.each do |key, value|
-          deploy_job[key] = value
-        end
-
-        deploy_job.status = Genova::Client.status.find_value(:in_progress).to_s
-        deploy_job.mode = options[:mode]
-        deploy_job.repository = @repository
-      end
+      @deploy_job = deploy_job
+      @deploy_job.valid
+      @deploy_job.status = Genova::Client.status.find_value(:in_progress).to_s
+      @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
       @logger.level = @options[:verbose] ? :debug : :info
       @logger.info('Initiaized deploy client.')
 
-      @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@options[:account]}:#{@repository}")
+      @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
       @repository_manager = Genova::Git::LocalRepositoryManager.new(
-        @options[:account],
-        @repository,
-        @options[:branch],
+        @deploy_job.account,
+        @deploy_job.repository,
+        @deploy_job.branch,
         logger: @logger
       )
-      @ecs_client = Genova::Ecs::Client.new(@options[:cluster], @repository_manager, logger: @logger)
+      @ecs_client = Genova::Ecs::Client.new(@deploy_job.cluster, @repository_manager, logger: @logger)
     end
 
     def run
@@ -56,11 +39,11 @@ module Genova
       commit_id = @ecs_client.ready
       @logger.info("Commit ID: #{commit_id}")
 
-      @deploy_job[:commit_id] = commit_id
-      @deploy_job[:cluster] = @options[:cluster]
-      @deploy_job[:tag] = create_tag(commit_id)
+      @deploy_job.commit_id = commit_id
+      @deploy_job.cluster = @options[:cluster]
+      @deploy_job.tag = create_tag(commit_id)
 
-      task_definition = @ecs_client.deploy_service(@options[:service], @deploy_job[:tag])
+      task_definition = @ecs_client.deploy_service(@options[:service], @deploy_job.tag)
 
       @deploy_job.done(task_definition_arn: task_definition.task_definition_arn)
       @logger.info('Deployment succeeded.')
@@ -82,15 +65,6 @@ module Genova
 
     private
 
-    def validate_options(options)
-      raise OptionValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if options[:account].empty?
-      raise OptionValidateError, 'Please specify repository name.' if options[:repository].nil?
-      raise OptionValidateError, 'Please specify cluster name.' if options[:cluster].nil?
-
-      return if File.exist?(options[:ssh_secret_key_path])
-      raise OptionValidateError, "Private key does not exist. [#{options[:ssh_secret_key_path]}"
-    end
-
     def lock(lock_timeout = nil)
       return if @options[:force]
 
@@ -99,7 +73,7 @@ module Genova
       while @mutex.locked? || !@mutex.lock
         if lock_timeout.nil? || waiting_time >= lock_timeout
           cancel
-          raise DeployLockError, "Other deployment is in progress. [#{@repository}]"
+          raise DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
         end
 
         @logger.warn("Deploy locked. Retry in #{@options[:lock_wait_interval]} seconds.")
@@ -125,13 +99,12 @@ module Genova
 
       if Settings.github.tag
         client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
-        client.create_release("#{@options[:account]}/#{@options[:repository]}", tag, :target_commitish => commit_id)
+        client.create_release("#{@deploy_job.account}/#{@deploy_job.repository}", tag, :target_commitish => commit_id)
       end
 
       tag
     end
 
-    class OptionValidateError < Error; end
     class DeployLockError < Error; end
     class DockerBuildError < Error; end
     class ImagePushError < Error; end
