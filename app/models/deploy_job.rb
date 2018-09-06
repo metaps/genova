@@ -23,17 +23,18 @@ class DeployJob
   field :started_at, type: Time
   field :finished_at, type: Time
   field :execution_time, type: Float
+  field :tag, type: String
 
   def self.generate_id
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
 
-  def start_deploy
+  def start
     self.started_at = Time.now.utc
     save
   end
 
-  def finish_deploy(task_definition_arn: nil)
+  def done(task_definition_arn: nil)
     self.status = Genova::Client.status.find_value(:success).to_s
     self.task_definition_arn = task_definition_arn
     self.finished_at = Time.now.utc
@@ -41,7 +42,7 @@ class DeployJob
     save
   end
 
-  def cancel_deploy
+  def cancel
     self.status = Genova::Client.status.find_value(:failure).to_s
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
