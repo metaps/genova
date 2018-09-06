@@ -24,7 +24,6 @@ class Genova < Thor
   def deploy
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
 
-    client = ::Genova::Client.new(options.symbolize_keys)
-    client.run
+    ::Genova::Client.new(options.symbolize_keys).run
   end
 end

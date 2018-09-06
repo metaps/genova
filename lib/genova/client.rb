@@ -51,24 +51,22 @@ module Genova
 
       lock(@options[:lock_timeout])
 
-      @deploy_job.start_deploy
+      @deploy_job.start
 
       commit_id = @ecs_client.ready
       @logger.info("Commit ID: #{commit_id}")
 
       @deploy_job[:commit_id] = commit_id
       @deploy_job[:cluster] = @options[:cluster]
+      @deploy_job[:tag] = create_tag(commit_id)
 
-      image_tag = build_image_tag(@deploy_job.id, commit_id)
-      task_definition = @ecs_client.deploy_service(@options[:service], image_tag)
+      task_definition = @ecs_client.deploy_service(@options[:service], @deploy_job[:tag])
 
-      create_git_tag(commit_id) if Settings.github.tag
-
-      @deploy_job.finish_deploy(task_definition_arn: task_definition.task_definition_arn)
+      @deploy_job.done(task_definition_arn: task_definition.task_definition_arn)
       @logger.info('Deployment succeeded.')
 
       unlock
-      task_definition
+      @deploy_job
 
     rescue Interrupt
       @logger.error("Interrupt was detected. {\"deploy id\": #{@deploy_job.id}}")
@@ -118,19 +116,19 @@ module Genova
 
     def cancel
       @mutex.unlock
-      @deploy_job.cancel_deploy
+      @deploy_job.cancel
       @logger.info('Deployment has been canceled.')
     end
 
-    def build_image_tag(deploy_job_id, commit_id)
-      "build-#{deploy_job_id}_#{commit_id}"
-    end
+    def create_tag(commit_id)
+      tag = "build-#{@deploy_job.id}"
 
-    def create_git_tag(commit_id)
-      git_tag = "build-#{@deploy_job.id}"
+      if Settings.github.tag
+        client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
+        client.create_release("#{@options[:account]}/#{@options[:repository]}", tag, :target_commitish => commit_id)
+      end
 
-      client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
-      client.create_release("#{@options[:account]}/#{@options[:repository]}", git_tag, :target_commitish => commit_id)
+      tag
     end
 
     class OptionValidateError < Error; end

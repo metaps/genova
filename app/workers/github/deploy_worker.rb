@@ -32,12 +32,15 @@ module Github
         deploy_job_id: id,
         lock_timeout: Settings.github.deploy_lock_timeout
       )
-      task_definition = client.run
+      deploy_job = client.run
 
       bot.post_finished_deploy(
+        account: deploy_job[:account],
+        repository: deploy_job[:repository],
         cluster: deploy_job[:cluster],
         service: deploy_job[:service],
-        task_definition: task_definition
+        task_definition_arn: deploy_job[:task_definition_arn],
+        tag: deploy_job[:tag]
       )
     end
   end

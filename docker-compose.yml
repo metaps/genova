@@ -18,6 +18,7 @@ services:
     depends_on:
       - mongo
       - redis
+    restart: always
   sidekiq:
     container_name: genova-sidekiq
     extends:
@@ -26,21 +27,25 @@ services:
     depends_on:
       - mongo
       - redis
+    restart: always
   cron:
     container_name: genova-cron
     extends:
       service: base
     command: /usr/local/bin/docker-entrypoint-cron.sh
+    restart: always
   mongo:
     container_name: genova-mongo
     image: mongo:3.4.9
     ports:
       - 27017:27017
+    restart: always
   redis:
     container_name: genova-redis
     image: redis:3.2
     ports:
       - 6379:6379
+    restart: always
   # slack:
   #   container_name: genova-slack
   #   build: ./etc/docker/slack

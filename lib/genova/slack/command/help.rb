@@ -2,27 +2,24 @@ module Genova
   module Slack
     module Command
       class Help < SlackRubyBot::Commands::Base
-        HELP = <<~DOC.freeze
-          ```
+        HELP = <<~DOC
           I am ECS deploy Bot.
-
-          Usage
-          -----
-          deploy
+          ```
+          * deploy
             Run service deployment in interactive mode.
-          deploy {repository} {branch} {cluster}:{service}
+          * deploy {repository} {branch} {cluster}:{service}
             Run service deployment in command mode.
               repository: Source repository.
               branch: Source branch.
               cluster: Cluster name of deployment destination.
               service: Service name of deployment destination.
-          deploy-scheduled-task
+          * deploy-scheduled-task
             Run scheduled task deployment in command mode. (Not implemented yet!)
-          help
+          * help
             Get this helpful message.
-          history
+          * history
             Show execution history of deployment.
-          redeploy
+          * redeploy
             Run previous deployment again.
           ```
         DOC

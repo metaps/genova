@@ -127,15 +127,8 @@ module Genova
           post_simple_message(message: message)
         end
 
-        datum = {
-          account: params[:account],
-          repository: params[:repository],
-          branch: params[:branch],
-          cluster: params[:cluster],
-          service: params[:service]
-        }
-        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', datum)
-        compare_ids = compare_commit_ids(datum)
+        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', params)
+        compare_ids = compare_commit_ids(params)
         fields = []
 
         if compare_ids.present?
@@ -280,7 +273,17 @@ module Genova
       end
 
       def post_finished_deploy(params)
-        task_definition_arn = escape_emoji(params[:task_definition].task_definition_arn)
+        fields = [{
+          title: 'New task definition ARNs',
+          value: escape_emoji(params[:task_definition_arn]),
+          short: true
+        }]
+
+        fields << {
+          title: 'GitHub tag',
+          value: "https://github.com/#{params[:account]}/#{params[:repository]}/releases/tag/#{params[:tag]}",
+          short: true
+        } if params[:tag].present?
 
         @client.chat_postMessage(
           channel: @channel,
@@ -289,11 +292,7 @@ module Genova
           attachments: [{
             text: 'Deployment is complete.',
             color: Settings.slack.message.color.info,
-            fields: [{
-              title: 'New task definition ARNs',
-              value: task_definition_arn,
-              short: true
-            }]
+            fields: fields
           }]
         )
       end
