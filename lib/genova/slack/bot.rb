@@ -195,8 +195,8 @@ module Genova
         )
       end
 
-      def post_detect_auto_deploy(params)
-        url = "https://github.com/#{params[:account]}/#{params[:repository]}/tree/#{params[:branch]}"
+      def post_detect_auto_deploy(deploy_job)
+        url = "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/tree/#{deploy_job.branch}"
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
@@ -205,19 +205,19 @@ module Genova
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Repository',
-              value: "<#{url}|#{params[:account]}/#{params[:repository]}>",
+              value: "<#{url}|#{deploy_job.account}/#{deploy_job.repository}>",
               short: true
             }, {
               title: 'Branch',
-              value: params[:branch],
+              value: deploy_job.branch,
               short: true
             }]
           }]
         )
       end
 
-      def post_detect_slack_deploy(params)
-        url = "https://github.com/#{params[:account]}/#{params[:repository]}/tree/#{params[:branch]}"
+      def post_detect_slack_deploy(deploy_job)
+        url = "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/tree/#{deploy_job.branch}"
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
@@ -226,28 +226,28 @@ module Genova
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Repository',
-              value: "<#{url}|#{params[:account]}/#{params[:repository]}>",
+              value: "<#{url}|#{deploy_job.account}/#{deploy_job.repository}>",
               short: true
             }, {
               title: 'Branch',
-              value: params[:branch],
+              value: deploy_job.branch,
               short: true
             }, {
               title: 'Cluster',
-              value: params[:cluster],
+              value: deploy_job.cluster,
               short: true
             }, {
               title: 'Service',
-              value: params[:service],
+              value: deploy_job.service,
               short: true
             }]
           }]
         )
       end
 
-      def post_started_deploy(params)
+      def post_started_deploy(deploy_job, jid)
         url = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com" \
-              "/ecs/home?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{params[:cluster]}/services/#{params[:service]}/tasks"
+              "/ecs/home?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
 
         @client.chat_postMessage(
           channel: @channel,
@@ -261,34 +261,34 @@ module Genova
               short: true
             }, {
               title: 'Log',
-              value: build_log_url(params[:deploy_job_id]),
+              value: build_log_url(deploy_job.id),
               short: true
             }, {
               title: 'Sidekiq JID',
-              value: params[:jid],
+              value: jid,
               short: true
             }]
           }]
         )
       end
 
-      def post_finished_deploy(params)
+      def post_finished_deploy(deploy_job)
         fields = [{
           title: 'New task definition ARNs',
-          value: escape_emoji(params[:task_definition_arn]),
+          value: escape_emoji(deploy_job.task_definition_arn),
           short: true
         }]
 
         fields << {
           title: 'GitHub tag',
-          value: "https://github.com/#{params[:account]}/#{params[:repository]}/releases/tag/#{params[:tag]}",
+          value: "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/releases/tag/#{deploy_job.tag}",
           short: true
-        } if params[:tag].present?
+        } if deploy_job.tag.present?
 
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
-          text: build_mension(params[:slack_user_id]),
+          text: build_mension(deploy_job.slack_user_id),
           attachments: [{
             text: 'Deployment is complete.',
             color: Settings.slack.message.color.info,

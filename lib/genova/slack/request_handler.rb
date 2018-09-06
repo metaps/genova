@@ -165,8 +165,8 @@ module Genova
 
             id = DeployJob.generate_id
             DeployJob.create(id: id,
-                             status: Genova::Client.status.find_value(:in_progress).to_s,
-                             mode: Genova::Client.mode.find_value(:slack).to_s,
+                             status: DeployJob.status.find_value(:in_progress).to_s,
+                             mode: DeployJob.mode.find_value(:slack).to_s,
                              slack_user_id: @payload_body[:user][:id],
                              slack_user_name: @payload_body[:user][:name],
                              account: account,

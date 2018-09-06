@@ -40,8 +40,8 @@ module V1
       def create_deploy_job(params)
         id = DeployJob.generate_id
         DeployJob.create(id: id,
-                         status: Genova::Client.status.find_value(:in_progress).to_s,
-                         mode: Genova::Client.mode.find_value(:auto).to_s,
+                         status: DeployJob.status.find_value(:in_progress).to_s,
+                         mode: DeployJob.mode.find_value(:auto).to_s,
                          account: params[:account],
                          repository: params[:repository],
                          branch: params[:branch],

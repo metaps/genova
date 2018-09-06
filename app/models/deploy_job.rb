@@ -2,6 +2,11 @@ class DeployJob
   include Mongoid::Document
   include Mongoid::Timestamps
 
+  extend Enumerize
+
+  enumerize :status, in: %i[in_progress success failure]
+  enumerize :mode, in: %i[manual auto slack]
+
   field :id, type: String
   field :status, type: String
   field :mode, type: String
@@ -33,7 +38,7 @@ class DeployJob
     super
 
     self.id = DeployJob.generate_id
-    self.mode = params[:mode] || Genova::Client.mode.find_value(:manual).to_sym
+    self.mode = params[:mode] || DeployJob.mode.find_value(:manual).to_sym
     self.account = params[:account] ||= Settings.github.account
     self.branch = params[:branch] || Settings.github.default_branch
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
@@ -54,7 +59,7 @@ class DeployJob
   end
 
   def done(task_definition_arn: nil)
-    self.status = Genova::Client.status.find_value(:success).to_s
+    self.status = DeployJob.status.find_value(:success).to_s
     self.task_definition_arn = task_definition_arn
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f
@@ -62,7 +67,7 @@ class DeployJob
   end
 
   def cancel
-    self.status = Genova::Client.status.find_value(:failure).to_s
+    self.status = DeployJob.status.find_value(:failure).to_s
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
 
