@@ -1,17 +1,12 @@
 module Genova
   class Client
-    extend Enumerize
-
-    enumerize :status, in: %i[in_progress success failure]
-    enumerize :mode, in: %i[manual auto slack]
-
     def initialize(deploy_job, options = {})
       @options = options
       @options[:lock_wait_interval] = options[:lock_wait_interval] || 60
 
       @deploy_job = deploy_job
       @deploy_job.valid
-      @deploy_job.status = Genova::Client.status.find_value(:in_progress).to_s
+      @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
       @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
@@ -40,16 +35,15 @@ module Genova
       @logger.info("Commit ID: #{commit_id}")
 
       @deploy_job.commit_id = commit_id
-      @deploy_job.cluster = @options[:cluster]
+      @deploy_job.cluster = @deploy_job.cluster
       @deploy_job.tag = create_tag(commit_id)
 
-      task_definition = @ecs_client.deploy_service(@options[:service], @deploy_job.tag)
+      task_definition = @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
 
       @deploy_job.done(task_definition_arn: task_definition.task_definition_arn)
       @logger.info('Deployment succeeded.')
 
       unlock
-      @deploy_job
 
     rescue Interrupt
       @logger.error("Interrupt was detected. {\"deploy id\": #{@deploy_job.id}}")
