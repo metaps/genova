@@ -279,11 +279,13 @@ module Genova
           short: true
         }]
 
-        fields << {
-          title: 'GitHub tag',
-          value: "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/releases/tag/#{deploy_job.tag}",
-          short: true
-        } if deploy_job.tag.present?
+        if deploy_job.tag.present?
+          fields << {
+            title: 'GitHub tag',
+            value: "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/releases/tag/#{deploy_job.tag}",
+            short: true
+          }
+        end
 
         @client.chat_postMessage(
           channel: @channel,

@@ -44,7 +44,6 @@ module Genova
       @logger.info('Deployment succeeded.')
 
       unlock
-
     rescue Interrupt
       @logger.error("Interrupt was detected. {\"deploy id\": #{@deploy_job.id}}")
       cancel
@@ -54,7 +53,7 @@ module Genova
       @logger.error("Interrupt was error. {\"deploy id\": #{@deploy_job.id}}")
 
       cancel
-      raise e unless @mode == Genova::Client.mode.find_value(:manual)
+      raise e unless @deploy_job.mode == DeployJob.mode.find_value(:manual)
     end
 
     private
@@ -93,7 +92,7 @@ module Genova
 
       if Settings.github.tag
         client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
-        client.create_release("#{@deploy_job.account}/#{@deploy_job.repository}", tag, :target_commitish => commit_id)
+        client.create_release("#{@deploy_job.account}/#{@deploy_job.repository}", tag, target_commitish: commit_id)
       end
 
       tag

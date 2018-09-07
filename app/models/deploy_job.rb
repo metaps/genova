@@ -45,12 +45,12 @@ class DeployJob
   end
 
   def valid
-    raise ValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if self.account.empty?
-    raise ValidateError, 'Please specify repository name.' if self.repository.nil?
-    raise ValidateError, 'Please specify cluster name.' if self.cluster.nil?
+    raise ValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if account.empty?
+    raise ValidateError, 'Please specify repository name.' if repository.nil?
+    raise ValidateError, 'Please specify cluster name.' if cluster.nil?
 
-    return if File.exist?(self.ssh_secret_key_path)
-    raise ValidateError, "Private key does not exist. [#{self.ssh_secret_key_path}"
+    return if File.exist?(ssh_secret_key_path)
+    raise ValidateError, "Private key does not exist. [#{ssh_secret_key_path}"
   end
 
   def start
