@@ -62,37 +62,43 @@ module Genova
       end
 
       describe 'post_detect_auto_deploy' do
+        let(:deploy_job) do
+          DeployJob.new(account: 'account', repository: 'repository', branch: 'branch')
+        end
+
         it 'should be call bot' do
-          bot.post_detect_auto_deploy(
-            account: 'account',
-            repository: 'registry',
-            branch: 'branch'
-          )
+          bot.post_detect_auto_deploy(deploy_job)
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
 
       describe 'post_detect_slack_deploy' do
-        it 'should be call bot' do
-          bot.post_detect_slack_deploy(
+        let(:deploy_job) do
+          DeployJob.new(
             account: 'account',
             repository: 'repository',
             branch: 'branch',
             cluster: 'default',
             service: 'service'
           )
+        end
+
+        it 'should be call bot' do
+          bot.post_detect_slack_deploy(deploy_job)
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
 
       describe 'post_started_deploy' do
-        it 'should be call bot' do
-          bot.post_started_deploy(
+        let(:deploy_job) do
+          DeployJob.new(
             cluster: 'cluster',
-            service: 'service',
-            jid: 'jid',
-            deploy_job_id: 'deploy_job_id'
+            service: 'service'
           )
+        end
+
+        it 'should be call bot' do
+          bot.post_started_deploy(deploy_job, 'jid')
           expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
         end
       end
