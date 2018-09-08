@@ -54,9 +54,9 @@ end
 group :development do
   # gem 'web-console', '>= 3.3.0'
   # gem 'listen', '~> 3.0.5'
-  gem 'brakeman'
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'brakeman'
   gem 'json_spec'
   gem 'rubocop'
   gem 'spring'

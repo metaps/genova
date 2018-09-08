@@ -42,7 +42,7 @@ module Genova
       end
 
       def destroy_images(repository_names)
-        repository_names.each do | repository_name |
+        repository_names.each do |repository_name|
           images = {}
           next_token = nil
 
@@ -69,7 +69,7 @@ module Genova
             image_ids << value
           end
 
-          return if image_ids.empty?
+          return nil if image_ids.empty?
 
           if image_ids.size > BATCH_DELETE_MAX_IMAGE_SIZE
             image_ids = image_ids.slice(- BATCH_DELETE_MAX_IMAGE_SIZE, BATCH_DELETE_MAX_IMAGE_SIZE)

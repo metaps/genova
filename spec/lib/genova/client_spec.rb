@@ -5,7 +5,14 @@ module Genova
     let(:task_definition_mock) { double(Aws::ECS::Types::TaskDefinition) }
     let(:ecs_client_mock) { double(Genova::Ecs::Client) }
     let(:docker_client_mock) { double(Genova::Docker::Client) }
-    let(:client) { Genova::Client.new(repository: 'repository', cluster: 'cluster') }
+    let(:deploy_job) do
+      DeployJob.new(
+        mode: DeployJob.mode.find_value(:auto).to_s,
+        repository: 'repository',
+        cluster: 'cluster'
+      )
+    end
+    let(:client) { Genova::Client.new(deploy_job) }
 
     before do
       allow(task_definition_mock).to receive(:task_definition_arn)
