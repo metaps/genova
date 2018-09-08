@@ -8,12 +8,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Setup .env
-          command:
-            cp .circleci/.env.default .env
-      - run:
-          name: CodeClimate pre process
+          name: Init
           command: |
+            cp .circleci/.env.default .env
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
@@ -21,8 +18,7 @@ jobs:
           name: Build
           command: docker-compose build
       - run:
-          name: Execute rspec
-          command: docker-compose run --rm rails rspec
-      - run:
-          name: CodeClimate post process
-          command: ./cc-test-reporter after-build --exit-code $EXIT_CODE
+          name: Run
+          command: |
+            docker-compose run --rm rails rspec
+            ./cc-test-reporter after-build --exit-code $EXIT_CODE
