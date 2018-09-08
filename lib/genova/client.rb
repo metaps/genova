@@ -7,9 +7,6 @@ module Genova
       @deploy_job = deploy_job
       raise DeployJob::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.valid?
 
-
-puts '--'
-exit
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
       @deploy_job.save
 
