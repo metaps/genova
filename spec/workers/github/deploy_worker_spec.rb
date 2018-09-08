@@ -21,14 +21,18 @@ module Github
 
     describe 'perform' do
       before do
-        deploy_job_id = create_deploy_job(
+        deploy_job = DeployJob.create(
+          id: DeployJob.generate_id,
+          status: DeployJob.status.find_value(:in_progress).to_s,
+          mode: DeployJob.mode.find_value(:auto).to_s,
           account: 'account',
           repository: 'repository',
           branch: 'branch',
           cluster: 'cluster',
           service: 'service'
         )
-        subject.perform(deploy_job_id)
+
+        subject.perform(deploy_job.id)
       end
 
       it 'should be in queue' do
