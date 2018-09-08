@@ -2,7 +2,7 @@ module Genova
   module Slack
     module Command
       class Help < SlackRubyBot::Commands::Base
-        HELP = <<~DOC
+        HELP = <<~DOC.freeze
           I am ECS deploy Bot.
           ```
           * deploy

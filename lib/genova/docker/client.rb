@@ -22,6 +22,9 @@ module Genova
 
           task_definition_config = @repository_manager.load_task_definition_config(task_definition_path)
           container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
+
+          raise Genova::Config::DeployConfigError, "'#{container}' container does not exist in task definition." if container_definition.nil?
+
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"

@@ -18,12 +18,28 @@ class Genova < Thor
   option :service, required: true, aliases: :s, desc: 'Specify service.'
   option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
   option :repository, required: true, aliases: :r, desc: 'GitHub repository.'
-  option :ssh_secret_key_path, required: false, default: "#{ENV.fetch('HOME')}/.ssh/id_rsa", desc: 'Private key for accessing GitHub.'
+  option :ssh_secret_key_path, required: false, desc: 'Private key for accessing GitHub.'
   option :verbose, required: false, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
   option :force, required: false, default: false, type: :boolean, aliases: :f, desc: 'Ignore deploy lock and force deploy.'
   def deploy
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
 
-    ::Genova::Client.new(options.symbolize_keys).run
+    deploy_job = DeployJob.new(
+      mode: DeployJob.mode.find_value(:manual).to_sym,
+      account: options[:account],
+      branch: options[:branch],
+      cluster: options[:cluster],
+      service: options[:service],
+      repository: options[:repository],
+      ssh_secret_key_path: options[:ssh_secret_key_path]
+    )
+
+    genova_options = {
+      interactive: options[:interactive],
+      verbose: options[:verbose],
+      force: options[:force]
+    }
+
+    ::Genova::Client.new(deploy_job, genova_options).run
   end
 end

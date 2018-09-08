@@ -5,15 +5,15 @@ module Genova
         @id = "history_#{slack_user_id}"
       end
 
-      def add(params)
-        id = Digest::SHA1.hexdigest("#{params[:account]}#{params[:repository]}#{params[:branch]}#{params[:cluster]}#{params[:service]}")
+      def add(deploy_job)
+        id = Digest::SHA1.hexdigest("#{deploy_job.account}#{deploy_job.repository}#{deploy_job.branch}#{deploy_job.cluster}#{deploy_job.service}")
         value = Oj.dump(
           id: id,
-          account: params[:account],
-          repository: params[:repository],
-          branch: params[:branch],
-          cluster: params[:cluster],
-          service: params[:service]
+          account: deploy_job.account,
+          repository: deploy_job.repository,
+          branch: deploy_job.branch,
+          cluster: deploy_job.cluster,
+          service: deploy_job.service
         )
 
         Redis.current.lrem(@id, 1, value) if find(id).present?
