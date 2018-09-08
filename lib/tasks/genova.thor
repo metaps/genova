@@ -25,6 +25,7 @@ class Genova < Thor
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
 
     deploy_job = DeployJob.new(
+      mode: DeployJob.mode.find_value(:manual).to_sym,
       account: options[:account],
       branch: options[:branch],
       cluster: options[:cluster],

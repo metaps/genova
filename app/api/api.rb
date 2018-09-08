@@ -15,7 +15,7 @@ module API
       logger.fatal(e.to_s + ':' + e.backtrace.to_s)
 
       bot = Genova::Slack::Bot.new
-      bot.post_error(e)
+      bot.post_error(error: e)
 
       error! e, 500
     end

@@ -30,6 +30,9 @@ class DeployJob
   field :execution_time, type: Float
   field :tag, type: String
 
+  validates :mode, :account, :repository, :cluster, :ssh_secret_key_path, presence: true
+  validate :check_ssh_secret_key_path
+
   def self.generate_id
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
@@ -38,19 +41,9 @@ class DeployJob
     super
 
     self.id = DeployJob.generate_id
-    self.mode = params[:mode] || DeployJob.mode.find_value(:manual).to_sym
     self.account = params[:account] ||= Settings.github.account
     self.branch = params[:branch] || Settings.github.default_branch
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
-  end
-
-  def valid
-    raise ValidateError, 'Please specify account name of GitHub in \'config/settings.local.yml\'.' if account.empty?
-    raise ValidateError, 'Please specify repository name.' if repository.nil?
-    raise ValidateError, 'Please specify cluster name.' if cluster.nil?
-
-    return if File.exist?(ssh_secret_key_path)
-    raise ValidateError, "Private key does not exist. [#{ssh_secret_key_path}"
   end
 
   def start
@@ -72,6 +65,12 @@ class DeployJob
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
 
     save
+  end
+
+  private
+
+  def check_ssh_secret_key_path
+    errors.add(:ssh_secret_key_path, "Private key does not exist. [#{ssh_secret_key_path}]") unless File.exist?(ssh_secret_key_path)
   end
 
   class ValidateError < Genova::Error; end
