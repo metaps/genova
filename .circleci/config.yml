@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run:
           name: init
-          command: cp .env.circleci .env
+          command: cp .circleci/.env.default .env
       - run:
           name: build
           command: docker-compose build
