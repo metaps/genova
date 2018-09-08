@@ -1,0 +1,34 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/genova
+    machine: true
+    environment:
+      GITHUB_PEM:
+      SECRET_KEY_BASE: '706833b954341da0b5404cc145413a29903596b8b41eaa395102babf36d432511c21ec834ac263a80c0c90cde96191503d235d9353cba27c1dffed18381a9167'
+      AWS_ACCOUNT_ID:
+      AWS_REGION:
+      AWS_AWS_ACCESS_KEY:
+      AWS_SECRET_KEY:
+      GITHUB_OAUTH_TOKEN:
+      GITHUB_SECRET_KEY:
+      RAILS_ENV: test
+      RAILS_SERVE_STATIC_FILES:
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      SLACK_CLIENT_ID:
+      SLACK_CLIENT_SECRET:
+      SLACK_API_TOKEN:
+      SLACK_VERIFICATION_TOKEN: 'slack_verification_token'
+      SLACK_CHANNEL:
+      GENOVA_URL:
+      CC_TEST_REPORTER_ID: 8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235
+    steps:
+      - checkout
+      - run:
+          name: build
+          command: docker-compose build
+      - run:
+          name: rspec test
+          command: docker-compose run --rm rails rspec
