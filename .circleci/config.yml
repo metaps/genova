@@ -3,6 +3,8 @@ jobs:
   build:
     working_directory: ~/genova
     machine: true
+    environment:
+      CC_TEST_REPORTER_ID: 8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235
     steps:
       - checkout
       - run:
