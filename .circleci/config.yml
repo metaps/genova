@@ -8,19 +8,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Init
+          name: init
+          command: cp .circleci/.env.default .env
+      - run:
+          name: build
+          command: docker-compose build
+      - run:
+          name: run
           command: |
-            cp .circleci/.env.default .env
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
-      - run:
-          name: Build
-          command: docker-compose build
-      - run:
-          name: Run
-          command:
-            docker-compose run --rm rails rspec
-      - run:
-          name: Post
-          command: ./cc-test-reporter after-build --exit-code $?
+            docker-compose run --rm rails rspec && ./cc-test-reporter after-build --exit-code $?
