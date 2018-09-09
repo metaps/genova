@@ -18,5 +18,6 @@ jobs:
           command: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-            ./cc-test-reporter before-build
-            docker-compose run --rm rails rspec && ./cc-test-reporter after-build --exit-code $?
+            docker-compose run --rm rails ./cc-test-reporter before-build
+            docker-compose run --rm rails rspec && EXIT_CODE=$?
+            docker-compose run --rm rails ./cc-test-reporter after-build --exit-code $EXIT_CODE
