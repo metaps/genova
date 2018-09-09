@@ -19,5 +19,8 @@ jobs:
           command: docker-compose build
       - run:
           name: Run
-          command: |
-            docker-compose run --rm rails rspec && ./cc-test-reporter after-build --exit-code $EXIT_CODE
+          command:
+            docker-compose run --rm rails rspec
+      - run:
+          name: Post
+          command: ./cc-test-reporter after-build --exit-code $?
