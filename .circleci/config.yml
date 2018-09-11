@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/genova
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: init
+          command: cp .circleci/.env.default .env
+      - run:
+          name: build
+          command: docker-compose build
+      - run:
+          name: run
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            docker-compose run --rm rails bash -c './cc-test-reporter before-build && rspec && CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?'
