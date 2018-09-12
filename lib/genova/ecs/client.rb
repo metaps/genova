@@ -76,9 +76,12 @@ module Genova
             task_definition = create_task(task_client, task_definition_path, image_tag)
 
             builder = scheduled_task_client.target_builder(target[:name])
-            builder.role(target[:role]) if target.include?(:target)
+
+            cloudwatch_event_role = target[:cloudwatch_event_role] || 'ecsEventsRole'
+            builder.cloudwatch_event_role_arn = Aws::IAM::Role.new(cloudwatch_event_role).arn
+
             builder.task_definition_arn = task_definition.task_definition_arn
-            builder.task_role(target[:task_role]) if target.include?(:task_role)
+            builder.task_role_arn = Aws::IAM::Role.new(target[:task_role]).arn if target.include?(:task_role)
             builder.task_count = target[:task_count] || 1
 
             if target.include?(:overrides)
