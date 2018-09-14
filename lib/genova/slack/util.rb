@@ -49,25 +49,30 @@ module Genova
           branches
         end
 
-        def service_options(account, repository, branch)
-          options = []
+        def service_option_groups(account, repository, branch)
+          service_options = []
 
           deploy_config = Genova::Git::LocalRepositoryManager.new(account, repository, branch).load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
-            cluster = cluster_params[:name]
+            if cluster_params[:services].present?
+              cluster = cluster_params[:name]
 
-            raise Genova::Config::DeployConfigError, 'Service is not defined.' if cluster_params[:services].nil?
+              services = cluster_params[:services].keys
+              services.delete(:default)
 
-            services = cluster_params[:services].keys
-            services.delete(:default)
-
-            services.each do |service|
-              value = "#{cluster}:#{service}"
-              options.push(text: value, value: value)
+              services.each do |service|
+                value = "#{cluster}:#{service}"
+                service_options.push(text: value, value: value)
+              end
             end
           end
 
-          options
+          [
+            {
+              text: 'Service',
+              options: service_options
+            }
+          ]
         end
       end
     end

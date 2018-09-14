@@ -47,7 +47,7 @@ module Genova
 
       def client
         oauth_token = ENV.fetch('GITHUB_OAUTH_TOKEN')
-        raise 'GITHUB_OAUTH_TOKEN is undefined.' if oauth_token.empty?
+        raise Genova::Error, 'GITHUB_OAUTH_TOKEN is undefined.' if oauth_token.empty?
 
         Octokit::Client.new(access_token: oauth_token)
       end
