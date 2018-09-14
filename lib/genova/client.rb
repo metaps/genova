@@ -39,7 +39,11 @@ module Genova
       @deploy_job.cluster = @deploy_job.cluster
       @deploy_job.tag = create_tag(commit_id)
 
-      task_definition_arns = @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
+      if @deploy_job.service.present?
+        task_definition_arns = @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
+      else
+        task_definition_arns = @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
+      end
 
       @deploy_job.done(task_definition_arns)
       @logger.info('Deployment succeeded.')
