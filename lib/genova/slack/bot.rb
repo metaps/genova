@@ -78,14 +78,15 @@ module Genova
           branch: params[:branch]
         }
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_service', query)
-        options = Genova::Slack::Util.service_options(params[:account], params[:repository], params[:branch])
+        option_groups = Genova::Slack::Util.service_option_groups(params[:account], params[:repository], params[:branch])
         selected_options = []
 
-        if options.size.positive?
+        if option_groups.size.positive?
+          first_option = option_groups[0][:options][0]
           selected_options = [
             {
-              text: options[0][:text],
-              value: options[0][:value]
+              text: first_option[:text],
+              value: first_option[:value]
             }
           ]
         end
@@ -94,7 +95,7 @@ module Genova
           channel: @channel,
           response_type: 'in_channel',
           attachments: [
-            text: 'Target cluster and service.',
+            text: 'Deploy target.',
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
             callback_id: callback_id,
@@ -102,7 +103,7 @@ module Genova
               {
                 name: 'service',
                 type: 'select',
-                options: options,
+                option_groups: option_groups,
                 selected_options: selected_options
               },
               {
