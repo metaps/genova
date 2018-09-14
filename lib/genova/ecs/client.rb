@@ -14,6 +14,7 @@ module Genova
         @docker_client = Genova::Docker::Client.new(@repository_manager, logger: @logger)
         @ecs_client = Aws::ECS::Client.new
         @ecr_client = Genova::Ecr::Client.new(logger: @logger)
+        @deploy_config = @repository_manager.load_deploy_config
       end
 
       def ready
@@ -21,27 +22,18 @@ module Genova
         @repository_manager.update
       end
 
-      def deploy_service(service, image_tag)
-        deploy_config = @repository_manager.load_deploy_config
-        service_config = deploy_config.service(@cluster, service)
+      def deploy_service(service, tag)
+        service_config = @deploy_config.service(@cluster, service)
+        cluster_config = @deploy_config.cluster(@cluster)
 
         raise Genova::Config::DeployConfigError, 'You need to specify :path parameter in deploy.yml' if service_config[:path].nil?
 
-        repository_names = @docker_client.build_images(service_config[:containers], service_config[:path])
-        pushed_size = 0
-
-        repository_names.each do |repository_name|
-          @ecr_client.push_image(image_tag, repository_name)
-          pushed_size += 1
-        end
-
-        raise ImagePushError, 'Push image is not found.' if pushed_size.zero?
+        deploy(service_config[:containers], service_config[:path], tag)
 
         service_task_definition_path = @repository_manager.task_definition_config_path(service_config[:path])
-        service_task_definition = create_task(@deploy_client.task, service_task_definition_path, image_tag)
+        service_task_definition = create_task(@deploy_client.task, service_task_definition_path, tag)
 
         service_client = @deploy_client.service
-        cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
 
         unless service_client.exist?(service)
           formation_config = cluster_config[:services][service.to_sym][:formation]
@@ -53,8 +45,9 @@ module Genova
         service_client.wait_timeout = Settings.deploy.wait_timeout
         service_client.update(service, service_task_definition)
 
-        scheduled_task_definition_arns = deploy_scheduled_tasks(service, image_tag) if cluster_config.include?(:scheduled_tasks)
+        scheduled_task_definition_arns = deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
+exit
         @ecr_client.destroy_images(repository_names)
 
         {
@@ -63,22 +56,46 @@ module Genova
         }
       end
 
-      def deploy_scheduled_tasks(depend_service, image_tag)
+      def deploy_scheduled_task(rule, target, tag)
+        {
+          scheduled_task_definition_arns: deploy_scheduled_tasks(tag, rule: rule, target: target)
+        }
+      end
+
+      private
+
+      def deploy(containers_config, path, tag)
+        repository_names = @docker_client.build_images(containers_config, path)
+        count = 0
+
+        repository_names.each do |repository_name|
+          @ecr_client.push_image(tag, repository_name)
+          count += 1
+        end
+
+        raise ImagePushError, 'Push image is not found.' if count.zero?
+      end
+
+      def deploy_scheduled_tasks(tag, options)
         task_definition_arns = []
 
-        cluster_config = @repository_manager.load_deploy_config.cluster(@cluster)
+        cluster_config = @deploy_config.cluster(@cluster)
         cluster_config[:scheduled_tasks].each do |scheduled_task|
-          task_client = @deploy_client.task
           scheduled_task_client = @deploy_client.scheduled_task
           config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
           targets = []
           targets_arns = []
 
+          next unless options[:rule].nil? || scheduled_task[:rule] == options[:rule]
+
           scheduled_task[:targets].each do |target|
-            next unless target[:depend_service] == depend_service
+            next unless options[:depend_service].nil? || target[:depend_service] == options[:depend_service]
+            next unless options[:target].nil? || target[:name] == options[:target]
+
+            deploy(target[:containers], target[:path], tag) if options[:target].present?
 
             task_definition_path = File.expand_path(target[:path], config_base_path)
-            task_definition = create_task(task_client, task_definition_path, image_tag)
+            task_definition = create_task(@deploy_client.task, task_definition_path, tag)
             task_definition_arn = task_definition.task_definition_arn
             targets_arns << {
               target: target[:name],
@@ -109,8 +126,6 @@ module Genova
             targets_arns: targets_arns
           }
 
-          return @logger.info("'#{depend_service}' target is not registered yet.") if targets.count.zero?
-
           @logger.info("Update '#{scheduled_task[:rule]}' rule.")
 
           scheduled_task_client.update(
@@ -121,10 +136,12 @@ module Genova
           )
         end
 
+        if options[:rule].present? && task_definition_arns.count.zero?
+          raise DeployError, 'Scheduled task target or rule is undefined.'
+        end
+
         task_definition_arns
       end
-
-      private
 
       def create_service(service, task_definition, formation_config)
         formation_config[:cluster] = @cluster
@@ -136,13 +153,15 @@ module Genova
         nil
       end
 
-      def create_task(task_client, task_definition_path, image_tag)
+      def create_task(task_client, task_definition_path, tag)
         unless @task_definitions.include?(task_definition_path)
-          @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: image_tag)
+          @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag)
         end
 
         @task_definitions[task_definition_path]
       end
     end
+
+    class DeployError < Genova::Error; end
   end
 end
