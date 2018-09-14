@@ -47,7 +47,6 @@ module Genova
 
         scheduled_task_definition_arns = deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
-exit
         @ecr_client.destroy_images(repository_names)
 
         {
