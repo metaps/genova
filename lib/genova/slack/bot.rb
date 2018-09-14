@@ -292,7 +292,7 @@ module Genova
 
           deploy_job.task_definition_arns[:scheduled_task_arns].each do |rule|
             rule[:targets_arns].each do |targets_arn|
-              task_definition_arns << "#{rule[:rule]}-#{targets_arn[:target]}-#{targets_arn[:task_definition_arn]}"
+              task_definition_arns << "(#{rule[:rule]}-#{targets_arn[:target]}) #{targets_arn[:task_definition_arn]}"
             end
           end
 
