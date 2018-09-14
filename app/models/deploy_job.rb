@@ -24,7 +24,7 @@ class DeployJob
   field :verbose, type: String
   field :ssh_secret_key_path, type: String
   field :logs, type: Array
-  field :task_definition_arn, type: String
+  field :task_definition_arns, type: Hash
   field :started_at, type: Time
   field :finished_at, type: Time
   field :execution_time, type: Float
@@ -51,9 +51,9 @@ class DeployJob
     save
   end
 
-  def done(task_definition_arn: nil)
+  def done(task_definition_arns)
     self.status = DeployJob.status.find_value(:success).to_s
-    self.task_definition_arn = task_definition_arn
+    self.task_definition_arns = task_definition_arns
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f
     save
