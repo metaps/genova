@@ -37,7 +37,7 @@ module Genova
         let(:client)  { Genova::Ecs::Client.new('cluster', repository_manager) }
 
         it 'should be return Aws::ECS::Types::TaskDefinition' do
-          expect(client.deploy_service('service', 'tag_revision').to_s).to eq(double(Aws::ECS::Types::TaskDefinition).to_s)
+          expect(client.deploy_service('service', 'tag_revision')).to eq(service_task_definition_arn: 'task_definition_arn', scheduled_task_definition_arns: nil)
         end
       end
     end
