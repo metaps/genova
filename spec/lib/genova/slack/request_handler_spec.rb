@@ -54,12 +54,12 @@ module Genova
               response_url: 'response_url'
             }
             allow(Genova::Sidekiq::Queue).to receive(:add)
-            allow(Github::RetrieveBranchWorker).to receive(:perform_async)
+            allow(::Github::RetrieveBranchWorker).to receive(:perform_async)
             allow(Genova::Slack::RequestHandler).to receive(:watch_change_status)
             allow(Thread).to receive(:new)
 
             Genova::Slack::RequestHandler.handle_request(payload_body, ::Logger.new(nil))
-            expect(Github::RetrieveBranchWorker).to have_received(:perform_async).once
+            expect(::Github::RetrieveBranchWorker).to have_received(:perform_async).once
           end
         end
 

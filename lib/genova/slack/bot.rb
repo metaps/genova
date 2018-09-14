@@ -128,19 +128,18 @@ module Genova
         end
 
         callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', params)
-        compare_ids = compare_commit_ids(params)
+        param = Settings.github.repositories.find { |k, _v| k[:name] == params[:repository] }
+        repository = param[:repository] || param[:name]
+        github_client = Genova::Github::Client.new(params[:account], repository)
+
+        compare_ids = compare_commit_ids(github_client, params)
         fields = []
 
         if compare_ids.present?
-          param = Settings.github.repositories.find { |k, _v| k[:name] == params[:repository] }
-          repository = param[:repository] || param[:name]
-
           value = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
                     'Commit ID is unchanged.'
                   else
-                    "<https://github.com/#{params[:account]}/#{repository}/" \
-                    "compare/#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}|" \
-                    "#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}>"
+                    "<#{github_client.build_compare_uri(compare_ids[:deployed_commit_id], compare_ids[:current_commit_id])}|#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}>"
                   end
 
           fields << {
@@ -196,7 +195,9 @@ module Genova
       end
 
       def post_detect_auto_deploy(deploy_job)
-        url = "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/tree/#{deploy_job.branch}"
+        github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
+        uri = github_client.build_branch_uri(deploy_job.branch)
+
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
@@ -205,7 +206,7 @@ module Genova
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Repository',
-              value: "<#{url}|#{deploy_job.account}/#{deploy_job.repository}>",
+              value: "<#{uri}|#{deploy_job.account}/#{deploy_job.repository}>",
               short: true
             }, {
               title: 'Branch',
@@ -217,7 +218,10 @@ module Genova
       end
 
       def post_detect_slack_deploy(deploy_job)
-        url = "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/tree/#{deploy_job.branch}"
+        github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
+        repository_uri = github_client.build_repository_uri
+        branch_uri = github_client.build_branch_uri(deploy_job.branch)
+
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
@@ -226,11 +230,11 @@ module Genova
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Repository',
-              value: "<#{url}|#{deploy_job.account}/#{deploy_job.repository}>",
+              value: "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>",
               short: true
             }, {
               title: 'Branch',
-              value: deploy_job.branch,
+              value: "<#{branch_uri}|#{deploy_job.branch}>",
               short: true
             }, {
               title: 'Cluster',
@@ -258,11 +262,11 @@ module Genova
             fields: [{
               title: 'ECS Console',
               value: url,
-              short: true
+              short: false
             }, {
               title: 'Log',
               value: build_log_url(deploy_job.id),
-              short: true
+              short: false
             }, {
               title: 'Sidekiq JID',
               value: jid,
@@ -273,17 +277,38 @@ module Genova
       end
 
       def post_finished_deploy(deploy_job)
-        fields = [{
-          title: 'New task definition ARNs',
-          value: escape_emoji(deploy_job.task_definition_arn),
-          short: true
-        }]
+        fields = []
+
+        if deploy_job.task_definition_arns[:service_task_definition_arn].present?
+          fields << {
+            title: 'New task definition ARN (Service)',
+            value: escape_emoji(deploy_job.task_definition_arns[:service_task_definition_arn]),
+            short: false
+          }
+        end
+
+        if deploy_job.task_definition_arns[:scheduled_task_arns].present?
+          task_definition_arns = []
+
+          deploy_job.task_definition_arns[:scheduled_task_arns].each do |rule|
+            rule[:targets_arns].each do |targets_arn|
+              task_definition_arns << "(#{rule[:rule]}-#{targets_arn[:target]}) #{targets_arn[:task_definition_arn]}"
+            end
+          end
+
+          fields << {
+            title: 'New task definition ARN (Scheduled task)',
+            value: escape_emoji(task_definition_arns.join("\n")),
+            short: false
+          }
+        end
 
         if deploy_job.tag.present?
+          github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
           fields << {
             title: 'GitHub tag',
-            value: "https://github.com/#{deploy_job.account}/#{deploy_job.repository}/releases/tag/#{deploy_job.tag}",
-            short: true
+            value: github_client.build_tag_uri(deploy_job.tag),
+            short: false
           }
         end
 
@@ -348,7 +373,7 @@ module Genova
         string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")
       end
 
-      def compare_commit_ids(params)
+      def compare_commit_ids(github_client, params)
         repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository], params[:branch])
         current_commit_id = repository_manager.origin_last_commit_id.to_s
 
@@ -361,15 +386,16 @@ module Genova
 
         {
           current_commit_id: current_commit_id,
-          deployed_commit_id: deployed_commit_id(service[:task_definition])
+          deployed_commit_id: deployed_commit_id(github_client, service[:task_definition])
         }
       end
 
-      def deployed_commit_id(task_definition_arn)
+      def deployed_commit_id(github_client, task_definition_arn)
         container_definition = @ecs.describe_task_definition(
           task_definition: task_definition_arn
         ).task_definition.container_definitions[0]
-        container_definition[:image][-40..-1]
+        tag = container_definition[:image].match(/(build\-.*$)/)
+        github_client.find_commit_id(tag)
       end
     end
   end

@@ -39,9 +39,9 @@ module Genova
       @deploy_job.cluster = @deploy_job.cluster
       @deploy_job.tag = create_tag(commit_id)
 
-      task_definition = @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
+      task_definition_arns = @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
 
-      @deploy_job.done(task_definition_arn: task_definition.task_definition_arn)
+      @deploy_job.done(task_definition_arns)
       @logger.info('Deployment succeeded.')
 
       unlock
@@ -92,8 +92,8 @@ module Genova
       tag = "build-#{@deploy_job.id}"
 
       if Settings.github.tag
-        client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
-        client.create_release("#{@deploy_job.account}/#{@deploy_job.repository}", tag, target_commitish: commit_id)
+        github_client = Genova::Github::Client.new(@deploy_job.account, @deploy_job.repository)
+        github_client.create_tag(tag, commit_id)
       end
 
       tag
