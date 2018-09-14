@@ -1,5 +1,6 @@
 <h2>Deploy jobs: <%= params[:id] %></h2>
 
+<% github_client = Genova::Github::Client.new(@deploy_job.account, @deploy_job.repository) %>
 <div class="parameters">
   <div class="row">
     <div class="small-4 large-2 columns parameter-id">Status</div>
@@ -18,23 +19,29 @@
   </div>
   <div class="row">
     <div class="small-4 large-2 columns parameter-id">Repository</div>
-    <div class="small-8 large-4 columns"><%= @deploy_job.repository %></div>
+    <div class="small-8 large-4 columns">
+      <i class="fa fa-github" aria-hidden="true"></i>
+      <%= link_to(@deploy_job.repository, github_client.build_repository_uri) %>
+    </div>
     <div class="small-4 large-2 columns parameter-id">Branch</div>
-    <div class="small-8 large-4 columns"><%= @deploy_job.branch %></div>
+    <div class="small-8 large-4 columns">
+      <i class="fa fa-github" aria-hidden="true"></i>
+      <%= link_to(@deploy_job.branch, github_client.build_branch_uri(@deploy_job.branch)) %>
+    </div>
   </div>
   <div class="row">
     <div class="small-4 large-2 columns parameter-id">Commit</div>
     <div class="small-8 large-4 columns">
       <% if @deploy_job.commit_id.present? %>
         <i class="fa fa-github" aria-hidden="true"></i>
-        <%= link_to(@deploy_job.commit_id[0, 7], "https://github.com/#{@deploy_job.account}/#{@deploy_job.repository}/commit/#{@deploy_job.commit_id}") %>
+        <%= link_to(@deploy_job.commit_id[0, 7], github_client.build_commit_id_uri(@deploy_job.commit_id)) %>
       <% end %>
     </div>
     <div class="small-4 large-2 columns parameter-id">Tag</div>
     <div class="small-8 large-4 columns">
       <% if @deploy_job.tag.present? %>
         <i class="fa fa-github" aria-hidden="true"></i>
-        <%= link_to(@deploy_job.tag, "https://github.com/#{@deploy_job.account}/#{@deploy_job.repository}/releases/tag/#{@deploy_job.tag}") %>
+        <%= link_to(@deploy_job.tag, github_client.build_tag_uri(@deploy_job.tag)) %>
       <% end %>
     </div>
   </div>
@@ -58,10 +65,28 @@
       <% end %>
     </div>
   </div>
-  <div class="row">
-    <div class="small-4 large-2 columns parameter-id">Task definition ARN</div>
-    <div class="small-8 large-10 columns end"><%= @deploy_job.task_definition_arn %></div>
-  </div>
+  <% if @deploy_job.task_definition_arns.present? %>
+    <% if @deploy_job.task_definition_arns[:service_task_definition_arn].present? %>
+      <div class="row">
+        <div class="small-4 large-2 columns parameter-id">Task definition ARN (Service)</div>
+        <div class="small-8 large-10 columns end">
+          <%= @deploy_job.task_definition_arns[:service_task_definition_arn] %>
+        </div>
+      </div>
+    <% end %>
+    <% if @deploy_job.task_definition_arns[:scheduled_task_arns].present? %>
+      <div class="row">
+        <div class="small-4 large-2 columns parameter-id">Task definition ARN (Scheduled task)</div>
+        <div class="small-8 large-10 columns end">
+          <% @deploy_job.task_definition_arns[:scheduled_task_arns].each do |rule| %>
+            <% rule[:targets_arns].each do |targets_arn| %>
+              <dd><%= rule[:rule] %>-<%= targets_arn[:target] %>-<%= targets_arn[:task_definition_arn] %></dd>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
   <div class="row">
     <div class="small-4 large-2 columns parameter-id">Created at</div>
     <div class="small-8 large-4 columns end"><%= @deploy_job.created_at %></div>
