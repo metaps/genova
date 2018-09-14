@@ -59,7 +59,7 @@ module Genova
 
         {
           service_task_definition_arn: service_task_definition.task_definition_arn,
-          scheduled_task_arns: scheduled_task_definition_arns
+          scheduled_task_definition_arns: scheduled_task_definition_arns
         }
       end
 

@@ -20,30 +20,34 @@ module Genova
       end
 
       def build_repository_uri
-        "https://github.com/#{@account}/#{@repository}"
+        build_uri("#{@account}/#{@repository}")
       end
 
-      def build_commit_id_uri(commit_id)
-        "https://github.com/#{@account}/#{@repository}/commit/#{commit_id}"
+      def build_commit_uri(commit_id)
+        build_uri("#{@account}/#{@repository}/commit/#{commit_id}")
       end
 
       def build_tag_uri(tag)
-        "https://github.com/#{@account}/#{@repository}/releases/tag/#{tag}"
+        build_uri("#{@account}/#{@repository}/releases/tag/#{tag}")
       end
 
       def build_compare_uri(target1, target2)
-        "https://github.com/#{@account}/#{@repository}/compare/#{target1}...#{target2}"
+        build_uri("#{@account}/#{@repository}/compare/#{target1}...#{target2}")
       end
 
       def build_branch_uri(branch)
-        "https://github.com/#{@account}/#{@repository}/tree/#{branch}"
+        build_uri("#{@account}/#{@repository}/tree/#{branch}")
       end
 
       private
 
+      def build_uri(path)
+        "https://github.com/#{path}"
+      end
+
       def client
         oauth_token = ENV.fetch('GITHUB_OAUTH_TOKEN')
-        raise RuntimeError, 'GITHUB_OAUTH_TOKEN is undefined.' if oauth_token.empty?
+        raise 'GITHUB_OAUTH_TOKEN is undefined.' if oauth_token.empty?
 
         Octokit::Client.new(access_token: oauth_token)
       end

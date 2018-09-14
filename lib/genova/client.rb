@@ -92,7 +92,8 @@ module Genova
       tag = "build-#{@deploy_job.id}"
 
       if Settings.github.tag
-        Genova::Github::Client.new(@deploy_job.account, @deploy_job.repository).create_tag(tag, commit_id)
+        github_client = Genova::Github::Client.new(@deploy_job.account, @deploy_job.repository)
+        github_client.create_tag(tag, commit_id)
       end
 
       tag
