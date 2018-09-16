@@ -6,21 +6,8 @@ module Genova
       describe 'handle_request' do
         context 'when invoke post_history' do
           it 'should be execute confirm_deploy_from_history' do
-            payload_body = {
-              callback_id: 'post_history',
-              actions: [
-                {
-                  selected_options: [
-                    {
-                      value: 'selected_repository'
-                    }
-                  ]
-                }
-              ],
-              user: {
-                id: 'id'
-              }
-            }
+            allow(Genova::Slack::CallbackIdManager).to receive(:find).and_return(action: 'post_history')
+
             history_mock = double(Genova::Slack::History)
             allow(history_mock).to receive(:find).and_return(
               account: 'account',
@@ -34,7 +21,7 @@ module Genova
             bot_mock = double(Genova::Slack::Bot)
             allow(bot_mock).to receive(:post_confirm_deploy)
             allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
-            Genova::Slack::RequestHandler.handle_request(payload_body, ::Logger.new(nil))
+            Genova::Slack::RequestHandler.handle_request({}, ::Logger.new(nil))
           end
         end
 
