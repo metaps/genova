@@ -11,9 +11,17 @@ module V1
 
       # /api/v1/slack/post
       post :post do
+        result = Genova::Slack::RequestHandler.handle_request(@payload_body, logger)
+
         {
           response_type: 'in_channel',
-          text: Genova::Slack::RequestHandler.handle_request(@payload_body, logger)
+          attachments: [
+            {
+              color: Settings.slack.message.color.confirm,
+              text: result[:text],
+              fields: result[:fields]
+            }
+          ]
         }
       end
     end

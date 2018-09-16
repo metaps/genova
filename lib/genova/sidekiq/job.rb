@@ -1,6 +1,8 @@
 module Genova
   module Sidekiq
     class Job
+      attr_reader :options
+
       def initialize(id, options = {})
         @id = id
         @options = options
@@ -12,6 +14,10 @@ module Genova
           singleton_class.class_eval { attr_accessor name }
           send("#{name}=", value)
         end
+      end
+
+      def [](key)
+        @options[key]
       end
 
       def update(options)

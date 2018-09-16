@@ -7,14 +7,10 @@ module Genova
           ```
           * deploy
             Run service deployment in interactive mode.
-          * deploy {repository} {branch} {cluster}:{service}
+          * deploy <repository> <branch> service=<cluster>:<service>
             Run service deployment in command mode.
-              repository: Source repository.
-              branch: Source branch.
-              cluster: Cluster name of deployment destination.
-              service: Service name of deployment destination.
-          * deploy-scheduled-task
-            Run scheduled task deployment in command mode. (Not implemented yet!)
+          * deploy <repository> <branch> scheduled-task=<cluster>:<scheduled task rule>:<scheduled task target>
+            Run scheduled task deployment in command mode.
           * help
             Get this helpful message.
           * history
