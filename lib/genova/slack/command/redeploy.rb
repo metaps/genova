@@ -29,7 +29,7 @@ module Genova
         end
       end
 
-      class RedeployError < Genova::Error; end
+      class Redeployruror < Error; end
     end
   end
 end
