@@ -13,18 +13,18 @@ module Github
       job = Genova::Sidekiq::Queue.find(id)
       job.update(status: Genova::Sidekiq::Queue.status.find_value(:in_progress))
 
-      query = {
+      params = {
         account: job.account,
         repository: job.repository
       }
-      callback_id = Genova::Slack::CallbackIdBuilder.build('post_branch', query)
+      callback_id = Genova::Slack::CallbackIdManager.create('post_branch', params)
 
       data = {
         channel: ENV.fetch('SLACK_CHANNEL'),
         response_type: 'in_channel',
         replace_original: false,
         attachments: [
-          text: 'Target branch.',
+          title: 'Target branch.',
           color: Settings.slack.message.color.interactive,
           attachment_type: 'default',
           callback_id: callback_id,
