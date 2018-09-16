@@ -16,7 +16,10 @@ module V1
 
         context 'when callback_id is valid' do
           it 'should be return success' do
-            allow(Genova::Slack::RequestHandler).to receive(:handle_request)
+            allow(Genova::Slack::RequestHandler).to receive(:handle_request).and_return(
+              text: 'text',
+              fields: []
+            )
             post '/api/v1/slack/post', params: payload_body
 
             expect(response).to have_http_status :created

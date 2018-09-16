@@ -69,9 +69,9 @@ class DeployJob
   private
 
   def check_deploy_target
-    if service.nil? && (scheduled_task_rule.nil? || scheduled_task_target.nil?)
-      errors[:base] << 'Please specify deploy service or schedule task.'
-    end
+    return if service.present? || (scheduled_task_rule.present? && scheduled_task_target.present?)
+
+    errors[:base] << 'Please specify deploy service or schedule task.'
   end
 
   def check_ssh_secret_key_path

@@ -17,7 +17,7 @@ module Github
         account: job.account,
         repository: job.repository
       }
-      callback_id = Genova::Slack::CallbackIdManager.create('post_branch', params)
+      callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_cluster', params)
 
       data = {
         channel: ENV.fetch('SLACK_CHANNEL'),

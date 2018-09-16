@@ -74,7 +74,7 @@ module Genova
         end
       end
 
-      class DeployError < Genova::Error; end
+      class DeployError < Error; end
     end
   end
 end

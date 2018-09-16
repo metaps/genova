@@ -37,7 +37,7 @@ module Genova
       end
 
       def post_choose_history(params)
-        callback_id = Genova::Slack::CallbackIdManager.create('post_history')
+        callback_id = Genova::Slack::CallbackIdManager.create('confirm_deploy_from_history')
 
         @client.chat_postMessage(
           channel: @channel,
@@ -63,7 +63,7 @@ module Genova
       end
 
       def post_choose_repository
-        callback_id = Genova::Slack::CallbackIdManager.create('post_repository')
+        callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_branch')
 
         @client.chat_postMessage(
           channel: @channel,
@@ -87,7 +87,7 @@ module Genova
       end
 
       def post_choose_cluster(params)
-        callback_id = Genova::Slack::CallbackIdManager.create('post_cluster', params)
+        callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_target', params)
         options = Genova::Slack::Util.cluster_options(params[:account], params[:repository], params[:branch])
         selected_options = []
 
@@ -124,7 +124,7 @@ module Genova
       end
 
       def post_choose_target(params)
-        callback_id = Genova::Slack::CallbackIdManager.create('post_target', params)
+        callback_id = Genova::Slack::CallbackIdManager.create('confirm_deploy', params)
         option_groups = Genova::Slack::Util.target_options(
           params[:account],
           params[:repository],
@@ -201,7 +201,7 @@ module Genova
           post_simple_message(fields: fields)
         end
 
-        callback_id = Genova::Slack::CallbackIdManager.create('post_deploy', params)
+        callback_id = Genova::Slack::CallbackIdManager.create('execute_deploy', params)
         fields = []
 
         github_client = Genova::Github::Client.new(params[:account], params[:repository])
