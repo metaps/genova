@@ -26,12 +26,13 @@ module Genova
         @account = account
         @branch = branch
         @logger = options[:logger] || ::Logger.new(STDOUT)
+        @repository = repository
+        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
 
         param = Settings.github.repositories.find do |k, _v|
-          k[:name] == repository || k[:repository] == repository
+          k[:name] == repository
         end
-        @repository = param.present? && param[:repository] || repository
-        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
+
         @base_path = param.nil? ? @repos_path : Pathname(@repos_path).join(param[:base_path] || '').to_s
       end
 

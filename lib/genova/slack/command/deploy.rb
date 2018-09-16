@@ -19,6 +19,8 @@ module Genova
                   branch: results[:branch],
                   cluster: results[:cluster],
                   service: results[:service],
+                  scheduled_task_rule: results[:scheduled_task_rule],
+                  scheduled_task_target: results[:scheduled_task_target],
                   confirm: true
                 )
               else
@@ -50,19 +52,29 @@ module Genova
             results[:repository] = args[0]
             results[:branch] = args[1]
 
-            split = args[2].split(':')
+            target = args[2].split('=')
+            raise DeployError, 'Target type argument is invalid. Please check `help`.' unless target.size == 2
 
-            raise DeployError, 'Wrong specification of third argument. Please check `help`.' unless split.size == 2
+            split = target[1].split(':')
+            valid_args = target[0] == 'service' ? 2 : 3
+
+            raise DeployError, 'Target argument is invalid. Please check `help`.' unless split.size == valid_args
 
             results[:cluster] = split[0]
-            results[:service] = split[1]
+
+            if target[0] == 'service'
+              results[:service] = split[1]
+            else
+              results[:scheduled_task_rule] = split[1]
+              results[:scheduled_task_target] = split[2]
+            end
 
             results
           end
         end
       end
 
-      class DeployError < Error; end
+      class DeployError < Genova::Error; end
     end
   end
 end

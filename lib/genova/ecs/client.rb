@@ -47,8 +47,6 @@ module Genova
 
         scheduled_task_definition_arns = deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
-        @ecr_client.destroy_images(repository_names)
-
         {
           service_task_definition_arn: service_task_definition.task_definition_arn,
           scheduled_task_definition_arns: scheduled_task_definition_arns
@@ -73,6 +71,8 @@ module Genova
         end
 
         raise ImagePushError, 'Push image is not found.' if count.zero?
+
+        @ecr_client.destroy_images(repository_names)
       end
 
       def deploy_scheduled_tasks(tag, options)
