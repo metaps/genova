@@ -11,27 +11,13 @@ module Genova
           @payload_body = payload_body
           @logger = logger
           @bot = Genova::Slack::Bot.new
-
           @callback = Genova::Slack::CallbackIdManager.find(@payload_body[:callback_id])
 
-          case @callback[:action]
-          when 'post_history' then
-            result = confirm_deploy_from_history
-          when 'post_repository' then
-            result = choose_deploy_branch
-          when 'post_branch' then
-            result = choose_deploy_cluster
-          when 'post_cluster' then
-            result = choose_deploy_target
-          when 'post_target' then
-             result = confirm_deploy
-          when 'post_deploy' then
-            result = execute_deploy
-          else
-            raise RoutingError, 'No route.'
+          unless RequestHandler.respond_to?(@callback[:action], true)
+            raise RouteError, "No route. [#{@callback[:action]}]"
           end
 
-          result
+          send(@callback[:action])
         end
 
         private
@@ -283,7 +269,7 @@ module Genova
         end
       end
 
-      class RoutingError < Error; end
+      class RouteError < Error; end
     end
   end
 end

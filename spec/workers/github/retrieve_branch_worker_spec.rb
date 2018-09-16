@@ -4,6 +4,8 @@ module Github
   describe RetrieveBranchWorker do
     describe 'perform' do
       before do
+        Redis.current.flushdb
+
         allow(Genova::Slack::Util).to receive(:branch_options)
         allow(RestClient).to receive(:post)
 

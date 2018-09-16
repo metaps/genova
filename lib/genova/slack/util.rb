@@ -8,17 +8,9 @@ module Genova
           histories = Genova::Slack::History.new(slack_user_id).list
           histories.each do |history|
             history = Oj.load(history)
-
-            text = if history[:account] == Settings.github.account
-                     history[:repository]
-                   else
-                     "#{history[:account]}/#{history[:repository]}"
-                   end
-
-            text = "#{history[:id]}"
             options.push(
-              text: text,
-              value: text,
+              text: history[:id],
+              value: history[:id],
               description: "#{history[:repository]} (#{history[:branch]})"
             )
           end
@@ -66,7 +58,7 @@ module Genova
           #   if cluster_params[:services].present?
           #   end
           #
-         #
+          #
           #   cluster_options << {
           #     text: cluster_params[:name],
           #     options: options

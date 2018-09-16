@@ -7,7 +7,7 @@ module Genova
         def create(action, params = {})
           id = build_id
           datum = {
-            action: action,
+            action: action
           }
 
           params.each do |key, value|

@@ -20,7 +20,7 @@ module Genova
         end
       end
 
-      class HistoryError < Genova::Error; end
+      class HistoryError < Error; end
     end
   end
 end
