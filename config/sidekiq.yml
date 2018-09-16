@@ -4,8 +4,12 @@
 :queues:
   - auto_deploy
   - slack_deploy
+  - slack_deploy_confirm
+  - slack_deploy_history
   - detect_branches
 :limits:
   auto_deploy: 3
   slack_deploy: 3
+  slack_deploy_confirm: 3
+  slack_deploy_history: 3
   detect_branches: 1
