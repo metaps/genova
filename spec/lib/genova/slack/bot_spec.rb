@@ -7,6 +7,8 @@ module Genova
       let(:slack_web_client_mock) { double('::Slack::Web::Client') }
 
       before do
+        Redis.current.flushdb
+
         allow(::Slack::Web::Client).to receive(:new).and_return(slack_web_client_mock)
         allow(slack_web_client_mock).to receive(:chat_postMessage)
       end
@@ -17,40 +19,19 @@ module Genova
         end
       end
 
-      describe 'post_choose_deploy_service' do
-        it 'should be call bot' do
-          repository_manager_mock = double(Genova::Git::LocalRepositoryManager)
-          allow(repository_manager_mock).to receive(:load_deploy_config).and_return(clusters: [])
-          allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(repository_manager_mock)
-
-          bot.post_choose_deploy_service(
-            account: 'account',
-            repository: 'repository',
-            branch: 'branch'
-          )
-          expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
+      describe 'post_choose_target' do
+        it 'should be not error' do
+          allow(Genova::Slack::Util).to receive(:target_options).and_return([])
+          expect { bot.post_choose_target({}) }.not_to raise_error
         end
       end
 
       describe 'post_confirm_deploy' do
-        it 'should be call bot' do
-          allow(Settings.github).to receive(:repositories).and_return(
-            [
-              {
-                name: 'repository'
-              }
-            ]
-          )
-          allow(bot).to receive(:compare_commit_ids).and_return(deployed_commit_id: '', current_commit_id: '')
+        it 'should be not error' do
+          allow(bot).to receive(:git_latest_commit_id)
+          allow(bot).to receive(:git_deployed_commit_id)
 
-          bot.post_confirm_deploy(
-            account: 'account',
-            repository: 'repository',
-            branch: 'branch',
-            cluster: 'cluster',
-            service: 'service'
-          )
-          expect(bot.instance_variable_get(:@client)).to have_received(:chat_postMessage).once
+          expect { bot.post_confirm_deploy({}) }.not_to raise_error
         end
       end
 
