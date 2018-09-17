@@ -20,7 +20,7 @@ module Github
       end
 
       it 'should be in queue' do
-        is_expected.to be_processed_in(:detect_branches)
+        is_expected.to be_processed_in(:github_retrieve_branch)
       end
 
       it 'should be no retry' do

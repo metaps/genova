@@ -50,7 +50,6 @@ module Genova
             allow(Genova::Slack::CallbackIdManager).to receive(:find).and_return(action: 'choose_deploy_branch')
             allow(Genova::Sidekiq::Queue).to receive(:add)
             allow(::Github::RetrieveBranchWorker).to receive(:perform_async)
-            allow(Genova::Slack::RequestHandler).to receive(:watch_change_status)
             allow(Thread).to receive(:new)
 
             Genova::Slack::RequestHandler.handle_request(payload_body, ::Logger.new(nil))

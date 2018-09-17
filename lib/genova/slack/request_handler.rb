@@ -1,9 +1,6 @@
 module Genova
   module Slack
     class RequestHandler
-      WAIT_INTERVAL = 3
-      WAIT_LONG_TIME = 6
-
       class << self
         def handle_request(payload_body, logger)
           return if payload_body.blank?
@@ -43,32 +40,12 @@ module Genova
               response_url: @payload_body[:response_url]
             )
             ::Github::RetrieveBranchWorker.perform_async(id)
-
-            Thread.new do
-              watch_change_status(id)
-            end
+            ::Github::RetrieveBranchWatchWorker.perform_async(id)
           else
             result = cancel_message
           end
 
           result
-        end
-
-        def watch_change_status(id)
-          start_time = Time.new.utc.to_i
-
-          loop do
-            sleep(WAIT_INTERVAL)
-
-            next if Time.new.utc.to_i - start_time < WAIT_LONG_TIME
-            job = Genova::Sidekiq::Queue.find(id)
-
-            if job.status == Genova::Sidekiq::Queue.status.find_value(:in_progress)
-              Genova::Slack::Bot.new.post_simple_message(text: 'Retrieving repository. It takes time because the repository is large. Please wait for a while...')
-            end
-
-            break
-          end
         end
 
         def choose_deploy_cluster
@@ -85,11 +62,12 @@ module Genova
               ]
             }
 
-            @bot.post_choose_cluster(
+            id = Genova::Sidekiq::Queue.add(
               account: @callback[:account],
               repository: @callback[:repository],
               branch: selected_branch
             )
+            ::Slack::DeployClusterWorker.perform_async(id)
           else
             result = cancel_message
           end
@@ -116,12 +94,13 @@ module Genova
               ]
             }
 
-            @bot.post_choose_target(
+            id = Genova::Sidekiq::Queue.add(
               account: @callback[:account],
               repository: @callback[:repository],
               branch: @callback[:branch],
               cluster: selected_cluster
             )
+            ::Slack::DeployTargetWorker.perform_async(id)
           else
             result = cancel_message
           end
