@@ -33,7 +33,7 @@ module V1
             allow(bot_mock).to receive(:post_error)
 
             allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
-            allow(Genova::Slack::RequestHandler).to receive(:handle_request).and_raise(Genova::Slack::RequestHandler::RoutingError.new('No route.'))
+            allow(Genova::Slack::RequestHandler).to receive(:handle_request).and_raise(Genova::Slack::RequestHandler::RouteError.new('No route.'))
             post '/api/v1/slack/post', params: payload_body
 
             expect(response).to have_http_status :internal_server_error
