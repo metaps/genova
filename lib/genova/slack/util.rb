@@ -53,18 +53,6 @@ module Genova
             clusters.push(text: cluster_params[:name], value: cluster_params[:name])
           end
 
-          #   options = []
-          #
-          #   if cluster_params[:services].present?
-          #   end
-          #
-          #
-          #   cluster_options << {
-          #     text: cluster_params[:name],
-          #     options: options
-          #   }
-          # end
-
           clusters
         end
 
