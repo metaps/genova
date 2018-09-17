@@ -2,7 +2,7 @@ module Github
   class DeployWorker
     include Sidekiq::Worker
 
-    sidekiq_options queue: :auto_deploy, retry: false
+    sidekiq_options queue: :github_deploy, retry: false
 
     def perform(id)
       logger.info('Started Github::DeployWorker')

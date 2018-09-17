@@ -36,7 +36,7 @@ module Github
       end
 
       it 'should be in queue' do
-        is_expected.to be_processed_in(:auto_deploy)
+        is_expected.to be_processed_in(:github_deploy)
       end
 
       it 'should be no retry' do
