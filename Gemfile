@@ -32,7 +32,6 @@ gem 'redis'
 gem 'rest-client'
 gem 'sass-rails'
 gem 'sidekiq'
-gem 'sidekiq-limit_fetch'
 gem 'slack-ruby-bot-server'
 gem 'therubyracer', platforms: :ruby
 gem 'uglifier', '>= 1.3.0'
