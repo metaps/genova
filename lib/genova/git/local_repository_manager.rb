@@ -25,7 +25,7 @@ module Genova
       def initialize(account, repository, branch = Settings.github.default_branch, options = {})
         @account = account
         @branch = branch
-        @logger = options[:logger] || ::Logger.new(STDOUT)
+        @logger = options[:logger] || ::Logger.new(nil)
         @repository = repository
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
 

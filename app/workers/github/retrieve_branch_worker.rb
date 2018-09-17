@@ -2,10 +2,7 @@ module Github
   class RetrieveBranchWorker
     include Sidekiq::Worker
 
-    sidekiq_options queue: :detect_branches, retry: false
-
-    WAIT_INTERVAL = 3
-    WAIT_LONG_TIME = 5
+    sidekiq_options queue: :github_retrieve_branch, retry: false
 
     def perform(id)
       logger.info('Started Github::RetrieveBranchWorker')
@@ -18,6 +15,7 @@ module Github
         repository: job.repository
       }
       callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_cluster', params)
+      options = Genova::Slack::Util.branch_options(job.account, job.repository)
 
       data = {
         channel: ENV.fetch('SLACK_CHANNEL'),
@@ -33,7 +31,7 @@ module Github
               name: 'branch',
               text: 'Pick a branch...',
               type: 'select',
-              options: Genova::Slack::Util.branch_options(job.account, job.repository),
+              options: options,
               selected_options: [
                 {
                   text: 'master',
