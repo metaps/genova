@@ -85,11 +85,11 @@ module Genova
           targets = []
           targets_arns = []
 
-          next unless options[:rule].nil? || scheduled_task[:rule] == options[:rule]
+          next if options[:rule].present? && scheduled_task[:rule] != options[:rule]
 
           scheduled_task[:targets].each do |target|
-            next unless options[:depend_service].nil? || target[:depend_service] == options[:depend_service]
-            next unless options[:target].nil? || target[:name] == options[:target]
+            next if options[:depend_service].present? && target[:depend_service] != options[:depend_service]
+            next if options[:target].present? && target[:targate] != options[:name]
 
             deploy(target[:containers], target[:path], tag) if options[:target].present?
 
@@ -119,6 +119,8 @@ module Genova
 
             targets << builder.to_hash
           end
+
+          next if targets.size.zero?
 
           task_definition_arns << {
             rule: scheduled_task[:rule],
