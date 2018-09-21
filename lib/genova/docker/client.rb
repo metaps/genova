@@ -15,8 +15,8 @@ module Genova
           build = parse_docker_build(params[:build], @cipher)
 
           config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
-          context_path = File.expand_path(build[:context], config_base_path)
-          docker_file_path = Pathname(context_path).join(build[:docker_filename]).to_s
+          docker_base_path = File.expand_path(build[:context], config_base_path)
+          docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
 
           raise Genova::Config::DeployConfigError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
@@ -29,7 +29,7 @@ module Genova
 
           command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
 
-          executor = Genova::Command::Executor.new(work_dir: @repository_manager.repos_path, logger: @logger)
+          executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
           executor.command(command)
 
           repository_names.push(repository_name)
