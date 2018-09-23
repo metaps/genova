@@ -13,54 +13,20 @@ module V1
 
       def parse(payload_body)
         data = Oj.load(payload_body, symbol_keys: true)
+        matches = data[:ref].match(/^refs\/([^\/]+)\/(.+)$/)
+
+        # タグのプッシュは検知対象外
+        return nil unless matches[1] == 'heads'
+
         full_name = data[:repository][:full_name].split('/')
+
 
         result = {
           account: full_name[0],
           repository: full_name[1]
         }
-        result[:branch] = data[:ref].slice(11..data[:ref].size) if data[:ref].present?
+        result[:branch] = matches[2]
         result
-      end
-
-      def detect_auto_deploy_service(account, repository, branch)
-        deploy_config = load_deploy_config(account, repository, branch)
-        auto_deploy = deploy_config.dig(:auto_deploy)
-
-        return nil if auto_deploy.nil?
-
-        target = auto_deploy.find { |k, _v| k[:branch] == branch }
-
-        {
-          cluster: target[:cluster],
-          service: target[:service]
-        }
-      end
-
-      def create_deploy_job(params)
-        id = DeployJob.generate_id
-        DeployJob.create(id: id,
-                         status: DeployJob.status.find_value(:in_progress).to_s,
-                         mode: DeployJob.mode.find_value(:auto).to_s,
-                         account: params[:account],
-                         repository: params[:repository],
-                         branch: params[:branch],
-                         cluster: params[:cluster],
-                         service: params[:service])
-
-        id
-      end
-
-      private
-
-      def load_deploy_config(account, repository, branch)
-        octokit = Octokit::Client.new(access_token: ENV.fetch('GITHUB_OAUTH_TOKEN'))
-        resource = octokit.contents(
-          "#{account}/#{repository}",
-          ref: branch,
-          path: 'config/deploy.yml'
-        )
-        YAML.load(Base64.decode64(resource.attrs[:content])).deep_symbolize_keys
       end
     end
   end

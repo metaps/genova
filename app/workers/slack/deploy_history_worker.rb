@@ -7,8 +7,8 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployHistoryWorker')
 
-      params = Genova::Sidekiq::Queue.find(id).options
-      Genova::Slack::Bot.new.post_confirm_deploy(params)
+      job = Genova::Sidekiq::Queue.find(id).options
+      Genova::Slack::Bot.new.post_confirm_deploy(job)
     end
   end
 end
