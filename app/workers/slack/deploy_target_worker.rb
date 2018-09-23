@@ -7,14 +7,14 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployTargetWorker')
 
-      params = Genova::Sidekiq::Queue.find(id).options
+      job = Genova::Sidekiq::Queue.find(id).options
 
       bot = Genova::Slack::Bot.new
       bot.post_choose_target(
-        account: params[:account],
-        repository: params[:repository],
-        branch: params[:branch],
-        cluster: params[:cluster]
+        account: job[:account],
+        repository: job[:repository],
+        branch: job[:branch],
+        cluster: job[:cluster]
       )
     end
   end

@@ -478,12 +478,13 @@ module Genova
         task_definitions = task_definition.task_definition.container_definitions
 
         deployed_commit_id = nil
+        repository_manager = Genov::Git::LocalRepositoryManager.new(params[:account], params[:repositorh])
 
         task_definitions.each do |task|
           matches = task[:image].match(/(build\-.*$)/)
           next unless matches[1].present?
 
-          deployed_commit_id = github_client.find_commit_id(matches[1])
+          deployed_commit_id = repository_manager.find_commit_id(matches[1])
         end
 
         deployed_commit_id

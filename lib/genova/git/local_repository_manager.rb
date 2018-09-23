@@ -47,7 +47,7 @@ module Genova
       def update
         clone
 
-        git = git_client
+        git = client
         git.fetch
         git.clean(force: true, d: true)
         git.checkout(@branch) if git.branch != @branch
@@ -81,7 +81,7 @@ module Genova
       def origin_branches
         clone
 
-        git = git_client
+        git = client
         git.fetch
 
         branches = []
@@ -97,14 +97,28 @@ module Genova
       def origin_last_commit_id
         clone
 
-        git = git_client
+        git = client
         git.fetch
         git.remote.branch(@branch).gcommit.log(1).first
       end
 
+      def find_commit_id(tag)
+        git = client
+        git.fetch
+        git.tag(tag)
+      end
+
+      def release(tag, commit_id)
+        update
+
+        git = client
+        git.add_tag(tag, commit_id)
+        git.push('origin', @branch, tags: tag)
+      end
+
       private
 
-      def git_client
+      def client
         ::Git.open(@repos_path, log: @logger)
       end
     end
