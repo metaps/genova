@@ -19,14 +19,6 @@ module Genova
       def [](key)
         @options[key]
       end
-
-      def update(options)
-        options.each do |name, value|
-          @options[name] = value
-        end
-
-        Redis.current.mapped_hmset(@id, @options)
-      end
     end
   end
 end
