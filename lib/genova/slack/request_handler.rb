@@ -39,8 +39,9 @@ module Genova
               repository: selected_repository,
               response_url: @payload_body[:response_url]
             )
-            ::Github::RetrieveBranchWorker.perform_async(id)
-            ::Github::RetrieveBranchWatchWorker.perform_async(id)
+
+            jid = ::Github::RetrieveBranchWorker.perform_async(id)
+            ::Github::RetrieveBranchWatchWorker.perform_async(jid)
           else
             result = cancel_message
           end
