@@ -8,8 +8,6 @@ module Github
       logger.info('Started Github::RetrieveBranchWorker')
 
       job = Genova::Sidekiq::Queue.find(id)
-      job.update(status: Genova::Sidekiq::Queue.status.find_value(:in_progress))
-
       params = {
         account: job.account,
         repository: job.repository
@@ -58,7 +56,6 @@ module Github
       }
 
       RestClient.post(job.response_url, data.to_json)
-      job.update(status: Genova::Sidekiq::Queue.status.find_value(:complete))
     end
   end
 end
