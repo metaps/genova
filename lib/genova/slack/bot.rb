@@ -457,7 +457,7 @@ module Genova
         repository_manager.origin_last_commit_id.to_s
       end
 
-      def git_deployed_commit_id(github_client, params)
+      def git_deployed_commit_id(_github_client, params)
         if params[:service].present?
           services = @ecs.describe_services(cluster: params[:cluster], services: [params[:service]]).services
           raise Genova::Error, "Service does not exist. [#{params[:service]}]" if services.nil?

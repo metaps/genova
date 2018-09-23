@@ -20,6 +20,8 @@ module Github
     end
 
     describe 'perform' do
+      include_context 'load local_repository_manager_mock'
+
       before do
         deploy_job = DeployJob.create(
           id: DeployJob.generate_id,

@@ -52,7 +52,6 @@ module Genova
       @logger.info('Deployment succeeded.')
 
       unlock
-
     rescue Interrupt
       @logger.error("Interrupt was detected. {\"deploy id\": #{@deploy_job.id}}")
       cancel
@@ -96,7 +95,7 @@ module Genova
       @logger.info('Deployment has been canceled.')
     end
 
-    def create_tag(commit_id)
+    def create_tag(_commit_id)
       "build-#{@deploy_job.id}"
     end
 

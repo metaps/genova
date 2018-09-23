@@ -13,13 +13,12 @@ module V1
 
       def parse(payload_body)
         data = Oj.load(payload_body, symbol_keys: true)
-        matches = data[:ref].match(/^refs\/([^\/]+)\/(.+)$/)
+        matches = data[:ref].match(%r(^refs/([^/]+)/(.+)$))
 
         # タグのプッシュは検知対象外
-        return nil unless matches[1] == 'heads'
+        return ParseError, 'Request are ignored.' if matches.nil? || matches[1] != 'heads'
 
         full_name = data[:repository][:full_name].split('/')
-
 
         result = {
           account: full_name[0],
@@ -28,6 +27,8 @@ module V1
         result[:branch] = matches[2]
         result
       end
+
+      class ParseError < Genova::Error; end
     end
   end
 end
