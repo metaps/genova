@@ -10,16 +10,16 @@ module Github
     def perform(id)
       logger.info('Started Github::RetrieveBranchWatchWorker')
 
-      elapsed_time = Time.new.utc.to_i
+      start_time = Time.new.utc.to_i
 
       loop do
         sleep(WAIT_INTERVAL)
 
-        # RetrieveBranchWorkerの処理が一定時間を超えた場合にSlackへ通知
-        break if Time.new.utc.to_i - elapsed_time < NOTIFY_THRESHOLD
+        # RetrieveBranchWorkerの処理が一定時間を超えた場合にSlack通知
+        next if Time.new.utc.to_i - start_time < NOTIFY_THRESHOLD
 
         workers = Sidekiq::Workers.new
-        workers.each do |process_id, thread_id, work|
+        workers.each do |_process_id, _thread_id, work|
           next unless work['payload'][:jid] == jid
 
           bot = Genova::Slack::Bot.new
