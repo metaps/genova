@@ -36,7 +36,7 @@ class DeployJob
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
 
-  def initialize(params)
+  def initialize(params = {})
     super
 
     self.id = DeployJob.generate_id

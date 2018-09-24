@@ -104,6 +104,7 @@ shared_context 'load local_repository_manager_mock' do
     allow(local_repository_manager_mock).to receive(:origin_last_commit_id)
     allow(local_repository_manager_mock).to receive(:update)
     allow(local_repository_manager_mock).to receive(:release)
+    allow(local_repository_manager_mock).to receive(:find_commit_id)
     allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(local_repository_manager_mock)
   end
 end

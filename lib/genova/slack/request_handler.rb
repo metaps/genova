@@ -2,11 +2,11 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        def handle_request(payload_body, logger)
+        def handle_request(payload_body, logger = nil)
           return if payload_body.blank?
 
           @payload_body = payload_body
-          @logger = logger
+          @logger = logger || ::Logger.new(nil)
           @bot = Genova::Slack::Bot.new
           @callback = Genova::Slack::CallbackIdManager.find(@payload_body[:callback_id])
 
