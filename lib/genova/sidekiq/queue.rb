@@ -11,7 +11,7 @@ module Genova
           id = "job_#{Time.new.utc.to_i}"
 
           Redis.current.multi do
-            Redis.current.mapped_hmset(id, values)
+            Redis.current.mapped_hmset(id, values) if values.present?
             Redis.current.expire(id, CACHE_TTL)
           end
 

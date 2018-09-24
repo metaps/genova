@@ -204,13 +204,13 @@ module Genova
         callback_id = Genova::Slack::CallbackIdManager.create('execute_deploy', params)
         fields = []
 
-        github_client = Genova::Github::Client.new(params[:account], params[:repository])
         latest_commit_id = git_latest_commit_id(params)
-        deployed_commit_id = git_deployed_commit_id(github_client, params)
+        deployed_commit_id = git_deployed_commit_id(params)
 
         value = if latest_commit_id == deployed_commit_id
                   'Commit ID is unchanged.'
                 else
+                  github_client = Genova::Github::Client.new(params[:account], params[:repository])
                   "<#{github_client.build_compare_uri(deployed_commit_id, latest_commit_id)}|#{deployed_commit_id}...#{latest_commit_id}>"
                 end
 
@@ -457,13 +457,12 @@ module Genova
         repository_manager.origin_last_commit_id.to_s
       end
 
-      def git_deployed_commit_id(_github_client, params)
+      def git_deployed_commit_id(params)
         if params[:service].present?
           services = @ecs.describe_services(cluster: params[:cluster], services: [params[:service]]).services
           raise Genova::Error, "Service does not exist. [#{params[:service]}]" if services.nil?
 
           task_definition_arn = services[0].task_definition
-
         else
           cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
           targets = cloudwatch_events_client.list_targets_by_rule(rule: params[:scheduled_task_rule])
@@ -478,11 +477,11 @@ module Genova
         task_definitions = task_definition.task_definition.container_definitions
 
         deployed_commit_id = nil
-        repository_manager = Genov::Git::LocalRepositoryManager.new(params[:account], params[:repositorh])
+        repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repositorh])
 
         task_definitions.each do |task|
           matches = task[:image].match(/(build\-.*$)/)
-          next unless matches[1].present?
+          next if matches[1].nil?
 
           deployed_commit_id = repository_manager.find_commit_id(matches[1])
         end

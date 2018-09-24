@@ -3,28 +3,24 @@ require 'rails_helper'
 module Slack
   describe DeployWorker do
     describe 'perform' do
-      before do
-        deploy_job_mock = DeployJob.new(
-          repository: 'repository',
-          account: 'account',
-          branch: 'branch',
-          cluster: 'cluster',
-          service: 'service',
-          slack_user_id: 'slack_user_id'
-        )
-        allow(DeployJob).to receive(:find).and_return(deploy_job_mock)
+      let(:id) do
+        deploy_job = DeployJob.new
+        deploy_job.save
+        deploy_job.id
+      end
+      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:genova_client_mock) { double(Genova::Client) }
 
-        bot_mock = double(Genova::Slack::Bot)
+      before do
         allow(bot_mock).to receive(:post_detect_slack_deploy)
         allow(bot_mock).to receive(:post_started_deploy)
         allow(bot_mock).to receive(:post_finished_deploy)
         allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
 
-        deploy_client_mock = double(Genova::Client)
-        allow(deploy_client_mock).to receive(:run).and_return({})
-        allow(Genova::Client).to receive(:new).and_return(deploy_client_mock)
+        allow(genova_client_mock).to receive(:run)
+        allow(Genova::Client).to receive(:new).and_return(genova_client_mock)
 
-        subject.perform('deploy_job_id')
+        subject.perform(id)
       end
 
       it 'should be in queeue' do
