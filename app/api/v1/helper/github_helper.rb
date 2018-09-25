@@ -16,7 +16,7 @@ module V1
         matches = data[:ref].match(%r(^refs/([^/]+)/(.+)$))
 
         # タグのプッシュは検知対象外
-        return ParseError, 'Request are ignored.' if matches.nil? || matches[1] != 'heads'
+        return raise ParseError, 'Request are ignored.' if matches.nil? || matches[1] != 'heads'
 
         full_name = data[:repository][:full_name].split('/')
 
