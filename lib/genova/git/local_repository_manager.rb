@@ -106,7 +106,7 @@ module Genova
         git = client
         git.fetch
         git.tag(tag)
-      rescue Git::GitTagNameDoesNotExist
+      rescue ::Git::GitTagNameDoesNotExist
         nil
       end
 
