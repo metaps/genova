@@ -209,7 +209,7 @@ module Genova
 
         value = if latest_commit_id == deployed_commit_id
                   'Commit ID is unchanged.'
-                else
+                elsif deployed_commit_id.present?
                   github_client = Genova::Github::Client.new(params[:account], params[:repository])
                   "<#{github_client.build_compare_uri(deployed_commit_id, latest_commit_id)}|#{deployed_commit_id}...#{latest_commit_id}>"
                 end

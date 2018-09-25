@@ -53,7 +53,12 @@ module Genova
         else
           result[:context] = build[:context] || '.'
           result[:docker_filename] = build[:dockerfile] || 'Dockerfile'
-          result[:base_path] = File.expand_path(build[:base_path], Pathname(@repository_manager.base_path).join('config')) || '.'
+
+          if build[:base_path].present?
+            result[:base_path] = File.expand_path(build[:base_path], Pathname(@repository_manager.base_path).join('config'))
+          else
+            result[:base_path] = '.'
+          end
 
           if build[:args].is_a?(Hash)
             build[:args].each do |key, value|
