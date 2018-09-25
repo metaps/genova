@@ -23,7 +23,7 @@ module Github
 
         workers = Sidekiq::Workers.new
         workers.each do |_process_id, _thread_id, work|
-          next unless work['payload']['jid'] == jid
+          next unless work['payload']['jid'] == id
 
           bot = Genova::Slack::Bot.new
           bot.post_simple_message(text: 'Retrieving repository. Please wait...')
