@@ -106,6 +106,8 @@ module Genova
         git = client
         git.fetch
         git.tag(tag)
+      rescue Git::GitTagNameDoesNotExist
+        nil
       end
 
       def release(tag, commit_id)
