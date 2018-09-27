@@ -218,7 +218,7 @@ module Genova
           title: 'Git compare',
           value: value,
           short: true
-        }
+        } if value.present?
 
         @client.chat_postMessage(
           channel: @channel,
