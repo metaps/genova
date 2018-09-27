@@ -27,7 +27,7 @@ module Genova
 
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
-          command = "docker build -t #{repository_name}:latest -f #{docker_file_path} #{build[:base_path]}#{build[:build_args]}"
+          command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
           @logger.info("Docker build path: #{docker_base_path}")
 
           executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
@@ -49,16 +49,9 @@ module Genova
         if build.is_a?(String)
           result[:context] = build || '.'
           result[:docker_filename] = 'Dockerfile'
-          result[:base_path] = '.'
         else
           result[:context] = build[:context] || '.'
           result[:docker_filename] = build[:dockerfile] || 'Dockerfile'
-
-          if build[:base_path].present?
-            result[:base_path] = File.expand_path(build[:base_path], Pathname(@repository_manager.base_path).join('config'))
-          else
-            result[:base_path] = '.'
-          end
 
           if build[:args].is_a?(Hash)
             build[:args].each do |key, value|
