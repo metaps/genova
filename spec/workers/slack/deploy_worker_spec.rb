@@ -4,14 +4,21 @@ module Slack
   describe DeployWorker do
     describe 'perform' do
       let(:id) do
-        deploy_job = DeployJob.new
-        deploy_job.save
+        deploy_job = DeployJob.new(
+          repository: 'repository',
+          cluster: 'cluster',
+          service: 'service',
+          mode: DeployJob.mode.find_value(:manual).to_sym
+        )
+        deploy_job.save!
         deploy_job.id
       end
       let(:bot_mock) { double(Genova::Slack::Bot) }
       let(:genova_client_mock) { double(Genova::Client) }
 
       before do
+        DeployJob.collection.drop
+
         allow(bot_mock).to receive(:post_detect_slack_deploy)
         allow(bot_mock).to receive(:post_started_deploy)
         allow(bot_mock).to receive(:post_finished_deploy)

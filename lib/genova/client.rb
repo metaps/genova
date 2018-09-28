@@ -5,10 +5,8 @@ module Genova
       @options[:lock_wait_interval] = options[:lock_wait_interval] || 60
 
       @deploy_job = deploy_job
-      raise DeployJob::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.valid?
-
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
-      @deploy_job.save
+      raise DeployJob::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
       @logger.level = @options[:verbose] ? :debug : :info
