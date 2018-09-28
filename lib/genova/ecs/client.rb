@@ -26,7 +26,7 @@ module Genova
         service_config = @deploy_config.service(@cluster, service)
         cluster_config = @deploy_config.cluster(@cluster)
 
-        raise Genova::Config::DeployConfigError, 'You need to specify :path parameter in deploy.yml' if service_config[:path].nil?
+        raise Genova::Config::DeployConfig::ParseError, 'You need to specify :path parameter in deploy.yml' if service_config[:path].nil?
 
         deploy(service_config[:containers], service_config[:path], tag)
 
@@ -37,7 +37,7 @@ module Genova
 
         unless service_client.exist?(service)
           formation_config = cluster_config[:services][service.to_sym][:formation]
-          raise Genova::Config::DeployConfigError, "Service is not registered. [#{service}]" if formation_config.nil?
+          raise Genova::Config::DeployConfig::ParseError, "Service is not registered. [#{service}]" if formation_config.nil?
 
           create_service(service, service_task_definition, formation_config)
         end
