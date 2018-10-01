@@ -59,6 +59,13 @@ RSpec.configure do |config|
 
   config.before do
     allow(Settings.github).to receive(:account).and_return('metaps')
+    allow(Settings.github).to receive(:repositories).and_return(
+      [
+        {
+          name: 'repository'
+        }
+      ]
+    )
   end
 end
 
@@ -94,6 +101,7 @@ shared_context 'load local_repository_manager_mock' do
     )
   end
   let(:local_repository_manager_mock) { double(Genova::Git::LocalRepositoryManager) }
+  let(:branch_mock) { double(Git::Branch) }
 
   before do
     allow(local_repository_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
@@ -105,6 +113,10 @@ shared_context 'load local_repository_manager_mock' do
     allow(local_repository_manager_mock).to receive(:update)
     allow(local_repository_manager_mock).to receive(:release)
     allow(local_repository_manager_mock).to receive(:find_commit_id)
+
+    allow(branch_mock).to receive(:name).and_return('feature/branch')
+    allow(local_repository_manager_mock).to receive(:origin_branches).and_return([branch_mock])
+
     allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(local_repository_manager_mock)
   end
 end
