@@ -22,8 +22,8 @@ module Github
     describe 'perform' do
       include_context 'load local_repository_manager_mock'
 
-      before do
-        deploy_job = DeployJob.create(
+      let(:deploy_job) do
+        DeployJob.create(
           id: DeployJob.generate_id,
           status: DeployJob.status.find_value(:in_progress).to_s,
           mode: DeployJob.mode.find_value(:auto).to_s,
@@ -33,7 +33,9 @@ module Github
           cluster: 'cluster',
           service: 'service'
         )
+      end
 
+      before do
         subject.perform(deploy_job.id)
       end
 
