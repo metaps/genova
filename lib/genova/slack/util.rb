@@ -8,16 +8,11 @@ module Genova
           histories = Genova::Slack::History.new(slack_user_id).list
           histories.each do |history|
             history = Oj.load(history)
-
-            text = if history[:account] == Settings.github.account
-                     history[:repository]
-                   else
-                     "#{history[:account]}/#{history[:repository]}"
-                   end
-
-            text = "#{text} (#{history[:branch]}) - #{history[:cluster]}:#{history[:service]}"
-
-            options.push(text: text, value: history[:id])
+            options.push(
+              text: history[:id],
+              value: history[:id],
+              description: "#{history[:repository]} (#{history[:branch]})"
+            )
           end
 
           options
@@ -49,25 +44,56 @@ module Genova
           branches
         end
 
-        def service_options(account, repository, branch)
-          options = []
+        def cluster_options(account, repository, branch)
+          clusters = []
+          repository_manager = Genova::Git::LocalRepositoryManager.new(account, repository, branch)
 
-          deploy_config = Genova::Git::LocalRepositoryManager.new(account, repository, branch).load_deploy_config
+          deploy_config = repository_manager.load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
-            cluster = cluster_params[:name]
+            clusters.push(text: cluster_params[:name], value: cluster_params[:name])
+          end
 
-            raise Genova::Config::DeployConfigError, 'Service is not defined.' if cluster_params[:services].nil?
+          clusters
+        end
 
-            services = cluster_params[:services].keys
-            services.delete(:default)
+        def target_options(account, repository, branch, cluster)
+          service_options = []
+          scheduled_task_options = []
 
-            services.each do |service|
-              value = "#{cluster}:#{service}"
-              options.push(text: value, value: value)
+          repository_manager = Genova::Git::LocalRepositoryManager.new(account, repository, branch)
+          cluster_config = repository_manager.load_deploy_config.cluster(cluster)
+
+          if cluster_config[:services].present?
+            cluster_config[:services].keys.each do |service|
+              service_options.push(
+                text: service,
+                value: "service:#{service}"
+              )
             end
           end
 
-          options
+          if cluster_config[:scheduled_tasks].present?
+            cluster_config[:scheduled_tasks].each do |rule|
+              targets = rule[:targets] || {}
+              targets.each do |target|
+                scheduled_task_options.push(
+                  text: "#{rule[:rule]}:#{target[:name]}",
+                  value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
+                )
+              end
+            end
+          end
+
+          [
+            {
+              text: 'Servicre',
+              options: service_options
+            },
+            {
+              text: 'Scheduled task',
+              options: scheduled_task_options
+            }
+          ]
         end
       end
     end

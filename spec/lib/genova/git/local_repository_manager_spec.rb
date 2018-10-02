@@ -73,7 +73,7 @@ module Genova
           git_mock = double(::Git)
 
           allow(manager).to receive(:clone)
-          allow(manager).to receive(:git_client).and_return(git_mock)
+          allow(manager).to receive(:client).and_return(git_mock)
 
           branch_mock1 = double(::Git::Branch)
           allow(branch_mock1).to receive(:name).and_return('master')
@@ -96,7 +96,7 @@ module Genova
           git_mock = double(::Git)
 
           allow(manager).to receive(:clone)
-          allow(manager).to receive(:git_client).and_return(git_mock)
+          allow(manager).to receive(:client).and_return(git_mock)
 
           branch_mock1 = double(::Git::Branch)
           allow(branch_mock1).to receive(:name).and_return('master')

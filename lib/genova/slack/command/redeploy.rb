@@ -17,6 +17,8 @@ module Genova
                 branch: history[:branch],
                 cluster: history[:cluster],
                 service: history[:service],
+                scheduled_task_rule: history[:scheduled_task_rule],
+                scheduled_task_target: history[:scheduled_task_target],
                 confirm: true
               )
             else

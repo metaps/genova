@@ -1,6 +1,8 @@
 module Genova
   module Sidekiq
     class Job
+      attr_reader :options
+
       def initialize(id, options = {})
         @id = id
         @options = options
@@ -14,12 +16,8 @@ module Genova
         end
       end
 
-      def update(options)
-        options.each do |name, value|
-          @options[name] = value
-        end
-
-        Redis.current.mapped_hmset(@id, @options)
+      def [](key)
+        @options[key]
       end
     end
   end

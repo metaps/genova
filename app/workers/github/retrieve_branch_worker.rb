@@ -2,29 +2,25 @@ module Github
   class RetrieveBranchWorker
     include Sidekiq::Worker
 
-    sidekiq_options queue: :detect_branches, retry: false
-
-    WAIT_INTERVAL = 3
-    WAIT_LONG_TIME = 5
+    sidekiq_options queue: :github_retrieve_branch, retry: false
 
     def perform(id)
       logger.info('Started Github::RetrieveBranchWorker')
 
       job = Genova::Sidekiq::Queue.find(id)
-      job.update(status: Genova::Sidekiq::Queue.status.find_value(:in_progress))
-
-      query = {
+      params = {
         account: job.account,
         repository: job.repository
       }
-      callback_id = Genova::Slack::CallbackIdBuilder.build('post_branch', query)
+      callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_cluster', params)
+      options = Genova::Slack::Util.branch_options(job.account, job.repository)
 
       data = {
         channel: ENV.fetch('SLACK_CHANNEL'),
         response_type: 'in_channel',
         replace_original: false,
         attachments: [
-          text: 'Target branch.',
+          title: 'Target branch.',
           color: Settings.slack.message.color.interactive,
           attachment_type: 'default',
           callback_id: callback_id,
@@ -33,7 +29,7 @@ module Github
               name: 'branch',
               text: 'Pick a branch...',
               type: 'select',
-              options: Genova::Slack::Util.branch_options(job.account, job.repository),
+              options: options,
               selected_options: [
                 {
                   text: 'master',
@@ -60,7 +56,6 @@ module Github
       }
 
       RestClient.post(job.response_url, data.to_json)
-      job.update(status: Genova::Sidekiq::Queue.status.find_value(:complete))
     end
   end
 end

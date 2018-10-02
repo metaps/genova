@@ -1,11 +1,13 @@
 :verbose: false
 :pidfile: ./tmp/pids/sidekiq.pid
 :logfile: ./log/sidekiq.log
+:concurrency: 10
 :queues:
-  - auto_deploy
+  - github_deploy
+  - github_retrieve_branch
+  - github_retrieve_branch_watch
+  - slack_deploy_cluster
+  - slack_deploy_target
+  - slack_deploy_confirm
   - slack_deploy
-  - detect_branches
-:limits:
-  auto_deploy: 3
-  slack_deploy: 3
-  detect_branches: 1
+  - slack_deploy_history

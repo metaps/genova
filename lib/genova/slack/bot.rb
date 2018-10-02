@@ -1,6 +1,21 @@
 module Genova
   module Slack
     class Bot
+      SUBMIT_APPROVE = {
+        name: 'submit',
+        text: 'Approve',
+        type: 'button',
+        style: 'primary',
+        value: 'approve'
+      }.freeze
+      SUBMIT_CANCEL = {
+        name: 'submit',
+        text: 'Cancel',
+        type: 'button',
+        style: 'default',
+        value: 'cancel'
+      }.freeze
+
       def initialize(client = nil)
         @client = client || ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
         @channel = ENV.fetch('SLACK_CHANNEL')
@@ -8,22 +23,32 @@ module Genova
       end
 
       def post_simple_message(params)
+        text = params[:text] || ''
+
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
-          text: escape_emoji(params[:message])
+          text: escape_emoji(text),
+          attachments: [
+            color: Settings.slack.message.color.confirm,
+            fields: params[:fields]
+          ]
         )
       end
 
       def post_choose_history(params)
+        callback_id = Genova::Slack::CallbackIdManager.create('confirm_deploy_from_history')
+
         @client.chat_postMessage(
           channel: @channel,
           response_type: 'in_channel',
+          text: 'Please specify job to be redeployed.',
           attachments: [
-            text: 'Command histories.',
+            title: 'History',
+            text: "#{ENV.fetch('GENOVA_URL')}/",
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
-            callback_id: 'post_history',
+            callback_id: callback_id,
             actions: [
               {
                 name: 'history',
@@ -31,27 +56,23 @@ module Genova
                 type: 'select',
                 options: params[:options]
               },
-              {
-                name: 'submit',
-                text: 'Cancel',
-                type: 'button',
-                style: 'default',
-                value: 'cancel'
-              }
+              SUBMIT_CANCEL
             ]
           ]
         )
       end
 
       def post_choose_repository
+        callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_branch')
+
         @client.chat_postMessage(
           channel: @channel,
           response_type: 'in_channel',
           attachments: [
-            text: 'Target repository.',
+            title: 'Target repository.',
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
-            callback_id: 'post_repository',
+            callback_id: callback_id,
             actions: [
               {
                 name: 'repository',
@@ -59,33 +80,23 @@ module Genova
                 type: 'select',
                 options: Genova::Slack::Util.repository_options
               },
-              {
-                name: 'submit',
-                text: 'Cancel',
-                type: 'button',
-                style: 'default',
-                value: 'cancel'
-              }
+              SUBMIT_CANCEL
             ]
           ]
         )
       end
 
-      def post_choose_deploy_service(params)
-        query = {
-          account: params[:account],
-          repository: params[:repository],
-          branch: params[:branch]
-        }
-        callback_id = Genova::Slack::CallbackIdBuilder.build('post_service', query)
-        options = Genova::Slack::Util.service_options(params[:account], params[:repository], params[:branch])
+      def post_choose_cluster(params)
+        callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_target', params)
+        options = Genova::Slack::Util.cluster_options(params[:account], params[:repository], params[:branch])
         selected_options = []
 
         if options.size.positive?
+          first_option = options[0]
           selected_options = [
             {
-              text: options[0][:text],
-              value: options[0][:value]
+              text: first_option[:text],
+              value: first_option[:value]
             }
           ]
         end
@@ -94,24 +105,61 @@ module Genova
           channel: @channel,
           response_type: 'in_channel',
           attachments: [
-            text: 'Target cluster and service.',
+            title: 'Target cluster.',
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
             callback_id: callback_id,
             actions: [
               {
-                name: 'service',
+                name: 'cluster',
                 type: 'select',
                 options: options,
                 selected_options: selected_options
               },
+              SUBMIT_APPROVE,
+              SUBMIT_CANCEL
+            ]
+          ]
+        )
+      end
+
+      def post_choose_target(params)
+        callback_id = Genova::Slack::CallbackIdManager.create('confirm_deploy', params)
+        option_groups = Genova::Slack::Util.target_options(
+          params[:account],
+          params[:repository],
+          params[:branch],
+          params[:cluster]
+        )
+        selected_options = []
+
+        if option_groups.size.positive?
+          first_option = option_groups[0][:options][0]
+          selected_options = [
+            {
+              text: first_option[:text],
+              value: first_option[:value]
+            }
+          ]
+        end
+
+        @client.chat_postMessage(
+          channel: @channel,
+          response_type: 'in_channel',
+          attachments: [
+            title: 'Deploy target.',
+            color: Settings.slack.message.color.interactive,
+            attachment_type: 'default',
+            callback_id: callback_id,
+            actions: [
               {
-                name: 'submit',
-                text: 'Approve',
-                type: 'button',
-                style: 'primary',
-                value: 'approve'
-              }
+                name: 'cluster',
+                type: 'select',
+                option_groups: option_groups,
+                selected_options: selected_options
+              },
+              SUBMIT_APPROVE,
+              SUBMIT_CANCEL
             ]
           ]
         )
@@ -119,60 +167,71 @@ module Genova
 
       def post_confirm_deploy(params)
         if params[:confirm]
-          message = "Repository: #{params[:account]}/#{params[:repository]}\n" \
-                    "Branch: #{params[:branch]}\n" \
-                    "Cluster: #{params[:cluster]}\n" \
-                    "Service: #{params[:service]}"
+          fields = [
+            {
+              title: 'Repository',
+              value: params[:repository]
+            },
+            {
+              title: 'Branch',
+              value: params[:branch]
+            },
+            {
+              title: 'Cluster',
+              value: params[:cluster]
+            }
+          ]
 
-          post_simple_message(message: message)
+          if params[:service].present?
+            fields << {
+              title: 'Service',
+              value: params[:service]
+            }
+          else
+            fields << {
+              title: 'Scheduled task rule',
+              value: params[:scheduled_task_rule]
+            }
+            fields << {
+              title: 'Scheduled task target',
+              value: params[:scheduled_task_target]
+            }
+          end
+
+          post_simple_message(fields: fields)
         end
 
-        callback_id = Genova::Slack::CallbackIdBuilder.build('post_deploy', params)
-        param = Settings.github.repositories.find { |k, _v| k[:name] == params[:repository] }
-        repository = param[:repository] || param[:name]
-        github_client = Genova::Github::Client.new(params[:account], repository)
-
-        compare_ids = compare_commit_ids(github_client, params)
+        callback_id = Genova::Slack::CallbackIdManager.create('execute_deploy', params)
         fields = []
 
-        if compare_ids.present?
-          value = if compare_ids[:deployed_commit_id] == compare_ids[:current_commit_id]
-                    'Commit ID is unchanged.'
-                  else
-                    "<#{github_client.build_compare_uri(compare_ids[:deployed_commit_id], compare_ids[:current_commit_id])}|#{compare_ids[:deployed_commit_id]}...#{compare_ids[:current_commit_id]}>"
-                  end
+        latest_commit_id = git_latest_commit_id(params)
+        deployed_commit_id = git_deployed_commit_id(params)
 
-          fields << {
-            title: 'Git compare',
-            value: value,
-            short: true
-          }
-        end
+        value = if latest_commit_id == deployed_commit_id
+                  'Commit ID is unchanged.'
+                elsif deployed_commit_id.present?
+                  github_client = Genova::Github::Client.new(params[:account], params[:repository])
+                  "<#{github_client.build_compare_uri(deployed_commit_id, latest_commit_id)}|#{deployed_commit_id}...#{latest_commit_id}>"
+                end
+
+        fields << {
+          title: 'Git compare',
+          value: value,
+          short: true
+        } if value.present?
 
         @client.chat_postMessage(
           channel: @channel,
           response_type: 'in_channel',
+          text: 'Begin deployment to ECS.',
           attachments: [
-            text: 'Begin deployment to ECS.',
             color: Settings.slack.message.color.interactive,
             attachment_type: 'default',
             callback_id: callback_id,
             fields: fields,
             actions: [
-              {
-                name: 'submit',
-                text: 'Approve',
-                type: 'button',
-                style: 'primary',
-                value: 'approve'
-              },
-              {
-                name: 'submit',
-                text: 'Cancel',
-                type: 'button',
-                style: 'default',
-                value: 'cancel'
-              }
+              SUBMIT_APPROVE,
+              SUBMIT_CANCEL
             ]
           ]
         )
@@ -182,13 +241,13 @@ module Genova
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
+          text: 'Deployment queue has been sent.',
           attachments: [{
-            text: 'Deployment queue has been sent.',
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Sidekiq',
               value: "#{ENV.fetch('GENOVA_URL')}/sidekiq",
-              short: true
+              short: false
             }]
           }]
         )
@@ -202,7 +261,7 @@ module Genova
           channel: @channel,
           as_user: true,
           attachments: [{
-            text: 'Detected GitHub push event.',
+            text: 'GitHub deployment was detected.',
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'Repository',
@@ -222,29 +281,46 @@ module Genova
         repository_uri = github_client.build_repository_uri
         branch_uri = github_client.build_branch_uri(deploy_job.branch)
 
+        fields = [{
+          title: 'Repository',
+          value: "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>",
+          short: true
+        }, {
+          title: 'Branch',
+          value: "<#{branch_uri}|#{deploy_job.branch}>",
+          short: true
+        }, {
+          title: 'Cluster',
+          value: deploy_job.cluster,
+          short: true
+        }]
+
+        if deploy_job.service.present?
+          fields << {
+            title: 'Service',
+            value: deploy_job.service,
+            short: true
+          }
+        elsif deploy_job.scheduled_task_rule.present?
+          fields << {
+            title: 'Scheduled task rule',
+            value: deploy_job.scheduled_task_rule,
+            short: true
+          }
+          fields << {
+            title: 'Scheduled task target',
+            value: deploy_job.scheduled_task_target,
+            short: true
+          }
+        end
+
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
+          text: 'Slack deployment was detected.',
           attachments: [{
-            text: 'Detected Slack deploy event. Retrieving repository...',
             color: Settings.slack.message.color.info,
-            fields: [{
-              title: 'Repository',
-              value: "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>",
-              short: true
-            }, {
-              title: 'Branch',
-              value: "<#{branch_uri}|#{deploy_job.branch}>",
-              short: true
-            }, {
-              title: 'Cluster',
-              value: deploy_job.cluster,
-              short: true
-            }, {
-              title: 'Service',
-              value: deploy_job.service,
-              short: true
-            }]
+            fields: fields
           }]
         )
       end
@@ -256,8 +332,8 @@ module Genova
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
+          text: 'Deployment has started.',
           attachments: [{
-            text: 'Deployment has started.',
             color: Settings.slack.message.color.info,
             fields: [{
               title: 'ECS Console',
@@ -287,12 +363,12 @@ module Genova
           }
         end
 
-        if deploy_job.task_definition_arns[:scheduled_task_arns].present?
+        if deploy_job.task_definition_arns[:scheduled_task_definition_arns].present?
           task_definition_arns = []
 
-          deploy_job.task_definition_arns[:scheduled_task_arns].each do |rule|
+          deploy_job.task_definition_arns[:scheduled_task_definition_arns].each do |rule|
             rule[:targets_arns].each do |targets_arn|
-              task_definition_arns << "(#{rule[:rule]}-#{targets_arn[:target]}) #{targets_arn[:task_definition_arn]}"
+              task_definition_arns << "(#{rule[:rule]}:#{targets_arn[:target]}) #{targets_arn[:task_definition_arn]}"
             end
           end
 
@@ -315,9 +391,8 @@ module Genova
         @client.chat_postMessage(
           channel: @channel,
           as_user: true,
-          text: build_mension(deploy_job.slack_user_id),
+          text: "#{build_mension(deploy_job.slack_user_id)}\nDeployment is complete.",
           attachments: [{
-            text: 'Deployment is complete.',
             color: Settings.slack.message.color.info,
             fields: fields
           }]
@@ -373,29 +448,45 @@ module Genova
         string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")
       end
 
-      def compare_commit_ids(github_client, params)
-        repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository], params[:branch])
-        current_commit_id = repository_manager.origin_last_commit_id.to_s
-
-        service = @ecs.describe_services(
-          cluster: params[:cluster],
-          services: [params[:service]]
-        ).services[0]
-
-        return unless service.present? && service[:status] == 'ACTIVE'
-
-        {
-          current_commit_id: current_commit_id,
-          deployed_commit_id: deployed_commit_id(github_client, service[:task_definition])
-        }
+      def git_latest_commit_id(params)
+        repository_manager = Genova::Git::LocalRepositoryManager.new(
+          params[:account],
+          params[:repository],
+          params[:branch]
+        )
+        repository_manager.origin_last_commit_id.to_s
       end
 
-      def deployed_commit_id(github_client, task_definition_arn)
-        container_definition = @ecs.describe_task_definition(
-          task_definition: task_definition_arn
-        ).task_definition.container_definitions[0]
-        tag = container_definition[:image].match(/(build\-.*$)/)
-        github_client.find_commit_id(tag)
+      def git_deployed_commit_id(params)
+        if params[:service].present?
+          services = @ecs.describe_services(cluster: params[:cluster], services: [params[:service]]).services
+          raise Genova::Error, "Service does not exist. [#{params[:service]}]" if services.nil?
+
+          task_definition_arn = services[0].task_definition
+        else
+          cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
+          targets = cloudwatch_events_client.list_targets_by_rule(rule: params[:scheduled_task_rule])
+          target = targets.targets.find do |k, _v|
+            k.id == params[:scheduled_task_target]
+          end
+
+          task_definition_arn = target.ecs_parameters.task_definition_arn
+        end
+
+        task_definition = @ecs.describe_task_definition(task_definition: task_definition_arn)
+        task_definitions = task_definition.task_definition.container_definitions
+
+        deployed_commit_id = nil
+        repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository])
+
+        task_definitions.each do |task|
+          matches = task[:image].match(/(build\-.*$)/)
+          next if matches[1].nil?
+
+          deployed_commit_id = repository_manager.find_commit_id(matches[1])
+        end
+
+        deployed_commit_id
       end
     end
   end

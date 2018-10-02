@@ -8,7 +8,8 @@ module Genova
       DeployJob.new(
         mode: DeployJob.mode.find_value(:auto).to_s,
         repository: 'repository',
-        cluster: 'cluster'
+        cluster: 'cluster',
+        service: 'service'
       )
     end
     let(:client) { Genova::Client.new(deploy_job) }
