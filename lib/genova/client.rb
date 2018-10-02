@@ -14,7 +14,7 @@ module Genova
 
       @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
-      @repository_manager = Genova::Git::LocalRepositoryManager.new(
+      @repository_manager = Genova::Git::RepositoryManager.new(
         @deploy_job.account,
         @deploy_job.repository,
         @deploy_job.branch,

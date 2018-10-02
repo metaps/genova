@@ -27,7 +27,7 @@ module Genova
     end
 
     describe 'run' do
-      include_context 'load local_repository_manager_mock'
+      include_context 'load repository_manager_mock'
 
       it 'shuold be not error' do
         expect { client.run }.to_not raise_error

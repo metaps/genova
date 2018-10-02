@@ -13,7 +13,7 @@ module V1
 
       def parse(payload_body)
         data = Oj.load(payload_body, symbol_keys: true)
-        matches = data[:ref].match(%r(^refs/([^/]+)/(.+)$))
+        matches = data[:ref].match(%r{^refs/([^/]+)/(.+)$})
 
         # タグのプッシュは検知対象外
         return raise ParseError, 'Request are ignored.' if matches.nil? || matches[1] != 'heads'

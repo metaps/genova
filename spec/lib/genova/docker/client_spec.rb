@@ -3,11 +3,11 @@ require 'rails_helper'
 module Genova
   module Docker
     describe Client do
-      let(:repository_manager) { Genova::Git::LocalRepositoryManager.new('account', 'repository', 'master') }
+      let(:repository_manager) { Genova::Git::RepositoryManager.new('account', 'repository', 'master') }
       let(:docker_client) { Genova::Docker::Client.new(repository_manager) }
 
       describe 'build_images' do
-        include_context 'load local_repository_manager_mock'
+        include_context 'load repository_manager_mock'
 
         it 'should be return repository names' do
           containers_config = [

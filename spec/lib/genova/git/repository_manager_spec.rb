@@ -2,8 +2,8 @@ require 'rails_helper'
 
 module Genova
   module Git
-    describe LocalRepositoryManager do
-      let(:manager) { Genova::Git::LocalRepositoryManager.new('account', 'repository') }
+    describe RepositoryManager do
+      let(:manager) { Genova::Git::RepositoryManager.new('account', 'repository') }
 
       before(:each) do
         deploy_config_mock = double(Genova::Config::DeployConfig)

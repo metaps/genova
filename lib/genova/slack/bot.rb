@@ -214,11 +214,13 @@ module Genova
                   "<#{github_client.build_compare_uri(deployed_commit_id, latest_commit_id)}|#{deployed_commit_id}...#{latest_commit_id}>"
                 end
 
-        fields << {
-          title: 'Git compare',
-          value: value,
-          short: true
-        } if value.present?
+        if value.present?
+          fields << {
+            title: 'Git compare',
+            value: value,
+            short: true
+          }
+        end
 
         @client.chat_postMessage(
           channel: @channel,
@@ -449,7 +451,7 @@ module Genova
       end
 
       def git_latest_commit_id(params)
-        repository_manager = Genova::Git::LocalRepositoryManager.new(
+        repository_manager = Genova::Git::RepositoryManager.new(
           params[:account],
           params[:repository],
           params[:branch]
@@ -477,7 +479,7 @@ module Genova
         task_definitions = task_definition.task_definition.container_definitions
 
         deployed_commit_id = nil
-        repository_manager = Genova::Git::LocalRepositoryManager.new(params[:account], params[:repository])
+        repository_manager = Genova::Git::RepositoryManager.new(params[:account], params[:repository])
 
         task_definitions.each do |task|
           matches = task[:image].match(/(build\-.*$)/)
