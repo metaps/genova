@@ -11,7 +11,7 @@ module Genova
             allow(bot_mock).to receive(:post_confirm_deploy)
             allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
 
-            command = "#{SlackRubyBot.config.user} deploy repository master cluster:service"
+            command = "#{SlackRubyBot.config.user} deploy repository master service=cluster:service"
             expect(message: command, channel: 'channel').to not_respond
             expect(bot_mock).to have_received(:post_confirm_deploy).once
           end

@@ -20,8 +20,10 @@ module Github
     end
 
     describe 'perform' do
-      before do
-        deploy_job = DeployJob.create(
+      include_context 'load local_repository_manager_mock'
+
+      let(:deploy_job) do
+        DeployJob.create(
           id: DeployJob.generate_id,
           status: DeployJob.status.find_value(:in_progress).to_s,
           mode: DeployJob.mode.find_value(:auto).to_s,
@@ -31,12 +33,14 @@ module Github
           cluster: 'cluster',
           service: 'service'
         )
+      end
 
+      before do
         subject.perform(deploy_job.id)
       end
 
       it 'should be in queue' do
-        is_expected.to be_processed_in(:auto_deploy)
+        is_expected.to be_processed_in(:github_deploy)
       end
 
       it 'should be no retry' do

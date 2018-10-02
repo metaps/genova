@@ -169,6 +169,7 @@ SLACK_API_TOKEN=***
 
 ```yaml
 auto_deploy:
-  branches:
-    master: staging
+  - branch: 'branch'
+    cluster: 'cluster',
+    service: 'service'
 ```

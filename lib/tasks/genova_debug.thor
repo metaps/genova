@@ -8,7 +8,7 @@ class GenovaDebug < Thor
 
   desc 'slack-greeting', 'Slack bot says Hello'
   def slack_greeting
-    ::Genova::Slack::Bot.new.post_simple_message(message: 'Hello')
+    ::Genova::Slack::Bot.new.post_simple_message(text: 'Hello')
     @logger.info('Sent message.')
   end
 

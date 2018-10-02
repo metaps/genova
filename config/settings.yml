@@ -15,15 +15,11 @@ github:
   default_branch: 'master'
   deploy_lock_timeout: 1800
 
-  # If you change the base_path or alias name, you need to specify parameter.
-  # This parameter is also used in repository list of Slack interactive deploy.
   repositories:
-    # Repository name or alias name. Name must be specified uniquely.
+    # Repository name. Name must be specified uniquely.
   - name: ''
     # Base path to build image. (optional)
     base_path: ''
-    # Repository name. (optional)
-    repository: ''
 
 aws:
   service:
@@ -39,6 +35,7 @@ slack:
     branch_limit: 20
   message:
     color:
-      interactive: '#3AA3E3'
+      interactive: '#3aa3e3'
       info: '#3cb371'
       error: '#cd5c5c'
+      confirm: '#d8d8d8'

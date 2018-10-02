@@ -17,7 +17,6 @@ module Genova
           job = Genova::Sidekiq::Queue.find(id)
 
           expect(job).to be_a(Genova::Sidekiq::Job)
-          expect(job.status).to eq(Genova::Sidekiq::Queue.status.find_value(:standby))
           expect(job.key).to eq('value')
         end
       end

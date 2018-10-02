@@ -5,10 +5,8 @@ module Genova
       @options[:lock_wait_interval] = options[:lock_wait_interval] || 60
 
       @deploy_job = deploy_job
-      raise DeployJob::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.valid?
-
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
-      @deploy_job.save
+      raise DeployJob::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
       @logger.level = @options[:verbose] ? :debug : :info
@@ -31,15 +29,22 @@ module Genova
       lock(@options[:lock_timeout])
 
       @deploy_job.start
-
-      commit_id = @ecs_client.ready
-      @logger.info("Commit ID: #{commit_id}")
-
-      @deploy_job.commit_id = commit_id
+      @deploy_job.commit_id = @ecs_client.ready
       @deploy_job.cluster = @deploy_job.cluster
-      @deploy_job.tag = create_tag(commit_id)
+      @deploy_job.tag = create_tag(@deploy_job.commit_id)
 
-      task_definition_arns = @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
+      @logger.info("Deploy target commit: #{@deploy_job.commit_id}")
+
+      task_definition_arns = if @deploy_job.service.present?
+                               @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
+                             else
+                               @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
+                             end
+
+      if Settings.github.tag
+        @logger.info("Pushed Git tag: #{@deploy_job.tag}")
+        @repository_manager.release(@deploy_job.tag, @deploy_job.commit_id)
+      end
 
       @deploy_job.done(task_definition_arns)
       @logger.info('Deployment succeeded.')
@@ -88,15 +93,8 @@ module Genova
       @logger.info('Deployment has been canceled.')
     end
 
-    def create_tag(commit_id)
-      tag = "build-#{@deploy_job.id}"
-
-      if Settings.github.tag
-        github_client = Genova::Github::Client.new(@deploy_job.account, @deploy_job.repository)
-        github_client.create_tag(tag, commit_id)
-      end
-
-      tag
+    def create_tag(_commit_id)
+      "build-#{@deploy_job.id}"
     end
 
     class DeployLockError < Error; end

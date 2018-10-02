@@ -18,10 +18,8 @@ class DeployJob
   field :commit_id, type: String
   field :cluster, type: String
   field :service, type: String
-  field :interactive, type: Boolean
-  field :profile, type: String
-  field :region, type: String
-  field :verbose, type: String
+  field :scheduled_task_rule, type: String
+  field :scheduled_task_target, type: String
   field :ssh_secret_key_path, type: String
   field :logs, type: Array
   field :task_definition_arns, type: Hash
@@ -31,13 +29,14 @@ class DeployJob
   field :tag, type: String
 
   validates :mode, :account, :repository, :cluster, :ssh_secret_key_path, presence: true
+  validate :check_deploy_target
   validate :check_ssh_secret_key_path
 
   def self.generate_id
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
 
-  def initialize(params)
+  def initialize(params = {})
     super
 
     self.id = DeployJob.generate_id
@@ -68,6 +67,12 @@ class DeployJob
   end
 
   private
+
+  def check_deploy_target
+    return if service.present? || (scheduled_task_rule.present? && scheduled_task_target.present?)
+
+    errors[:base] << 'Please specify deploy service or schedule task.'
+  end
 
   def check_ssh_secret_key_path
     errors.add(:ssh_secret_key_path, "Private key does not exist. [#{ssh_secret_key_path}]") unless File.exist?(ssh_secret_key_path)

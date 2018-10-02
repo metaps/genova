@@ -6,25 +6,26 @@ module V1
     resource :github do
       before do
         @payload_body = request.body.read
-        error! 'Signature do not match.', 403 unless verify_signature?(@payload_body)
+        error! 'Signature is invalid.', 403 unless verify_signature?(@payload_body)
       end
 
       # POST /api/v1/github/push
       post :push do
-        result = parse(@payload_body)
-        target = detect_auto_deploy_service(result[:account], result[:repository], result[:branch])
-        return unless target.present?
+        begin
+          result = parse(@payload_body)
 
-        id = create_deploy_job(
-          account: result[:account],
-          repository: result[:repository],
-          branch: result[:branch],
-          cluster: target[:cluster],
-          service: target[:service]
-        )
-        jid = Github::DeployWorker.perform_async(id)
+          id = Genova::Sidekiq::Queue.add(
+            account: result[:account],
+            repository: result[:repository],
+            branch: result[:branch]
+          )
+          Github::DeployWorker.perform_async(id)
 
-        { result: 'success', jid: jid }
+          { result: 'Deploy request was executed.' }
+
+        rescue Helper::GithubHelper::ParseError => e
+          error! e.message, 403
+        end
       end
     end
   end

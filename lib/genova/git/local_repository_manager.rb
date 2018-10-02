@@ -25,13 +25,14 @@ module Genova
       def initialize(account, repository, branch = Settings.github.default_branch, options = {})
         @account = account
         @branch = branch
-        @logger = options[:logger] || ::Logger.new(STDOUT)
+        @logger = options[:logger] || ::Logger.new(nil)
+        @repository = repository
+        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
 
         param = Settings.github.repositories.find do |k, _v|
-          k[:name] == repository || k[:repository] == repository
+          k[:name] == repository
         end
-        @repository = param.present? && param[:repository] || repository
-        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
+
         @base_path = param.nil? ? @repos_path : Pathname(@repos_path).join(param[:base_path] || '').to_s
       end
 
@@ -46,7 +47,7 @@ module Genova
       def update
         clone
 
-        git = git_client
+        git = client
         git.fetch
         git.clean(force: true, d: true)
         git.checkout(@branch) if git.branch != @branch
@@ -59,7 +60,7 @@ module Genova
         update
 
         path = Pathname(@base_path).join('config/deploy.yml')
-        raise Genova::Config::DeployConfigError, "File does not exist. [#{path}]" unless File.exist?(path)
+        raise Genova::Config::DeployConfig::ParseError, "File does not exist. [#{path}]" unless File.exist?(path)
 
         params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
@@ -71,7 +72,7 @@ module Genova
 
       def load_task_definition_config(path)
         path = task_definition_config_path(path)
-        raise Genova::Config::DeployConfigError, "File does not exist. [#{path}]" unless File.exist?(path)
+        raise Genova::Config::DeployConfig::ParseError, "File does not exist. [#{path}]" unless File.exist?(path)
 
         params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
@@ -80,7 +81,7 @@ module Genova
       def origin_branches
         clone
 
-        git = git_client
+        git = client
         git.fetch
 
         branches = []
@@ -96,14 +97,30 @@ module Genova
       def origin_last_commit_id
         clone
 
-        git = git_client
+        git = client
         git.fetch
         git.remote.branch(@branch).gcommit.log(1).first
       end
 
+      def find_commit_id(tag)
+        git = client
+        git.fetch
+        git.tag(tag)
+      rescue ::Git::GitTagNameDoesNotExist
+        nil
+      end
+
+      def release(tag, commit_id)
+        update
+
+        git = client
+        git.add_tag(tag, commit_id)
+        git.push('origin', @branch, tags: tag)
+      end
+
       private
 
-      def git_client
+      def client
         ::Git.open(@repos_path, log: @logger)
       end
     end

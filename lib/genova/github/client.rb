@@ -6,15 +6,6 @@ module Genova
         @repository = repository
       end
 
-      def create_tag(tag, commit_id)
-        client.create_release("#{@account}/#{@repository}", tag, target_commitish: commit_id)
-      end
-
-      def find_commit_id(tag)
-        release = client.release_for_tag("#{@account}/#{@repository}", tag)
-        release[:target_commitish]
-      end
-
       def build_clone_uri
         "git@github.com:#{@account}/#{@repository}.git"
       end
@@ -43,13 +34,6 @@ module Genova
 
       def build_uri(path)
         "https://github.com/#{path}"
-      end
-
-      def client
-        oauth_token = ENV.fetch('GITHUB_OAUTH_TOKEN')
-        raise 'GITHUB_OAUTH_TOKEN is undefined.' if oauth_token.empty?
-
-        Octokit::Client.new(access_token: oauth_token)
       end
     end
   end

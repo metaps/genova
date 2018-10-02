@@ -2,17 +2,18 @@ module Genova
   module Sidekiq
     class Queue
       extend Enumerize
-      enumerize :status, in: %i[standby in_progress complete]
+      enumerize :status, in: %i[complete]
 
       class << self
-        ENTITY_EXPIRE = 1800
+        CACHE_TTL = 1800
 
         def add(values = {})
           id = "job_#{Time.new.utc.to_i}"
-          values[:status] = Genova::Sidekiq::Queue.status.find_value(:standby)
 
-          Redis.current.mapped_hmset(id, values)
-          Redis.current.expire(id, ENTITY_EXPIRE)
+          Redis.current.multi do
+            Redis.current.mapped_hmset(id, values) if values.present?
+            Redis.current.expire(id, CACHE_TTL)
+          end
 
           id
         end
