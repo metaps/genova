@@ -485,7 +485,7 @@ module Genova
           matches = task[:image].match(/(build\-.*$)/)
           next if matches[1].nil?
 
-          deployed_commit_id = repository_manager.find_commit_id(matches[1])
+          deployed_commit_id = repository_manager.find_commit_id(matches[1]).to_s
         end
 
         deployed_commit_id
