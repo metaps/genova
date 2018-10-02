@@ -40,7 +40,7 @@ class GenovaDebug < Thor
   option :repository, required: true, aliases: :r, desc: 'Source repository.'
   option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
   def update_source
-    manager = ::Genova::Git::LocalRepositoryManager.new(options[:account], options[:repository], options[:branch])
+    manager = ::Genova::Git::RepositoryManager.new(options[:account], options[:repository], options[:branch])
     manager.update
   end
 end

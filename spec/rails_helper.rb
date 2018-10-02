@@ -69,7 +69,7 @@ RSpec.configure do |config|
   end
 end
 
-shared_context 'load local_repository_manager_mock' do
+shared_context 'load repository_manager_mock' do
   let(:deploy_config) do
     Genova::Config::DeployConfig.new(
       clusters: [
@@ -100,24 +100,24 @@ shared_context 'load local_repository_manager_mock' do
       ]
     )
   end
-  let(:local_repository_manager_mock) { double(Genova::Git::LocalRepositoryManager) }
+  let(:repository_manager_mock) { double(Genova::Git::RepositoryManager) }
   let(:branch_mock) { double(Git::Branch) }
 
   before do
-    allow(local_repository_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
-    allow(local_repository_manager_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
-    allow(local_repository_manager_mock).to receive(:base_path).and_return('base_path')
-    allow(local_repository_manager_mock).to receive(:repos_path).and_return('repos_path')
-    allow(local_repository_manager_mock).to receive(:task_definition_config_path)
-    allow(local_repository_manager_mock).to receive(:origin_last_commit_id)
-    allow(local_repository_manager_mock).to receive(:update)
-    allow(local_repository_manager_mock).to receive(:release)
-    allow(local_repository_manager_mock).to receive(:find_commit_id)
+    allow(repository_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
+    allow(repository_manager_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
+    allow(repository_manager_mock).to receive(:base_path).and_return('base_path')
+    allow(repository_manager_mock).to receive(:repos_path).and_return('repos_path')
+    allow(repository_manager_mock).to receive(:task_definition_config_path)
+    allow(repository_manager_mock).to receive(:origin_last_commit_id)
+    allow(repository_manager_mock).to receive(:update)
+    allow(repository_manager_mock).to receive(:release)
+    allow(repository_manager_mock).to receive(:find_commit_id)
 
     allow(branch_mock).to receive(:name).and_return('feature/branch')
-    allow(local_repository_manager_mock).to receive(:origin_branches).and_return([branch_mock])
+    allow(repository_manager_mock).to receive(:origin_branches).and_return([branch_mock])
 
-    allow(Genova::Git::LocalRepositoryManager).to receive(:new).and_return(local_repository_manager_mock)
+    allow(Genova::Git::RepositoryManager).to receive(:new).and_return(repository_manager_mock)
   end
 end
 

@@ -11,21 +11,18 @@ module V1
 
       # POST /api/v1/github/push
       post :push do
-        begin
-          result = parse(@payload_body)
+        result = parse(@payload_body)
 
-          id = Genova::Sidekiq::Queue.add(
-            account: result[:account],
-            repository: result[:repository],
-            branch: result[:branch]
-          )
-          Github::DeployWorker.perform_async(id)
+        id = Genova::Sidekiq::Queue.add(
+          account: result[:account],
+          repository: result[:repository],
+          branch: result[:branch]
+        )
+        Github::DeployWorker.perform_async(id)
 
-          { result: 'Deploy request was executed.' }
-
-        rescue Helper::GithubHelper::ParseError => e
-          error! e.message, 403
-        end
+        { result: 'Deploy request was executed.' }
+      rescue Helper::GithubHelper::ParseError => e
+        error! e.message, 403
       end
     end
   end

@@ -45,7 +45,7 @@ module Genova
       end
 
       describe 'branch_options' do
-        include_context 'load local_repository_manager_mock'
+        include_context 'load repository_manager_mock'
 
         it 'should be return brahches' do
           results = Genova::Slack::Util.branch_options('account', 'repository')
@@ -57,7 +57,7 @@ module Genova
       end
 
       describe 'cluster_options' do
-        include_context 'load local_repository_manager_mock'
+        include_context 'load repository_manager_mock'
 
         it 'should be return clusters' do
           results = Genova::Slack::Util.cluster_options('account', 'repository', 'branch')

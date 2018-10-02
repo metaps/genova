@@ -31,9 +31,9 @@ module Genova
       end
 
       describe 'deploy_service' do
-        include_context 'load local_repository_manager_mock'
+        include_context 'load repository_manager_mock'
 
-        let(:repository_manager) { Genova::Git::LocalRepositoryManager.new('account', 'repository', 'master') }
+        let(:repository_manager) { Genova::Git::RepositoryManager.new('account', 'repository', 'master') }
         let(:client)  { Genova::Ecs::Client.new('cluster', repository_manager) }
 
         it 'should be return Aws::ECS::Types::TaskDefinition' do

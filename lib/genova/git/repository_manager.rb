@@ -19,7 +19,7 @@ end
 
 module Genova
   module Git
-    class LocalRepositoryManager
+    class RepositoryManager
       attr_reader :repos_path, :base_path
 
       def initialize(account, repository, branch = Settings.github.default_branch, options = {})
