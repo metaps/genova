@@ -21,7 +21,7 @@ environment ENV.fetch('RAILS_ENV') { 'development' }
 # Workers do not work on JRuby or Windows (both of which do not support
 # processes).
 #
-# workers ENV.fetch("WEB_CONCURRENCY") { 2 }
+workers ENV.fetch('WEB_CONCURRENCY') { 2 }
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code
@@ -49,3 +49,17 @@ plugin :tmp_restart
 app_root = File.expand_path('..', __dir__)
 pidfile "#{app_root}/tmp/pids/puma.pid"
 bind "unix://#{app_root}/tmp/sockets/puma.sock"
+
+before_fork do
+  require 'puma_worker_killer'
+
+  PumaWorkerKiller.config do |config|
+    config.ram = (ENV['PUMA_WORKER_KILLER_RAM'] || 1024).to_i
+    config.frequency = (ENV['PUMA_WORKER_KILLER_FREQUENCY'] || 5).to_i
+    config.percent_usage = (ENV['PUMA_WORKER_KILLER_PERCENT_USAGE'] || 0.98).to_f
+    config.rolling_restart_frequency = (ENV['PUMA_WORKER_KILLER_ROLLING_RESTART_FREQUENCY'] || 12 * 3600).to_i
+    config.reaper_status_logs = false
+  end
+
+  PumaWorkerKiller.start
+end
