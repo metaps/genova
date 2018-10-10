@@ -19,6 +19,15 @@ services:
       - mongo
       - redis
     restart: always
+  slack:
+    container_name: genova-slack
+    extends:
+      service: base
+    command: /usr/local/bin/docker-entrypoint-slack.sh
+    depends_on:
+      - mongo
+      - redis
+    restart: always
   sidekiq:
     container_name: genova-sidekiq
     extends:
@@ -46,11 +55,4 @@ services:
     ports:
       - 6379:6379
     restart: always
-  # slack:
-  #   container_name: genova-slack
-  #   build: ./etc/docker/slack
-  #   env_file: .env
-  #   ports:
-  #     - 9292:9292
-  #   depends_on:
-  #     - mongo
+

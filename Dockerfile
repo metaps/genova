@@ -70,6 +70,7 @@ RUN chmod 644 /etc/cron.d/genova \
 COPY ./etc/docker/rails/docker-entrypoint-rails.sh /usr/local/bin/docker-entrypoint-rails.sh
 COPY ./etc/docker/cron/docker-entrypoint-cron.sh /usr/local/bin/docker-entrypoint-cron.sh
 COPY ./etc/docker/sidekiq/docker-entrypoint-sidekiq.sh /usr/local/bin/docker-entrypoint-sidekiq.sh
+COPY ./etc/docker/slack/docker-entrypoint-slack.sh /usr/local/bin/docker-entrypoint-slack.sh
 
 COPY . /data/rails
 VOLUME /data/rails

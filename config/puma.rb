@@ -22,9 +22,7 @@ environment ENV.fetch('RAILS_ENV') { 'development' }
 # processes).
 #
 
-# TODO: config.rbにてRailsと同時にSlackRubyBotServerを起動しているため、現状はworkerを増やせない
-# workers ENV.fetch('WEB_CONCURRENCY') { 2 }
-workers 1
+workers ENV.fetch('WEB_CONCURRENCY') { 2 }
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code
