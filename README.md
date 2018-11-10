@@ -106,43 +106,23 @@ If you want to deploy from Slack, you need to create a [Slack app](https://api.s
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/slack_deploy.png" width="50%">
 
-1. Execute `docker-compose stop`.
-2. Register [Slack app](https://api.slack.com/apps).
+1. Register [Slack app](https://api.slack.com/apps).
     * Interactive Components
       * `Request URL: http://{YOUR_HOST}/api/v1/slack/post`
     * Bot Users
       * `Add a Bot User`
     * Install App
       * `Install App to Workspace`
-3. Add bot to channel
-4. Add key to `.env` file.
+2. Add bot to channel
+3. Add key to `.env` file.
     * `SLACK_CLIENT_ID`
     * `SLACK_CLIENT_SECRET`
     * `SLACK_API_TOKEN` (Bot User OAuth Access Token)
     * `SLACK_CHANNEL`
     * `SLACK_VERIFICATION_TOKEN`
-5. Open `docker-compose.yml` and uncomment `slack`.
-6. Execute `docker-compose up`.
-7. Connect to mongo container and confirm OAuth key was created.
+4. Execute `docker-compose up`.
 
-```bash
-$ docker exec -it genova-mongo /bin/bash
-$ mongo
-> show dbs;
-admin                   0.000GB
-bot-server_development  0.000GB
-local                   0.000GB
-> use bot-server_development
-switched to db bot-server_development
-> show collections;
-teams
-> db.teams.find();
-{ "_id" : ObjectId("59cb507945a1d50005001b0a"), "active" : true, "token" : "***", "team_id" : "***", "name" : "Metaps", "domain" : "metaps", "updated_at" : ISODate("2017-09-27T07:17:13.545Z"), "created_at" : ISODate("2017-09-27T07:17:13.545Z") }
-```
-
-8. Open `docker-compose.yml` and comment out `slack`.
-9. Execute `docker-compose up`.
-10. Open Slack and check command can be executed.
+You can execute deploy command with slack.
 
 ```
 @{YOUR_BOT} help
