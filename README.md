@@ -24,6 +24,7 @@ This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function
 
 * YAML based task definition
   * Support encryption of environment variables by [KMS](https://aws.amazon.com/kms/)
+  * Compatible with EC2, Fargate
 * Supports multiple deployment methods
   * Command base deploy
   * Slack interactive deploy
