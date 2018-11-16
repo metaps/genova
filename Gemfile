@@ -8,7 +8,7 @@ end
 gem 'aws-sdk', '~> 3.0.0'
 gem 'config'
 gem 'docker-api'
-gem 'ecs_deployer', '2.1.12'
+gem 'ecs_deployer', '2.1.13'
 gem 'enumerize'
 
 gem 'font-awesome-rails'
