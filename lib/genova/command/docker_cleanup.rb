@@ -39,7 +39,7 @@ module Genova
             columns = row.split('|')
 
             next unless current_time - Time.parse(columns[2]).to_i > image_cleanup_interval && columns[1].match(/#{match_key}/)
-            result = @executor.command("docker rmi #{columns[0]}")
+            result = @executor.command("docker rmi -f #{columns[0]}")
             deleted_images += 1
             @logger.info(result)
           end
