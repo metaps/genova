@@ -89,7 +89,7 @@ module Genova
 
           scheduled_task[:targets].each do |target|
             next if options[:depend_service].present? && target[:depend_service] != options[:depend_service]
-            next if options[:target].present? && target[:target] != options[:name]
+            next if options[:target].present? && target[:name] != options[:target]
 
             deploy(target[:containers], target[:path], tag) if options[:target].present?
 
