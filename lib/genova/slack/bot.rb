@@ -134,7 +134,12 @@ module Genova
         selected_options = []
 
         if option_groups.size.positive?
-          first_option = option_groups[0][:options][0]
+          first_option = nil
+
+          option_groups.each do |option_group|
+            first_option = option_group[:options][0] if option_group[:options].size.positive?
+          end
+
           selected_options = [
             {
               text: first_option[:text],
