@@ -1044,7 +1044,7 @@ DEPENDENCIES
   font-awesome-rails
   foundation-rails (~> 6.3.1)
   git
-  grape
+  grape (>= 1.1.0)
   grape_logging
   health_check
   highline
@@ -1076,4 +1076,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   1.17.1
+   1.17.3

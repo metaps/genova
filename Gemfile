@@ -16,7 +16,7 @@ gem 'font-awesome-rails'
 gem 'foundation-rails', '~> 6.3.1'
 
 gem 'git'
-gem 'grape'
+gem 'grape', '>= 1.1.0'
 gem 'grape_logging'
 gem 'health_check'
 gem 'highline'
