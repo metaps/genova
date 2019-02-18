@@ -6,16 +6,17 @@ git_source(:github) do |repo_name|
 end
 
 gem 'aws-sdk', '~> 3.0.0'
+gem 'bootsnap'
 gem 'config'
 gem 'docker-api'
 gem 'ecs_deployer', '2.1.13'
 gem 'enumerize'
 
 gem 'font-awesome-rails'
-gem 'foundation-rails'
+gem 'foundation-rails', '~> 6.3.1'
 
 gem 'git'
-gem 'grape', '>= 1.1.0'
+gem 'grape', '~> 1.1.0'
 gem 'grape_logging'
 gem 'health_check'
 gem 'highline'
@@ -28,7 +29,7 @@ gem 'octokit'
 gem 'oj'
 gem 'puma', '~> 3.12.0'
 gem 'puma_worker_killer'
-gem 'rails', '~> 5.1.6'
+gem 'rails', '~> 5.2.2'
 gem 'redis'
 gem 'rest-client'
 gem 'sass-rails'
