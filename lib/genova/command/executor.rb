@@ -36,6 +36,7 @@ module Genova
           end
 
           raise StandardError, stderr.join("\n") unless stderr.empty?
+
           stdout.join("\n")
         rescue Interrupt
           message = 'command was forcibly terminated.'

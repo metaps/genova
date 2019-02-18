@@ -14,19 +14,9 @@ CyclomaticComplexity:
   Max: 7
 GlobalVars:
   Enabled: false
-Style/RescueStandardError:
+Layout/ExtraSpacing:
   Enabled: false
-Style/BlockComments:
-  Enabled: false
-Style/Documentation:
-  Enabled: false
-Style/ExtraSpacing:
-  Enabled: false
-Style/FrozenStringLiteralComment:
-  Enabled: false
-Style/NumericLiterals:
-  Enabled: false
-Style/SymbolProc:
+Layout/SpaceAroundOperators:
   Enabled: false
 Metrics/AbcSize:
   Max: 64
@@ -45,5 +35,15 @@ Metrics/PerceivedComplexity:
   Max: 8
 Security/YAMLLoad:
   Enabled: false
-Style/SpaceAroundOperators:
+Style/RescueStandardError:
+  Enabled: false
+Style/BlockComments:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/NumericLiterals:
+  Enabled: false
+Style/SymbolProc:
   Enabled: false
