@@ -23,9 +23,7 @@ module Genova
       def push_image(image_tag, repository_name)
         repositories = @ecr.describe_repositories[:repositories]
 
-        if repositories.find { |item| item[:repository_name] == repository_name }.nil?
-          @ecr.create_repository(repository_name: repository_name)
-        end
+        @ecr.create_repository(repository_name: repository_name) if repositories.find { |item| item[:repository_name] == repository_name }.nil?
 
         repo_tag_latest = "#{@registry}/#{repository_name}:#{IMAGE_TAG_LATEST}"
         repo_tag_version = "#{@registry}/#{repository_name}:#{image_tag}"
@@ -71,9 +69,7 @@ module Genova
 
           return nil if image_ids.empty?
 
-          if image_ids.size > BATCH_DELETE_MAX_IMAGE_SIZE
-            image_ids = image_ids.slice(- BATCH_DELETE_MAX_IMAGE_SIZE, BATCH_DELETE_MAX_IMAGE_SIZE)
-          end
+          image_ids = image_ids.slice(- BATCH_DELETE_MAX_IMAGE_SIZE, BATCH_DELETE_MAX_IMAGE_SIZE) if image_ids.size > BATCH_DELETE_MAX_IMAGE_SIZE
 
           results = @ecr.batch_delete_image(
             repository_name: repository_name,

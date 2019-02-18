@@ -137,9 +137,7 @@ module Genova
           )
         end
 
-        if options[:rule].present? && task_definition_arns.count.zero?
-          raise DeployError, 'Scheduled task target or rule is undefined.'
-        end
+        raise DeployError, 'Scheduled task target or rule is undefined.' if options[:rule].present? && task_definition_arns.count.zero?
 
         task_definition_arns
       end
@@ -155,9 +153,7 @@ module Genova
       end
 
       def create_task(task_client, task_definition_path, tag)
-        unless @task_definitions.include?(task_definition_path)
-          @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag)
-        end
+        @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag) unless @task_definitions.include?(task_definition_path)
 
         @task_definitions[task_definition_path]
       end

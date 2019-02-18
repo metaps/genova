@@ -84,6 +84,7 @@ module Genova
 
     def unlock
       return if @options[:force]
+
       @mutex.unlock
     end
 

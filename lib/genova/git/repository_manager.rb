@@ -38,6 +38,7 @@ module Genova
 
       def clone
         return if Dir.exist?("#{@repos_path}/.git")
+
         uri = Genova::Github::Client.new(@account, @repository).build_clone_uri
 
         FileUtils.mkdir_p(@repos_path) unless Dir.exist?(@repos_path)
@@ -87,6 +88,7 @@ module Genova
         branches = []
         git.branches.remote.each do |branch|
           next if branch.name.include?('->')
+
           branches << branch
         end
 
