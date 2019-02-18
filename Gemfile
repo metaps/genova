@@ -12,8 +12,7 @@ gem 'ecs_deployer', '2.1.13'
 gem 'enumerize'
 
 gem 'font-awesome-rails'
-# https://github.com/zurb/foundation-sites/issues/10379
-gem 'foundation-rails', '~> 6.3.1'
+gem 'foundation-rails'
 
 gem 'git'
 gem 'grape', '>= 1.1.0'
@@ -27,7 +26,7 @@ gem 'mongoid'
 gem 'mongoid-scroll'
 gem 'octokit'
 gem 'oj'
-gem 'puma', '~> 3.0'
+gem 'puma', '~> 3.12.0'
 gem 'puma_worker_killer'
 gem 'rails', '~> 5.1.6'
 gem 'redis'
@@ -36,7 +35,7 @@ gem 'sass-rails'
 gem 'sidekiq'
 gem 'slack-ruby-bot-server'
 gem 'therubyracer', platforms: :ruby
-gem 'uglifier', '>= 1.3.0'
+gem 'uglifier'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -53,13 +52,13 @@ group :test do
 end
 
 group :development do
-  # gem 'web-console', '>= 3.3.0'
-  # gem 'listen', '~> 3.0.5'
+  # gem 'web-console'
+  # gem 'listen'
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'brakeman'
   gem 'json_spec'
   gem 'rubocop'
   gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'spring-watcher-listen'
 end
