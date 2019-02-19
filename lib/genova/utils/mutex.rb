@@ -9,6 +9,7 @@ module Genova
       def lock
         Redis.current.multi do
           return false unless Redis.current.setnx(@key, true)
+
           Redis.current.expire(@key, @cache_ttl)
         end
 

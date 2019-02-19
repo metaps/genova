@@ -50,8 +50,7 @@ ENV LC_MESSAGES=C
 WORKDIR /data/rails
 COPY Gemfile* /data/rails/
 
-# https://github.com/rubygems/rubygems/issues/2064
-RUN gem update --system 2.7.0 \
+RUN gem update --system 3.0.2 \
   && gem install bundler \
   && bundle install -j4 --path /usr/local/bundle
 

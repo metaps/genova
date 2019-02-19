@@ -13,6 +13,7 @@ module Genova
         params = services[service.to_sym]
 
         raise ParseError, "Service parameter is undefined. [#{service}]" if params.nil?
+
         params
       end
 

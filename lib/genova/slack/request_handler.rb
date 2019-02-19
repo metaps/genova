@@ -10,9 +10,7 @@ module Genova
           @bot = Genova::Slack::Bot.new
           @callback = Genova::Slack::CallbackIdManager.find(@payload_body[:callback_id])
 
-          unless RequestHandler.respond_to?(@callback[:action], true)
-            raise RouteError, "No route. [#{@callback[:action]}]"
-          end
+          raise RouteError, "No route. [#{@callback[:action]}]" unless RequestHandler.respond_to?(@callback[:action], true)
 
           send(@callback[:action])
         end
@@ -82,9 +80,7 @@ module Genova
           if submit_value == 'approve' || submit_value.nil?
             selected_cluster = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
 
-            if selected_cluster.nil?
-              selected_cluster = @payload_body.dig(:original_message, :attachments, 0, :actions, 0, :selected_options, 0, :value)
-            end
+            selected_cluster = @payload_body.dig(:original_message, :attachments, 0, :actions, 0, :selected_options, 0, :value) if selected_cluster.nil?
 
             result = {
               fields: [
@@ -115,9 +111,7 @@ module Genova
           if submit_value == 'approve' || submit_value.nil?
             selected_target = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
 
-            if selected_target.nil?
-              selected_target = @payload_body.dig(:original_message, :attachments, 0, :actions, 0, :selected_options, 0, :value)
-            end
+            selected_target = @payload_body.dig(:original_message, :attachments, 0, :actions, 0, :selected_options, 0, :value) if selected_target.nil?
 
             result = {
               fields: [
