@@ -64,7 +64,7 @@ When using Genova, please create following configuration file in application.
 
 ### Deploy config
 
-Create `config/deploy.yml` file. Please refer to [sample](https://github.com/metaps/genova/wiki/Configuration#configdeployyml).
+Create `config/deploy.yml` file. Please refer to [sample](https://github.com/metaps/genova/wiki/Home#configdeployyml).
 
 ### Task definition config
 
