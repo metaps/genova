@@ -44,7 +44,7 @@ You can check deployment status.
 
 Source code must be managed on GitHub. Also, please register `id_rsa.pub` in `Deploy Keys`.
 
-## Setup ECS Application
+## Installation
 
 When using Genova, please create following configuration file in application.
 
