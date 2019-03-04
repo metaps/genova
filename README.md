@@ -42,8 +42,6 @@ You can check deployment status.
 * Docker >=1.13
 * Docker Compose
 
-Source code must be managed on GitHub. Also, please register `id_rsa.pub` in `Deploy Keys`.
-
 ## Installation
 
 When using Genova, please create following configuration file in application.
