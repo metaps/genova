@@ -7,19 +7,6 @@
 
 This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function.
 
-## Table of contents
-
-* [Features](#features)
-* [Required middleware](#required-middleware)
-* [Setup ECS Application](#setup-ecs-application)
-  * [Deploy configuration](#deploy-configulation)
-  * [Taks definition config](#task-definition)
-* [Setup Genova](#setup-genova)
-* [Deploy](#deploy)
-  * [Command base deploy](#command-base-deploy)
-  * [Slack interactive deploy](#slack-interactive-deploy)
-  * [GitHub push detect deploy](#github-push-detect-deploy)
-
 ## Features
 
 * YAML based task definition
