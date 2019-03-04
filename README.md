@@ -37,11 +37,6 @@ You can check deployment status.
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
 
-## Required middleware
-
-* Docker >=1.13
-* Docker Compose
-
 ## Installation
 
 When using Genova, please create following configuration file in application.
