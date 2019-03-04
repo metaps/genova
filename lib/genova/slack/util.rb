@@ -86,7 +86,7 @@ module Genova
 
           [
             {
-              text: 'Servicre',
+              text: 'Service',
               options: service_options
             },
             {
