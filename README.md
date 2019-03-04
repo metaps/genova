@@ -33,8 +33,7 @@ This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function
 * Deployment execution
   * Build image from repository on GitHub
   * Push image to [ECR](https://aws.amazon.com/ecr/)
-  * Create service
-  * Update service
+  * Register task
   * Support scheduled event
   * Delete old image from ECR
   * Tagging GitHub
