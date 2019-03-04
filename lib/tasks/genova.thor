@@ -46,4 +46,20 @@ class Genova < Thor
 
     ::Genova::Client.new(deploy_job, genova_options).run
   end
+
+  desc 'register-task', 'Register task definition.'
+  option :account, required: false, default: Settings.github.account, desc: 'GitHub account name'
+  option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
+  option :path, required: true, desc: 'Task path.'
+  option :repository, required: true, aliases: :r, desc: 'Repository name.'
+  def register_task
+    repository_manager = ::Genova::Git::RepositoryManager.new(options[:account], options[:repository], options[:branch])
+    repository_manager.update
+    path = repository_manager.task_definition_config_path(options[:path])
+
+    client = EcsDeployer::Task::Client.new
+    task = client.register(path, tag: 'latest')
+
+    @logger.info("Registered task. [#{task.task_definition_arn}]")
+  end
 end

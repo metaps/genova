@@ -30,7 +30,7 @@ module Genova
 
         deploy(service_config[:containers], service_config[:path], tag)
 
-        service_task_definition_path = @repository_manager.task_definition_config_path(service_config[:path])
+        service_task_definition_path = @repository_manager.task_definition_config_path('config/' + service_config[:path])
         service_task_definition = create_task(@deploy_client.task, service_task_definition_path, tag)
 
         service_client = @deploy_client.service
