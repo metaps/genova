@@ -4,7 +4,8 @@ module Genova
       def initialize(repository_manager, options = {})
         @repository_manager = repository_manager
         @logger = options[:logger] || ::Logger.new(STDOUT)
-        @cipher = EcsDeployer::Util::Cipher.new
+        # @cipher = EcsDeployer::Util::Cipher.new
+        @kms = Aws::KMS::Client.new({})
       end
 
       def build_images(containers_config, task_definition_path)
@@ -20,7 +21,7 @@ module Genova
 
           raise Genova::Config::DeployConfig::ParseError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          task_definition_config = @repository_manager.load_task_definition_config(task_definition_path)
+          task_definition_config = @repository_manager.load_task_definition_config('config/' + task_definition_path)
           container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
 
           raise Genova::Config::DeployConfig::ParseError, "'#{container}' container does not exist in task definition." if container_definition.nil?

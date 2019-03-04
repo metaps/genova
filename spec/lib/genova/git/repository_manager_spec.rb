@@ -45,7 +45,7 @@ module Genova
 
       describe 'task_definition_config_path' do
         it 'should be return task definition path' do
-          expect(repository_manager.task_definition_config_path('./deploy/path.yml')).to eq(repository_manager.base_path + '/config/deploy/path.yml')
+          expect(repository_manager.task_definition_config_path('./config/deploy/path.yml')).to eq(repository_manager.base_path + '/config/deploy/path.yml')
         end
       end
 
