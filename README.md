@@ -12,8 +12,8 @@ This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function
 * [Features](#features)
 * [Required middleware](#required-middleware)
 * [Setup ECS Application](#setup-ecs-application)
-  * [Deploy config](#deploy-config)
-  * [Taks definition config](#task-definition-config)
+  * [Deploy configuration](#deploy-configulation)
+  * [Taks definition config](#task-definition)
 * [Setup Genova](#setup-genova)
 * [Deploy](#deploy)
   * [Command base deploy](#command-base-deploy)
@@ -61,11 +61,11 @@ Source code must be managed on GitHub. Also, please register `id_rsa.pub` in `De
 
 When using Genova, please create following configuration file in application.
 
-### Deploy config
+### Deploy configuration
 
 Create `config/deploy.yml` file. Please refer to [sample](https://github.com/metaps/genova/wiki/Deploy-configuration).
 
-### Task definition config
+### Task definition
 
 ECS deployment uses [ecs_deployer](https://rubygems.org/gems/ecs_deployer). Create task definition file for each service to be deployed. File name uses service name of ECS.
 
