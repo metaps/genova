@@ -1,5 +1,4 @@
-FROM ruby:2.5.0
-MAINTAINER "Naomichi Yamakita" <n.yamakita@gmail.com>
+FROM ruby:2.6.1
 
 WORKDIR /tmp
 RUN apt-get update && apt-get install -y \
@@ -17,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     cron \
     logrotate \
     vim \
+    nodejs \
   && apt-get remove -y git
 RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
   && add-apt-repository \
@@ -28,18 +28,6 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Reauired '--sort=---authordate' option of Git package.
-RUN curl -LO https://github.com/git/git/archive/v2.15.1.tar.gz \
-  && tar zxvf v2.15.1.tar.gz \
-  && cd git-2.15.1 \
-  && make configure \
-  && ./configure --prefix=/usr \
-  && make install \
-  && make all \
-  && rm -Rf git-2.15.1 \
-  && cd .. \
-  && rm v2.15.1.tar.gz \
-  && rm -Rf git-2.15.1
 RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8 \
   && mkdir -p /data/rails
 
@@ -53,23 +41,24 @@ COPY Gemfile* /data/rails/
 RUN gem update --system 3.0.2 \
   && gem install bundler \
   && bundle install -j4 --path /usr/local/bundle
+RUN ln -s /usr/bin/nodejs /usr/bin/node
 
-COPY ./etc/docker/base/.vimrc /root/.vimrc
-COPY ./etc/docker/base/.ssh /root/.ssh
+COPY ./docker/base/.vimrc /root/.vimrc
+COPY ./docker/base/.ssh /root/.ssh
 RUN chmod 700 /root/.ssh
 
-COPY ./etc/docker/cron/cron.d/genova /etc/cron.d/genova
-COPY ./etc/docker/cron/cron /etc/pam.d/cron
-COPY ./etc/docker/cron/logrotate.d/rails /etc/logrotate.d/rails
+COPY ./docker/cron/cron.d/genova /etc/cron.d/genova
+COPY ./docker/cron/cron /etc/pam.d/cron
+COPY ./docker/cron/logrotate.d/rails /etc/logrotate.d/rails
 RUN chmod 644 /etc/cron.d/genova && chmod 644 /etc/logrotate.d/rails
 
 RUN chmod 644 /etc/cron.d/genova \
   && chmod 644 /etc/logrotate.d/rails
 
-COPY ./etc/docker/rails/docker-entrypoint-rails.sh /usr/local/bin/docker-entrypoint-rails.sh
-COPY ./etc/docker/cron/docker-entrypoint-cron.sh /usr/local/bin/docker-entrypoint-cron.sh
-COPY ./etc/docker/sidekiq/docker-entrypoint-sidekiq.sh /usr/local/bin/docker-entrypoint-sidekiq.sh
-COPY ./etc/docker/slack/docker-entrypoint-slack.sh /usr/local/bin/docker-entrypoint-slack.sh
+COPY ./docker/rails/docker-entrypoint-rails.sh /usr/local/bin/docker-entrypoint-rails.sh
+COPY ./docker/cron/docker-entrypoint-cron.sh /usr/local/bin/docker-entrypoint-cron.sh
+COPY ./docker/sidekiq/docker-entrypoint-sidekiq.sh /usr/local/bin/docker-entrypoint-sidekiq.sh
+COPY ./docker/slack/docker-entrypoint-slack.sh /usr/local/bin/docker-entrypoint-slack.sh
 
 COPY . /data/rails
 VOLUME /data/rails

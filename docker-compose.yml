@@ -2,7 +2,9 @@ version: "2"
 services:
   base:
     container_name: genova-base
-    build: .
+    build:
+      context: .
+      dockerfile: docker/base/Dockerfile
     env_file: .env
     volumes:
       - .:/data/rails
@@ -51,4 +53,3 @@ services:
     container_name: genova-redis
     image: redis:3.2
     restart: on-failure
-
