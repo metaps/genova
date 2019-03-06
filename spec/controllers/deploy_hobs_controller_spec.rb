@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe LogsController, type: :controller do
+RSpec.describe DeployJobsController, type: :controller do
   describe 'GET #index' do
     it 'should be return success' do
       get :index
