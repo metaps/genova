@@ -448,7 +448,7 @@ module Genova
       end
 
       def build_log_url(deploy_job_id)
-        "#{ENV.fetch('GENOVA_URL')}/logs/#{deploy_job_id}"
+        "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job_id}"
       end
 
       def escape_emoji(string)
