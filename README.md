@@ -82,6 +82,8 @@ Please refer to [sample](https://github.com/naomichi-y/ecs_deployer#task-definit
 ```bash
 # See https://github.com/metaps/genova/wiki/Configuration
 $ cp config/settings.yml config/settings.local.yml
+
+# Rewrite environment variable.
 $ cp .env.default .env
 
 $ docker-compose build
