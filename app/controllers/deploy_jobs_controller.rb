@@ -1,4 +1,4 @@
-class LogsController < ApplicationController
+class DeployJobsController < ApplicationController
   def index
     @deploy_jobs = DeployJob.where(:mode.in => %i[manual auto slack]).order_by(id: 'desc').page(params[:page]).per(20)
   end
