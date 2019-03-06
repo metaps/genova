@@ -34,7 +34,6 @@ services:
       context: .
       dockerfile: docker/slack/Dockerfile
     env_file: .env
-    command: "sleep 3000"
     volumes:
       - .:/data/rails
       - /var/run/docker.sock:/var/run/docker.sock
