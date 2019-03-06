@@ -1,10 +1,11 @@
-version: "2"
+version: "3.7"
 services:
   base:
     container_name: genova-base
     build:
       context: .
       dockerfile: docker/base/Dockerfile
+    image: base
     env_file: .env
     volumes:
       - .:/data/rails
@@ -12,44 +13,66 @@ services:
       - ${GITHUB_PEM}:/root/.ssh/id_rsa
   rails:
     container_name: genova-rails
-    extends:
-      service: base
-    command: /usr/local/bin/docker-entrypoint-rails.sh
+    build:
+      context: .
+      dockerfile: docker/rails/Dockerfile
+    env_file: .env
+    volumes:
+      - .:/data/rails
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${GITHUB_PEM}:/root/.ssh/id_rsa
     ports:
       - 3000:3000
     depends_on:
+      - slack
       - mongo
       - redis
     restart: on-failure
   slack:
     container_name: genova-slack
-    extends:
-      service: base
-    command: /usr/local/bin/docker-entrypoint-slack.sh
+    build:
+      context: .
+      dockerfile: docker/slack/Dockerfile
+    env_file: .env
+    command: "sleep 3000"
+    volumes:
+      - .:/data/rails
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${GITHUB_PEM}:/root/.ssh/id_rsa
     depends_on:
       - mongo
       - redis
     restart: on-failure
   sidekiq:
     container_name: genova-sidekiq
-    extends:
-      service: base
-    command: /usr/local/bin/docker-entrypoint-sidekiq.sh
+    build:
+      context: .
+      dockerfile: docker/sidekiq/Dockerfile
+    env_file: .env
+    volumes:
+      - .:/data/rails
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${GITHUB_PEM}:/root/.ssh/id_rsa
     depends_on:
       - mongo
       - redis
     restart: on-failure
   cron:
     container_name: genova-cron
-    extends:
-      service: base
-    command: /usr/local/bin/docker-entrypoint-cron.sh
+    build:
+      context: .
+      dockerfile: docker/cron/Dockerfile
+    env_file: .env
+    volumes:
+      - .:/data/rails
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${GITHUB_PEM}:/root/.ssh/id_rsa
     restart: on-failure
   mongo:
     container_name: genova-mongo
-    image: mongo:3.4.9
+    image: mvertes/alpine-mongo:4.0.5-0
     restart: on-failure
   redis:
     container_name: genova-redis
-    image: redis:3.2
+    image: redis:5-alpine
     restart: on-failure
