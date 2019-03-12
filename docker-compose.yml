@@ -19,6 +19,7 @@ services:
     env_file: .env
     volumes:
       - .:/data/rails
+      - /data/rails/vendor
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa
     ports:
@@ -36,6 +37,7 @@ services:
     env_file: .env
     volumes:
       - .:/data/rails
+      - /data/rails/vendor
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa
     depends_on:
@@ -50,6 +52,7 @@ services:
     env_file: .env
     volumes:
       - .:/data/rails
+      - /data/rails/vendor
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa
     depends_on:
@@ -64,6 +67,7 @@ services:
     env_file: .env
     volumes:
       - .:/data/rails
+      - /data/rails/vendor
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa
     restart: on-failure
