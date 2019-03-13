@@ -86,18 +86,24 @@ If you want to deploy from Slack, you need to create a [Slack app](https://api.s
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/slack_deploy.png" width="50%">
 
-1. Register [Slack app](https://api.slack.com/apps).
-    * Interactive Components
-      * `Request URL: http://{YOUR_HOST}/api/v1/slack/post`
-    * Bot Users
-      * `Add a Bot User`
-    * Install App
-      * `Install App to Workspace`
-2. Add bot to channel
-3. Add key to `.env` file.
+1. Create [Slack app](https://api.slack.com/apps).
+    * `Features - Interactive Components`
+      * Change toggle On
+      * `Request URL: https://{HOST}/api/v1/slack/post`
+      * Press `Save changes`
+    * `Features - Bot Users`
+      * `Display name`: Bot name
+      * `Default username`: Bot name
+      * `Always Show My Bot as Online`: `On`
+      * Press `Add a Bot User`
+    * `Settings - Install App`
+      * Press `Install App to Workspace`
+      * In Authorize page, specify channel to activate Bot.
+2. Start Slack and open Bot enabled channel. Add Bot user from `Invite others to ...`.
+3. Open `.env` file and add value displayed in Slack app.
     * `SLACK_CLIENT_ID`
     * `SLACK_CLIENT_SECRET`
-    * `SLACK_API_TOKEN` (Bot User OAuth Access Token)
+    * `SLACK_API_TOKEN` (`Features - OAuth & Permissions - Bot User OAuth Access Token`)
     * `SLACK_CHANNEL`
     * `SLACK_VERIFICATION_TOKEN`
 4. Execute `docker-compose up`.
