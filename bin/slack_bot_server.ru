@@ -13,14 +13,6 @@ else
     config.logger = logger
   end
 
-  SlackRubyBotServer.configure do |config|
-    config.ping = {
-      enabled: true,
-      ping_interval: 30,
-      retry_count: 3
-    }
-  end
-
   SlackRubyBotServer::App.instance.prepare!
   SlackRubyBotServer::Service.start!
 
