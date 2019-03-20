@@ -9,6 +9,7 @@ jobs:
       AWS_ACCOUNT_ID: ""
       AWS_REGION: ""
       AWS_SECRET_KEY: ""
+      CC_TEST_REPORTER_ID: 8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235
       GENOVA_URL: http://localhost:3000
       GITHUB_PEM: ~/.ssh/id_rsa
       GITHUB_SECRET_KEY: ""
@@ -21,7 +22,7 @@ jobs:
       MONGO_DB_TEST: bot-server_test
       MONGO_HOST: localhost
       MONGO_PORT: 27017
-      SECRET_KEY_BASE: 706833b954341da0b5404cc145413a29903596b8b41eaa395102babf36d432511c21ec834ac263a80c0c90cde96191503d235d9353cba27c1dffed18381a9167
+      SECRET_KEY_BASE: ""
       SLACK_API_TOKEN: ""
       SLACK_CHANNEL: ""
       SLACK_CLIENT_ID: ""
@@ -32,7 +33,8 @@ jobs:
       - run:
           name: 'initialize'
           command: |
-            touch ~/.ssh/id_rsa
+            mkdir -p ~/.ssh
+            touch $GITHUB_PEM
             sudo apt-get update
       - restore_cache:
           key: bundle-{{ checksum "Gemfile.lock" }}
@@ -55,24 +57,7 @@ jobs:
             sudo service mongodb start
       - run:
           name: rspec test
-          command: bundle exec rspec
-
-
-# jobs:
-#   build:
-#     working_directory: ~/genova
-#     machine: true
-#     steps:
-#       - checkout
-#       - run:
-#           name: init
-#           command: cp .circleci/.env.default .env
-#       - run:
-#           name: build
-#           command: docker-compose build
-#       - run:
-#           name: run
-#           command: |
-#             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-#             chmod +x ./cc-test-reporter
-#             docker-compose run --rm rails bash -c './cc-test-reporter before-build && rspec && CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?'
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build && bundle exec rspec && ./cc-test-reporter after-build --exit-code $?
