@@ -33,8 +33,9 @@ jobs:
       - run:
           name: 'initialize'
           command: |
+            echo "export GITHUB_PEM=${GITHUB_PEM}" >> $BASH_ENV
             mkdir -p ~/.ssh
-            touch ${GITHUB_PEM}
+            touch $GITHUB_PEM
             sudo apt-get update
       - restore_cache:
           key: bundle-{{ checksum "Gemfile.lock" }}
