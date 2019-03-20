@@ -34,7 +34,7 @@ jobs:
           name: 'initialize'
           command: |
             mkdir -p ~/.ssh
-            touch $GITHUB_PEM
+            touch ~/.ssh/id_rsa
             sudo apt-get update
       - restore_cache:
           key: bundle-{{ checksum "Gemfile.lock" }}
