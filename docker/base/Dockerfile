@@ -26,7 +26,7 @@ ENV LC_MESSAGES=C
 WORKDIR $APP_HOME
 COPY Gemfile* $APP_HOME/
 
-RUN bundle install -j4 --path vendor/bundle
+RUN bundle install -j4
 
 COPY ./docker/base/.vimrc /root/.vimrc
 COPY ./docker/base/.ssh /root/.ssh
