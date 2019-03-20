@@ -4,7 +4,7 @@ module Genova
       def initialize(repository_manager, options = {})
         @repository_manager = repository_manager
         @logger = options[:logger] || ::Logger.new(STDOUT)
-        # @cipher = EcsDeployer::Util::Cipher.new
+        @cipher = EcsDeployer::Util::Cipher.new
         @kms = Aws::KMS::Client.new({})
       end
 
