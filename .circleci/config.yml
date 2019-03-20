@@ -36,7 +36,7 @@ jobs:
             touch ~/.ssh/id_rsa
             sudo apt-get update
       - restore_cache:
-          key: bundle-{{ checksum "api/Gemfile.lock" }}
+          key: bundle-{{ checksum "Gemfile.lock" }}
       - run:
           name: bundle install
           command: bundle install --path=vendor/bundle --jobs=4
