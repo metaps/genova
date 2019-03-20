@@ -32,7 +32,6 @@ jobs:
       - run:
           name: 'initialize'
           command: |
-            mkdir ~/.ssh
             touch ~/.ssh/id_rsa
             sudo apt-get update
       - restore_cache:
