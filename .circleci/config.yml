@@ -2,48 +2,61 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.4.2
+      - image: circleci/ruby:2.6.1
     working_directory: ~/genova
     environment:
-      AWS_ACCESS_KEY:
-      AWS_ACCOUNT_ID:
-      AWS_REGION:
-      AWS_SECRET_KEY:
+      AWS_ACCESS_KEY: ""
+      AWS_ACCOUNT_ID: ""
+      AWS_REGION: ""
+      AWS_SECRET_KEY: ""
       GENOVA_URL: http://localhost:3000
       GITHUB_PEM: ~/.ssh/id_rsa
-      GITHUB_SECRET_KEY:
+      GITHUB_SECRET_KEY: ""
       REDIS_DB: 0
-      REDIS_HOST: redis
+      REDIS_HOST: localhost
       REDIS_PORT: 6379
       RAILS_ENV: test
       RAILS_SERVE_STATIC_FILES: true
       MONGO_DB: bot-server_test
       MONGO_DB_TEST: bot-server_test
-      MONGO_HOST: mongo
+      MONGO_HOST: localhost
       MONGO_PORT: 27017
       SECRET_KEY_BASE: 706833b954341da0b5404cc145413a29903596b8b41eaa395102babf36d432511c21ec834ac263a80c0c90cde96191503d235d9353cba27c1dffed18381a9167
-      SLACK_API_TOKEN:
-      SLACK_CHANNEL:
-      SLACK_CLIENT_ID:
-      SLACK_CLIENT_SECRET:
+      SLACK_API_TOKEN: ""
+      SLACK_CHANNEL: ""
+      SLACK_CLIENT_ID: ""
+      SLACK_CLIENT_SECRET: ""
       SLACK_VERIFICATION_TOKEN: slack_verification_token
     steps:
       - checkout
-      # - restore_cache:
-      #     key: bundle-{{ checksum "api/Gemfile.lock" }}
-      # - run:
-      #     name: bundle install
-      #     command: bundle install --path=vendor/bundle --jobs=4
-      # - save_cache:
-      #     key: bundle-{{ checksum "Gemfile.lock" }}
-      #     paths:
-      #       - vendor/bundle
-      # - run:
-      #     name: test
-      #     command: echo $MONGO_DB
-      # - run:
-      #     name: rspec test
-      #     command: bundle exec rspec
+      - run:
+          name: 'initialize'
+          command: |
+            mkdir ~/.ssh
+            touch ~/.ssh/id_rsa
+            sudo apt-get update
+      - restore_cache:
+          key: bundle-{{ checksum "api/Gemfile.lock" }}
+      - run:
+          name: bundle install
+          command: bundle install --path=vendor/bundle --jobs=4
+      - save_cache:
+          key: bundle-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      - run:
+          name: install redis
+          command: |
+            sudo apt-get install redis-server
+            sudo service redis-server start
+      - run:
+          name: install mongodb
+          command: |
+            sudo apt-get install mongodb
+            sudo service mongodb start
+      - run:
+          name: rspec test
+          command: bundle exec rspec
 
 
 # jobs:
