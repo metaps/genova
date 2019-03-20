@@ -9,7 +9,6 @@ jobs:
       AWS_ACCOUNT_ID: ""
       AWS_REGION: ""
       AWS_SECRET_KEY: ""
-      CC_TEST_REPORTER_ID: 8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235
       GENOVA_URL: http://localhost:3000
       GITHUB_PEM: ~/.ssh/id_rsa
       GITHUB_SECRET_KEY: ""
@@ -33,9 +32,8 @@ jobs:
       - run:
           name: 'initialize'
           command: |
-            echo "export GITHUB_PEM=${GITHUB_PEM}" >> $BASH_ENV
             mkdir -p ~/.ssh
-            touch $GITHUB_PEM
+            touch ~/.ssh/id_rsa
             sudo apt-get update
       - restore_cache:
           key: bundle-{{ checksum "Gemfile.lock" }}
@@ -61,4 +59,4 @@ jobs:
           command: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-            ./cc-test-reporter before-build && bundle exec rspec && ./cc-test-reporter after-build --exit-code $?
+            ./cc-test-reporter before-build && bundle exec rspec && CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?
