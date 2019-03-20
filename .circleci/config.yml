@@ -1,19 +1,66 @@
 version: 2
 jobs:
   build:
+    docker:
+      - image: circleci/ruby:2.4.2
     working_directory: ~/genova
-    machine: true
+    environment:
+      AWS_ACCESS_KEY:
+      AWS_ACCOUNT_ID:
+      AWS_REGION:
+      AWS_SECRET_KEY:
+      GENOVA_URL: http://localhost:3000
+      GITHUB_PEM: ~/.ssh/id_rsa
+      GITHUB_SECRET_KEY:
+      REDIS_DB: 0
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RAILS_ENV: test
+      RAILS_SERVE_STATIC_FILES: true
+      MONGO_DB: bot-server_test
+      MONGO_DB_TEST: bot-server_test
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      SECRET_KEY_BASE: 706833b954341da0b5404cc145413a29903596b8b41eaa395102babf36d432511c21ec834ac263a80c0c90cde96191503d235d9353cba27c1dffed18381a9167
+      SLACK_API_TOKEN:
+      SLACK_CHANNEL:
+      SLACK_CLIENT_ID:
+      SLACK_CLIENT_SECRET:
+      SLACK_VERIFICATION_TOKEN: slack_verification_token
     steps:
       - checkout
-      - run:
-          name: init
-          command: cp .circleci/.env.default .env
-      - run:
-          name: build
-          command: docker-compose build
-      - run:
-          name: run
-          command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-            docker-compose run --rm rails bash -c './cc-test-reporter before-build && rspec && CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?'
+      # - restore_cache:
+      #     key: bundle-{{ checksum "api/Gemfile.lock" }}
+      # - run:
+      #     name: bundle install
+      #     command: bundle install --path=vendor/bundle --jobs=4
+      # - save_cache:
+      #     key: bundle-{{ checksum "Gemfile.lock" }}
+      #     paths:
+      #       - vendor/bundle
+      # - run:
+      #     name: test
+      #     command: echo $MONGO_DB
+      # - run:
+      #     name: rspec test
+      #     command: bundle exec rspec
+
+
+# jobs:
+#   build:
+#     working_directory: ~/genova
+#     machine: true
+#     steps:
+#       - checkout
+#       - run:
+#           name: init
+#           command: cp .circleci/.env.default .env
+#       - run:
+#           name: build
+#           command: docker-compose build
+#       - run:
+#           name: run
+#           command: |
+#             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+#             chmod +x ./cc-test-reporter
+#             docker-compose run --rm rails bash -c './cc-test-reporter before-build && rspec && CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?'
