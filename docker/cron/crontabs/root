@@ -1,0 +1,2 @@
+20 0 * * * * /usr/sbin/logrotate /etc/logrotate.conf >> /data/rails/log/cron.log 2>&1
+10 0 * * * * /usr/sbin/logrotate -f /etc/logrotate.d/genova
