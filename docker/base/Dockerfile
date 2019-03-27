@@ -10,7 +10,7 @@ RUN bundle install -j4
 
 COPY ./docker/base/.vimrc /root/.vimrc
 COPY ./docker/base/.ssh /root/.ssh
-RUN chmod 700 /root/.ssh
+RUN chmod 700 /root/.ssh && chmod 600 /root/.ssh/config
 
 COPY . $APP_HOME
 VOLUME $APP_HOME
