@@ -1,27 +1,7 @@
-FROM ruby:2.6.1
+FROM ruby:2.6-alpine
 
-RUN apt-get update && apt-get install -y \
-    redis-tools \
-    locales \
-    apt-transport-https \
-    software-properties-common \
-    vim \
-  && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
-  && add-apt-repository \
-    "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
-    $(lsb_release -cs) \
-    stable" \
-  && apt-get update \
-  && apt-get install -y docker-ce \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
+RUN apk --update add build-base docker nodejs git vim --no-cache
 ENV APP_HOME=/data/rails
-RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
-
-ENV LANG=ja_JP.UTF-8
-ENV LC_TIME=C
-ENV LC_MESSAGES=C
 
 WORKDIR $APP_HOME
 COPY Gemfile* $APP_HOME/

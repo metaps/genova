@@ -35,7 +35,7 @@ gem 'rest-client'
 gem 'sass-rails'
 gem 'sidekiq'
 gem 'slack-ruby-bot-server'
-gem 'therubyracer', platforms: :ruby
+gem 'tzinfo-data'
 gem 'uglifier'
 
 group :development, :test do

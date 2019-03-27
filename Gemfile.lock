@@ -908,7 +908,6 @@ GEM
       kaminari-core (~> 1.0)
       mongoid
     kgio (2.11.2)
-    libv8 (3.16.14.19)
     listen (3.1.5)
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
@@ -1004,7 +1003,6 @@ GEM
     rb-inotify (0.10.0)
       ffi (~> 1.0)
     redis (4.1.0)
-    ref (2.0.0)
     representable (3.0.4)
       declarative (< 0.1.0)
       declarative-option (< 0.2.0)
@@ -1108,15 +1106,14 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
-    therubyracer (0.12.3)
-      libv8 (~> 3.16.14.15)
-      ref
     thor (0.19.4)
     thread_safe (0.3.6)
     tilt (2.0.9)
     timers (4.3.0)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
+    tzinfo-data (1.2019.1)
+      tzinfo (>= 1.0.0)
     uber (0.1.0)
     uglifier (4.1.20)
       execjs (>= 0.3.0, < 3)
@@ -1184,10 +1181,10 @@ DEPENDENCIES
   slack-ruby-bot-server
   spring
   spring-watcher-listen
-  therubyracer
+  tzinfo-data
   uglifier
   vcr
   webmock
 
 BUNDLED WITH
-   1.16.1
+   1.17.2
