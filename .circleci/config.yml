@@ -16,9 +16,8 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       RAILS_ENV: test
-      RAILS_SERVE_STATIC_FILES: true
-      MONGO_DB: bot-server_test
-      MONGO_DB_TEST: bot-server_test
+      MONGO_DB: test_slackbot
+      MONGO_DB_TEST: test_slackbot
       MONGO_HOST: localhost
       MONGO_PORT: 27017
       SECRET_KEY_BASE: ""

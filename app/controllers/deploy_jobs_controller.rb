@@ -5,7 +5,5 @@ class DeployJobsController < ApplicationController
 
   def show
     @deploy_job = DeployJob.find(params[:id])
-
-    render status: :not_found if @deploy_job.nil?
   end
 end

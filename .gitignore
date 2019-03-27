@@ -10,24 +10,19 @@
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
-/tmp/cache/*
-!/tmp/cache
-/tmp/pids/*
-!/tmp/pids
-/tmp/sockets/*
-!/tmp/sockets
 
 # Ignore Byebug command history file.
 .byebug_history
 
 # Application settings
-*.swp
-!.keep
-.DS_Store
-dump.rdb
-
 /.env
 /config/settings.local.yml
 /config/master.key
 /coverage
 /public/assets/*
+
+# Application files
+*.swp
+!.keep
+.DS_Store
+dump.rdb
