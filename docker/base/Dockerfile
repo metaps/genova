@@ -1,6 +1,6 @@
 FROM ruby:2.6-alpine
 
-RUN apk --update add build-base docker nodejs git vim --no-cache
+RUN apk --update add build-base openssh docker nodejs git vim --no-cache
 ENV APP_HOME=/data/rails
 
 WORKDIR $APP_HOME
