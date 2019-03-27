@@ -73,7 +73,7 @@ services:
     restart: on-failure
   mongo:
     container_name: genova-mongo
-    image: mongo:3.4.9
+    image: mongo:3.4
     restart: on-failure
   redis:
     container_name: genova-redis
