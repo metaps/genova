@@ -1,7 +1,5 @@
 module API
   class Route < Grape::API
-    # /api
-    prefix :api
     format :json
 
     logger.formatter = GrapeLogging::Formatters::Default.new

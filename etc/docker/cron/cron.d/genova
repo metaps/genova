@@ -1,1 +1,0 @@
-20 0 * * * root /data/rails/etc/docker/cron/scripts/docker_cleanup.sh >> /data/rails/log/cron.log 2>&1

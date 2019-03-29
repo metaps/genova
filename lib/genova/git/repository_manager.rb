@@ -37,9 +37,12 @@ module Genova
       end
 
       def clone
-        return if Dir.exist?("#{@repos_path}/.git")
+        return if File.exist?("#{@repos_path}/.git/config")
+
+        FileUtils.rm_rf(@repos_path)
 
         uri = Genova::Github::Client.new(@account, @repository).build_clone_uri
+        @logger.info("Git clone: #{uri}")
 
         FileUtils.mkdir_p(@repos_path) unless Dir.exist?(@repos_path)
         ::Git.clone(uri, '', path: @repos_path)
@@ -47,6 +50,8 @@ module Genova
 
       def update
         clone
+
+        @logger.info("Git checkout: #{@branch}")
 
         git = client
         git.fetch
