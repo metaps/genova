@@ -34,6 +34,7 @@ jobs:
             mkdir -p ~/.ssh
             touch ~/.ssh/id_rsa
             sudo apt-get update
+            sudo apt-get install nodejs
       - restore_cache:
           key: bundle-{{ checksum "Gemfile.lock" }}
       - run:
