@@ -1,19 +1,64 @@
 version: 2
 jobs:
   build:
+    docker:
+      - image: circleci/ruby:2.6.1
     working_directory: ~/genova
-    machine: true
+    environment:
+      AWS_ACCESS_KEY: ""
+      AWS_ACCOUNT_ID: ""
+      AWS_REGION: ""
+      AWS_SECRET_KEY: ""
+      GENOVA_URL: http://localhost:3000
+      GITHUB_PEM: ~/.ssh/id_rsa
+      GITHUB_SECRET_KEY: ""
+      REDIS_DB: 0
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      RAILS_ENV: test
+      MONGO_DB: test_slackbot
+      MONGO_DB_TEST: test_slackbot
+      MONGO_HOST: localhost
+      MONGO_PORT: 27017
+      SECRET_KEY_BASE: ""
+      SLACK_API_TOKEN: ""
+      SLACK_CHANNEL: ""
+      SLACK_CLIENT_ID: ""
+      SLACK_CLIENT_SECRET: ""
+      SLACK_VERIFICATION_TOKEN: slack_verification_token
     steps:
       - checkout
       - run:
-          name: init
-          command: cp .circleci/.env.default .env
+          name: initialize
+          command: |
+            mkdir -p ~/.ssh
+            touch ~/.ssh/id_rsa
+            sudo apt-get update
+            sudo apt-get install nodejs
+      - restore_cache:
+          key: bundle-{{ checksum "Gemfile.lock" }}
       - run:
-          name: build
-          command: docker-compose build
+          name: bundle install
+          command: bundle install --path=vendor/bundle --jobs=4
+      - save_cache:
+          key: bundle-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run:
-          name: run
+          name: install redis
+          command: |
+            sudo apt-get install redis-server
+            sudo service redis-server start
+      - run:
+          name: install mongodb
+          command: |
+            sudo apt-get install mongodb
+            sudo service mongodb start
+      - run:
+          name: rspec test
           command: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-            docker-compose run --rm rails bash -c './cc-test-reporter before-build && rspec && CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?'
+            ./cc-test-reporter before-build
+            bundle exec rspec
+            CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?

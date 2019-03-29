@@ -1,29 +1,18 @@
-development:
+default: &default
   clients:
     default:
       database: <%= ENV['MONGO_DB'] %>
       hosts:
         - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
   options:
-    raise_not_found_error: true
+    raise_not_found_error: false
     use_utc: true
+
+development:
+  <<: *default
 
 test:
-  clients:
-    default:
-      database: <%= ENV['MONGO_DB_TEST'] %>
-      hosts:
-        - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
-  options:
-    raise_not_found_error: true
-    use_utc: true
+  <<: *default
 
 production:
-  clients:
-    default:
-      database: <%= ENV['MONGO_DB'] %>
-      hosts:
-        - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
-  options:
-    raise_not_found_error: true
-    use_utc: true
+  <<: *default
