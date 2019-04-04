@@ -8,6 +8,7 @@ module Genova
         allow(service_client_mock).to receive(:exist?).and_return(false)
         allow(service_client_mock).to receive(:wait_timeout=)
         allow(service_client_mock).to receive(:update)
+        allow(service_client_mock).to receive(:exist?).and_return(true)
 
         task_definition_mock = double(Aws::ECS::Types::TaskDefinition)
         allow(task_definition_mock).to receive(:task_definition_arn).and_return('task_definition_arn')

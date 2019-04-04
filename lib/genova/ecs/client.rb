@@ -35,12 +35,7 @@ module Genova
 
         service_client = @deploy_client.service
 
-        unless service_client.exist?(service)
-          formation_config = cluster_config[:services][service.to_sym][:formation]
-          raise Genova::Config::DeployConfig::ParseError, "Service is not registered. [#{service}]" if formation_config.nil?
-
-          create_service(service, service_task_definition, formation_config)
-        end
+        raise Genova::Config::DeployConfig::ParseError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
 
         service_client.wait_timeout = Settings.deploy.wait_timeout
         service_client.update(service, service_task_definition)
@@ -140,16 +135,6 @@ module Genova
         raise DeployError, 'Scheduled task target or rule is undefined.' if options[:rule].present? && task_definition_arns.count.zero?
 
         task_definition_arns
-      end
-
-      def create_service(service, task_definition, formation_config)
-        formation_config[:cluster] = @cluster
-        formation_config[:service_name] = service
-        formation_config[:task_definition] = task_definition.task_definition_arn
-
-        @ecs_client.create_service(formation_config)
-
-        nil
       end
 
       def create_task(task_client, task_definition_path, tag)
