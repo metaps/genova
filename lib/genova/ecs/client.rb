@@ -66,8 +66,6 @@ module Genova
         end
 
         raise ImagePushError, 'Push image is not found.' if count.zero?
-
-        @ecr_client.destroy_images(repository_names)
       end
 
       def deploy_scheduled_tasks(tag, options)
