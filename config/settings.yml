@@ -24,7 +24,6 @@ github:
 aws:
   service:
     ecr:
-      max_image_size: 30
       read_timeout: 900
 
 slack:
