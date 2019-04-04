@@ -17,9 +17,9 @@ github:
 
   repositories:
     # Repository name. Name must be specified uniquely.
-  - name: ''
-    # Base path to build image. (optional)
-    base_path: ''
+    - name: ''
+      # Base path to build image. (optional)
+      base_path: ''
 
 aws:
   service:
