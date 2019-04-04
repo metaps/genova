@@ -1,7 +1,6 @@
 module Genova
   module Ecr
     class Client
-      BATCH_DELETE_MAX_IMAGE_SIZE = 100
       IMAGE_TAG_LATEST = 'latest'.freeze
 
       def initialize(params = {})
@@ -37,57 +36,6 @@ module Genova
 
         image.push(nil, repo_tag: repo_tag_version)
         @logger.info("Pushed image. {\"tag\": #{repo_tag_version}}")
-      end
-
-      def destroy_images(repository_names)
-        repository_names.each do |repository_name|
-          images = {}
-          next_token = nil
-
-          loop do
-            describe_images = @ecr.describe_images(
-              repository_name: repository_name,
-              next_token: next_token
-            )
-            describe_images.image_details.each do |image|
-              images[image.image_pushed_at.to_i] = {
-                image_digest: image.image_digest
-              }
-            end
-
-            next_token = describe_images.next_token
-            break if next_token.nil?
-          end
-
-          images = images.sort.reverse
-          images.slice!(0, Settings.aws.service.ecr.max_image_size)
-
-          image_ids = []
-          images.each do |_key, value|
-            image_ids << value
-          end
-
-          return nil if image_ids.empty?
-
-          image_ids = image_ids.slice(- BATCH_DELETE_MAX_IMAGE_SIZE, BATCH_DELETE_MAX_IMAGE_SIZE) if image_ids.size > BATCH_DELETE_MAX_IMAGE_SIZE
-
-          results = @ecr.batch_delete_image(
-            repository_name: repository_name,
-            image_ids: image_ids
-          )
-
-          results.image_ids.each do |image|
-            @logger.info("Delete image. {\"digest\": #{image.image_digest}}")
-          end
-
-          results.failures.each do |failure|
-            @logger.error('Failed to delete image. {' \
-              "\"reason\": #{failure.failure_reason}, " \
-              "\"code\": #{failure.failure_code}, " \
-              "\"digest\": #{failure.image_id.image_digest}" \
-              '}')
-          end
-        end
       end
     end
   end

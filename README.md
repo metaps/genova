@@ -22,7 +22,6 @@ This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function
   * Push image to [ECR](https://aws.amazon.com/ecr/)
   * Register task
   * Support scheduled event
-  * Delete old image from ECR
   * Tagging GitHub
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
