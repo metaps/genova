@@ -70,6 +70,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa
     restart: on-failure
+  node:
+    container_name: genova-node
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    volumes:
+      - .:/data/rails
   mongo:
     container_name: genova-mongo
     image: mongo:3.4

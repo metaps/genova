@@ -7,11 +7,11 @@
       <div class="small-4 large-3 columns parameter-id">Status</div>
       <div class="small-8 large-3 columns">
         <% if @deploy_job.status == 'success' %>
-          <i class="fa fa-check-circle" aria-hidden="true"></i>
+          <i class="fa fa-check-circle"></i>
         <% elsif @deploy_job.status == 'in_progress' %>
-          <i class="fa fa-refresh fa-spin" aria-hidden="true"></i>
+          <i class="fa fa-spinner fa-spin"></i>
         <% elsif @deploy_job.status == 'failure' %>
-          <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+          <i class="fa fa-exclamation-triangle"></i>
         <% end %>
         <%= @deploy_job.status %>
       </div>
@@ -21,12 +21,12 @@
     <div class="row">
       <div class="small-4 large-3 columns parameter-id">Repository</div>
       <div class="small-8 large-3 columns">
-        <i class="fa fa-github" aria-hidden="true"></i>
+        <i class="fab fa-github"></i>
         <%= link_to(@deploy_job.repository, github_client.build_repository_uri) %>
       </div>
       <div class="small-4 large-3 columns parameter-id">Branch</div>
       <div class="small-8 large-3 columns">
-        <i class="fa fa-github" aria-hidden="true"></i>
+        <i class="fab fa-github"></i>
         <%= link_to(@deploy_job.branch, github_client.build_branch_uri(@deploy_job.branch)) %>
       </div>
     </div>
@@ -34,14 +34,14 @@
       <div class="small-4 large-3 columns parameter-id">Commit</div>
       <div class="small-8 large-3 columns">
         <% if @deploy_job.commit_id.present? %>
-          <i class="fa fa-github" aria-hidden="true"></i>
+          <i class="fab fa-github"></i>
           <%= link_to(@deploy_job.commit_id[0, 7], github_client.build_commit_uri(@deploy_job.commit_id)) %>
         <% end %>
       </div>
       <div class="small-4 large-3 columns parameter-id">Tag</div>
       <div class="small-8 large-3 columns">
         <% if @deploy_job.tag.present? %>
-          <i class="fa fa-github" aria-hidden="true"></i>
+          <i class="fab fa-github"></i>
           <%= link_to(@deploy_job.tag, github_client.build_tag_uri(@deploy_job.tag)) %>
         <% end %>
       </div>
