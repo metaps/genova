@@ -20,6 +20,7 @@
 /config/master.key
 /coverage
 /public/assets/*
+/node_modules
 
 # Application files
 *.swp

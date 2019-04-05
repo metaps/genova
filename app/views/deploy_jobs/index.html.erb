@@ -20,11 +20,11 @@
             <td><%= link_to(deploy_job.id, deploy_job_path(deploy_job.id)) %></td>
             <td>
               <% if deploy_job.status == 'success' %>
-                <i class="fa fa-check-circle" aria-hidden="true"></i>
+                <i class="fa fa-check-circle"></i>
               <% elsif deploy_job.status == 'in_progress' %>
-                <i class="fa fa-refresh fa-spin" aria-hidden="true"></i>
+                <i class="fa fa-spinner fa-spin"></i>
               <% elsif deploy_job.status == 'failure' %>
-                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                <i class="fa fa-exclamation-triangle"></i>
               <% end %>
               <%= deploy_job.status %>
             </td>
@@ -33,7 +33,7 @@
             <td><%= deploy_job.branch.truncate(24) %></td>
             <td>
               <% if deploy_job.commit_id.present? %>
-                <i class="fa fa-github" aria-hidden="true"></i>
+                <i class="fab fa-github"></i>
                 <%= link_to(deploy_job.commit_id[0, 7], Genova::Github::Client.new(deploy_job.account, deploy_job.repository).build_commit_uri(deploy_job.commit_id)) %>
               <% end %>
             </td>
