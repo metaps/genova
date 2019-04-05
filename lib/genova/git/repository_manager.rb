@@ -69,6 +69,11 @@ module Genova
         raise Genova::Config::DeployConfig::ParseError, "File does not exist. [#{path}]" unless File.exist?(path)
 
         params = YAML.load(File.read(path)).deep_symbolize_keys
+        schema = File.read('lib/genova/config/validator/deploy_config.json')
+
+        errors = JSON::Validator.fully_validate(schema, params)
+        raise ::Genova::Config::DeployConfig::ParseError, errors[0] if errors.size.positive?
+
         Genova::Config::DeployConfig.new(params)
       end
 
