@@ -1,0 +1,112 @@
+{
+  "definitions": {
+    "containers": {
+      "type": "array",
+      "items": {
+        "required": ["name", "build"],
+        "properties": {
+          "name": { "type": "string" },
+          "build": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "properties": {
+                  "context": { "type": "string" },
+                  "dockerfile": { "type": "string" },
+                  "args": {
+                    "type": "object",
+                    "patternProperties": {
+                      ".+": {
+                        "oneOf": [
+                          { "type": "number" },
+                          { "type": "string" },
+                          { "type": "boolean" }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "type": "object",
+  "required": ["clusters"],
+  "properties": {
+    "auto_deploy": {
+      "type": "array",
+      "items": {
+        "required": ["branch", "cluster", "service"],
+        "properties": {
+          "branch": { "type": "string" },
+          "cluster": { "type": "string" },
+          "service": { "type": "string" }
+        }
+      }
+    },
+    "clusters": {
+      "type": "array",
+      "items": {
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "services": {
+            "type": "object",
+            "patternProperties": {
+              ".+": {
+                "type": "object",
+                "required": ["path", "containers"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "containers": { "$ref": "#/definitions/containers" }
+                }
+              }
+            }
+          },
+          "scheduled_tasks": {
+            "type": "array",
+            "items": {
+              "required": ["rule", "expression", "targets"],
+              "properties": {
+                "rule": { "type": "string" },
+                "expression": { "type": "string" },
+                "targets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "containers", "path"],
+                    "properties": {
+                      "name": { "type": "string" },
+                      "task_role": { "type": "string" },
+                      "depend_service": { "type": "string" },
+                      "path": { "type": "string" },
+                      "task_count": { "type": "number" },
+                      "overrides": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": { "type": "string" },
+                            "command": {
+                              "type": "array",
+                              "items": { "type": "string" }
+                            }
+                          }
+                        }
+                      },
+                      "containers": { "$ref": "#/definitions/containers" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
