@@ -894,6 +894,8 @@ GEM
       railties (>= 4.2.0)
       thor (>= 0.14, < 2.0)
     json (2.2.0)
+    json-schema (2.8.1)
+      addressable (>= 2.4)
     json_spec (1.1.5)
       multi_json (~> 1.0)
       rspec (>= 2.0, < 4.0)
@@ -1160,6 +1162,7 @@ DEPENDENCIES
   health_check
   highline
   jquery-rails
+  json-schema
   json_spec
   kaminari-actionview
   kaminari-mongoid
