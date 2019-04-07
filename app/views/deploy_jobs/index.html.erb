@@ -1,7 +1,7 @@
-<h2>Deploy jobs</h2>
-<% if @deploy_jobs.size > 0 %>
-  <div class="table-scroll">
-    <table class="hover">
+<div class="container">
+  <h2 class="title">Deploy jobs</h2>
+  <% if @deploy_jobs.size > 0 %>
+    <table class="table is-fullwidth is-hoverable is-striped">
       <thead>
         <th>ID</th>
         <th>Status</th>
@@ -45,10 +45,13 @@
         <% end %>
       </tbody>
     </table>
-    <ul class="pagination text-right">
-      <%= paginate @deploy_jobs %>
-    </ul>
-  </div>
-<% else %>
-  <p>Logs does not exist.</p>
-<% end %>
+
+    <nav class="pagination is-right is-rounded" role="navigation">
+      <ul class="pagination-list">
+        <%= paginate @deploy_jobs %>
+      </ul>
+    </div>
+  <% else %>
+    <p>Logs does not exist.</p>
+  <% end %>
+</div>

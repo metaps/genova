@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="format-detection" content="telephone=no" />
     <title>genova</title>
     <%= stylesheet_link_tag('/assets/stylesheets/application') %>
@@ -11,22 +11,20 @@
   </head>
 
   <body>
-    <div class="title-bar" data-responsive-toggle="top-bar" data-hide-for="medium">
-      <button class="menu-icon" type="button" data-toggle></button>
-      <div class="title-bar-title">Menu</div>
-    </div>
-
-    <div class="top-bar" id="top-bar">
-      <div class="top-bar-left">
-        <ul class="medium-horizontal vertical dropdown menu" data-responsive-menu="accordion medium-dropdown">
-          <li class="menu-text"><%= link_to('genova', deploy_jobs_path) %></li>
-          <li><%= link_to('Sidekiq', '/sidekiq') %></li>
-        </ul>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <%= link_to('genova', deploy_jobs_path, class: 'navbar-item') %>
       </div>
-    </div>
 
-    <div class="content">
+      <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start">
+          <a class="navbar-item" href="/sidekiq">Sidekiq</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="section">
       <%= yield %>
-    </div>
+    </section>
   </body>
 </html>
