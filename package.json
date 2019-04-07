@@ -1,7 +1,8 @@
 {
   "main": "webpack.config.js",
   "scripts": {
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "watch": "webpack --watch"
   },
   "devDependencies": {
     "bulma": "^0.7.4",
