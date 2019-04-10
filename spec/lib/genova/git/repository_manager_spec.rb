@@ -39,7 +39,10 @@ module Genova
           allow(File).to receive(:exist?).and_return(true)
           allow(File).to receive(:read).and_return('{}')
 
-          expect { repository_manager.load_deploy_config }.to_not raise_error
+          deploy_config_mock = double(Genova::Config::DeployConfig)
+          allow(Genova::Config::DeployConfig).to receive(:new).and_return(deploy_config_mock)
+
+          expect(repository_manager.load_deploy_config).to be_a(deploy_config_mock.class)
         end
       end
 
