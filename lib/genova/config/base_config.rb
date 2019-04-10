@@ -7,7 +7,10 @@ module Genova
 
       def initialize(params)
         @params = params
+        validate!
       end
+
+      def validate!; end
     end
   end
 end
