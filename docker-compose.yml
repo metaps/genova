@@ -1,4 +1,4 @@
-version: "3.2"
+version: "3.4"
 services:
   base:
     container_name: genova-base
@@ -74,7 +74,7 @@ services:
     container_name: genova-node
     build:
       context: .
-      dockerfile: docker/node/Dockerfile
+      target: builder
     volumes:
       - .:/data/rails
   mongo:
