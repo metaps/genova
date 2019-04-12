@@ -1,4 +1,5 @@
 {
+  "license": "MIT",
   "main": "webpack.config.js",
   "scripts": {
     "build": "webpack --mode production",
