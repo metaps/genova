@@ -20,7 +20,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa
       - node_modules:/data/rails/frontend/node_modules
-      - node_modules:/data/rails/public/assets
+      - assets:/data/rails/public/assets
     ports:
       - 3000:3000
     depends_on:
@@ -74,7 +74,7 @@ services:
     volumes:
       - .:/data/rails
       - node_modules:/data/rails/frontend/node_modules
-      - node_modules:/data/rails/public/assets
+      - assets:/data/rails/public/assets
   mongo:
     container_name: genova-mongo
     image: mongo:3.4
