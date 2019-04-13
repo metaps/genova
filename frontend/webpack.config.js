@@ -42,7 +42,10 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.js', '.vue']
+    extensions: ['.js', '.vue'],
+    alias: {
+      vue$: 'vue/dist/vue.esm.js',
+    },
   },
   plugins: [
     new VueLoaderPlugin(),
