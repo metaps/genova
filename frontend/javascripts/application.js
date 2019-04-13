@@ -6,4 +6,4 @@ library.add(faCheckCircle, faSpinner, faExclamationTriangle);
 library.add(faGithub);
 dom.watch();
 
-import './assets/mystyles.scss';
+import '../stylesheets/application.scss';
