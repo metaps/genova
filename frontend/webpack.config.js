@@ -13,8 +13,7 @@ module.exports = {
       use: ExtractTextPlugin.extract({
         fallback: 'style-loader',
         use: [
-          { loader: 'css-loader' },
-          { loader: 'sass-loader' },
+          'css-loader',
           {
             loader: 'postcss-loader',
             options: {
@@ -23,7 +22,8 @@ module.exports = {
                 require('cssnano')({ preset: 'default' })
               ]
             },
-          }
+          },
+          'sass-loader'
         ]
       })
     }]
