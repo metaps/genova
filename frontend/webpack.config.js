@@ -5,15 +5,15 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 module.exports = {
   entry: './javascripts/application.js',
   output: {
-    path: path.resolve(__dirname, 'public/assets'),
+    path: path.resolve(__dirname, '../public/assets'),
     filename: 'javascripts/application.js'
   },
-  devServer: {
-    contentBase: path.resolve(__dirname, 'public'),
-    host: '0.0.0.0',
-    publicPath: '/assets',
-    watchContentBase: true
-  },
+  // devServer: {
+  //   contentBase: path.resolve(__dirname, 'public'),
+  //   host: '0.0.0.0',
+  //   publicPath: '/assets',
+  //   watchContentBase: true
+  // },
   module: {
     rules: [
       {
