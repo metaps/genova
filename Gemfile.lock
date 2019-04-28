@@ -831,7 +831,7 @@ GEM
       dry-equalizer (~> 0.2)
       dry-logic (~> 0.5, >= 0.5.0)
       dry-types (~> 0.14, >= 0.14)
-    ecs_deployer (2.1.13)
+    ecs_deployer (2.2.0)
       aws-sdk (>= 2.9.0)
       aws_config (~> 0.1)
       oj (~> 3.0)
@@ -1152,7 +1152,7 @@ DEPENDENCIES
   byebug
   config
   docker-api
-  ecs_deployer (= 2.1.13)
+  ecs_deployer (= 2.2.0)
   enumerize
   font-awesome-rails
   foundation-rails (~> 6.3.1)
