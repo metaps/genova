@@ -1,6 +1,5 @@
 const path = require('path');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
   entry: './javascripts/application.js',
@@ -10,10 +9,6 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.vue$/,
-        loader: 'vue-loader'
-      },
       {
         test: /\.scss$/,
         use: ExtractTextPlugin.extract({
@@ -35,14 +30,7 @@ module.exports = {
       }
     ]
   },
-  resolve: {
-    extensions: ['.js', '.vue'],
-    alias: {
-      vue$: 'vue/dist/vue.esm.js',
-    },
-  },
   plugins: [
-    new VueLoaderPlugin(),
     new ExtractTextPlugin('stylesheets/application.css')
   ]
 };
