@@ -8,12 +8,6 @@ module.exports = {
     path: path.resolve(__dirname, '../public/assets'),
     filename: 'javascripts/application.js'
   },
-  // devServer: {
-  //   contentBase: path.resolve(__dirname, 'public'),
-  //   host: '0.0.0.0',
-  //   publicPath: '/assets',
-  //   watchContentBase: true
-  // },
   module: {
     rules: [
       {
