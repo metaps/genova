@@ -75,8 +75,6 @@ services:
       - .:/data/rails
       - node_modules:/data/rails/frontend/node_modules
       - assets:/data/rails/public/assets
-    ports:
-      - 8080:8080
   mongo:
     container_name: genova-mongo
     image: mongo:3.4

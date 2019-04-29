@@ -8,4 +8,4 @@ COPY frontend $APP_HOME/
 RUN yarn install
 RUN yarn build
 
-CMD ["sleep", "36000"]
+CMD ["yarn", "watch"]
