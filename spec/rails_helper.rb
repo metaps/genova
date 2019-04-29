@@ -77,6 +77,7 @@ shared_context 'load repository_manager_mock' do
           name: 'cluster',
           services: {
             service: {
+              containers: [],
               path: 'path'
             }
           }
