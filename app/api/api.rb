@@ -5,7 +5,7 @@ module API
     logger.formatter = GrapeLogging::Formatters::Default.new
     use GrapeLogging::Middleware::RequestLogger, logger: logger
 
-    log_file = File.open('log/grape.log', 'a')
+    log_file = File.open(Rails.root.join('log', 'grape.log'), 'a')
     log_file.sync = true
     logger Logger.new GrapeLogging::MultiIO.new(STDOUT, log_file)
 
