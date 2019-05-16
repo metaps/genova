@@ -121,14 +121,13 @@ If you want to execute deploy from GitHub push, register webhook URL.
 
 1. Please add Webhook on GitHub. Open `Settings` -> `Webhooks` in repository page on GitHub.
 
-    * Payload URL: `http://{YOUR_HOST}/api/v1/github/push`
+    * Payload URL: `https://{YOUR_HOST}/api/v1/github/push`
     * Content type: `application/json`
     * Secret: `{GITHUB_SECRET_KEY}`
     * Which events would you like to trigger this webhook?: `Just the push event.`
     * Active: Checked
 2. Add GitHub access token to `.env`.
 ```yaml
-GITHUB_OAUTH_TOKEN=***
 GITHUB_SECRET_KEY=***
 SLACK_API_TOKEN=***
 ```
