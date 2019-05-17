@@ -22,7 +22,7 @@ module V1
 
         { result: 'Deploy request was executed.' }
       rescue Helper::GithubHelper::ParseError => e
-        error! e.message, 403
+        { result: e.message }
       end
     end
   end
