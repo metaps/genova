@@ -5,7 +5,7 @@ module Genova
 
       def initialize(params = {})
         @ecr = Aws::ECR::Client.new
-        @registry = ENV.fetch('AWS_ACCOUNT_ID') + '.dkr.ecr.ap-northeast-1.amazonaws.com'
+        @registry = Aws::STS::Client.new.get_caller_identity + '.dkr.ecr.ap-northeast-1.amazonaws.com'
 
         @logger = params[:logger] || ::Logger.new(STDOUT)
 
