@@ -46,6 +46,8 @@ module Github
 
       deploy_target = auto_deploy_config.find { |k, _v| k[:branch] == branch }
 
+      return nil if deploy_target.nil?
+
       {
         cluster: deploy_target[:cluster],
         service: deploy_target[:service]
