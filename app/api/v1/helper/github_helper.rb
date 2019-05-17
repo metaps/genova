@@ -13,6 +13,8 @@ module V1
 
       def parse(payload_body)
         data = Oj.load(payload_body, symbol_keys: true)
+        return if data[:ref].nil?
+
         matches = data[:ref].match(%r{^refs/([^/]+)/(.+)$})
 
         # タグのプッシュは検知対象外
