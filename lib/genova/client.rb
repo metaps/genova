@@ -99,7 +99,5 @@ module Genova
     end
 
     class DeployLockError < Error; end
-    class DockerBuildError < Error; end
-    class ImagePushError < Error; end
   end
 end
