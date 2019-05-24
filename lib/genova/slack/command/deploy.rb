@@ -46,19 +46,19 @@ module Genova
             }
 
             args = expression.split(' ')
-            raise DeployError, 'Parameter is incorrect.' unless args.size == 3
+            raise InvalidArgumentError, 'Parameter is incorrect.' unless args.size == 3
 
             results[:account] = Settings.github.account
             results[:repository] = args[0]
             results[:branch] = args[1]
 
             target = args[2].split('=')
-            raise DeployError, 'Target type argument is invalid. Please check `help`.' unless target.size == 2
+            raise InvalidArgumentError, 'Target type argument is invalid. Please check `help`.' unless target.size == 2
 
             split = target[1].split(':')
             valid_args = target[0] == 'service' ? 2 : 3
 
-            raise DeployError, 'Target argument is invalid. Please check `help`.' unless split.size == valid_args
+            raise InvalidArgumentError, 'Target argument is invalid. Please check `help`.' unless split.size == valid_args
 
             results[:cluster] = split[0]
 
@@ -74,7 +74,7 @@ module Genova
         end
       end
 
-      class DeployError < Error; end
+      class InvalidArgumentError < Error; end
     end
   end
 end
