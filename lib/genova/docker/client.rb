@@ -15,12 +15,12 @@ module Genova
         docker_base_path = File.expand_path(build[:context], config_base_path)
         docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
 
-        raise Genova::Config::Config::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
+        raise Genova::Config::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
         task_definition_config = @repository_manager.load_task_definition_config('config/' + task_definition_path)
         container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
 
-        raise Genova::Config::Config::ValidationError, "'#{container}' container does not exist in task definition." if container_definition.nil?
+        raise Genova::Config::ValidationError, "'#{container}' container does not exist in task definition." if container_definition.nil?
 
         repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
