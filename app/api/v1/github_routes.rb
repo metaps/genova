@@ -21,7 +21,7 @@ module V1
         Github::DeployWorker.perform_async(id)
 
         { result: 'Deploy request was executed.' }
-      rescue Helper::GithubHelper::ParseError => e
+      rescue Helper::GithubHelper::InvalidRequestError => e
         { result: e.message }
       end
     end

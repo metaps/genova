@@ -18,7 +18,7 @@ module V1
         matches = data[:ref].match(%r{^refs/([^/]+)/(.+)$})
 
         # タグのプッシュは検知対象外
-        return raise ParseError, "#{data[:ref]} is not a valid request." if matches.nil? || matches[1] != 'heads'
+        return raise InvalidRequestError, "#{data[:ref]} is not a valid request." if matches.nil? || matches[1] != 'heads'
 
         full_name = data[:repository][:full_name].split('/')
 
@@ -30,7 +30,7 @@ module V1
         result
       end
 
-      class ParseError < Genova::Error; end
+      class InvalidRequestError < Genova::Error; end
     end
   end
 end
