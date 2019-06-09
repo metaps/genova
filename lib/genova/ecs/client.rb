@@ -26,7 +26,7 @@ module Genova
         service_config = @deploy_config.service(@cluster, service)
         cluster_config = @deploy_config.cluster(@cluster)
 
-        raise Genova::Config::DeployConfig::ParseError, 'You need to specify :path parameter in deploy.yml' if service_config[:path].nil?
+        raise Genova::Config::ValidationError, 'You need to specify :path parameter in deploy.yml' if service_config[:path].nil?
 
         deploy(service_config[:containers], service_config[:path], tag)
 
@@ -35,11 +35,12 @@ module Genova
 
         service_client = @deploy_client.service
 
-        raise Genova::Config::DeployConfig::ParseError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
+        raise Genova::Config::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
 
         service_client.wait_timeout = Settings.deploy.wait_timeout
         service_client.update(service, service_task_definition)
 
+        scheduled_task_definition_arns = []
         scheduled_task_definition_arns = deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
         {
@@ -49,6 +50,7 @@ module Genova
       end
 
       def deploy_scheduled_task(rule, target, tag)
+        build_result = deploy_scheduled_tasks(tag, rule: rule, target: target)
         {
           scheduled_task_definition_arns: deploy_scheduled_tasks(tag, rule: rule, target: target)
         }
@@ -57,15 +59,16 @@ module Genova
       private
 
       def deploy(containers_config, path, tag)
-        repository_names = @docker_client.build_images(containers_config, path)
         count = 0
 
-        repository_names.each do |repository_name|
+        containers_config.each do |container_config|
+          repository_name = @docker_client.build_image(container_config, path)
           @ecr_client.push_image(tag, repository_name)
+
           count += 1
         end
 
-        raise ImagePushError, 'Push image is not found.' if count.zero?
+        raise Genova::Config::ValidationError, 'Push image is not found.' if count.zero?
       end
 
       def deploy_scheduled_tasks(tag, options)
@@ -130,7 +133,7 @@ module Genova
           )
         end
 
-        raise DeployError, 'Scheduled task target or rule is undefined.' if options[:rule].present? && task_definition_arns.count.zero?
+        raise Genova::Config::ValidationError, 'Scheduled task target or rule is undefined.' if options[:rule].present? && task_definition_arns.count.zero?
 
         task_definition_arns
       end
@@ -141,7 +144,5 @@ module Genova
         @task_definitions[task_definition_path]
       end
     end
-
-    class DeployError < Error; end
   end
 end
