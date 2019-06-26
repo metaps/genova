@@ -52,26 +52,27 @@ module Genova
             results[:repository] = args[0]
             results[:branch] = args[1]
 
-            method = args[2].split('=')
-            raise InvalidArgumentError, 'Target type argument is invalid. Please check `help`.' unless method.size == 2
+            method_key_value = args[2].split('=')
+            raise InvalidArgumentError, 'Target type argument is invalid. Please check `help`.' unless method_key_value.size == 2
 
-            method_values = method[1].split(':')
+            method_key = method_key_value[0]
+            method_values = method_key_value[1].split(':')
             method_arg_sizes = {
               :target => 1,
               :service=> 2,
               :'scheduled-task' => 3
             }
 
-            method_arg_size = method_arg_sizes[method[0].to_sym]
+            method_arg_size = method_arg_sizes[method_key.to_sym]
 
             raise InvalidArgumentError, 'Target argument is invalid. Please check `help`.' unless method_values.size == method_arg_size
 
-            if method[0] == 'target'
+            if method_key == 'target'
               manager = Genova::Git::RepositoryManager.new(results[:account], results[:repository], results[:branch])
               target = manager.load_deploy_config.target(method_values[0])
               results.merge!(target)
 
-            elsif method[0] == 'service'
+            elsif method_key == 'service'
               results[:cluster] = method_values[0]
               results[:service] = method_values[1]
             else
