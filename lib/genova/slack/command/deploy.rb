@@ -41,44 +41,43 @@ module Genova
           def parse_args(expression)
             return { mode: :interactive } if expression.blank?
 
-            results = {
-              mode: :command
-            }
-
             args = expression.split(' ')
             raise InvalidArgumentError, 'Parameter is incorrect.' unless args.size == 3
 
-            results[:account] = Settings.github.account
-            results[:repository] = args[0]
-            results[:branch] = args[1]
+            results = {
+              :mode => :command,
+              :account => Settings.github.account,
+              :repository => args[0],
+              :branch => args[1]
+            }
 
             method_key_value = args[2].split('=')
             raise InvalidArgumentError, 'Target type argument is invalid. Please check `help`.' unless method_key_value.size == 2
 
             method_key = method_key_value[0]
             method_values = method_key_value[1].split(':')
-            method_arg_sizes = {
+            method_values_size = {
               :target => 1,
               :service=> 2,
               :'scheduled-task' => 3
             }
 
-            method_arg_size = method_arg_sizes[method_key.to_sym]
+            raise InvalidArgumentError, 'Target argument is invalid. Please check `help`.' unless method_values.size == method_values_size[method_key.to_sym]
 
-            raise InvalidArgumentError, 'Target argument is invalid. Please check `help`.' unless method_values.size == method_arg_size
+            case method_key
+            when 'target'
+                manager = Genova::Git::RepositoryManager.new(results[:account], results[:repository], results[:branch])
+                target = manager.load_deploy_config.target(method_values[0])
+                results.merge!(target)
 
-            if method_key == 'target'
-              manager = Genova::Git::RepositoryManager.new(results[:account], results[:repository], results[:branch])
-              target = manager.load_deploy_config.target(method_values[0])
-              results.merge!(target)
+            when 'service'
+                results[:cluster] = method_values[0]
+                results[:service] = method_values[1]
 
-            elsif method_key == 'service'
-              results[:cluster] = method_values[0]
-              results[:service] = method_values[1]
-            else
-              results[:cluster] = method_values[0]
-              results[:scheduled_task_rule] = method_values[1]
-              results[:scheduled_task_target] = method_values[2]
+            when 'scheduled-task'
+                results[:cluster] = method_values[0]
+                results[:scheduled_task_rule] = method_values[1]
+                results[:scheduled_task_target] = method_values[2]
             end
 
             results
