@@ -30,7 +30,6 @@ module Genova
 
       @deploy_job.start
       @deploy_job.commit_id = @ecs_client.ready
-      @deploy_job.cluster = @deploy_job.cluster
       @deploy_job.tag = create_tag(@deploy_job.commit_id)
 
       @logger.info("Deploy target commit: #{@deploy_job.commit_id}")

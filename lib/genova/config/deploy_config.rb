@@ -9,21 +9,27 @@ module Genova
       end
 
       def cluster(cluster)
-        params = (@params[:clusters] || []).find { |k, _v| k[:name] == cluster }
-        raise Genova::Config::ValidationError, "Cluster parameter is undefined. [#{cluster}]" if params.nil?
+        values = (@params[:clusters] || []).find { |k| k[:name] == cluster }
+        raise Genova::Config::ValidationError, "Cluster is undefined. [#{cluster}]" if values.nil?
 
-        params
+        values
       end
 
       def service(cluster, service)
         services = cluster(cluster)[:services] || {}
-        params = services[service.to_sym]
+        values = services[service.to_sym]
 
-        raise Genova::Config::ValidationError, "Service parameter is undefined. [#{service}]" if params.nil?
+        raise Genova::Config::ValidationError, "Service is undefined. [#{service}]" if values.nil?
 
-        params
+        values
       end
 
+      def target(target)
+        values = (@params[:targets] || []).find{ |k| k[:name] == target }
+        raise Genova::Config::ValidationError, "Target is undefined. [#{target}]" if values.nil?
+
+        values
+      end
     end
   end
 end
