@@ -9,7 +9,7 @@ gem 'aws-sdk', '~> 3.0.0'
 gem 'bootsnap'
 gem 'config'
 gem 'docker-api'
-gem 'ecs_deployer', '2.2.0'
+gem 'ecs_deployer', '2.2.2'
 gem 'enumerize'
 
 gem 'font-awesome-rails'
