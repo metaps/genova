@@ -11,7 +11,7 @@ module Genova
 
           arg = 'docker images --format "{{.ID}}|{{.Repository}}|{{.CreatedAt}}"'
 
-          repository = "#{ENV.fetch('AWS_ACCOUNT_ID')}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
+          repository = "xxx.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
           created_at = '2018-01-01 00:00:00 +0900 UTC'
           expect = "id|#{repository}|#{created_at}"
 

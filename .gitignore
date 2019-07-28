@@ -20,9 +20,11 @@
 /config/master.key
 /coverage
 /public/assets/*
+/frontend/node_modules
 
 # Application files
 *.swp
 !.keep
 .DS_Store
 dump.rdb
+*.log
