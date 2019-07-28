@@ -1,4 +1,4 @@
-FROM node:8-alpine
+FROM node:12-alpine
 
 ENV APP_HOME=/data/rails/frontend
 WORKDIR $APP_HOME
