@@ -1,23 +1,35 @@
 module Genova
   module Config
     class DeployConfig < BaseConfig
-      def cluster(cluster)
-        params = (@params[:clusters] || []).find { |k, _v| k[:name] == cluster }
-        raise ParseError, "Cluster parameter is undefined. [#{cluster}]" if params.nil?
+      def validate!
+        schema = File.read(Rails.root.join('lib', 'genova', 'config', 'validator', 'deploy_config.json'))
+        errors = JSON::Validator.fully_validate(schema, @params)
 
-        params
+        raise ::Genova::Config::ValidationError, errors[0] if errors.size.positive?
+      end
+
+      def cluster(cluster)
+        values = (@params[:clusters] || []).find { |k| k[:name] == cluster }
+        raise Genova::Config::ValidationError, "Cluster is undefined. [#{cluster}]" if values.nil?
+
+        values
       end
 
       def service(cluster, service)
         services = cluster(cluster)[:services] || {}
-        params = services[service.to_sym]
+        values = services[service.to_sym]
 
-        raise ParseError, "Service parameter is undefined. [#{service}]" if params.nil?
+        raise Genova::Config::ValidationError, "Service is undefined. [#{service}]" if values.nil?
 
-        params
+        values
       end
 
-      class ParseError < Error; end
+      def target(target)
+        values = (@params[:targets] || []).find{ |k| k[:name] == target }
+        raise Genova::Config::ValidationError, "Target is undefined. [#{target}]" if values.nil?
+
+        values
+      end
     end
   end
 end

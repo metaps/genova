@@ -77,12 +77,7 @@ shared_context 'load repository_manager_mock' do
           name: 'cluster',
           services: {
             service: {
-              formation: {
-                cluster: 'cluster',
-                service_name: 'service_name',
-                task_definition: 'task_definition',
-                desired_count: 1
-              },
+              containers: [{ name: 'rails', 'build': {}}],
               path: 'path'
             }
           }

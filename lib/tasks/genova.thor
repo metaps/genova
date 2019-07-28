@@ -12,44 +12,52 @@ class Genova < Thor
   end
 
   desc 'deploy', 'Deploy application to ECS.'
-  option :account, required: false, default: Settings.github.account, desc: 'GitHub account name'
-  option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
-  option :cluster, required: true, aliases: :c, desc: 'Cluster name.'
-  option :force, required: false, default: false, type: :boolean, aliases: :f, desc: 'Ignore deploy lock and force deploy.'
-  option :interactive, required: false, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
+  option :account, default: Settings.github.account, desc: 'GitHub account name'
+  option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
+  option :cluster, aliases: :c, desc: 'Cluster name.'
+  option :force, default: false, type: :boolean, aliases: :f, desc: 'Ignore deploy lock and force deploy.'
+  option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
   option :repository, required: true, aliases: :r, desc: 'Repository name.'
-  option :scheduled_task_rule, required: false, desc: 'Scheduled task rule name. "--scheduled-task-target" option must be specified.'
-  option :scheduled_task_target, required: false, desc: 'Scheduled task target name. "--scheduled-task-rule" option must be specified.'
-  option :service, required: false, aliases: :s, desc: 'Service name. Either "--service" or "--scheduled-task-rule" option must be specified.'
-  option :ssh_secret_key_path, required: false, desc: 'Private key for accessing GitHub.'
-  option :verbose, required: false, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
+  option :scheduled_task_rule, desc: 'Scheduled task rule name. "--scheduled-task-target" option must be specified.'
+  option :scheduled_task_target, desc: 'Scheduled task target name. "--scheduled-task-rule" option must be specified.'
+  option :service, aliases: :s, desc: 'Service name. Either "--service" or "--scheduled-task-rule" option must be specified.'
+  option :target, aliases: :t, desc: 'Deploy by specifying target.'
+  option :ssh_secret_key_path, desc: 'Private key for accessing GitHub.'
+  option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
   def deploy
     return if options[:interactive] && !HighLine.new.agree('> Do you want to run? (y/n): ', '')
+    args = options.to_hash.symbolize_keys
+
+    if options[:target].present?
+      manager = ::Genova::Git::RepositoryManager.new(args[:account], args[:repository], args[:branch])
+      target = manager.load_deploy_config.target(args[:target])
+      args.merge!(target)
+    end
 
     deploy_job = DeployJob.new(
       mode: DeployJob.mode.find_value(:manual).to_sym,
-      account: options[:account],
-      branch: options[:branch],
-      cluster: options[:cluster],
-      service: options[:service],
-      scheduled_task_rule: options[:scheduled_task_rule],
-      scheduled_task_target: options[:scheduled_task_target],
-      repository: options[:repository],
-      ssh_secret_key_path: options[:ssh_secret_key_path]
+      account: args[:account],
+      branch: args[:branch],
+      cluster: args[:cluster],
+      service: args[:service],
+      scheduled_task_rule: args[:scheduled_task_rule],
+      scheduled_task_target: args[:scheduled_task_target],
+      repository: args[:repository],
+      ssh_secret_key_path: args[:ssh_secret_key_path]
     )
 
     genova_options = {
-      interactive: options[:interactive],
-      verbose: options[:verbose],
-      force: options[:force]
+      interactive: args[:interactive],
+      verbose: args[:verbose],
+      force: args[:force]
     }
 
     ::Genova::Client.new(deploy_job, genova_options).run
   end
 
   desc 'register-task', 'Register task definition.'
-  option :account, required: false, default: Settings.github.account, desc: 'GitHub account name'
-  option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
+  option :account, default: Settings.github.account, desc: 'GitHub account name'
+  option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
   option :path, required: true, desc: 'Task path.'
   option :repository, required: true, aliases: :r, desc: 'Repository name.'
   def register_task

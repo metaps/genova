@@ -7,36 +7,30 @@ module Genova
         @cipher = EcsDeployer::Util::Cipher.new
       end
 
-      def build_images(containers_config, task_definition_path)
-        repository_names = []
+      def build_image(container_config, task_definition_path)
+        container = container_config[:name]
+        build = parse_docker_build(container_config[:build], @cipher)
 
-        containers_config.each do |params|
-          container = params[:name]
-          build = parse_docker_build(params[:build], @cipher)
+        config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
+        docker_base_path = File.expand_path(build[:context], config_base_path)
+        docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
 
-          config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
-          docker_base_path = File.expand_path(build[:context], config_base_path)
-          docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
+        raise Genova::Config::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-          raise Genova::Config::DeployConfig::ParseError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
+        task_definition_config = @repository_manager.load_task_definition_config('config/' + task_definition_path)
+        container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
 
-          task_definition_config = @repository_manager.load_task_definition_config('config/' + task_definition_path)
-          container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
+        raise Genova::Config::ValidationError, "'#{container}' container does not exist in task definition." if container_definition.nil?
 
-          raise Genova::Config::DeployConfig::ParseError, "'#{container}' container does not exist in task definition." if container_definition.nil?
+        repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
-          repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
+        command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
+        @logger.info("Docker build path: #{docker_base_path}")
 
-          command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
-          @logger.info("Docker build path: #{docker_base_path}")
+        executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
+        executor.command(command)
 
-          executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
-          executor.command(command)
-
-          repository_names.push(repository_name)
-        end
-
-        repository_names
+        repository_name
       end
 
       private
