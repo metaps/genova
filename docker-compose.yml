@@ -8,7 +8,7 @@ services:
     image: base
     env_file: .env
     volumes:
-      - .:/data/rails:cached
+      - .:/app:cached
   rails:
     container_name: genova-rails
     build:
@@ -16,11 +16,11 @@ services:
       dockerfile: docker/rails/Dockerfile
     env_file: .env
     volumes:
-      - .:/data/rails:cached
+      - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
-      - node_modules:/data/rails/frontend/node_modules:ro
-      - assets:/data/rails/public/assets:ro
+      - node_modules:/app/frontend/node_modules:ro
+      - assets:/app/public/assets:ro
     ports:
       - 3000:3000
     depends_on:
@@ -34,7 +34,7 @@ services:
       dockerfile: docker/slack/Dockerfile
     env_file: .env
     volumes:
-      - .:/data/rails:cached
+      - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     depends_on:
@@ -48,7 +48,7 @@ services:
       dockerfile: docker/sidekiq/Dockerfile
     env_file: .env
     volumes:
-      - .:/data/rails:cached
+      - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     depends_on:
@@ -62,7 +62,7 @@ services:
       dockerfile: docker/cron/Dockerfile
     env_file: .env
     volumes:
-      - .:/data/rails:cached
+      - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     restart: on-failure
@@ -72,9 +72,9 @@ services:
       context: .
       dockerfile: docker/node/Dockerfile
     volumes:
-      - .:/data/rails
-      - node_modules:/data/rails/frontend/node_modules
-      - assets:/data/rails/public/assets
+      - .:/app
+      - node_modules:/app/frontend/node_modules
+      - assets:/app/public/assets
   mongo:
     container_name: genova-mongo
     image: mongo:3.4

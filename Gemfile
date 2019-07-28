@@ -5,11 +5,11 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-gem 'aws-sdk', '~> 3.0.0'
+gem 'aws-sdk', '~> 3.0.1'
 gem 'bootsnap'
 gem 'config'
 gem 'docker-api'
-gem 'ecs_deployer', '2.2.2'
+gem 'ecs_deployer', '~> 2.2.2'
 gem 'enumerize'
 gem 'git'
 gem 'grape', '~> 1.1.0'
@@ -23,13 +23,13 @@ gem 'mongoid'
 gem 'mongoid-scroll'
 gem 'octokit'
 gem 'oj'
-gem 'puma', '~> 3.12.0'
+gem 'puma', '~> 3.12.1'
 gem 'puma_worker_killer'
 gem 'rails', '~> 5.2.2.1'
 gem 'redis'
 gem 'rest-client'
 gem 'sidekiq'
-gem 'slack-ruby-bot-server'
+gem 'slack-ruby-bot-server', '~> 0.11.1'
 gem 'tzinfo-data'
 
 group :development, :test do

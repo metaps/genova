@@ -1,9 +1,9 @@
-/data/rails/log/cron.log
-/data/rails/log/development.log
-/data/rails/log/production.log
-/data/rails/log/grape.log
-/data/rails/log/sidekiq.log
-/data/rails/log/slack-ruby-bot.log
+/app/log/cron.log
+/app/log/development.log
+/app/log/production.log
+/app/log/grape.log
+/app/log/sidekiq.log
+/app/log/slack-ruby-bot.log
 {
   weekly
   missingok

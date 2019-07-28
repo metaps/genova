@@ -1,7 +1,7 @@
 FROM ruby:2.6-alpine
 
 RUN apk --update add build-base openssh docker nodejs git tzdata vim --no-cache
-ENV APP_HOME=/data/rails
+ENV APP_HOME=/app
 
 WORKDIR $APP_HOME
 COPY Gemfile* $APP_HOME/

@@ -1,6 +1,6 @@
 FROM node:12-alpine
 
-ENV APP_HOME=/data/rails/frontend
+ENV APP_HOME=/app/frontend
 WORKDIR $APP_HOME
 
 COPY frontend $APP_HOME/
