@@ -1,0 +1,52 @@
+@charset "utf-8";
+
+/** Import a Google Font */
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+
+$family-sans-serif: "Nunito", sans-serif;
+$size-6: 0.9rem;
+
+/** Import only what you need from Bulma */
+@import "../node_modules/bulma/sass/utilities/_all.sass";
+@import "../node_modules/bulma/sass/base/_all.sass";
+@import "../node_modules/bulma/sass/elements/container.sass";
+@import "../node_modules/bulma/sass/elements/table.sass";
+@import "../node_modules/bulma/sass/elements/title.sass";
+@import "../node_modules/bulma/sass/components/navbar.sass";
+@import "../node_modules/bulma/sass/components/pagination.sass";
+@import "../node_modules/bulma/sass/grid/columns.sass";
+@import "../node_modules/bulma/sass/layout/section.sass";
+
+.navbar {
+  background-color: #333;
+  font-size: $size-6;
+
+  .navbar-brand {
+    text-indent: 40px;
+    font-weight: bold;
+  }
+
+  a {
+    color: #fff;
+  }
+}
+
+.meta {
+  font-size: $size-6;
+
+  .is-2 {
+    font-weight: bold;
+    text-align: right;
+  }
+}
+
+.logs {
+  background-color: $pre-background;
+  padding: 20px;
+  overflow: auto;
+
+  pre {
+    padding: 0;
+    overflow: visible;
+  }
+}

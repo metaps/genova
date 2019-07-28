@@ -11,16 +11,11 @@ gem 'config'
 gem 'docker-api'
 gem 'ecs_deployer', '2.2.2'
 gem 'enumerize'
-
-gem 'font-awesome-rails'
-gem 'foundation-rails', '~> 6.3.1'
-
 gem 'git'
 gem 'grape', '~> 1.1.0'
 gem 'grape_logging'
 gem 'health_check'
 gem 'highline'
-gem 'jquery-rails'
 gem 'json-schema'
 gem 'kaminari-actionview'
 gem 'kaminari-mongoid'
@@ -33,10 +28,9 @@ gem 'puma_worker_killer'
 gem 'rails', '~> 5.2.2.1'
 gem 'redis'
 gem 'rest-client'
-gem 'sass-rails'
 gem 'sidekiq'
 gem 'slack-ruby-bot-server'
-gem 'uglifier'
+gem 'tzinfo-data'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -53,8 +47,6 @@ group :test do
 end
 
 group :development do
-  # gem 'web-console'
-  # gem 'listen'
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'brakeman'

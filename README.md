@@ -139,3 +139,21 @@ auto_deploy:
     cluster: 'cluster',
     service: 'service'
 ```
+
+## For developer
+
+### RSpec
+
+```bash
+docker-compose run --rm rails rspec
+```
+
+### Webpack
+
+```bash
+# Watch file changes
+$ docker-compose run --rm node watch
+
+# Asset build
+$ docker-compose run --rm node build
+```
