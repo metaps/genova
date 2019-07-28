@@ -18,6 +18,7 @@ module Genova
       allow(ecs_client_mock).to receive(:ready)
       allow(ecs_client_mock).to receive(:deploy_service)
 
+      allow(File).to receive(:exist?).and_call_original
       allow(File).to receive(:exist?).with("#{ENV.fetch('HOME')}/.ssh/id_rsa").and_return(true)
       allow(Genova::Ecs::Client).to receive(:new).and_return(ecs_client_mock)
 

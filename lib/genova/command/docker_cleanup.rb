@@ -32,7 +32,7 @@ module Genova
 
           current_time = Time.new.utc.to_i
           image_cleanup_interval = Settings.docker.image_cleanup_interval * 60 * 60 * 24
-          match_key = "#{ENV.fetch('AWS_ACCOUNT_ID')}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
+          match_key = "#{Aws::STS::Client.new.get_caller_identity[:account]}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
           deleted_images = 0
 
           result.split("\n").each do |row|

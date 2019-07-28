@@ -11,6 +11,8 @@ module Genova
             Run service deployment in command mode.
           * deploy <repository> <branch> scheduled-task=<cluster>:<scheduled task rule>:<scheduled task target>
             Run scheduled task deployment in command mode.
+          * deploy <repository> <branch> target=<target name>
+            Deploy by specifying target.
           * help
             Get this helpful message.
           * history
