@@ -27,3 +27,4 @@
 !.keep
 .DS_Store
 dump.rdb
+*.log

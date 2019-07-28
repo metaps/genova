@@ -3,7 +3,7 @@
   "main": "webpack.config.js",
   "scripts": {
     "build": "webpack --mode production",
-    "watch": "webpack --watch",
+    "watch": "webpack --watch  --mode production",
     "start": "webpack-dev-server --hot"
   },
   "devDependencies": {
