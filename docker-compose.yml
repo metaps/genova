@@ -9,20 +9,20 @@ services:
     env_file: .env
     volumes:
       - .:/app:cached
-  nginx:
-    container_name: genova-nginx
-    image: nginx:1.17-alpine
-    env_file: .env
-    volumes:
-      - .:/app:cached
-      - ./docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - assets:/app/public/assets:ro
-    working_dir: /app
-    ports:
-      - 8080:80
-    depends_on:
-      - rails
-    restart: on-failure
+  # nginx:
+  #   container_name: genova-nginx
+  #   image: nginx:1.17-alpine
+  #   env_file: .env
+  #   volumes:
+  #     - .:/app:cached
+  #     - ./docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+  #     - assets:/app/public/assets:ro
+  #   working_dir: /app
+  #   ports:
+  #     - 8080:80
+  #   depends_on:
+  #     - rails
+  #   restart: on-failure
   rails:
     container_name: genova-rails
     build:
@@ -85,10 +85,13 @@ services:
     build:
       context: .
       dockerfile: docker/node/Dockerfile
+    command: "yarn start"
     volumes:
       - .:/app
       - node_modules:/app/frontend/node_modules
       - assets:/app/public/assets
+    ports:
+      - 8080:8080
   mongo:
     container_name: genova-mongo
     image: mongo:3.4

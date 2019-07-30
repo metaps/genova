@@ -1,12 +1,14 @@
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const webpack = require('webpack');
 
 module.exports = {
   entry: './javascripts/entrypoint.js',
   output: {
     path: path.resolve(__dirname, '../public/assets'),
-    filename: 'javascripts/application.js'
+    publicPath: '/',
+    filename: 'assets/javascripts/application.js'
   },
   module: {
     rules: [
@@ -46,8 +48,15 @@ module.exports = {
       }
     ]
   },
+  devServer: {
+    contentBase: path.join(__dirname, '../public'),
+    host: '0.0.0.0',
+    port: 8080,
+    hot: true
+  },
   plugins: [
     new VueLoaderPlugin(),
     new ExtractTextPlugin('stylesheets/application.css'),
+    new webpack.HotModuleReplacementPlugin()
   ]
 };
