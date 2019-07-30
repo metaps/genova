@@ -7,3 +7,9 @@ library.add(faGithub);
 dom.watch();
 
 import '../stylesheets/entrypoint.scss';
+
+import Vue from 'vue'
+import Hello from './components/Hello.vue'
+
+const app = new Vue(Hello);
+app.$mount('#app');

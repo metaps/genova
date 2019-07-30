@@ -152,8 +152,8 @@ docker-compose run --rm rails rspec
 
 ```bash
 # Watch file changes
-$ docker-compose run --rm node watch
+$ docker-compose run --rm node yarn watch
 
 # Asset build
-$ docker-compose run --rm node build
+$ docker-compose run --rm node yarn build
 ```
