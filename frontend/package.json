@@ -3,7 +3,7 @@
   "main": "webpack.config.js",
   "scripts": {
     "build": "webpack --mode production",
-    "watch": "webpack --watch  --mode production",
+    "watch": "webpack --watch --mode production",
     "start": "webpack-dev-server --hot"
   },
   "devDependencies": {
@@ -21,7 +21,6 @@
     "babel-loader": "^8.0.6",
     "cssnano": "^4.1.10",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "node-sass": "^4.12.0",
     "postcss-loader": "^3.0.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
