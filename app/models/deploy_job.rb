@@ -4,10 +4,12 @@ class DeployJob
 
   extend Enumerize
 
+  enumerize :type, in: %i[run_task service scheduled_task]
   enumerize :status, in: %i[in_progress success failure]
   enumerize :mode, in: %i[manual auto slack]
 
   field :id, type: String
+  field :type, type: String
   field :status, type: String
   field :mode, type: String
   field :slack_user_id, type: String
@@ -17,6 +19,7 @@ class DeployJob
   field :branch, type: String
   field :commit_id, type: String
   field :cluster, type: String
+  field :run_task, type: String
   field :service, type: String
   field :scheduled_task_rule, type: String
   field :scheduled_task_target, type: String
@@ -43,6 +46,14 @@ class DeployJob
     self.account = params[:account] ||= Settings.github.account
     self.branch = params[:branch] || Settings.github.default_branch
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
+
+    if self.run_task.present?
+      self.type = DeployJob.type.find_value(:run_task)
+    elsif self.service.present?
+      self.type = DeployJob.type.find_value(:service)
+    elsif self.scheduled_task_rule.present? && self.scheduled_task_target.present?
+      self.type = DeployJob.type.find_value(:scheduled_task)
+    end
   end
 
   def start
@@ -69,9 +80,9 @@ class DeployJob
   private
 
   def check_deploy_target
-    return if service.present? || (scheduled_task_rule.present? && scheduled_task_target.present?)
+    return if self.type.present?
 
-    errors[:base] << 'Please specify deploy service or schedule task.'
+    errors[:base] << 'Please specify deploy type.'
   end
 
   def check_ssh_secret_key_path

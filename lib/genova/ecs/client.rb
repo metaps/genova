@@ -4,7 +4,7 @@ module Genova
       def initialize(cluster, repository_manager, options = {})
         @cluster = cluster
         @repository_manager = repository_manager
-        @logger = options[:logger] || ::Logger.new(STDOUT)
+        @logger = options[:logger] || ::Logger.new(nil)
         @task_definitions = {}
 
         @deploy_client = EcsDeployer::Client.new(
@@ -22,16 +22,35 @@ module Genova
         @repository_manager.update
       end
 
+      def deploy_run_task(run_task, tag)
+        run_task_config = @deploy_config.run_task(@cluster, run_task)
+
+        deploy(run_task_config[:containers], run_task_config[:path], tag)
+        task_definition_path = @repository_manager.task_definition_config_path('config/' + run_task_config[:path])
+        task_definition = create_task(task_definition_path, tag)
+
+        options = {
+          cluster: @cluster,
+          task_definition: task_definition.task_definition_arn
+        }
+        options.merge!(run_task_config[:ecs_configuration] || {})
+
+        run_task_response = @ecs_client.run_task(options)
+        run_task_definition_arns = run_task_response[:tasks].map{ |key| key[:task_definition_arn] }
+
+        {
+          run_task_definition_arns: run_task_definition_arns
+        }
+      end
+
       def deploy_service(service, tag)
         service_config = @deploy_config.service(@cluster, service)
         cluster_config = @deploy_config.cluster(@cluster)
 
-        raise Genova::Config::ValidationError, 'You need to specify :path parameter in deploy.yml' if service_config[:path].nil?
-
         deploy(service_config[:containers], service_config[:path], tag)
 
         service_task_definition_path = @repository_manager.task_definition_config_path('config/' + service_config[:path])
-        service_task_definition = create_task(@deploy_client.task, service_task_definition_path, tag)
+        service_task_definition = create_task(service_task_definition_path, tag)
 
         service_client = @deploy_client.service
 
@@ -50,7 +69,7 @@ module Genova
       end
 
       def deploy_scheduled_task(rule, target, tag)
-        build_result = deploy_scheduled_tasks(tag, rule: rule, target: target)
+        deploy_scheduled_tasks(tag, rule: rule, target: target)
         {
           scheduled_task_definition_arns: deploy_scheduled_tasks(tag, rule: rule, target: target)
         }
@@ -90,7 +109,7 @@ module Genova
             deploy(target[:containers], target[:path], tag) if options[:target].present?
 
             task_definition_path = File.expand_path(target[:path], config_base_path)
-            task_definition = create_task(@deploy_client.task, task_definition_path, tag)
+            task_definition = create_task(task_definition_path, tag)
             task_definition_arn = task_definition.task_definition_arn
             targets_arns << {
               target: target[:name],
@@ -138,7 +157,8 @@ module Genova
         task_definition_arns
       end
 
-      def create_task(task_client, task_definition_path, tag)
+      def create_task(task_definition_path, tag)
+        task_client = EcsDeployer::Task::Client.new
         @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag) unless @task_definitions.include?(task_definition_path)
 
         @task_definitions[task_definition_path]
