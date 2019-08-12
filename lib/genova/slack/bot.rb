@@ -362,29 +362,11 @@ module Genova
       def post_finished_deploy(deploy_job)
         fields = []
 
-        if deploy_job.task_definition_arns[:service_task_definition_arn].present?
-          fields << {
-            title: 'New task definition ARN (Service)',
-            value: escape_emoji(deploy_job.task_definition_arns[:service_task_definition_arn]),
-            short: false
-          }
-        end
-
-        if deploy_job.task_definition_arns[:scheduled_task_definition_arns].present?
-          task_definition_arns = []
-
-          deploy_job.task_definition_arns[:scheduled_task_definition_arns].each do |rule|
-            rule[:targets_arns].each do |targets_arn|
-              task_definition_arns << "(#{rule[:rule]}:#{targets_arn[:target]}) #{targets_arn[:task_definition_arn]}"
-            end
-          end
-
-          fields << {
-            title: 'New task definition ARN (Scheduled task)',
-            value: escape_emoji(task_definition_arns.join("\n")),
-            short: false
-          }
-        end
+        fields << {
+          title: 'New task definition ARN (Scheduled task)',
+          value: escape_emoji(deploy_job.task_definition_arns.join("\n")),
+          short: false
+        }
 
         if deploy_job.tag.present?
           github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
