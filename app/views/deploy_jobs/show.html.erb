@@ -90,19 +90,9 @@
           <div class="column is-2">Task definition ARN</div>
           <div class="column is-10">
             <ul>
-              <% if @deploy_job.task_definition_arns[:run_task_definition_arns].present? %>
-                <% @deploy_job.task_definition_arns[:run_task_definition_arns].each do |run_task_definition_arn| %>
-                  <li><%= run_task_definition_arn %></li>
-                <% end %>
-              <% end %>
-              <% if @deploy_job.task_definition_arns[:service_task_definition_arn].present? %>
-                <%= @deploy_job.task_definition_arns[:service_task_definition_arn] %>
-              <% end %>
-              <% if @deploy_job.task_definition_arns[:scheduled_task_definition_arns].present? %>
-                <% @deploy_job.task_definition_arns[:scheduled_task_definition_arns].each do |rule| %>
-                  <% rule[:targets_arns].each do |targets_arn| %>
-                    <li><%= targets_arn[:task_definition_arn] %></li>
-                  <% end %>
+              <% if @deploy_job.task_definition_arns.present? %>
+                <% @deploy_job.task_definition_arns.each do |task_definition_arn| %>
+                  <li><%= task_definition_arn %></li>
                 <% end %>
               <% end %>
             </ul>
