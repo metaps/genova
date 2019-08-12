@@ -31,6 +31,10 @@ $size-6: 0.9rem;
   }
 }
 
+.columns:not(:last-child) {
+  margin-bottom: 0;
+}
+
 .meta {
   font-size: $size-6;
 
