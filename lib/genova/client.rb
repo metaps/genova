@@ -38,7 +38,7 @@ module Genova
                                 when DeployJob.type.find_value(:run_task)
                                   @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.tag)
                                 when DeployJob.type.find_value(:service)
-                                  @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
+                                  [@ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)]
                                 when DeployJob.type.find_value(:scheduled_task)
                                   @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
                              end

@@ -25,7 +25,7 @@ class DeployJob
   field :scheduled_task_target, type: String
   field :ssh_secret_key_path, type: String
   field :logs, type: Array
-  field :task_definition_arns, type: Hash
+  field :task_definition_arns, type: Array
   field :started_at, type: Time
   field :finished_at, type: Time
   field :execution_time, type: Float
