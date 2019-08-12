@@ -36,11 +36,7 @@ module Genova
         options.merge!(run_task_config[:ecs_configuration] || {})
 
         run_task_response = @ecs_client.run_task(options)
-        run_task_definition_arns = run_task_response[:tasks].map{ |key| key[:task_definition_arn] }
-
-        {
-          run_task_definition_arns: run_task_definition_arns
-        }
+        run_task_response[:tasks].map{ |key| key[:task_definition_arn] }
       end
 
       def deploy_service(service, tag)
@@ -59,20 +55,13 @@ module Genova
         service_client.wait_timeout = Settings.deploy.wait_timeout
         service_client.update(service, service_task_definition)
 
-        scheduled_task_definition_arns = []
-        scheduled_task_definition_arns = deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
+        deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
-        {
-          service_task_definition_arn: service_task_definition.task_definition_arn,
-          scheduled_task_definition_arns: scheduled_task_definition_arns
-        }
+        service_task_definition.task_definition_arn
       end
 
       def deploy_scheduled_task(rule, target, tag)
         deploy_scheduled_tasks(tag, rule: rule, target: target)
-        {
-          scheduled_task_definition_arns: deploy_scheduled_tasks(tag, rule: rule, target: target)
-        }
       end
 
       private
@@ -98,7 +87,6 @@ module Genova
           scheduled_task_client = @deploy_client.scheduled_task
           config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
           targets = []
-          targets_arns = []
 
           next if options[:rule].present? && scheduled_task[:rule] != options[:rule]
 
@@ -110,18 +98,13 @@ module Genova
 
             task_definition_path = File.expand_path(target[:path], config_base_path)
             task_definition = create_task(task_definition_path, tag)
-            task_definition_arn = task_definition.task_definition_arn
-            targets_arns << {
-              target: target[:name],
-              task_definition_arn: task_definition_arn
-            }
 
             builder = scheduled_task_client.target_builder(target[:name])
 
             cloudwatch_event_role = target[:cloudwatch_event_role] || 'ecsEventsRole'
             builder.cloudwatch_event_role_arn = Aws::IAM::Role.new(cloudwatch_event_role).arn
 
-            builder.task_definition_arn = task_definition_arn
+            builder.task_definition_arn = task_definition.task_definition_arn
             builder.task_role_arn = Aws::IAM::Role.new(target[:task_role]).arn if target.include?(:task_role)
             builder.task_count = target[:task_count] || 1
 
@@ -133,14 +116,10 @@ module Genova
             end
 
             targets << builder.to_hash
+            task_definition_arns << task_definition.task_definition_arn
           end
 
           next if targets.size.zero?
-
-          task_definition_arns << {
-            rule: scheduled_task[:rule],
-            targets_arns: targets_arns
-          }
 
           @logger.info("Update '#{scheduled_task[:rule]}' rule.")
 
