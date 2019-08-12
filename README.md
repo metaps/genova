@@ -36,37 +36,6 @@ You can check deployment status.
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
 
-## Installation
-
-When using Genova, please create following configuration file in application.
-
-### Deploy configuration
-
-Create `config/deploy.yml` file. Please refer to [sample](https://github.com/metaps/genova/wiki/Deploy-configuration).
-
-### Task definition
-
-ECS deployment uses [ecs_deployer](https://rubygems.org/gems/ecs_deployer). Create task definition file for each service to be deployed. File name uses service name of ECS.
-
-e.g.
-* `config/deploy/development.yml`
-* `config/deploy/staging.yml`
-* `config/deploy/production.yml`
-
-Please refer to [sample](https://github.com/naomichi-y/ecs_deployer#task-definition).
-
-## Setup Genova
-
-```bash
-# See https://github.com/metaps/genova/wiki/Configuration
-$ cp config/settings.yml config/settings.local.yml
-
-# Rewrite environment variable.
-$ cp .env.default .env
-
-$ docker-compose build
-$ docker-compose up
-```
 
 Please open http://localhost:3000/ in the browser.
 

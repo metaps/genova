@@ -25,7 +25,7 @@ module Genova
       def deploy_run_task(run_task, tag)
         run_task_config = @deploy_config.run_task(@cluster, run_task)
 
-        deploy(run_task_config[:containers], run_task_config[:path], tag)
+        build(run_task_config[:containers], run_task_config[:path], tag)
         task_definition_path = @repository_manager.task_definition_config_path('config/' + run_task_config[:path])
         task_definition = create_task(task_definition_path, tag)
 
@@ -47,7 +47,7 @@ module Genova
         service_config = @deploy_config.service(@cluster, service)
         cluster_config = @deploy_config.cluster(@cluster)
 
-        deploy(service_config[:containers], service_config[:path], tag)
+        build(service_config[:containers], service_config[:path], tag)
 
         service_task_definition_path = @repository_manager.task_definition_config_path('config/' + service_config[:path])
         service_task_definition = create_task(service_task_definition_path, tag)
@@ -77,7 +77,7 @@ module Genova
 
       private
 
-      def deploy(containers_config, path, tag)
+      def build(containers_config, path, tag)
         count = 0
 
         containers_config.each do |container_config|
@@ -106,7 +106,7 @@ module Genova
             next if options[:depend_service].present? && target[:depend_service] != options[:depend_service]
             next if options[:target].present? && target[:name] != options[:target]
 
-            deploy(target[:containers], target[:path], tag) if options[:target].present?
+            build(target[:containers], target[:path], tag) if options[:target].present?
 
             task_definition_path = File.expand_path(target[:path], config_base_path)
             task_definition = create_task(task_definition_path, tag)

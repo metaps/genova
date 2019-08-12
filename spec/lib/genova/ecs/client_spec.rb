@@ -18,13 +18,14 @@ module Genova
 
         ecs_deployer_mock = double(EcsDeployer::Client)
         allow(ecs_deployer_mock).to receive(:service).and_return(service_client_mock)
-        allow(ecs_deployer_mock).to receive(:task).and_return(task_client_mock)
         allow(EcsDeployer::Client).to receive(:new).and_return(ecs_deployer_mock)
 
         ecr_client_mock = double(Genova::Ecr::Client)
         allow(ecr_client_mock).to receive(:push_image)
         allow(ecr_client_mock).to receive(:destroy_images)
         allow(Genova::Ecr::Client).to receive(:new).and_return(ecr_client_mock)
+
+        allow(EcsDeployer::Task::Client).to receive(:new).and_return(task_client_mock)
 
         docker_client_mock = double(Genova::Docker::Client)
         allow(docker_client_mock).to receive(:build_image).and_return(['repository_name'])
@@ -42,5 +43,5 @@ module Genova
         end
       end
     end
-  end
+ end
 end
