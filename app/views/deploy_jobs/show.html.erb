@@ -56,9 +56,25 @@
       <div class="columns">
         <div class="column is-2">Cluster</div>
         <div class="column is-4"><%= @deploy_job.cluster %></div>
-        <div class="column is-2">Service</div>
-        <div class="column is-4"><%= @deploy_job.service %></div>
+        <% if @deploy_job.service.present? %>
+          <div class="column is-2">Service</div>
+          <div class="column is-4"><%= @deploy_job.service %></div>
+        <% end %>
       </div>
+      <% if @deploy_job.type == DeployJob.type.find_value(:run_task) %>
+        <div class="columns">
+          <div class="column is-2">Run task</div>
+          <div class="column is-4"><%= @deploy_job.run_task %></div>
+        </div>
+      <% end %>
+      <% if @deploy_job.type == DeployJob.type.find_value(:scheduled_task) %>
+        <div class="columns">
+          <div class="column is-2">Scheduled task rule</div>
+          <div class="column is-4"><%= @deploy_job.scheduled_task_rule %></div>
+          <div class="column is-2">Scheduled task target</div>
+          <div class="column is-4"><%= @deploy_job.scheduled_task_target %></div>
+        </div>
+      <% end %>
       <% if @deploy_job.mode == DeployJob.mode.find_value(:slack) %>
         <div class="columns">
           <div class="column is-2">
@@ -85,7 +101,7 @@
               <% if @deploy_job.task_definition_arns[:scheduled_task_definition_arns].present? %>
                 <% @deploy_job.task_definition_arns[:scheduled_task_definition_arns].each do |rule| %>
                   <% rule[:targets_arns].each do |targets_arn| %>
-                    <li>(<%= rule[:rule] %>:<%= targets_arn[:target] %>) <%= targets_arn[:task_definition_arn] %></li>
+                    <li><%= targets_arn[:task_definition_arn] %></li>
                   <% end %>
                 <% end %>
               <% end %>
