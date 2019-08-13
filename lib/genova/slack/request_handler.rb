@@ -122,20 +122,25 @@ module Genova
               ]
             }
 
+            split = selected_target.split(':')
+            type = split[0].to_sym
+
             params = {
               account: @callback[:account],
               repository: @callback[:repository],
               branch: @callback[:branch],
-              cluster: @callback[:cluster]
+              cluster: @callback[:cluster],
+              type: DeployJob.type.find_value(type)
             }
 
-            split = selected_target.split(':')
-
-            if split[0] == 'service'
-              params[:service] = split[1]
-            elsif split[0] == 'scheduled_task'
-              params[:scheduled_task_rule] = split[1]
-              params[:scheduled_task_target] = split[2]
+            case type
+              when :run_task
+                params[:run_task] = split[1]
+              when :service
+                params[:service] = split[1]
+              when :scheduled_task
+                params[:scheduled_task_rule] = split[1]
+                params[:scheduled_task_target] = split[2]
             end
 
             id = Genova::Sidekiq::Queue.add(params)
@@ -224,6 +229,7 @@ module Genova
                              repository: @callback[:repository],
                              branch: @callback[:branch],
                              cluster: @callback[:cluster],
+                             run_task: @callback[:run_task],
                              service: @callback[:service],
                              scheduled_task_rule: @callback[:scheduled_task_rule],
                              scheduled_task_target: @callback[:scheduled_task_target])
