@@ -380,7 +380,7 @@ module Genova
           end
 
           fields << {
-            title: 'New task definition ARN (Scheduled task)',
+            title: 'New task definition ARN',
             value: escape_emoji(task_definition_arns.join("\n")),
             short: false
           }
