@@ -864,6 +864,7 @@ GEM
     grape_logging (1.8.1)
       grape
       rack
+    hash_validator (1.0.0)
     hashdiff (0.3.8)
     hashie (3.6.0)
     health_check (3.0.0)
@@ -1120,6 +1121,7 @@ DEPENDENCIES
   git
   grape (~> 1.1.0)
   grape_logging
+  hash_validator
   health_check
   highline
   json-schema

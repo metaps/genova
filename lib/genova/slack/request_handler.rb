@@ -176,12 +176,18 @@ module Genova
               ]
             }
 
-            if params[:service].present?
+            case params[:type]
+            when DeployJob.type.find_value(:run_task)
+              result[:fields] << {
+                title: 'Run task',
+                value: params[:run_task]
+              }
+            when DeployJob.type.find_value(:service)
               result[:fields] << {
                 title: 'Service',
                 value: params[:service]
               }
-            else
+            when DeployJob.type.find_value(:scheduled_task)
               result[:fields] << {
                 title: 'Scheduled task rule',
                 value: params[:scheduled_task_rule]
@@ -221,6 +227,7 @@ module Genova
             id = DeployJob.generate_id
 
             DeployJob.create(id: id,
+                             type: @callback[:type],
                              status: DeployJob.status.find_value(:in_progress).to_s,
                              mode: DeployJob.mode.find_value(:slack).to_s,
                              slack_user_id: @payload_body[:user][:id],
