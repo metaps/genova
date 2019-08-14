@@ -187,18 +187,20 @@ module Genova
             }
           ]
 
-          if params[:run_task].present?
+          case params[:type]
+          when DeployJob.type.find_value(:run_task)
             fields << {
               title: 'Run task',
               value: params[:run_task]
             }
 
-          elsif params[:service].present?
+          when DeployJob.type.find_value(:service)
             fields << {
               title: 'Service',
               value: params[:service]
             }
-          else
+
+          when DeployJob.type.find_value(:scheduled_task)
             fields << {
               title: 'Scheduled task rule',
               value: params[:scheduled_task_rule]
