@@ -35,12 +35,12 @@ module Genova
       @logger.info("Deploy target commit: #{@deploy_job.commit_id}")
 
       task_definition_arns = case @deploy_job.type
-                                when DeployJob.type.find_value(:run_task)
-                                  @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.tag)
-                                when DeployJob.type.find_value(:service)
-                                  [@ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)]
-                                when DeployJob.type.find_value(:scheduled_task)
-                                  @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
+                             when DeployJob.type.find_value(:run_task)
+                               @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.tag)
+                             when DeployJob.type.find_value(:service)
+                               [@ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)]
+                             when DeployJob.type.find_value(:scheduled_task)
+                               @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
                              end
 
       if Settings.github.tag

@@ -47,11 +47,11 @@ class DeployJob
     self.branch = params[:branch] || Settings.github.default_branch
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
 
-    if self.run_task.present?
+    if run_task.present?
       self.type = DeployJob.type.find_value(:run_task)
-    elsif self.service.present?
+    elsif service.present?
       self.type = DeployJob.type.find_value(:service)
-    elsif self.scheduled_task_rule.present? && self.scheduled_task_target.present?
+    elsif scheduled_task_rule.present? && scheduled_task_target.present?
       self.type = DeployJob.type.find_value(:scheduled_task)
     end
   end
@@ -80,7 +80,7 @@ class DeployJob
   private
 
   def check_deploy_target
-    return if self.type.present?
+    return if type.present?
 
     errors[:base] << 'Please specify deploy type.'
   end

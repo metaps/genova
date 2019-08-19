@@ -73,8 +73,8 @@ services:
       dockerfile: docker/node/Dockerfile
     volumes:
       - .:/app
-      - node_modules:/app/frontend/node_modules
-      - assets:/app/public/assets
+      - node_modules:/app/frontend/node_modules:delegated
+      - assets:/app/public/assets:delegated
   mongo:
     container_name: genova-mongo
     image: mongo:3.4

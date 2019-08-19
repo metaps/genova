@@ -134,13 +134,13 @@ module Genova
             }
 
             case type
-              when :run_task
-                params[:run_task] = split[1]
-              when :service
-                params[:service] = split[1]
-              when :scheduled_task
-                params[:scheduled_task_rule] = split[1]
-                params[:scheduled_task_target] = split[2]
+            when :run_task
+              params[:run_task] = split[1]
+            when :service
+              params[:service] = split[1]
+            when :scheduled_task
+              params[:scheduled_task_rule] = split[1]
+              params[:scheduled_task_target] = split[2]
             end
 
             id = Genova::Sidekiq::Queue.add(params)
