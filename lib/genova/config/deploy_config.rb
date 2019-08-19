@@ -34,7 +34,7 @@ module Genova
       end
 
       def target(target)
-        values = (@params[:targets] || []).find{ |k| k[:name] == target }
+        values = (@params[:targets] || []).find { |k| k[:name] == target }
         raise Genova::Config::ValidationError, "Target is undefined. [#{target}]" if values.nil?
 
         values
