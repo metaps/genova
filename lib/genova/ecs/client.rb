@@ -36,7 +36,7 @@ module Genova
         options.merge!(run_task_config[:ecs_configuration] || {})
 
         run_task_response = @ecs_client.run_task(options)
-        run_task_response[:tasks].map{ |key| key[:task_definition_arn] }
+        run_task_response[:tasks].map { |key| key[:task_definition_arn] }
       end
 
       def deploy_service(service, tag)
