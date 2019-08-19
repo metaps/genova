@@ -64,9 +64,7 @@ module Genova
               :run_task => String
             }
 
-            values = parse_expressions(expressions)
-            validate(values, validations)
-            values
+            parse_expressions(expressions, validations)
           end
 
           def parse_service(expressions)
@@ -78,9 +76,7 @@ module Genova
               :service => String
             }
 
-            values = parse_expressions(expressions)
-            validate(values, validations)
-            values
+            parse_expressions(expressions, validations)
           end
 
           def parse_scheduled_task(expressions)
@@ -93,28 +89,36 @@ module Genova
               :scheduled_task_target => String
             }
 
-            values = parse_expressions(expressions)
-            validate(values, validations)
-            values
+            parse_expressions(expressions, validations)
           end
 
-          def validate(values, validations)
+          def validate!(values, validations)
             validator = HashValidator.validate(values, validations)
             raise InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.values[0]}" unless validator.valid?
           end
 
-          def parse_expressions(expressions)
+          def parse_expressions(expressions, validations)
             values = expressions[0].split(':')
             results = {
               :account => Settings.github.account,
               :repository => values[0],
-              :branch => values[1]
+              :branch => values[1] || Settings.github.default_branch
             }
 
             expressions[1..-1].each do |expression|
               values = expression.split('=')
               results[values[0].gsub('-', '_').to_sym] = values[1]
             end
+
+            if results.include?(:target)
+              manager = Genova::Git::RepositoryManager.new(results[:account], results[:repository], results[:branch])
+              target = manager.load_deploy_config.target(results[:target])
+
+              results.merge!(target)
+              results.delete(results[:target])
+            end
+
+            validate!(results, validations)
 
             results
           end
