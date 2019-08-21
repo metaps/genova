@@ -43,7 +43,10 @@ class GenovaDeploy < Thor
   option :run_task, required: true, aliases: :t, desc: 'Task name.'
   option :repository, required: true, aliases: :r, desc: 'Repository name.'
   def run_task
-    deploy(options.to_hash.symbolize_keys)
+    hash_options = options.to_hash.symbolize_keys
+    hash_options[:type] = DeployJob.type.find_value(:run_task)
+
+    deploy(hash_options)
   end
 
   desc 'service', 'Deploy service to ECS'
@@ -52,7 +55,10 @@ class GenovaDeploy < Thor
   option :service, required: true, aliases: :s, desc: 'Service name.'
   option :target, aliases: :t, desc: 'Deploy by specifying target.'
   def service
-    deploy(options.to_hash.symbolize_keys)
+    hash_options = options.to_hash.symbolize_keys
+    hash_options[:type] = DeployJob.type.find_value(:service)
+
+    deploy(hash_options)
   end
 
   desc 'scheduled-task', 'Deploy scheduled task to ECS'
@@ -62,6 +68,9 @@ class GenovaDeploy < Thor
   option :repository, required: true, aliases: :r, desc: 'Repository name.'
   option :target, aliases: :t, desc: 'Deploy by specifying target.'
   def scheduled_task
-    deploy(options.to_hash.symbolize_keys)
+    hash_options = options.to_hash.symbolize_keys
+    hash_options[:type] = DeployJob.type.find_value(:scheduled_task)
+
+    deploy(hash_options)
   end
 end
