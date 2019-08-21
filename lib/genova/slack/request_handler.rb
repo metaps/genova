@@ -228,8 +228,8 @@ module Genova
 
             DeployJob.create(id: id,
                              type: @callback[:type],
-                             status: DeployJob.status.find_value(:in_progress).to_s,
-                             mode: DeployJob.mode.find_value(:slack).to_s,
+                             status: DeployJob.status.find_value(:in_progress),
+                             mode: DeployJob.mode.find_value(:slack),
                              slack_user_id: @payload_body[:user][:id],
                              slack_user_name: @payload_body[:user][:name],
                              account: @callback[:account],
