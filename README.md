@@ -26,19 +26,6 @@ This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
 
-### Genova console
-
-Genova provides web console.
-
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
-
-You can check deployment status.
-
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
-
-
-Please open http://localhost:3000/ in the browser.
-
 ## Usage
 
 Please refer to [Wiki](https://github.com/metaps/genova/wiki).
