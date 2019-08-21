@@ -7,7 +7,7 @@
 
 ## Description
 
-genova provides feature to deploy and manage applications on AWS ECS.
+genova provides feature to deploy and manage applications on [AWS ECS](https://aws.amazon.com/ecs/).
 
 ## Usage and documentation
 
