@@ -6,7 +6,7 @@ git_source(:github) do |repo_name|
 end
 
 gem 'aws-sdk', '~> 3.0.1'
-gem 'bootsnap'
+gem 'bootsnap', require: false
 gem 'config'
 gem 'docker-api'
 gem 'ecs_deployer', '~> 2.3.1'
@@ -31,6 +31,7 @@ gem 'redis'
 gem 'rest-client'
 gem 'sidekiq'
 gem 'slack-ruby-bot-server', '~> 0.11.1'
+gem 'thor'
 gem 'tzinfo-data'
 
 group :development, :test do
