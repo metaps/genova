@@ -32,7 +32,7 @@ class DeployJob
   field :tag, type: String
 
   validates :mode, :account, :repository, :cluster, :ssh_secret_key_path, presence: true
-  validate :check_deploy_target
+  validate :check_type
   validate :check_ssh_secret_key_path
 
   def self.generate_id
@@ -71,10 +71,8 @@ class DeployJob
 
   private
 
-  def check_deploy_target
-    return if type.present?
-
-    errors[:base] << 'Please specify deploy type.'
+  def check_type
+    errors[:base] << 'Please specify deploy type.' unless type.present?
   end
 
   def check_ssh_secret_key_path
