@@ -48,7 +48,7 @@ module Genova
         ::Git.clone(uri, '', path: @repos_path)
       end
 
-      def update
+      def pull
         clone
 
         @logger.info("Git checkout: #{@branch}")
@@ -63,7 +63,7 @@ module Genova
       end
 
       def load_deploy_config
-        update
+        pull
 
         path = Pathname(@base_path).join('config/deploy.yml')
         raise Genova::Config::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
@@ -118,7 +118,7 @@ module Genova
       end
 
       def release(tag, commit_id)
-        update
+        pull
 
         git = client
         git.add_tag(tag, commit_id)
