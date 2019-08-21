@@ -1,6 +1,6 @@
 # genova
 
-genova supports the following features:
+genova provides feature to deploy and manage applications on AWS ECS.
 
 [![CircleCI](https://circleci.com/gh/metaps/genova.svg?style=shield)](https://circleci.com/gh/metaps/genova)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b1d9269868e13bd658a2/maintainability)](https://codeclimate.com/github/metaps/genova/maintainability)
