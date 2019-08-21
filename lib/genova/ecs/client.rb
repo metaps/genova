@@ -70,9 +70,7 @@ module Genova
         count = 0
 
         containers_config.each do |container_config|
-          repository_name = @docker_client.build_image(container_config, path)
-          @ecr_client.push_image(tag, repository_name)
-
+          @ecr_client.push_image(tag, @docker_client.build_image(container_config, path))
           count += 1
         end
 

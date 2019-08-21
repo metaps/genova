@@ -89,8 +89,8 @@ shared_context 'load repository_manager_mock' do
     Genova::Config::TaskDefinitionConfig.new(
       container_definitions: [
         {
-          name: 'app',
-          image: 'xxx/app:revision_tag'
+          name: 'nginx',
+          image: 'xxx/nginx:revision_tag'
         }
       ]
     )
