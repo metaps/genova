@@ -19,7 +19,7 @@ module Genova
 
       def ready
         @ecr_client.authenticate
-        @repository_manager.update
+        @repository_manager.pull
       end
 
       def deploy_run_task(run_task, tag)

@@ -16,7 +16,7 @@ module Genova
         end
       end
 
-      describe 'update' do
+      describe 'pull' do
         let(:git_mock) { double(::Git) }
 
         it 'should be get latest source' do
@@ -29,13 +29,13 @@ module Genova
           allow(git_mock).to receive(:log)
           allow(repository_manager).to receive(:client).and_return(git_mock)
 
-          expect { repository_manager.update }.to_not raise_error
+          expect { repository_manager.pull }.to_not raise_error
         end
       end
 
       describe 'load_deploy_config' do
         it 'should be return config' do
-          allow(repository_manager).to receive(:update)
+          allow(repository_manager).to receive(:pull)
           allow(File).to receive(:exist?).and_return(true)
           allow(File).to receive(:read).and_return('{}')
 
