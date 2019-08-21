@@ -24,8 +24,6 @@ This package provides [AWS ECS](https://aws.amazon.com/ecs/) deployment function
   * Support scheduled event
   * Tagging GitHub
 
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
-
 ## Usage
 
 Please refer to [Wiki](https://github.com/metaps/genova/wiki).
