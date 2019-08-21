@@ -77,12 +77,8 @@
       <% end %>
       <% if @deploy_job.mode == DeployJob.mode.find_value(:slack) %>
         <div class="columns">
-          <div class="column is-2">
-            Slack user
-          </div>
-          <div class="column is-4">
-            <%= @deploy_job.slack_user_name %>
-          </div>
+          <div class="column is-2">Slack user</div>
+          <div class="column is-4"><%= @deploy_job.slack_user_name %></div>
         </div>
       <% end %>
       <% if @deploy_job.task_definition_arns.present? %>
