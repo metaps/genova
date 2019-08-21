@@ -12,11 +12,11 @@ module Genova
 
           *Execute run task*
           - `deploy:run-task <repository>[:<branch>] cluster=<cluster> run-task=<run task>` Run statement mode.
-          - `deploy:run-task <repository>[:<branch>] target=<target>` Specify target and run task.
+          - `deploy:run-task <repository>[:<branch>] target=<target>` Specify target and run statement mode.
 
           *Scheduled task deploy*
           - `deploy:scheduled-task <repository>[:<branch>] cluster=<cluster> scheduled-task-rule=<scheduled task rule> scheduled-task-target=<scheduled task target>` Run statement mode.
-          - `deploy:scheduled-task <repository>[:<branch>] target=<target>` Specify target and run scheduled task.
+          - `deploy:scheduled-task <repository>[:<branch>] target=<target>` Specify target and run statement mode.
 
           *Util*
           - `help` Get helpful message.
