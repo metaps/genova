@@ -1145,6 +1145,7 @@ DEPENDENCIES
   slack-ruby-bot-server (~> 0.11.1)
   spring
   spring-watcher-listen
+  thor
   tzinfo-data
   vcr
   webmock
