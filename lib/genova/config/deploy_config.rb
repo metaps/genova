@@ -5,12 +5,12 @@ module Genova
         schema = File.read(Rails.root.join('lib', 'genova', 'config', 'validator', 'deploy_config.json'))
         errors = JSON::Validator.fully_validate(schema, @params)
 
-        raise ::Genova::Config::ValidationError, errors[0] if errors.size.positive?
+        raise Exceptions::ValidationError, errors[0] if errors.size.positive?
       end
 
       def cluster(cluster)
         values = (@params[:clusters] || []).find { |k| k[:name] == cluster }
-        raise Genova::Config::ValidationError, "Cluster is undefined. [#{cluster}]" if values.nil?
+        raise Exceptions::ValidationError, "Cluster is undefined. [#{cluster}]" if values.nil?
 
         values
       end
@@ -19,7 +19,7 @@ module Genova
         run_tasks = cluster(cluster)[:run_tasks] || {}
         values = run_tasks[run_task.to_sym]
 
-        raise Genova::Config::ValidationError, "Run task is undefined. [#{run_task}]" if values.nil?
+        raise Exceptions::ValidationError, "Run task is undefined. [#{run_task}]" if values.nil?
 
         values
       end
@@ -28,14 +28,14 @@ module Genova
         services = cluster(cluster)[:services] || {}
         values = services[service.to_sym]
 
-        raise Genova::Config::ValidationError, "Service is undefined. [#{service}]" if values.nil?
+        raise Exceptions::ValidationError, "Service is undefined. [#{service}]" if values.nil?
 
         values
       end
 
       def target(target)
         values = (@params[:targets] || []).find { |k| k[:name] == target }
-        raise Genova::Config::ValidationError, "Target is undefined. [#{target}]" if values.nil?
+        raise Exceptions::ValidationError, "Target is undefined. [#{target}]" if values.nil?
 
         values
       end

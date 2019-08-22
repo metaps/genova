@@ -12,7 +12,5 @@ module Genova
 
       def validate!; end
     end
-
-    class ValidationError < Error; end
   end
 end
