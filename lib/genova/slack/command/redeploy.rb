@@ -24,14 +24,12 @@ module Genova
                 confirm: true
               )
             else
-              e = RedeployError.new('History does not exist.')
+              e = Exceptions::NotFoundError.new('History does not exist.')
               bot.post_error(error: e, slack_user_id: data.user)
             end
           end
         end
       end
-
-      class RedeployError < Error; end
     end
   end
 end
