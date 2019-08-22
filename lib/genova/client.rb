@@ -12,6 +12,10 @@ module Genova
       @logger.level = @options[:verbose] ? :debug : :info
       @logger.info('Initiaized deploy client.')
 
+      if ENV['GITHUB_ACCOUNT'].nil?
+        @logger.warn('"github.account" parameter is deprecated. Set the environment variable "GITHUB_ACCOUNT" instead.')
+      end
+
       @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
       @repository_manager = Genova::Git::RepositoryManager.new(
