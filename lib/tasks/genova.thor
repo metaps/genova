@@ -12,8 +12,8 @@ module GenovaCli
         return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
 
         if options[:target].present?
-          manager = ::Genova::Git::RepositoryManager.new(options[:account], options[:repository], options[:branch])
-          options.merge!(manager.load_deploy_config.target(options[:target]))
+          client = ::Genova::App::Client.new(options[:account], options[:repository], options[:branch])
+          options.merge!(client.load_deploy_config.target(options[:target]))
         end
 
         deploy_job = DeployJob.new(
@@ -112,8 +112,8 @@ module GenovaCli
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
     option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
     def git_pull
-      manager = ::Genova::Git::RepositoryManager.new(options[:account], options[:repository], options[:branch])
-      commit_id = manager.pull
+      client = ::Genova::App::Client.new(options[:account], options[:repository], options[:branch])
+      commit_id = client.pull
 
       puts "Commit ID: #{commit_id}"
     end
@@ -139,9 +139,9 @@ module GenovaCli
     option :path, required: true, desc: 'Task path.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def register_task
-      repository_manager = ::Genova::Git::RepositoryManager.new(options[:account], options[:repository], options[:branch])
-      repository_manager.pull
-      path = repository_manager.task_definition_config_path(options[:path])
+      app_client = ::Genova::App::Client.new(options[:account], options[:repository], options[:branch])
+      app_client.pull
+      path = app_client.task_definition_config_path(options[:path])
       task = EcsDeployer::Task::Client.new.register(path, tag: 'latest')
 
       puts("Registered task. [#{task.task_definition_arn}]")

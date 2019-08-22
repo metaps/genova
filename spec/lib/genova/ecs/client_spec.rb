@@ -33,10 +33,10 @@ module Genova
       end
 
       describe 'deploy_service' do
-        include_context 'load repository_manager_mock'
+        include_context 'load app_client_mock'
 
-        let(:repository_manager) { Genova::Git::RepositoryManager.new('account', 'repository', 'master') }
-        let(:client)  { Genova::Ecs::Client.new('cluster', repository_manager) }
+        let(:app_client) { Genova::App::Client.new('account', 'repository', 'master') }
+        let(:client)  { Genova::Ecs::Client.new('cluster', app_client) }
 
         it 'should be return Aws::ECS::Types::TaskDefinition' do
           expect(client.deploy_service('service', 'tag_revision')).to eq('task_definition_arn')

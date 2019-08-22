@@ -26,7 +26,7 @@ module Genova
       end
 
       describe 'post_choose_cluster' do
-        include_context 'load repository_manager_mock'
+        include_context 'load app_client_mock'
 
         it 'should be not error' do
           expect { bot.post_choose_cluster({}) }.not_to raise_error
@@ -58,7 +58,7 @@ module Genova
         end
 
         let(:github_client_mock) { double(Genova::Github::Client) }
-        include_context 'load repository_manager_mock'
+        include_context 'load app_client_mock'
 
         let(:ecs_client_mock) { double(Aws::ECS::Client) }
         let(:describe_services_response_mock) { double(Aws::ECS::Types::DescribeServicesResponse) }
