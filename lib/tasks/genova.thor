@@ -1,6 +1,6 @@
 module GenovaCli
   class Deploy < Thor
-    class_option :account, default: Settings.github.account, desc: 'GitHub account name'
+    class_option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account name'
     class_option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'Ignore deploy lock and force deploy.'
     class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
@@ -85,7 +85,7 @@ module GenovaCli
     end
 
     desc 'emulate-github-push', 'Emulate GitHub push'
-    option :account, required: false, default: Settings.github.account, desc: 'GitHub account'
+    option :account, required: false, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
     option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
     def emulate_github_push
@@ -108,7 +108,7 @@ module GenovaCli
     end
 
     desc 'git-pull', 'Retrieve latest source'
-    option :account, required: false, default: Settings.github.account, desc: 'GitHub account'
+    option :account, required: false, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
     option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
     def git_pull
@@ -134,7 +134,7 @@ module GenovaCli
     end
 
     desc 'register-task', 'Register task definition.'
-    option :account, default: Settings.github.account, desc: 'GitHub account name'
+    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account name'
     option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
     option :path, required: true, desc: 'Task path.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'

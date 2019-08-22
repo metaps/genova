@@ -100,7 +100,7 @@ module Genova
           def parse_expressions(expressions, validations)
             values = expressions[0].split(':')
             results = {
-              account: Settings.github.account,
+              account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account),
               repository: values[0],
               branch: values[1] || Settings.github.default_branch
             }
