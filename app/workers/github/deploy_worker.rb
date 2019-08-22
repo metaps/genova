@@ -14,8 +14,9 @@ module Github
 
       deploy_job = DeployJob.create(
         id: id,
-        status: DeployJob.status.find_value(:in_progress).to_s,
-        mode: DeployJob.mode.find_value(:auto).to_s,
+        type: DeployJob.type.find_value(:service),
+        status: DeployJob.status.find_value(:in_progress),
+        mode: DeployJob.mode.find_value(:auto),
         account: job[:account],
         repository: job[:repository],
         branch: job[:branch],

@@ -187,12 +187,20 @@ module Genova
             }
           ]
 
-          if params[:service].present?
+          case params[:type]
+          when DeployJob.type.find_value(:run_task)
+            fields << {
+              title: 'Run task',
+              value: params[:run_task]
+            }
+
+          when DeployJob.type.find_value(:service)
             fields << {
               title: 'Service',
               value: params[:service]
             }
-          else
+
+          when DeployJob.type.find_value(:scheduled_task)
             fields << {
               title: 'Scheduled task rule',
               value: params[:scheduled_task_rule]
@@ -207,24 +215,27 @@ module Genova
         end
 
         callback_id = Genova::Slack::CallbackIdManager.create('execute_deploy', params)
-        fields = []
 
-        latest_commit_id = git_latest_commit_id(params)
-        deployed_commit_id = git_deployed_commit_id(params)
+        unless params[:type] == DeployJob.type.find_value(:run_task)
+          fields = []
 
-        value = if latest_commit_id == deployed_commit_id
-                  'Commit ID is unchanged.'
-                elsif deployed_commit_id.present?
-                  github_client = Genova::Github::Client.new(params[:account], params[:repository])
-                  "<#{github_client.build_compare_uri(deployed_commit_id, latest_commit_id)}|#{deployed_commit_id}...#{latest_commit_id}>"
-                end
+          latest_commit_id = git_latest_commit_id(params)
+          deployed_commit_id = git_deployed_commit_id(params)
 
-        if value.present?
-          fields << {
-            title: 'Git compare',
-            value: value,
-            short: true
-          }
+          value = if latest_commit_id == deployed_commit_id
+                    'Commit ID is unchanged.'
+                  elsif deployed_commit_id.present?
+                    github_client = Genova::Github::Client.new(params[:account], params[:repository])
+                    "<#{github_client.build_compare_uri(deployed_commit_id, latest_commit_id)}|#{deployed_commit_id}...#{latest_commit_id}>"
+                  end
+
+          if value.present?
+            fields << {
+              title: 'Git compare',
+              value: value,
+              short: true
+            }
+          end
         end
 
         @client.chat_postMessage(
@@ -360,31 +371,11 @@ module Genova
       end
 
       def post_finished_deploy(deploy_job)
-        fields = []
-
-        if deploy_job.task_definition_arns[:service_task_definition_arn].present?
-          fields << {
-            title: 'New task definition ARN (Service)',
-            value: escape_emoji(deploy_job.task_definition_arns[:service_task_definition_arn]),
-            short: false
-          }
-        end
-
-        if deploy_job.task_definition_arns[:scheduled_task_definition_arns].present?
-          task_definition_arns = []
-
-          deploy_job.task_definition_arns[:scheduled_task_definition_arns].each do |rule|
-            rule[:targets_arns].each do |targets_arn|
-              task_definition_arns << "(#{rule[:rule]}:#{targets_arn[:target]}) #{targets_arn[:task_definition_arn]}"
-            end
-          end
-
-          fields << {
-            title: 'New task definition ARN (Scheduled task)',
-            value: escape_emoji(task_definition_arns.join("\n")),
-            short: false
-          }
-        end
+        fields = [{
+          title: 'New task definition ARN',
+          value: escape_emoji(deploy_job.task_definition_arns.join("\n")),
+          short: false
+        }]
 
         if deploy_job.tag.present?
           github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)

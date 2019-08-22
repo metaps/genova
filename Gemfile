@@ -6,14 +6,15 @@ git_source(:github) do |repo_name|
 end
 
 gem 'aws-sdk', '~> 3.0.1'
-gem 'bootsnap'
+gem 'bootsnap', require: false
 gem 'config'
 gem 'docker-api'
-gem 'ecs_deployer', '~> 2.2.2'
+gem 'ecs_deployer', '~> 2.3.1'
 gem 'enumerize'
 gem 'git'
 gem 'grape', '~> 1.1.0'
 gem 'grape_logging'
+gem 'hash_validator'
 gem 'health_check'
 gem 'highline'
 gem 'json-schema'

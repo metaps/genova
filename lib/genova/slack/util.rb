@@ -57,11 +57,21 @@ module Genova
         end
 
         def target_options(account, repository, branch, cluster)
+          run_task_options = []
           service_options = []
           scheduled_task_options = []
 
           repository_manager = Genova::Git::RepositoryManager.new(account, repository, branch)
           cluster_config = repository_manager.load_deploy_config.cluster(cluster)
+
+          if cluster_config[:run_tasks].present?
+            cluster_config[:run_tasks].keys.each do |run_task|
+              run_task_options.push(
+                text: run_task,
+                value: "run_task:#{run_task}"
+              )
+            end
+          end
 
           if cluster_config[:services].present?
             cluster_config[:services].keys.each do |service|
@@ -85,6 +95,10 @@ module Genova
           end
 
           [
+            {
+              text: 'Run task',
+              options: run_task_options
+            },
             {
               text: 'Service',
               options: service_options

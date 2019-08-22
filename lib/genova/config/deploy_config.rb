@@ -15,6 +15,15 @@ module Genova
         values
       end
 
+      def run_task(cluster, run_task)
+        run_tasks = cluster(cluster)[:run_tasks] || {}
+        values = run_tasks[run_task.to_sym]
+
+        raise Genova::Config::ValidationError, "Run task is undefined. [#{run_task}]" if values.nil?
+
+        values
+      end
+
       def service(cluster, service)
         services = cluster(cluster)[:services] || {}
         values = services[service.to_sym]
@@ -25,7 +34,7 @@ module Genova
       end
 
       def target(target)
-        values = (@params[:targets] || []).find{ |k| k[:name] == target }
+        values = (@params[:targets] || []).find { |k| k[:name] == target }
         raise Genova::Config::ValidationError, "Target is undefined. [#{target}]" if values.nil?
 
         values

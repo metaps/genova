@@ -18,13 +18,14 @@ module Genova
 
         ecs_deployer_mock = double(EcsDeployer::Client)
         allow(ecs_deployer_mock).to receive(:service).and_return(service_client_mock)
-        allow(ecs_deployer_mock).to receive(:task).and_return(task_client_mock)
         allow(EcsDeployer::Client).to receive(:new).and_return(ecs_deployer_mock)
 
         ecr_client_mock = double(Genova::Ecr::Client)
         allow(ecr_client_mock).to receive(:push_image)
         allow(ecr_client_mock).to receive(:destroy_images)
         allow(Genova::Ecr::Client).to receive(:new).and_return(ecr_client_mock)
+
+        allow(EcsDeployer::Task::Client).to receive(:new).and_return(task_client_mock)
 
         docker_client_mock = double(Genova::Docker::Client)
         allow(docker_client_mock).to receive(:build_image).and_return(['repository_name'])
@@ -38,7 +39,7 @@ module Genova
         let(:client)  { Genova::Ecs::Client.new('cluster', repository_manager) }
 
         it 'should be return Aws::ECS::Types::TaskDefinition' do
-          expect(client.deploy_service('service', 'tag_revision')).to eq(service_task_definition_arn: 'task_definition_arn', scheduled_task_definition_arns: [])
+          expect(client.deploy_service('service', 'tag_revision')).to eq('task_definition_arn')
         end
       end
     end

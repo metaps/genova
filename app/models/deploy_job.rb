@@ -4,10 +4,12 @@ class DeployJob
 
   extend Enumerize
 
+  enumerize :type, in: %i[run_task service scheduled_task]
   enumerize :status, in: %i[in_progress success failure]
   enumerize :mode, in: %i[manual auto slack]
 
   field :id, type: String
+  field :type, type: String
   field :status, type: String
   field :mode, type: String
   field :slack_user_id, type: String
@@ -17,19 +19,20 @@ class DeployJob
   field :branch, type: String
   field :commit_id, type: String
   field :cluster, type: String
+  field :run_task, type: String
   field :service, type: String
   field :scheduled_task_rule, type: String
   field :scheduled_task_target, type: String
   field :ssh_secret_key_path, type: String
   field :logs, type: Array
-  field :task_definition_arns, type: Hash
+  field :task_definition_arns, type: Array
   field :started_at, type: Time
   field :finished_at, type: Time
   field :execution_time, type: Float
   field :tag, type: String
 
   validates :mode, :account, :repository, :cluster, :ssh_secret_key_path, presence: true
-  validate :check_deploy_target
+  validate :check_type
   validate :check_ssh_secret_key_path
 
   def self.generate_id
@@ -68,10 +71,8 @@ class DeployJob
 
   private
 
-  def check_deploy_target
-    return if service.present? || (scheduled_task_rule.present? && scheduled_task_target.present?)
-
-    errors[:base] << 'Please specify deploy service or schedule task.'
+  def check_type
+    errors[:base] << 'Please specify deploy type.' unless type.present?
   end
 
   def check_ssh_secret_key_path

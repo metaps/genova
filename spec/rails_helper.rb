@@ -77,7 +77,7 @@ shared_context 'load repository_manager_mock' do
           name: 'cluster',
           services: {
             service: {
-              containers: [{ name: 'rails', 'build': {}}],
+              containers: [{ name: 'rails', 'build': {} }],
               path: 'path'
             }
           }
@@ -89,8 +89,8 @@ shared_context 'load repository_manager_mock' do
     Genova::Config::TaskDefinitionConfig.new(
       container_definitions: [
         {
-          name: 'app',
-          image: 'xxx/app:revision_tag'
+          name: 'nginx',
+          image: 'xxx/nginx:revision_tag'
         }
       ]
     )
@@ -105,7 +105,7 @@ shared_context 'load repository_manager_mock' do
     allow(repository_manager_mock).to receive(:repos_path).and_return('repos_path')
     allow(repository_manager_mock).to receive(:task_definition_config_path)
     allow(repository_manager_mock).to receive(:origin_last_commit_id)
-    allow(repository_manager_mock).to receive(:update)
+    allow(repository_manager_mock).to receive(:pull)
     allow(repository_manager_mock).to receive(:release)
     allow(repository_manager_mock).to receive(:find_commit_id)
 
