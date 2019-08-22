@@ -78,6 +78,4 @@ class DeployJob
   def check_ssh_secret_key_path
     errors.add(:ssh_secret_key_path, "Private key does not exist. [#{ssh_secret_key_path}]") unless File.exist?(ssh_secret_key_path)
   end
-
-  class ValidateError < Genova::Error; end
 end

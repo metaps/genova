@@ -12,7 +12,7 @@ class ApplicationController < ActionController::Base
     logger.fatal(error.to_s)
     logger.fatal(error.backtrace)
 
-    @title = '500 Internal Server Error'
+    @title = '500 Internal Server error'
     render template: 'errors/error', status: 500, layout: 'application'
   end
 end
