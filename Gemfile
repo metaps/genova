@@ -31,7 +31,6 @@ gem 'redis'
 gem 'rest-client'
 gem 'sidekiq'
 gem 'slack-ruby-bot-server', '~> 0.11.1'
-gem 'thor'
 gem 'tzinfo-data'
 
 group :development, :test do
