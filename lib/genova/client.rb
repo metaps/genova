@@ -9,7 +9,6 @@ module Genova
       raise Exceptions::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
-      exit
       @logger.level = @options[:verbose] ? :debug : :info
       @logger.info('Initiaized deploy client.')
 
