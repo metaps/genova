@@ -458,7 +458,7 @@ module Genova
       def git_deployed_commit_id(params)
         if params[:service].present?
           services = @ecs.describe_services(cluster: params[:cluster], services: [params[:service]]).services
-          raise Genova::Error, "Service does not exist. [#{params[:service]}]" if services.size.zero?
+          raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
 
           task_definition_arn = services[0].task_definition
         else

@@ -94,7 +94,7 @@ module Genova
 
           def validate!(values, validations)
             validator = HashValidator.validate(values, validations)
-            raise InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.values[0]}" unless validator.valid?
+            raise Exceptions::InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.values[0]}" unless validator.valid?
           end
 
           def parse_expressions(expressions, validations)
@@ -124,8 +124,6 @@ module Genova
           end
         end
       end
-
-      class InvalidArgumentError < Error; end
     end
   end
 end

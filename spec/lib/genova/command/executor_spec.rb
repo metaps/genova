@@ -33,7 +33,7 @@ module Genova
             response << ['stderr']
 
             allow(Open3).to receive(:popen3).and_yield(*response)
-            expect { executor.command('dummy') }.to raise_error(Genova::Command::StandardError)
+            expect { executor.command('dummy') }.to raise_error(Exceptions::OutputError)
           end
         end
 

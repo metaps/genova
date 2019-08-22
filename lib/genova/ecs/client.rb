@@ -50,7 +50,7 @@ module Genova
 
         service_client = @deploy_client.service
 
-        raise Genova::Config::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
+        raise Exceptions::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
 
         service_client.wait_timeout = Settings.deploy.wait_timeout
         service_client.update(service, service_task_definition)
@@ -74,7 +74,7 @@ module Genova
           count += 1
         end
 
-        raise Genova::Config::ValidationError, 'Push image is not found.' if count.zero?
+        raise Exceptions::ValidationError, 'Push image is not found.' if count.zero?
       end
 
       def deploy_scheduled_tasks(tag, options)
@@ -129,7 +129,7 @@ module Genova
           )
         end
 
-        raise Genova::Config::ValidationError, 'Scheduled task target or rule is undefined.' if options[:rule].present? && task_definition_arns.count.zero?
+        raise Exceptions::ValidationError, 'Scheduled task target or rule is undefined.' if options[:rule].present? && task_definition_arns.count.zero?
 
         task_definition_arns
       end
