@@ -6,9 +6,10 @@ module Genova
 
       @deploy_job = deploy_job
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
-      raise DeployJob::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
+      raise Exceptions::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
+      exit
       @logger.level = @options[:verbose] ? :debug : :info
       @logger.info('Initiaized deploy client.')
 
@@ -74,7 +75,7 @@ module Genova
       while @mutex.locked? || !@mutex.lock
         if lock_timeout.nil? || waiting_time >= lock_timeout
           cancel
-          raise DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
+          raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
         end
 
         @logger.warn("Deploy locked. Retry in #{@options[:lock_wait_interval]} seconds.")
@@ -99,7 +100,5 @@ module Genova
     def create_tag(_commit_id)
       "build-#{@deploy_job.id}"
     end
-
-    class DeployLockError < Error; end
   end
 end

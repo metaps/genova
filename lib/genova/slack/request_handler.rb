@@ -10,7 +10,7 @@ module Genova
           @bot = Genova::Slack::Bot.new
           @callback = Genova::Slack::CallbackIdManager.find(@payload_body[:callback_id])
 
-          raise RouteError, "No route. [#{@callback[:action]}]" unless RequestHandler.respond_to?(@callback[:action], true)
+          raise Exceptions::RoutingError, "No route. [#{@callback[:action]}]" unless RequestHandler.respond_to?(@callback[:action], true)
 
           send(@callback[:action])
         end
@@ -255,8 +255,6 @@ module Genova
           }
         end
       end
-
-      class RouteError < Error; end
     end
   end
 end
