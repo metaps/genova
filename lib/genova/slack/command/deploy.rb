@@ -111,8 +111,8 @@ module Genova
             end
 
             if results.include?(:target)
-              manager = Genova::Git::RepositoryManager.new(results[:account], results[:repository], results[:branch])
-              target = manager.load_deploy_config.target(results[:target])
+              app_client = Genova::App::Client.new(results[:account], results[:repository], results[:branch])
+              target = app_client.load_deploy_config.target(results[:target])
 
               results.merge!(target)
               results.delete(results[:target])

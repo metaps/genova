@@ -5,10 +5,10 @@ module Genova
     describe Client do
       describe 'build_image' do
         let(:cipher_mock) { double(EcsDeployer::Util::Cipher) }
-        let(:repository_manager) { Genova::Git::RepositoryManager.new('account', 'repository', 'master') }
-        let(:docker_client) { Genova::Docker::Client.new(repository_manager) }
+        let(:app_client) { Genova::App::Client.new('account', 'repository', 'master') }
+        let(:docker_client) { Genova::Docker::Client.new(app_client) }
 
-        include_context 'load repository_manager_mock'
+        include_context 'load app_client_mock'
 
         it 'should be return repository name' do
           allow(EcsDeployer::Util::Cipher).to receive(:new).and_return(cipher_mock)
