@@ -5,13 +5,13 @@
       <thead>
         <th>ID</th>
         <th>Status</th>
-        <th>Account</th>
         <th>Repository</th>
         <th>Branch</th>
         <th>Commit</th>
+        <th>Mode</th>
+        <th>Type</th>
         <th>Cluster</th>
         <th>Service</th>
-        <th>Mode</th>
         <th>Created at</th>
       </thead>
       <tbody>
@@ -28,7 +28,6 @@
               <% end %>
               <%= deploy_job.status %>
             </td>
-            <td><%= deploy_job.account %></td>
             <td><%= deploy_job.repository %></td>
             <td><%= deploy_job.branch.truncate(24) %></td>
             <td>
@@ -37,9 +36,10 @@
                 <%= link_to(deploy_job.commit_id[0, 7], Genova::Github::Client.new(deploy_job.account, deploy_job.repository).build_commit_uri(deploy_job.commit_id)) %>
               <% end %>
             </td>
+            <td><%= deploy_job.mode %></td>
+            <td><%= deploy_job.type %></td>
             <td><%= deploy_job.cluster %></td>
             <td><%= deploy_job.service %></td>
-            <td><%= deploy_job.mode %></td>
             <td><%= deploy_job.created_at %></td>
           </tr>
         <% end %>

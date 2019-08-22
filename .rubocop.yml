@@ -2,9 +2,10 @@ AllCops:
   Exclude:
   - 'bin/**/*'
   - 'db/**/*'
-  - 'tmp/**/*'
   - 'etc/**/*'
-  TargetRubyVersion: 2.5
+  - 'frontend/node_modules/**/*'
+  - 'tmp/**/*'
+  TargetRubyVersion: 2.6
 
 AsciiComments:
   Enabled: false

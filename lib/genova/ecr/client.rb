@@ -7,7 +7,7 @@ module Genova
         @ecr = Aws::ECR::Client.new
         @registry = Aws::STS::Client.new.get_caller_identity[:account] + '.dkr.ecr.ap-northeast-1.amazonaws.com'
 
-        @logger = params[:logger] || ::Logger.new(STDOUT)
+        @logger = params[:logger] || ::Logger.new(nil)
 
         ::Docker.options[:read_timeout] = Settings.aws.service.ecr.read_timeout
         ::Docker.logger = @logger

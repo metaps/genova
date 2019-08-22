@@ -3,19 +3,20 @@ require 'rails_helper'
 module Genova
   module Docker
     describe Client do
-      let(:repository_manager) { Genova::Git::RepositoryManager.new('account', 'repository', 'master') }
-      let(:docker_client) { Genova::Docker::Client.new(repository_manager) }
+      describe 'build_image' do
+        let(:cipher_mock) { double(EcsDeployer::Util::Cipher) }
+        let(:repository_manager) { Genova::Git::RepositoryManager.new('account', 'repository', 'master') }
+        let(:docker_client) { Genova::Docker::Client.new(repository_manager) }
 
-      describe 'build_images' do
         include_context 'load repository_manager_mock'
 
-        it 'should be return repository names' do
-          containers_config = [
-            {
-              name: 'app',
-              build: '.'
-            }
-          ]
+        it 'should be return repository name' do
+          allow(EcsDeployer::Util::Cipher).to receive(:new).and_return(cipher_mock)
+
+          container_config = {
+            name: 'nginx',
+            build: '.'
+          }
 
           allow(File).to receive(:exist?).and_return(true)
 
@@ -23,8 +24,7 @@ module Genova
           allow(executor_mock).to receive(:command)
           allow(Genova::Command::Executor).to receive(:new).and_return(executor_mock)
 
-          # TODO: "No such file or directory @ realpath_rec" error?
-          # expect(docker_client.build_images(containers_config, 'task_definition_path')).to eq(['app'])
+          expect(docker_client.build_image(container_config, 'test.yml')).to eq('nginx')
         end
       end
     end

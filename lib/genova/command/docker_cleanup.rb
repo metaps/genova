@@ -2,8 +2,8 @@ module Genova
   module Command
     class DockerCleanup
       class << self
-        def exec
-          @logger = ::Logger.new(STDOUT)
+        def exec(logger = nil)
+          @logger = logger || ::Logger.new(nil)
           @executor = Genova::Command::Executor.new(logger: @logger)
 
           cleanup_stopped_images
