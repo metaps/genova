@@ -58,7 +58,6 @@ RSpec.configure do |config|
   Aws.config[:stub_responses] = true
 
   config.before do
-    allow(Settings.github).to receive(:account).and_return('metaps')
     allow(Settings.github).to receive(:repositories).and_return(
       [
         {
