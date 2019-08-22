@@ -33,7 +33,7 @@ module Genova
             @logger.info('Invoke Github::RetrieveBranchWorker')
 
             id = Genova::Sidekiq::Queue.add(
-              account: Settings.github.account,
+              account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account),
               repository: selected_repository,
               response_url: @payload_body[:response_url]
             )

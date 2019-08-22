@@ -5,9 +5,6 @@ deploy:
   wait_timeout: 900
 
 github:
-  # GitHub account.
-  account: ''
-
   # Create tag after deployment.
   # If you enable it, please specify GITHUB_OAUTH_TOKEN environment.
   tag: false
