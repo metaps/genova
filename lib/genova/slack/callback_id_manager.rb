@@ -19,7 +19,7 @@ module Genova
         end
 
         def find(id)
-          raise Genova::Error, "Callback ID does not exist. [#{id}]" unless Redis.current.exists(id)
+          raise Exceptions::NotFoundError, "Callback ID does not exist. [#{id}]" unless Redis.current.exists(id)
 
           Redis.current.hgetall(id).symbolize_keys
         end
@@ -31,7 +31,7 @@ module Genova
         end
 
         def write(id, datum)
-          raise Genova::Error, "Callback ID already exists. [#{id}]" if Redis.current.exists(id)
+          raise Exceptions::ValidationError, "Callback ID already exists. [#{id}]" if Redis.current.exists(id)
 
           Redis.current.multi do
             Redis.current.mapped_hmset(id, datum)
