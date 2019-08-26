@@ -9,6 +9,85 @@
 
 genova provides feature to deploy and manage applications on [AWS ECS](https://aws.amazon.com/ecs/).
 
+## Overview
+
+genova is integrated package for deploying applications to ECS. You can deploy services, execute tasks, and execute scheduled tasks.
+As deployment method, interactive deployment using Slack, CLI, and continuous delivery with GitHub is supported.
+When you request deployment, starts deployment as follows.
+
+1. Get target repository code
+2. Find Dockerfile from deploy configuration (`config/deploy.yml`)
+3. Build Docker and create image
+4. Create new task based on task definition (`config/deploy/*.yml`)
+5. Send image to ECR based on new task definition
+6. Request ECS task update
+7. ECS switches to new task
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
+
+## Features
+
+genova supports following features.
+
+* YAML-based task definition
+  * Compatible with ECS and Fargate
+  * Encrypt environment variables using [KMS](https://aws.amazon.com/kms/)
+* Various deployment methods
+  * CLI Deploy
+  * Slack interactive deploy
+  * GitHub push detect deploy
+* Web console
+* Tagging after deployment
+
+## Application directory structure
+
+Please place following files in your application.
+
+```
+- config
+  # Deploy configuration
+  - deploy.yml
+
+  - deploy
+    # Task configuration
+    - development.yml
+    - staging.yml
+    - production.yml
+```
+
+* [Deploy configuration](https://github.com/metaps/genova/wiki/Deploy-configuration)
+* [Task configuration](https://github.com/metaps/genova/wiki/Task-configuration)
+
+## Setup genova
+
+```
+# Please specify GitHub repository account in github.account.
+$ cp config/settings.yml config/settings.local.yml
+$ cp .env.default .env
+
+$ docker-compose build
+$ docker-compose up
+```
+
+* [env configuration](https://github.com/metaps/genova/wiki/env-configuration)
+
+You can access web console by launching `http://localhost:3000/`.
+
+## Deploy
+
+### CLI
+
+```
+# help
+$ docker-compose run --rm rails thor genova:deploy help run-task
+
+# command
+$ docker-compose run --rm rails thor genova:deploy run-task -r {repository} -c {cluster} -t {run task}
+
+# e.g.
+$ docker-compose run --rm rails thor genova:deploy run-task -r api -c production-app -t greeting
+```
+
 ## Usage and documentation
 
 Please refer to [Wiki](https://github.com/metaps/genova/wiki).
