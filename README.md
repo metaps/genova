@@ -73,21 +73,21 @@ $ docker-compose up
 
 You can access web console by launching `http://localhost:3000/`.
 
-## Deploy
+## CLI Deploy
 
-### CLI
+### Service deploy
 
 ```
 # help
-$ docker-compose run --rm rails thor genova:deploy help run-task
+$ docker-compose run --rm rails thor genova:deploy help service
 
 # command
-$ docker-compose run --rm rails thor genova:deploy run-task -r {repository} -c {cluster} -t {run task}
+$ docker-compose run --rm rails thor genova:deploy service -r {repository} -c {cluster} -s {service}
 
 # e.g.
-$ docker-compose run --rm rails thor genova:deploy run-task -r api -c production-app -t greeting
+$ docker-compose run --rm rails thor genova:deploy service -r api -c production-app -s backend
 ```
 
-## Usage and documentation
+## More usage and documentation
 
 Please refer to [Wiki](https://github.com/metaps/genova/wiki).
