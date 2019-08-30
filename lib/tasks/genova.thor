@@ -11,10 +11,11 @@ module GenovaCli
       def deploy(options)
         return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
 
-        if options[:target].present?
-          client = ::Genova::App::Client.new(options[:account], options[:repository], options[:branch])
-          options.merge!(client.load_deploy_config.target(options[:target]))
+        code_manager = if options[:repository].present?
+          ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch])
         end
+
+        options.merge!(code_manager.load_deploy_config.target(options[:target])) if options[:target].present?
 
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual).to_sym,
@@ -112,10 +113,8 @@ module GenovaCli
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
     option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
     def git_pull
-      client = ::Genova::App::Client.new(options[:account], options[:repository], options[:branch])
-      commit_id = client.pull
-
-      puts "Commit ID: #{commit_id}"
+      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch])
+      puts "Commit ID: #{code_manager.pull}"
     end
   end
 
@@ -139,9 +138,10 @@ module GenovaCli
     option :path, required: true, desc: 'Task path.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def register_task
-      app_client = ::Genova::App::Client.new(options[:account], options[:repository], options[:branch])
-      app_client.pull
-      path = app_client.task_definition_config_path(options[:path])
+      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch])
+      code_manager.pull
+
+      path = code_manager.task_definition_config_path(options[:path])
       task = EcsDeployer::Task::Client.new.register(path, tag: 'latest')
 
       puts("Registered task. [#{task.task_definition_arn}]")

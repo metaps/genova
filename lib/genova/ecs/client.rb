@@ -1,9 +1,9 @@
 module Genova
   module Ecs
     class Client
-      def initialize(cluster, app_client, options = {})
+      def initialize(cluster, code_manager, options = {})
         @cluster = cluster
-        @app_client = app_client
+        @code_manager = code_manager
         @logger = options[:logger] || ::Logger.new(nil)
         @task_definitions = {}
 
@@ -11,22 +11,22 @@ module Genova
           @cluster,
           @logger
         )
-        @docker_client = Genova::Docker::Client.new(@app_client, logger: @logger)
+        @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
         @ecs_client = Aws::ECS::Client.new
         @ecr_client = Genova::Ecr::Client.new(logger: @logger)
-        @deploy_config = @app_client.load_deploy_config
+        @deploy_config = @code_manager.load_deploy_config
       end
 
       def ready
         @ecr_client.authenticate
-        @app_client.pull
+        @code_manager.pull if @code_manager.type === :git
       end
 
       def deploy_run_task(run_task, tag)
         run_task_config = @deploy_config.run_task(@cluster, run_task)
 
         build(run_task_config[:containers], run_task_config[:path], tag)
-        task_definition_path = @app_client.task_definition_config_path('config/' + run_task_config[:path])
+        task_definition_path = @code_manager.task_definition_config_path('config/' + run_task_config[:path])
         task_definition = create_task(task_definition_path, tag)
 
         options = {
@@ -45,7 +45,7 @@ module Genova
 
         build(service_config[:containers], service_config[:path], tag)
 
-        service_task_definition_path = @app_client.task_definition_config_path('config/' + service_config[:path])
+        service_task_definition_path = @code_manager.task_definition_config_path('config/' + service_config[:path])
         service_task_definition = create_task(service_task_definition_path, tag)
 
         service_client = @deploy_client.service
@@ -83,7 +83,7 @@ module Genova
         cluster_config = @deploy_config.cluster(@cluster)
         cluster_config[:scheduled_tasks].each do |scheduled_task|
           scheduled_task_client = @deploy_client.scheduled_task
-          config_base_path = Pathname(@app_client.base_path).join('config').to_s
+          config_base_path = Pathname(@code_manager.base_path).join('config').to_s
           targets = []
 
           next if options[:rule].present? && scheduled_task[:rule] != options[:rule]

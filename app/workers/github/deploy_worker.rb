@@ -40,8 +40,8 @@ module Github
     private
 
     def deploy_target(account, repository, branch)
-      app_client = Genova::App::Client.new(account, repository, branch)
-      auto_deploy_config = app_client.load_deploy_config[:auto_deploy]
+      code_manager = Genova::CodeManager::Git.new(account, repository, branch)
+      auto_deploy_config = code_manager.load_deploy_config[:auto_deploy]
 
       return nil if auto_deploy_config.nil?
 
