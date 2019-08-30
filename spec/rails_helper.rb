@@ -68,7 +68,7 @@ RSpec.configure do |config|
   end
 end
 
-shared_context 'load app_client_mock' do
+shared_context 'load code_manager_mock' do
   let(:deploy_config) do
     Genova::Config::DeployConfig.new(
       clusters: [
@@ -94,24 +94,24 @@ shared_context 'load app_client_mock' do
       ]
     )
   end
-  let(:app_client_mock) { double(Genova::App::Client) }
+  let(:code_manager_mock) { double(Genova::CodeManager::Git) }
   let(:branch_mock) { double(Git::Branch) }
 
   before do
-    allow(app_client_mock).to receive(:load_deploy_config).and_return(deploy_config)
-    allow(app_client_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
-    allow(app_client_mock).to receive(:base_path).and_return('base_path')
-    allow(app_client_mock).to receive(:repos_path).and_return('repos_path')
-    allow(app_client_mock).to receive(:task_definition_config_path)
-    allow(app_client_mock).to receive(:origin_last_commit_id)
-    allow(app_client_mock).to receive(:pull)
-    allow(app_client_mock).to receive(:release)
-    allow(app_client_mock).to receive(:find_commit_id)
+    allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
+    allow(code_manager_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
+    allow(code_manager_mock).to receive(:base_path).and_return('base_path')
+    allow(code_manager_mock).to receive(:repos_path).and_return('repos_path')
+    allow(code_manager_mock).to receive(:task_definition_config_path)
+    allow(code_manager_mock).to receive(:origin_last_commit_id)
+    allow(code_manager_mock).to receive(:pull)
+    allow(code_manager_mock).to receive(:release)
+    allow(code_manager_mock).to receive(:find_commit_id)
 
     allow(branch_mock).to receive(:name).and_return('feature/branch')
-    allow(app_client_mock).to receive(:origin_branches).and_return([branch_mock])
+    allow(code_manager_mock).to receive(:origin_branches).and_return([branch_mock])
 
-    allow(Genova::App::Client).to receive(:new).and_return(app_client_mock)
+    allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
   end
 end
 

@@ -18,13 +18,13 @@ module Genova
 
       @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
-      @app_client = Genova::App::Client.new(
+      @code_manager = Genova::CodeManager::Git.new(
         @deploy_job.account,
         @deploy_job.repository,
         @deploy_job.branch,
         logger: @logger
       )
-      @ecs_client = Genova::Ecs::Client.new(@deploy_job.cluster, @app_client, logger: @logger)
+      @ecs_client = Genova::Ecs::Client.new(@deploy_job.cluster, @code_manager, logger: @logger)
     end
 
     def run
@@ -47,9 +47,9 @@ module Genova
                                @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
                              end
 
-      if Settings.github.tag
+      if Settings.github.tag && @code_manager.type === :git
         @logger.info("Pushed Git tag: #{@deploy_job.tag}")
-        @app_client.release(@deploy_job.tag, @deploy_job.commit_id)
+        @code_manager.release(@deploy_job.tag, @deploy_job.commit_id)
       end
 
       @deploy_job.done(task_definition_arns)
