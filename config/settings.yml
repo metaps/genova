@@ -1,4 +1,5 @@
 docker:
+  cleanup: true
   image_cleanup_interval: 20
 
 deploy:
