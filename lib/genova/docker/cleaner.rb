@@ -2,19 +2,19 @@ module Genova
   module Docker
     class Cleaner
       class << self
-        def exec
+        def execute
           @logger = ::Logger.new(STDOUT)
           @logger.info('Start cleanup')
 
-          cleanup_unused_containers
-          cleanup_unused_images
-          cleanup_unused_networks
-          cleanup_unused_volumes
+          cleanup_gcontainers
+          cleanup_images
+          cleanup_gnetworks
+          cleanup_gvolumes
         end
 
         private
 
-        def cleanup_unused_containers
+        def cleanup_gcontainers
           @logger.info('Cleanup unused containers')
 
           ::Docker::Container.all(all: true).each do |container|
@@ -25,7 +25,7 @@ module Genova
           end
         end
 
-        def cleanup_unused_images
+        def cleanup_images
           @logger.info('Cleanup unused images')
           used_images = []
 
@@ -53,12 +53,12 @@ module Genova
           end
         end
 
-        def cleanup_unused_networks
+        def cleanup_gnetworks
           @logger.info('Cleanup unused networks')
           ::Docker::Network.prune
         end
 
-        def cleanup_unused_volumes
+        def cleanup_gvolumes
           @logger.info('Cleanup unused volumes')
           ::Docker::Volume.prune
         end
