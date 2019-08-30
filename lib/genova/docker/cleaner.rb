@@ -1,6 +1,6 @@
 module Genova
-  module Command
-    class DockerCleanup
+  module Docker
+    class Cleaner
       class << self
         def exec
           @logger = ::Logger.new(STDOUT)
