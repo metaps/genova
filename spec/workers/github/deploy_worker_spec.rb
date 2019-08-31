@@ -20,7 +20,7 @@ module Github
     end
 
     describe 'perform' do
-      include_context 'load repository_manager_mock'
+      include_context 'load code_manager_mock'
 
       let(:deploy_job) do
         DeployJob.create(

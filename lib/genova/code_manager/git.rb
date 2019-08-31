@@ -2,24 +2,24 @@ module Git
   class Lib
     alias __branches_all__ branches_all
 
-    def branches_all
+     def branches_all
       arr = []
 
-      # Add '--sort=--authordate' parameter
+       # Add '--sort=--authordate' parameter
       command_lines('branch', ['-a', '--sort=-authordate']).each do |b|
         current = (b[0, 2] == '* ')
         arr << [b.gsub('* ', '').strip, current]
       end
       arr
-    end
+     end
 
-    private :__branches_all__
+     private :__branches_all__
   end
 end
 
 module Genova
-  module Git
-    class RepositoryManager
+  module CodeManager
+    class Git
       attr_reader :repos_path, :base_path
 
       def initialize(account, repository, branch = Settings.github.default_branch, options = {})

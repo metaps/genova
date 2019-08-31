@@ -18,13 +18,13 @@ module Genova
 
       @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
-      @repository_manager = Genova::Git::RepositoryManager.new(
+      @code_manager = Genova::CodeManager::Git.new(
         @deploy_job.account,
         @deploy_job.repository,
         @deploy_job.branch,
         logger: @logger
       )
-      @ecs_client = Genova::Ecs::Client.new(@deploy_job.cluster, @repository_manager, logger: @logger)
+      @ecs_client = Genova::Ecs::Client.new(@deploy_job.cluster, @code_manager, logger: @logger)
     end
 
     def run
@@ -49,7 +49,7 @@ module Genova
 
       if Settings.github.tag
         @logger.info("Pushed Git tag: #{@deploy_job.tag}")
-        @repository_manager.release(@deploy_job.tag, @deploy_job.commit_id)
+        @code_manager.release(@deploy_job.tag, @deploy_job.commit_id)
       end
 
       @deploy_job.done(task_definition_arns)

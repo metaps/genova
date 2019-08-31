@@ -447,12 +447,12 @@ module Genova
       end
 
       def git_latest_commit_id(params)
-        repository_manager = Genova::Git::RepositoryManager.new(
+        code_manager = Genova::CodeManager::Git.new(
           params[:account],
           params[:repository],
           params[:branch]
         )
-        repository_manager.origin_last_commit_id.to_s
+        code_manager.origin_last_commit_id.to_s
       end
 
       def git_deployed_commit_id(params)
@@ -475,13 +475,13 @@ module Genova
         task_definitions = task_definition.task_definition.container_definitions
 
         deployed_commit_id = nil
-        repository_manager = Genova::Git::RepositoryManager.new(params[:account], params[:repository])
+        code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository])
 
         task_definitions.each do |task|
           matches = task[:image].match(/(build\-.*$)/)
           next if matches.nil?
 
-          deployed_commit_id = repository_manager.find_commit_id(matches[1]).to_s
+          deployed_commit_id = code_manager.find_commit_id(matches[1]).to_s
         end
 
         deployed_commit_id

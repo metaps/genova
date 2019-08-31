@@ -1,8 +1,8 @@
 module Genova
   module Docker
     class Client
-      def initialize(repository_manager, options = {})
-        @repository_manager = repository_manager
+      def initialize(code_manager, options = {})
+        @code_manager = code_manager
         @logger = options[:logger] || ::Logger.new(nil)
         @cipher = EcsDeployer::Util::Cipher.new
       end
@@ -11,13 +11,13 @@ module Genova
         container = container_config[:name]
         build = parse_docker_build(container_config[:build], @cipher)
 
-        config_base_path = Pathname(@repository_manager.base_path).join('config').to_s
+        config_base_path = Pathname(@code_manager.base_path).join('config').to_s
         docker_base_path = File.expand_path(build[:context], config_base_path)
         docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
 
         raise Exceptions::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-        task_definition_config = @repository_manager.load_task_definition_config('config/' + task_definition_path)
+        task_definition_config = @code_manager.load_task_definition_config('config/' + task_definition_path)
         container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
 
         raise Exceptions::ValidationError, "'#{container}' container does not exist in task definition." if container_definition.nil?
