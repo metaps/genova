@@ -47,7 +47,7 @@ module Genova
                                @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
                              end
 
-      if Settings.github.tag && @code_manager.type === :git
+      if Settings.github.tag
         @logger.info("Pushed Git tag: #{@deploy_job.tag}")
         @code_manager.release(@deploy_job.tag, @deploy_job.commit_id)
       end
