@@ -43,7 +43,7 @@ module GenovaCli
 
     desc 'run-task', 'Deploy run task to ECS'
     option :cluster, required: true, aliases: :c, desc: 'Cluster name.'
-    option :run_task, required: true, aliases: :t, desc: 'Task name.'
+    option :run_task, aliases: :t, desc: 'Task name.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def run_task
