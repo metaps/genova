@@ -19,7 +19,7 @@ module Genova
 
       def ready
         @ecr_client.authenticate
-        @code_manager.pull if @code_manager.type === :git
+        @code_manager.pull
       end
 
       def deploy_run_task(run_task, tag)
