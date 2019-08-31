@@ -58,7 +58,6 @@ RSpec.configure do |config|
   Aws.config[:stub_responses] = true
 
   config.before do
-    allow(Settings.github).to receive(:account).and_return('metaps')
     allow(Settings.github).to receive(:repositories).and_return(
       [
         {
@@ -69,7 +68,7 @@ RSpec.configure do |config|
   end
 end
 
-shared_context 'load repository_manager_mock' do
+shared_context 'load code_manager_mock' do
   let(:deploy_config) do
     Genova::Config::DeployConfig.new(
       clusters: [
@@ -77,7 +76,7 @@ shared_context 'load repository_manager_mock' do
           name: 'cluster',
           services: {
             service: {
-              containers: [{ name: 'rails', 'build': {}}],
+              containers: [{ name: 'rails', 'build': {} }],
               path: 'path'
             }
           }
@@ -89,30 +88,30 @@ shared_context 'load repository_manager_mock' do
     Genova::Config::TaskDefinitionConfig.new(
       container_definitions: [
         {
-          name: 'app',
-          image: 'xxx/app:revision_tag'
+          name: 'nginx',
+          image: 'xxx/nginx:revision_tag'
         }
       ]
     )
   end
-  let(:repository_manager_mock) { double(Genova::Git::RepositoryManager) }
+  let(:code_manager_mock) { double(Genova::CodeManager::Git) }
   let(:branch_mock) { double(Git::Branch) }
 
   before do
-    allow(repository_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
-    allow(repository_manager_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
-    allow(repository_manager_mock).to receive(:base_path).and_return('base_path')
-    allow(repository_manager_mock).to receive(:repos_path).and_return('repos_path')
-    allow(repository_manager_mock).to receive(:task_definition_config_path)
-    allow(repository_manager_mock).to receive(:origin_last_commit_id)
-    allow(repository_manager_mock).to receive(:update)
-    allow(repository_manager_mock).to receive(:release)
-    allow(repository_manager_mock).to receive(:find_commit_id)
+    allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
+    allow(code_manager_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
+    allow(code_manager_mock).to receive(:base_path).and_return('base_path')
+    allow(code_manager_mock).to receive(:repos_path).and_return('repos_path')
+    allow(code_manager_mock).to receive(:task_definition_config_path)
+    allow(code_manager_mock).to receive(:origin_last_commit_id)
+    allow(code_manager_mock).to receive(:pull)
+    allow(code_manager_mock).to receive(:release)
+    allow(code_manager_mock).to receive(:find_commit_id)
 
     allow(branch_mock).to receive(:name).and_return('feature/branch')
-    allow(repository_manager_mock).to receive(:origin_branches).and_return([branch_mock])
+    allow(code_manager_mock).to receive(:origin_branches).and_return([branch_mock])
 
-    allow(Genova::Git::RepositoryManager).to receive(:new).and_return(repository_manager_mock)
+    allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
   end
 end
 

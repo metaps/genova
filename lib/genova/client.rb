@@ -6,21 +6,25 @@ module Genova
 
       @deploy_job = deploy_job
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
-      raise DeployJob::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
+      raise Exceptions::ValidateError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
       @logger.level = @options[:verbose] ? :debug : :info
       @logger.info('Initiaized deploy client.')
 
+      if ENV['GITHUB_ACCOUNT'].nil?
+        @logger.warn('"github.account" parameter is deprecated. Set environment variable "GITHUB_ACCOUNT" instead.')
+      end
+
       @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
-      @repository_manager = Genova::Git::RepositoryManager.new(
+      @code_manager = Genova::CodeManager::Git.new(
         @deploy_job.account,
         @deploy_job.repository,
         @deploy_job.branch,
         logger: @logger
       )
-      @ecs_client = Genova::Ecs::Client.new(@deploy_job.cluster, @repository_manager, logger: @logger)
+      @ecs_client = Genova::Ecs::Client.new(@deploy_job.cluster, @code_manager, logger: @logger)
     end
 
     def run
@@ -34,15 +38,18 @@ module Genova
 
       @logger.info("Deploy target commit: #{@deploy_job.commit_id}")
 
-      task_definition_arns = if @deploy_job.service.present?
-                               @ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)
-                             else
+      task_definition_arns = case @deploy_job.type
+                             when DeployJob.type.find_value(:run_task)
+                               @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.tag)
+                             when DeployJob.type.find_value(:service)
+                               [@ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)]
+                             when DeployJob.type.find_value(:scheduled_task)
                                @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
                              end
 
       if Settings.github.tag
         @logger.info("Pushed Git tag: #{@deploy_job.tag}")
-        @repository_manager.release(@deploy_job.tag, @deploy_job.commit_id)
+        @code_manager.release(@deploy_job.tag, @deploy_job.commit_id)
       end
 
       @deploy_job.done(task_definition_arns)
@@ -71,7 +78,7 @@ module Genova
       while @mutex.locked? || !@mutex.lock
         if lock_timeout.nil? || waiting_time >= lock_timeout
           cancel
-          raise DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
+          raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
         end
 
         @logger.warn("Deploy locked. Retry in #{@options[:lock_wait_interval]} seconds.")
@@ -96,7 +103,5 @@ module Genova
     def create_tag(_commit_id)
       "build-#{@deploy_job.id}"
     end
-
-    class DeployLockError < Error; end
   end
 end

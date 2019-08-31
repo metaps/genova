@@ -43,9 +43,11 @@ module Genova
 
             image.info['RepoTags'].each do |repo_tag|
               values = repo_tag.split(':')
-              target = repo_tag === '<none>:<none>' || values[0].include?(ecr_image_key) ? true : false
 
-              if target && !used_images.include?(image.id)
+              if repo_tag === '<none>:<none>'
+                @logger.info("  #{image.id}")
+                image.remove
+              elsif values[0].include?(ecr_image_key)
                 @logger.info("  #{image.id}")
                 image.remove(name: repo_tag, force: true)
               end

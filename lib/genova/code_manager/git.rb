@@ -2,24 +2,24 @@ module Git
   class Lib
     alias __branches_all__ branches_all
 
-    def branches_all
+     def branches_all
       arr = []
 
-      # Add '--sort=--authordate' parameter
+       # Add '--sort=--authordate' parameter
       command_lines('branch', ['-a', '--sort=-authordate']).each do |b|
         current = (b[0, 2] == '* ')
         arr << [b.gsub('* ', '').strip, current]
       end
       arr
-    end
+     end
 
-    private :__branches_all__
+     private :__branches_all__
   end
 end
 
 module Genova
-  module Git
-    class RepositoryManager
+  module CodeManager
+    class Git
       attr_reader :repos_path, :base_path
 
       def initialize(account, repository, branch = Settings.github.default_branch, options = {})
@@ -48,7 +48,7 @@ module Genova
         ::Git.clone(uri, '', path: @repos_path)
       end
 
-      def update
+      def pull
         clone
 
         @logger.info("Git checkout: #{@branch}")
@@ -63,10 +63,10 @@ module Genova
       end
 
       def load_deploy_config
-        update
+        pull
 
         path = Pathname(@base_path).join('config/deploy.yml')
-        raise Genova::Config::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
+        raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
         params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
@@ -78,7 +78,7 @@ module Genova
 
       def load_task_definition_config(path)
         path = task_definition_config_path(path)
-        raise Genova::Config::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
+        raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
         params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
@@ -118,7 +118,7 @@ module Genova
       end
 
       def release(tag, commit_id)
-        update
+        pull
 
         git = client
         git.add_tag(tag, commit_id)
