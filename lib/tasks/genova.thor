@@ -45,7 +45,12 @@ module GenovaCli
     option :cluster, required: true, aliases: :c, desc: 'Cluster name.'
     option :run_task, required: true, aliases: :t, desc: 'Task name.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def run_task
+      if options[:run_task].blank? && options[:target].blank?
+        raise Genova::Exceptions::InvalidArgumentError, 'Task or target must be specified.'
+      end
+
       hash_options = options.to_hash.symbolize_keys
       hash_options[:type] = DeployJob.type.find_value(:run_task)
 
@@ -55,9 +60,13 @@ module GenovaCli
     desc 'service', 'Deploy service to ECS'
     option :cluster, aliases: :c, desc: 'Cluster name.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
-    option :service, required: true, aliases: :s, desc: 'Service name.'
+    option :service, aliases: :s, desc: 'Service name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def service
+      if options[:service].blank? && options[:target].blank?
+        raise Genova::Exceptions::InvalidArgumentError, 'Service or target must be specified.'
+      end
+
       hash_options = options.to_hash.symbolize_keys
       hash_options[:type] = DeployJob.type.find_value(:service)
 
@@ -66,11 +75,15 @@ module GenovaCli
 
     desc 'scheduled-task', 'Deploy scheduled task to ECS'
     option :cluster, aliases: :c, desc: 'Cluster name.'
-    option :scheduled_task_rule, required: true, desc: 'Schedule rule name.'
-    option :scheduled_task_target, required: true, desc: 'Schedule target name.'
+    option :scheduled_task_rule, desc: 'Schedule rule name.'
+    option :scheduled_task_target, desc: 'Schedule target name.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def scheduled_task
+      if (options[:scheduled_task_rule].blank? || options[:scheduled_task_target].blank?) || options[:target].blank?
+        raise Genova::Exceptions::InvalidArgumentError, 'Scheduled task or target must be specified.'
+      end
+
       hash_options = options.to_hash.symbolize_keys
       hash_options[:type] = DeployJob.type.find_value(:scheduled_task)
 
