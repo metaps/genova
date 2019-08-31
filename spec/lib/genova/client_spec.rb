@@ -6,7 +6,8 @@ module Genova
     let(:docker_client_mock) { double(Genova::Docker::Client) }
     let(:deploy_job) do
       DeployJob.new(
-        mode: DeployJob.mode.find_value(:auto).to_s,
+        mode: DeployJob.mode.find_value(:auto),
+        type: DeployJob.type.find_value(:service),
         repository: 'repository',
         cluster: 'cluster',
         service: 'service'
@@ -28,7 +29,7 @@ module Genova
     end
 
     describe 'run' do
-      include_context 'load repository_manager_mock'
+      include_context 'load code_manager_mock'
 
       it 'shuold be not error' do
         expect { client.run }.to_not raise_error

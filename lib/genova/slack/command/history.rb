@@ -13,14 +13,12 @@ module Genova
             if options.present?
               bot.post_choose_history(options: options)
             else
-              e = HistoryError.new('History does not exist.')
+              e = Exceptions::NotFoundError.new('History does not exist.')
               bot.post_error(error: e, slack_user_id: data.user)
             end
           end
         end
       end
-
-      class HistoryError < Error; end
     end
   end
 end

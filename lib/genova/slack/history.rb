@@ -8,10 +8,12 @@ module Genova
       def add(deploy_job)
         value = Oj.dump(
           id: deploy_job.id,
+          type: deploy_job.type.to_s,
           account: deploy_job.account,
           repository: deploy_job.repository,
           branch: deploy_job.branch,
           cluster: deploy_job.cluster,
+          run_task: deploy_job.run_task,
           service: deploy_job.service,
           scheduled_task_rule: deploy_job.scheduled_task_rule,
           scheduled_task_target: deploy_job.scheduled_task_target

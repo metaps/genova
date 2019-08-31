@@ -30,11 +30,11 @@ module Genova
         end
 
         def branch_options(account, repository, branch_limit = Settings.slack.interactive.branch_limit)
-          repository_manager = Genova::Git::RepositoryManager.new(account, repository)
+          code_manager = Genova::CodeManager::Git.new(account, repository)
           branches = []
           size = 0
 
-          repository_manager.origin_branches.each do |branch|
+          code_manager.origin_branches.each do |branch|
             break if size >= branch_limit
 
             size += 1
@@ -46,9 +46,9 @@ module Genova
 
         def cluster_options(account, repository, branch)
           clusters = []
-          repository_manager = Genova::Git::RepositoryManager.new(account, repository, branch)
+          code_manager = Genova::CodeManager::Git.new(account, repository, branch)
 
-          deploy_config = repository_manager.load_deploy_config
+          deploy_config = code_manager.load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
             clusters.push(text: cluster_params[:name], value: cluster_params[:name])
           end
@@ -57,11 +57,21 @@ module Genova
         end
 
         def target_options(account, repository, branch, cluster)
+          run_task_options = []
           service_options = []
           scheduled_task_options = []
 
-          repository_manager = Genova::Git::RepositoryManager.new(account, repository, branch)
-          cluster_config = repository_manager.load_deploy_config.cluster(cluster)
+          code_manager = Genova::CodeManager::Git.new(account, repository, branch)
+          cluster_config = code_manager.load_deploy_config.cluster(cluster)
+
+          if cluster_config[:run_tasks].present?
+            cluster_config[:run_tasks].keys.each do |run_task|
+              run_task_options.push(
+                text: run_task,
+                value: "run_task:#{run_task}"
+              )
+            end
+          end
 
           if cluster_config[:services].present?
             cluster_config[:services].keys.each do |service|
@@ -85,6 +95,10 @@ module Genova
           end
 
           [
+            {
+              text: 'Run task',
+              options: run_task_options
+            },
             {
               text: 'Service',
               options: service_options

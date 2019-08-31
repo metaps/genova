@@ -14,8 +14,9 @@ module Github
 
       deploy_job = DeployJob.create(
         id: id,
-        status: DeployJob.status.find_value(:in_progress).to_s,
-        mode: DeployJob.mode.find_value(:auto).to_s,
+        type: DeployJob.type.find_value(:service),
+        status: DeployJob.status.find_value(:in_progress),
+        mode: DeployJob.mode.find_value(:auto),
         account: job[:account],
         repository: job[:repository],
         branch: job[:branch],
@@ -39,8 +40,8 @@ module Github
     private
 
     def deploy_target(account, repository, branch)
-      repository_manager = Genova::Git::RepositoryManager.new(account, repository, branch)
-      auto_deploy_config = repository_manager.load_deploy_config[:auto_deploy]
+      code_manager = Genova::CodeManager::Git.new(account, repository, branch)
+      auto_deploy_config = code_manager.load_deploy_config[:auto_deploy]
 
       return nil if auto_deploy_config.nil?
 

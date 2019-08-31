@@ -9,6 +9,7 @@ jobs:
       AWS_REGION: ""
       AWS_SECRET_KEY: ""
       GENOVA_URL: http://localhost:3000
+      GITHUB_ACCOUNT: metaps
       GITHUB_PEM: ~/.ssh/id_rsa
       GITHUB_SECRET_KEY: ""
       REDIS_DB: 0

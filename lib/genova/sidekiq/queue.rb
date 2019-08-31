@@ -20,13 +20,11 @@ module Genova
 
         def find(id)
           values = Redis.current.hgetall(id)
-          raise QueueError, "#{id} is not found." if values.nil?
+          raise Exceptions::NotFoundError, "#{id} is not found." if values.nil?
 
           Genova::Sidekiq::Job.new(id, values.symbolize_keys)
         end
       end
     end
-
-    class QueueError < Error; end
   end
 end

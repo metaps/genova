@@ -2,6 +2,11 @@ module Genova
   module Slack
     module Command
       class Deploy < SlackRubyBot::Commands::Base
+        command 'deploy'
+        command 'deploy:service'
+        command 'deploy:run-task'
+        command 'deploy:scheduled-task'
+
         class << self
           def call(client, data, match)
             logger.info("Execute deploy command: (UNAME: #{client.owner}, user=#{data.user})")
@@ -10,21 +15,33 @@ module Genova
             bot = Genova::Slack::Bot.new(client.web_client)
 
             begin
-              results = parse_args(match['expression'])
+              type = case match['command'].split(':')[1]
+                     when 'run-task'
+                       DeployJob.type.find_value(:run_task)
+                     when 'scheduled-task'
+                       DeployJob.type.find_value(:scheduled_task)
+                     else
+                       DeployJob.type.find_value(:service)
+                     end
 
-              if results[:mode] == :command
+              if match['expression'].blank?
+                bot.post_choose_repository
+              else
+                expressions = match['expression'].split(' ')
+                results = send("parse_#{type}", expressions)
+
                 bot.post_confirm_deploy(
+                  type: type,
                   account: results[:account],
                   repository: results[:repository],
                   branch: results[:branch],
                   cluster: results[:cluster],
+                  run_task: results[:run_task],
                   service: results[:service],
                   scheduled_task_rule: results[:scheduled_task_rule],
                   scheduled_task_target: results[:scheduled_task_target],
                   confirm: true
                 )
-              else
-                bot.post_choose_repository
               end
             rescue => e
               logger.error(e)
@@ -38,54 +55,75 @@ module Genova
 
           private
 
-          def parse_args(expression)
-            return { mode: :interactive } if expression.blank?
+          def parse_run_task(expressions)
+            validations = {
+              account: String,
+              repository: String,
+              branch: String,
+              cluster: String,
+              run_task: String
+            }
 
-            args = expression.split(' ')
-            raise InvalidArgumentError, 'Parameter is incorrect.' unless args.size == 3
+            parse_expressions(expressions, validations)
+          end
 
+          def parse_service(expressions)
+            validations = {
+              account: String,
+              repository: String,
+              branch: String,
+              cluster: String,
+              service: String
+            }
+
+            parse_expressions(expressions, validations)
+          end
+
+          def parse_scheduled_task(expressions)
+            validations = {
+              account: String,
+              repository: String,
+              branch: String,
+              cluster: String,
+              scheduled_task_rule: String,
+              scheduled_task_target: String
+            }
+
+            parse_expressions(expressions, validations)
+          end
+
+          def validate!(values, validations)
+            validator = HashValidator.validate(values, validations)
+            raise Exceptions::InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.values[0]}" unless validator.valid?
+          end
+
+          def parse_expressions(expressions, validations)
+            values = expressions[0].split(':')
             results = {
-              :mode => :command,
-              :account => Settings.github.account,
-              :repository => args[0],
-              :branch => args[1]
+              account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account),
+              repository: values[0],
+              branch: values[1] || Settings.github.default_branch
             }
 
-            method_key_value = args[2].split('=')
-            raise InvalidArgumentError, 'Target type argument is invalid. Please check `help`.' unless method_key_value.size == 2
-
-            method_key = method_key_value[0]
-            method_values = method_key_value[1].split(':')
-            method_values_size = {
-              :target => 1,
-              :service=> 2,
-              :'scheduled-task' => 3
-            }
-
-            raise InvalidArgumentError, 'Target argument is invalid. Please check `help`.' unless method_values.size == method_values_size[method_key.to_sym]
-
-            case method_key
-            when 'target'
-                manager = Genova::Git::RepositoryManager.new(results[:account], results[:repository], results[:branch])
-                target = manager.load_deploy_config.target(method_values[0])
-                results.merge!(target)
-
-            when 'service'
-                results[:cluster] = method_values[0]
-                results[:service] = method_values[1]
-
-            when 'scheduled-task'
-                results[:cluster] = method_values[0]
-                results[:scheduled_task_rule] = method_values[1]
-                results[:scheduled_task_target] = method_values[2]
+            expressions[1..-1].each do |expression|
+              values = expression.split('=')
+              results[values[0].tr('-', '_').to_sym] = values[1]
             end
+
+            if results.include?(:target)
+              code_manager = Genova::CodeManager::Git.new(results[:account], results[:repository], results[:branch])
+              target = code_manager.load_deploy_config.target(results[:target])
+
+              results.merge!(target)
+              results.delete(results[:target])
+            end
+
+            validate!(results, validations)
 
             results
           end
         end
       end
-
-      class InvalidArgumentError < Error; end
     end
   end
 end

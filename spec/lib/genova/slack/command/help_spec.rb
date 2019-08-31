@@ -5,7 +5,7 @@ module Genova
     module Command
       describe Help do
         it 'should be return help message' do
-          expect(message: "#{SlackRubyBot.config.user} help", channel: 'channel').to respond_with_slack_message(/I am ECS deploy Bot\./)
+          expect(message: "#{SlackRubyBot.config.user} help", channel: 'channel').to respond_with_slack_message(/Hello, I'm ECS deploy Bot\./)
         end
       end
     end

@@ -54,6 +54,20 @@
         "required": ["name"],
         "properties": {
           "name": { "type": "string" },
+          "run_tasks": {
+            "type": "object",
+            "patternProperties": {
+              ".+": {
+                "type": "object",
+                "required": ["path", "containers"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "containers": { "$ref": "#/definitions/containers" },
+                  "ecs_configuration": { "type": "object" }
+                }
+              }
+            }
+          },
           "services": {
             "type": "object",
             "patternProperties": {

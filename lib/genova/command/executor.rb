@@ -5,7 +5,7 @@ module Genova
     class Executor
       def initialize(options = {})
         @work_dir = options[:work_dir]
-        @logger = options.include?(:logger) ? options[:logger] : ::Logger.new(nil)
+        @logger = options[:logger] || ::Logger.new(nil)
       end
 
       def command(command, chdir = nil)
@@ -35,7 +35,7 @@ module Genova
             end
           end
 
-          raise StandardError, stderr.join("\n") unless stderr.empty?
+          raise Exceptions::OutputError, stderr.join("\n") unless stderr.empty?
 
           stdout.join("\n")
         rescue Interrupt
@@ -48,7 +48,5 @@ module Genova
         end
       end
     end
-
-    class StandardError < Error; end
   end
 end

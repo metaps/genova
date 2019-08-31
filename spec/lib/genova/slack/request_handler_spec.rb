@@ -113,7 +113,7 @@ module Genova
           it 'should be raise error' do
             allow(Genova::Slack::CallbackIdManager).to receive(:find).and_return(action: 'undefined')
 
-            expect { Genova::Slack::RequestHandler.handle_request(callback_id: 'callback_id') }.to raise_error(Genova::Slack::RequestHandler::RouteError)
+            expect { Genova::Slack::RequestHandler.handle_request(callback_id: 'callback_id') }.to raise_error(Exceptions::RoutingError)
           end
         end
       end

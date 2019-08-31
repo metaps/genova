@@ -12,24 +12,24 @@ module Genova
 
             if history.present?
               bot.post_confirm_deploy(
+                type: history[:type],
                 account: history[:account],
                 repository: history[:repository],
                 branch: history[:branch],
                 cluster: history[:cluster],
+                run_task: history[:run_task],
                 service: history[:service],
                 scheduled_task_rule: history[:scheduled_task_rule],
                 scheduled_task_target: history[:scheduled_task_target],
                 confirm: true
               )
             else
-              e = RedeployError.new('History does not exist.')
+              e = Exceptions::NotFoundError.new('History does not exist.')
               bot.post_error(error: e, slack_user_id: data.user)
             end
           end
         end
       end
-
-      class RedeployError < Error; end
     end
   end
 end
