@@ -8,6 +8,7 @@
   weekly
   missingok
   rotate 7
+  dateext
   compress
   notifempty
   su root root

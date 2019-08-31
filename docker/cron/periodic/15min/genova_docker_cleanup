@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd /app
+bundle exec thor genova:docker-cleanup >> /app/log/cron.log 2>&1
