@@ -26,7 +26,7 @@ services:
     depends_on:
       - mongo
       - redis
-    restart: on-failure
+    restart: always
   slack:
     container_name: genova-slack
     build:
@@ -54,7 +54,7 @@ services:
     depends_on:
       - mongo
       - redis
-    restart: on-failure
+    restart: always
   cron:
     container_name: genova-cron
     build:
@@ -65,7 +65,7 @@ services:
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
-    restart: on-failure
+    restart: always
   node:
     container_name: genova-node
     build:
@@ -78,11 +78,11 @@ services:
   mongo:
     container_name: genova-mongo
     image: mongo:3.4
-    restart: on-failure
+    restart: always
   redis:
     container_name: genova-redis
     image: redis:5-alpine
-    restart: on-failure
+    restart: always
 
 volumes:
   node_modules:
