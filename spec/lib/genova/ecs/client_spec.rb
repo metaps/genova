@@ -4,28 +4,24 @@ module Genova
   module Ecs
     describe Client do
       before do
-        service_client_mock = double(EcsDeployer::Service::Client)
-        allow(service_client_mock).to receive(:exist?).and_return(false)
+        service_client_mock = double(Ecs::Deployer::Service::Client)
         allow(service_client_mock).to receive(:wait_timeout=)
         allow(service_client_mock).to receive(:update)
         allow(service_client_mock).to receive(:exist?).and_return(true)
+        allow(Ecs::Deployer::Service::Client).to receive(:new).and_return(service_client_mock)
 
         task_definition_mock = double(Aws::ECS::Types::TaskDefinition)
         allow(task_definition_mock).to receive(:task_definition_arn).and_return('task_definition_arn')
 
-        task_client_mock = double(EcsDeployer::Task::Client)
+        task_client_mock = double(Ecs::Task::Client)
         allow(task_client_mock).to receive(:register).and_return(task_definition_mock)
 
-        ecs_deployer_mock = double(EcsDeployer::Client)
-        allow(ecs_deployer_mock).to receive(:service).and_return(service_client_mock)
-        allow(EcsDeployer::Client).to receive(:new).and_return(ecs_deployer_mock)
-
-        ecr_client_mock = double(Genova::Ecr::Client)
+        ecr_client_mock = double(Ecr::Client)
         allow(ecr_client_mock).to receive(:push_image)
         allow(ecr_client_mock).to receive(:destroy_images)
         allow(Genova::Ecr::Client).to receive(:new).and_return(ecr_client_mock)
 
-        allow(EcsDeployer::Task::Client).to receive(:new).and_return(task_client_mock)
+        allow(Ecs::Task::Client).to receive(:new).and_return(task_client_mock)
 
         docker_client_mock = double(Genova::Docker::Client)
         allow(docker_client_mock).to receive(:build_image).and_return(['repository_name'])

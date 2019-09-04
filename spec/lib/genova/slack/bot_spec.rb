@@ -4,7 +4,7 @@ module Genova
   module Slack
     describe Bot do
       let(:bot) { Genova::Slack::Bot.new }
-      let(:slack_web_client_mock) { double('::Slack::Web::Client') }
+      let(:slack_web_client_mock) { double(::Slack::Web::Client) }
 
       before do
         Redis.current.flushdb

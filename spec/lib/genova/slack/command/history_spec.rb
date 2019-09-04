@@ -4,7 +4,7 @@ module Genova
   module Slack
     module Command
       describe History do
-        let(:bot_mock) { double('Genova::Slack::Bot') }
+        let(:bot_mock) { double(Genova::Slack::Bot) }
 
         before do
           allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)

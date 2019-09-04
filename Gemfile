@@ -9,7 +9,6 @@ gem 'aws-sdk', '~> 3.0.1'
 gem 'bootsnap', require: false
 gem 'config'
 gem 'docker-api'
-gem 'ecs_deployer', '~> 2.3.2'
 gem 'enumerize'
 gem 'git'
 gem 'grape', '~> 1.1.0'

@@ -4,14 +4,14 @@ module Genova
   module Docker
     describe Client do
       describe 'build_image' do
-        let(:cipher_mock) { double(EcsDeployer::Util::Cipher) }
+        let(:cipher_mock) { double(Utils::Cipher) }
         let(:code_manager) { Genova::CodeManager::Git.new('account', 'repository', 'master') }
         let(:docker_client) { Genova::Docker::Client.new(code_manager) }
 
         include_context 'load code_manager_mock'
 
         it 'should be return repository name' do
-          allow(EcsDeployer::Util::Cipher).to receive(:new).and_return(cipher_mock)
+          allow(Utils::Cipher).to receive(:new).and_return(cipher_mock)
 
           container_config = {
             name: 'nginx',

@@ -38,13 +38,13 @@ module Genova
           retention_sec = Settings.docker.retention_days * 60 * 60 * 24
           ecr_image_key = "#{Aws::STS::Client.new.get_caller_identity[:account]}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
 
-          ::Docker::Image.all.each do|image|
+          ::Docker::Image.all.each do |image|
             next if current_time - image.info['Created'] <= retention_sec
 
             image.info['RepoTags'].each do |repo_tag|
               values = repo_tag.split(':')
 
-              if repo_tag === '<none>:<none>'
+              if repo_tag == '<none>:<none>'
                 @logger.info("  #{image.id}")
                 image.remove
               elsif values[0].include?(ecr_image_key)
