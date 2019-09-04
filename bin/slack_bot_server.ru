@@ -1,11 +1,6 @@
 require_relative '../config/environment'
 require_relative '../lib/genova/slack/commands'
 
-if ENV.fetch('SLACK_CLIENT_ID').empty?
-  STDERR.puts 'SLACK_CLIENT_ID is undefined'
-  exit
-end
-
 Slack::RealTime::Client.configure do |config|
   config.websocket_ping = 10
 end
