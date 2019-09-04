@@ -4,7 +4,7 @@ module Genova
   module Ecr
     describe Client do
       let(:ecr_mock) { double(Aws::ECR::Client) }
-      let(:ecr_client) { Genova::Ecr::Client.new }
+      let(:ecr_client) { Ecr::Client.new }
 
       describe 'authenticate' do
         it 'shuold be return true' do

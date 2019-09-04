@@ -19,7 +19,7 @@ module Genova
         ecr_client_mock = double(Ecr::Client)
         allow(ecr_client_mock).to receive(:push_image)
         allow(ecr_client_mock).to receive(:destroy_images)
-        allow(Genova::Ecr::Client).to receive(:new).and_return(ecr_client_mock)
+        allow(Ecr::Client).to receive(:new).and_return(ecr_client_mock)
 
         allow(Ecs::Task::Client).to receive(:new).and_return(task_client_mock)
 
@@ -31,8 +31,8 @@ module Genova
       describe 'deploy_service' do
         include_context 'load code_manager_mock'
 
-        let(:code_manager) { Genova::CodeManager::Git.new('account', 'repository', 'master') }
-        let(:client)  { Genova::Ecs::Client.new('cluster', code_manager) }
+        let(:code_manager) { CodeManager::Git.new('account', 'repository', 'master') }
+        let(:client)  { Ecs::Client.new('cluster', code_manager) }
 
         it 'should be return Aws::ECS::Types::TaskDefinition' do
           expect(client.deploy_service('service', 'tag_revision')).to eq('task_definition_arn')

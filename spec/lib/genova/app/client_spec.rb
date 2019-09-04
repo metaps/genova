@@ -3,8 +3,8 @@ require 'rails_helper'
 module Genova
   module App
     describe Client do
-      let(:code_manager) { Genova::CodeManager::Git.new('account', 'repository') }
-      let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
+      let(:code_manager) { CodeManager::Git.new('account', 'repository') }
+      let(:deploy_config_mock) { double(Config::DeployConfig) }
 
       describe 'clone' do
         it 'should be execute git clone' do
@@ -39,8 +39,8 @@ module Genova
           allow(File).to receive(:exist?).and_return(true)
           allow(File).to receive(:read).and_return('{}')
 
-          deploy_config_mock = double(Genova::Config::DeployConfig)
-          allow(Genova::Config::DeployConfig).to receive(:new).and_return(deploy_config_mock)
+          deploy_config_mock = double(Config::DeployConfig)
+          allow(Config::DeployConfig).to receive(:new).and_return(deploy_config_mock)
 
           expect(code_manager.load_deploy_config).to be_a(deploy_config_mock.class)
         end
@@ -58,7 +58,7 @@ module Genova
           allow(File).to receive(:exist?).and_return(true)
           allow(File).to receive(:read).and_return('{}')
 
-          expect(code_manager.load_task_definition_config('path')).to be_a(Genova::Config::TaskDefinitionConfig)
+          expect(code_manager.load_task_definition_config('path')).to be_a(Config::TaskDefinitionConfig)
         end
       end
 
