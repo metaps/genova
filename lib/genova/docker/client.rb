@@ -4,7 +4,7 @@ module Genova
       def initialize(code_manager, options = {})
         @code_manager = code_manager
         @logger = options[:logger] || ::Logger.new(nil)
-        @cipher = EcsDeployer::Util::Cipher.new
+        @cipher = Utils::Cipher.new
       end
 
       def build_image(container_config, task_definition_path)

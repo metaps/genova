@@ -7,12 +7,7 @@ module Genova
         @logger = options[:logger] || ::Logger.new(nil)
         @task_definitions = {}
 
-        @deploy_client = EcsDeployer::Client.new(
-          @cluster,
-          @logger
-        )
         @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
-        @ecs_client = Aws::ECS::Client.new
         @ecr_client = Genova::Ecr::Client.new(logger: @logger)
         @deploy_config = @code_manager.load_deploy_config
       end
@@ -29,14 +24,10 @@ module Genova
         task_definition_path = @code_manager.task_definition_config_path('config/' + run_task_config[:path])
         task_definition = create_task(task_definition_path, tag)
 
-        options = {
-          cluster: @cluster,
-          task_definition: task_definition.task_definition_arn
-        }
-        options.merge!(run_task_config[:ecs_configuration] || {})
+        options = run_task_config[:ecs_configuration] || {}
 
-        run_task_response = @ecs_client.run_task(options)
-        run_task_response[:tasks].map { |key| key[:task_definition_arn] }
+        run_task_client = Ecs::Deployer::RunTask::Client.new(@cluster)
+        run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
       def deploy_service(service, tag)
@@ -48,7 +39,7 @@ module Genova
         service_task_definition_path = @code_manager.task_definition_config_path('config/' + service_config[:path])
         service_task_definition = create_task(service_task_definition_path, tag)
 
-        service_client = @deploy_client.service
+        service_client = Ecs::Deployer::Service::Client.new(@cluster, @logger)
 
         raise Exceptions::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
 
@@ -82,7 +73,7 @@ module Genova
 
         cluster_config = @deploy_config.cluster(@cluster)
         cluster_config[:scheduled_tasks].each do |scheduled_task|
-          scheduled_task_client = @deploy_client.scheduled_task
+          scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@cluster)
           config_base_path = Pathname(@code_manager.base_path).join('config').to_s
           targets = []
 
@@ -97,9 +88,9 @@ module Genova
             task_definition_path = File.expand_path(target[:path], config_base_path)
             task_definition = create_task(task_definition_path, tag)
 
-            builder = scheduled_task_client.target_builder(target[:name])
-
             cloudwatch_event_role = target[:cloudwatch_event_role] || 'ecsEventsRole'
+
+            builder = Ecs::Deployer::ScheduledTask::Target.new(@cluster, target[:name])
             builder.cloudwatch_event_role_arn = Aws::IAM::Role.new(cloudwatch_event_role).arn
 
             builder.task_definition_arn = task_definition.task_definition_arn
@@ -135,7 +126,7 @@ module Genova
       end
 
       def create_task(task_definition_path, tag)
-        task_client = EcsDeployer::Task::Client.new
+        task_client = Ecs::Task::Client.new
         @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag) unless @task_definitions.include?(task_definition_path)
 
         @task_definitions[task_definition_path]
