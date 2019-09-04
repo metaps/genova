@@ -27,7 +27,7 @@ module Genova
         command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
         @logger.info("Docker build path: #{docker_base_path}")
 
-        executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
+        executor = Command::Executor.new(work_dir: docker_base_path, logger: @logger)
         executor.command(command)
 
         repository_name

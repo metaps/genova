@@ -8,7 +8,7 @@ module Genova
         @task_definitions = {}
 
         @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
-        @ecr_client = Genova::Ecr::Client.new(logger: @logger)
+        @ecr_client = Ecr::Client.new(logger: @logger)
         @deploy_config = @code_manager.load_deploy_config
       end
 
