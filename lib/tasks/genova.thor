@@ -11,7 +11,7 @@ module GenovaCli
       def deploy(options)
         return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
 
-        code_manager = (::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch]) if options[:repository].present?)
+        code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch]) if options[:repository].present?
 
         options.merge!(code_manager.load_deploy_config.target(options[:target])) if options[:target].present?
 

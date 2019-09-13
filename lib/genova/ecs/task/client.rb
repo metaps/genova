@@ -71,7 +71,7 @@ module Genova
 
             container_definition[:environment].each do |environment|
               if environment[:value].class == String
-                environment[:value] = @cipher.decrypt(environment[:value]) if @cipher.encrypt_value?(environment[:value])
+                environment[:value] = @cipher.decrypt(environment[:value]) if @cipher.encrypt_format?(environment[:value])
               else
                 # https://github.com/naomichi-y/ecs_deployer/issues/6
                 environment[:value] = environment[:value].to_s
