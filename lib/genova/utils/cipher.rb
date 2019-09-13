@@ -25,7 +25,7 @@ module Genova
         end
       end
 
-      def encrypt_value?(value)
+      def encrypt_format?(value)
         value.to_s.match?(VARIABLE_PATTERN) ? true : false
       end
     end
