@@ -77,7 +77,11 @@
                 "properties": {
                   "path": { "type": "string" },
                   "containers": { "$ref": "#/definitions/containers" },
-                  "desired_count": { "type": "number" }
+                  "desired_count": { "type": "number" },
+                  "force_new_deployment": { "type": "boolean" },
+                  "health_check_grace_period_seconds": { "type": "number" },
+                  "minimum_healthy_percent": { "type": "number" },
+                  "maximum_percent": { "type": "number" }
                 }
               }
             }

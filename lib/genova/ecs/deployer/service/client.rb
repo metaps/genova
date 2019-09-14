@@ -9,10 +9,9 @@ module Genova
 
           def initialize(cluster, logger)
             @cluster = cluster
-
             @logger = logger
 
-            @ecs = Aws::ECS::Client.new
+@ecs = Aws::ECS::Client.new
             @task = Ecs::Task::Client.new
 
             @wait_timeout = 900
