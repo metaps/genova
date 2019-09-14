@@ -35,32 +35,6 @@ module Genova
           end
         end
 
-        describe 'register_clone' do
-          before do
-            allow(ecs_client_mock).to receive(:describe_services).and_return(
-              services: [
-                service_name: 'service'
-              ]
-            )
-            allow(ecs_client_mock).to receive(:describe_task_definition).and_return(
-              task_definition: {}
-            )
-            allow(task_client).to receive(:register_hash).and_return(task_definition_mock)
-          end
-
-          context 'when find task definition' do
-            it 'should be return new task definition arn' do
-              expect(task_client.register_clone('cluster', 'service')).to eq(task_definition_mock)
-            end
-          end
-
-          context 'when not found task definition' do
-            it 'should be return new task definition arn' do
-              expect { task_client.register_clone('cluster', 'undefined') }.to raise_error(Exceptions::ServiceNotFoundError)
-            end
-          end
-        end
-
         describe 'decrypt_environment_variables' do
           let(:variables) do
             {

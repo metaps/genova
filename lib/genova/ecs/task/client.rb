@@ -23,32 +23,6 @@ module Genova
           result[:task_definition]
         end
 
-        def register_clone(cluster, service)
-          result = @ecs_client.describe_services(
-            cluster: cluster,
-            services: [service]
-          )
-
-          result[:services].each do |svc|
-            next unless svc[:service_name] == service
-
-            result = @ecs_client.describe_task_definition(
-              task_definition: svc[:task_definition]
-            )
-
-            task_definition = result[:task_definition].to_hash
-
-            delete_keys = %i[task_definition_arn revision status requires_attributes compatibilities]
-            delete_keys.each do |delete_key|
-              task_definition.delete(delete_key)
-            end
-
-            return register_hash(task_definition)
-          end
-
-          raise Exceptions::ServiceNotFoundError, "'#{service}' service is not found."
-        end
-
         private
 
         def replace_parameter_variables!(variables, replace_variables = {})
