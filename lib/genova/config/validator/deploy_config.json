@@ -93,6 +93,7 @@
               "properties": {
                 "rule": { "type": "string" },
                 "expression": { "type": "string" },
+                "enabled": { "type": "boolean" },
                 "targets": {
                   "type": "array",
                   "items": {
@@ -104,6 +105,7 @@
                       "depend_service": { "type": "string" },
                       "path": { "type": "string" },
                       "task_count": { "type": "number" },
+                      "desired_count": { "type": "number" },
                       "overrides": {
                         "type": "array",
                         "items": {
