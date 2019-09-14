@@ -84,51 +84,52 @@ module Genova
         task_definition_arns = []
 
         cluster_config = @deploy_config.cluster(@cluster)
-        cluster_config[:scheduled_tasks].each do |scheduled_task|
+        cluster_config[:scheduled_tasks].each do |scheduled_task_config|
           scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@cluster)
           config_base_path = Pathname(@code_manager.base_path).join('config').to_s
           targets = []
 
-          next if options[:rule].present? && scheduled_task[:rule] != options[:rule]
+          next if options[:rule].present? && scheduled_task_config[:rule] != options[:rule]
 
-          scheduled_task[:targets].each do |target|
-            next if options[:depend_service].present? && target[:depend_service] != options[:depend_service]
-            next if options[:target].present? && target[:name] != options[:target]
+          scheduled_task_config[:targets].each do |target_config|
+            next if options[:depend_service].present? && target_config[:depend_service] != options[:depend_service]
+            next if options[:target].present? && target_config[:name] != options[:target]
 
-            build(target[:containers], target[:path], tag) if options[:target].present?
+            build(target_config[:containers], target_config[:path], tag) if options[:target].present?
 
-            task_definition_path = File.expand_path(target[:path], config_base_path)
+            task_definition_path = File.expand_path(target_config[:path], config_base_path)
             task_definition = create_task(task_definition_path, tag)
 
-            cloudwatch_event_role = target[:cloudwatch_event_role] || 'ecsEventsRole'
+            task_definition_arn = task_definition.task_definition_arn
 
-            builder = Ecs::Deployer::ScheduledTask::Target.new(@cluster, target[:name])
-            builder.cloudwatch_event_role_arn = Aws::IAM::Role.new(cloudwatch_event_role).arn
+            options = {}
+            options[:cloudwatch_event_iam_role_arn] = Aws::IAM::Role.new(target_config[:cloudwatch_event_iam_role] || 'ecsEventsRole').arn
+            options[:task_definition_arn] = task_definition_arn
+            options[:desired_count] = target_config[:task_count] || target_config[:desired_count] || 1
+            options[:task_role_arn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
+            options[:container_overrides] = target_config[:overrides] || target_config[:container_overrides]
 
-            builder.task_definition_arn = task_definition.task_definition_arn
-            builder.task_role_arn = Aws::IAM::Role.new(target[:task_role]).arn if target.include?(:task_role)
-            builder.task_count = target[:task_count] || 1
+            @logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
+            @logger.warn('"overrides" parameter is deprecated. Set variable "container_overrides" instead.') if target_config[:overrides].present?
 
-            if target.include?(:overrides)
-              target[:overrides].each do |override|
-                override_environment = override[:environment] || []
-                builder.override_container(override[:name], override[:command], override_environment)
-              end
-            end
-
-            targets << builder.to_hash
-            task_definition_arns << task_definition.task_definition_arn
+            targets << Ecs::Deployer::ScheduledTask::Target.build_hash(@cluster, target_config[:name], options)
+            task_definition_arns << task_definition_arn
           end
 
           next if targets.size.zero?
 
-          @logger.info("Update '#{scheduled_task[:rule]}' rule.")
+          @logger.info("Update '#{scheduled_task_config[:rule]}' rule.")
+
+          options = {
+            enabled: scheduled_task_config[:enabled],
+            description: scheduled_task_config[:description],
+          }
 
           scheduled_task_client.update(
-            scheduled_task[:rule],
-            scheduled_task[:expression],
+            scheduled_task_config[:rule],
+            scheduled_task_config[:expression],
             targets,
-            description: scheduled_task[:description]
+            options
           )
         end
 
