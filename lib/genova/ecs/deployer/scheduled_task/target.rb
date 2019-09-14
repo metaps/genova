@@ -4,7 +4,7 @@ module Genova
       module ScheduledTask
         class Target
           class << self
-            attr_accessor  :task_role_arn
+            attr_accessor :task_role_arn
 
             def build_hash(cluster, name, options = {})
               ecs = Aws::ECS::Client.new

@@ -11,7 +11,7 @@ module Genova
             @cluster = cluster
             @logger = logger
 
-@ecs = Aws::ECS::Client.new
+            @ecs = Aws::ECS::Client.new
             @task = Ecs::Task::Client.new
 
             @wait_timeout = 900
@@ -23,6 +23,7 @@ module Genova
               cluster: @cluster,
               service: service
             }
+
             options.merge(params.slice(:desired_count, :force_new_deployment, :health_check_grace_period_seconds))
 
             deployment_config = params.slice(:minimum_healthy_percent, :maximum_percent)

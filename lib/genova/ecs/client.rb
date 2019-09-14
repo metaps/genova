@@ -26,7 +26,11 @@ module Genova
         task_definition_path = @code_manager.task_definition_config_path('config/' + run_task_config[:path])
         task_definition = create_task(task_definition_path, tag)
 
-        options = run_task_config[:ecs_configuration] || {}
+        options = {
+          desired_count: run_task_config[:desired_count],
+          container_overrides: run_task_config[:container_overrides]
+        }
+        options[:launch_type] = run_task_config[:launch_type].downcase if run_task_config[:launch_type].present?
 
         run_task_client = Ecs::Deployer::RunTask::Client.new(@cluster)
         run_task_client.execute(task_definition.task_definition_arn, options)
@@ -102,12 +106,14 @@ module Genova
 
             task_definition_arn = task_definition.task_definition_arn
 
-            options = {}
-            options[:cloudwatch_event_iam_role_arn] = Aws::IAM::Role.new(target_config[:cloudwatch_event_iam_role] || 'ecsEventsRole').arn
-            options[:task_definition_arn] = task_definition_arn
-            options[:desired_count] = target_config[:task_count] || target_config[:desired_count] || 1
+            options = {
+              task_definition_arn: task_definition_arn,
+              cloudwatch_event_iam_role_arn: Aws::IAM::Role.new(target_config[:cloudwatch_event_iam_role] || 'ecsEventsRole').arn,
+              desired_count: target_config[:task_count] || target_config[:desired_count] || 1,
+              container_overrides: target_config[:overrides] || target_config[:container_overrides]
+            }
+            options[:launch_type] = target_config[:launch_type].downcase if task_config[:launch_type].present?
             options[:task_role_arn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
-            options[:container_overrides] = target_config[:overrides] || target_config[:container_overrides]
 
             @logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
             @logger.warn('"overrides" parameter is deprecated. Set variable "container_overrides" instead.') if target_config[:overrides].present?
@@ -122,7 +128,7 @@ module Genova
 
           options = {
             enabled: scheduled_task_config[:enabled],
-            description: scheduled_task_config[:description],
+            description: scheduled_task_config[:description]
           }
 
           scheduled_task_client.update(
