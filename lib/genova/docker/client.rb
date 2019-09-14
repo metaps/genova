@@ -4,7 +4,7 @@ module Genova
       def initialize(code_manager, options = {})
         @code_manager = code_manager
         @logger = options[:logger] || ::Logger.new(nil)
-        @cipher = EcsDeployer::Util::Cipher.new
+        @cipher = Utils::Cipher.new
       end
 
       def build_image(container_config, task_definition_path)
@@ -27,7 +27,7 @@ module Genova
         command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
         @logger.info("Docker build path: #{docker_base_path}")
 
-        executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
+        executor = Command::Executor.new(work_dir: docker_base_path, logger: @logger)
         executor.command(command)
 
         repository_name
@@ -49,7 +49,7 @@ module Genova
 
           if build[:args].is_a?(Hash)
             build[:args].each do |key, value|
-              value = cipher.decrypt(value) if cipher.encrypt_value?(value)
+              value = cipher.decrypt(value) if cipher.encrypt_format?(value)
               result[:build_args] += " --build-arg #{key}='#{value}'"
             end
           end

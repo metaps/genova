@@ -28,7 +28,7 @@ module V1
         end
 
         context 'when callback_id is invalid' do
-          let(:bot_mock) { double('Genova::Slack::Bot') }
+          let(:bot_mock) { double(Genova::Slack::Bot) }
           it 'should be return error' do
             allow(bot_mock).to receive(:post_error)
 
