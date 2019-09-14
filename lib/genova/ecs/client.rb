@@ -13,6 +13,8 @@ module Genova
       end
 
       def ready
+        @logger.info('Start sending images to ECR.')
+
         @ecr_client.authenticate
         @code_manager.pull
       end
@@ -43,12 +45,22 @@ module Genova
 
         raise Exceptions::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
 
+        task_definition_arn = service_task_definition.task_definition_arn
+        params = service_config.slice(
+          :desired_count,
+          :force_new_deployment,
+          :health_check_grace_period_seconds,
+          :minimum_healthy_percent,
+          :maximum_percent
+        )
+        params[:task_definition] = task_definition_arn
+
         service_client.wait_timeout = Settings.deploy.wait_timeout
-        service_client.update(service, service_task_definition)
+        service_client.update(service, params)
 
         deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
-        service_task_definition.task_definition_arn
+        task_definition_arn
       end
 
       def deploy_scheduled_task(rule, target, tag)

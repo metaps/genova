@@ -9,6 +9,7 @@ module Genova
 
           def initialize(cluster, logger)
             @cluster = cluster
+
             @logger = logger
 
             @ecs = Aws::ECS::Client.new
@@ -18,13 +19,17 @@ module Genova
             @polling_interval = 20
           end
 
-          def update(service, task_definition = nil, wait = true)
-            task_definition = @task.register_clone(@cluster, service) if task_definition.nil?
-            result = @ecs.update_service(
+          def update(service, params = {}, wait = true)
+            options = {
               cluster: @cluster,
-              service: service,
-              task_definition: task_definition[:family] + ':' + task_definition[:revision].to_s
-            )
+              service: service
+            }
+            options.merge(params.slice(:desired_count, :force_new_deployment, :health_check_grace_period_seconds))
+
+            deployment_config = params.slice(:minimum_healthy_percent, :maximum_percent)
+            options[:deployment_configuration] = deployment_config if deployment_config.count.positive?
+
+            result = @ecs.update_service(options)
 
             wait_for_deploy(service, result.service.task_definition) if wait
             result.service
@@ -121,7 +126,7 @@ module Genova
               wait_time += @polling_interval
               result = deploy_status(service, task_definition_arn)
 
-              @logger.info "Updating... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time} seconds elapsed)"
+              @logger.info "Deploying service... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)"
               @logger.info "New task: #{task_definition_arn}"
               @logger.info LOG_SEPARATOR
 
