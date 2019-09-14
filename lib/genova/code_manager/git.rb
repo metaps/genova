@@ -69,7 +69,7 @@ module Genova
         raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
         params = YAML.load(File.read(path)).deep_symbolize_keys
-        Config::DeployConfig.new(params)
+        Genova::Config::DeployConfig.new(params)
       end
 
       def task_definition_config_path(path)
@@ -81,7 +81,7 @@ module Genova
         raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
         params = YAML.load(File.read(path)).deep_symbolize_keys
-        Config::TaskDefinitionConfig.new(params)
+        Genova::Config::TaskDefinitionConfig.new(params)
       end
 
       def origin_branches
