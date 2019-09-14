@@ -42,6 +42,7 @@ module Genova
             next if current_time - image.info['Created'] <= retention_sec
 
             image.info['RepoTags'].each do |repo_tag|
+              next if used_images.include?(image.id)
               values = repo_tag.split(':')
 
               if repo_tag == '<none>:<none>'

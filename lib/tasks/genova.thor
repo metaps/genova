@@ -134,7 +134,7 @@ module GenovaCli
 
     desc 'docker-cleanup', 'Delete old containers and images. This program is running on Genova.'
     def docker_cleanup
-      ::Genova::Command::DockerCleanup.exec(Logger.new(STDOUT))
+      ::Genova::Docker::Cleaner.execute
     end
 
     desc 'register-task', 'Register task definition.'
