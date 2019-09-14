@@ -19,6 +19,9 @@ module Genova
           replace_parameter_variables!(task_definition, replace_variables)
           decrypt_environment_variables!(task_definition)
 
+          task_definition[:tags] = [] if task_definition[:tags].nil?
+          task_definition[:tags] << { key: 'genova', value: VERSION::STRING }
+
           result = @ecs_client.register_task_definition(task_definition)
           result[:task_definition]
         end
