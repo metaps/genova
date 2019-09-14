@@ -94,6 +94,7 @@
                 "rule": { "type": "string" },
                 "expression": { "type": "string" },
                 "enabled": { "type": "boolean" },
+                "description": { "type": "string" },
                 "targets": {
                   "type": "array",
                   "items": {
@@ -102,11 +103,11 @@
                     "properties": {
                       "name": { "type": "string" },
                       "task_role": { "type": "string" },
+                      "cloudwatch_event_iam_role": { "type": "string" },
                       "depend_service": { "type": "string" },
                       "path": { "type": "string" },
-                      "task_count": { "type": "number" },
                       "desired_count": { "type": "number" },
-                      "overrides": {
+                      "container_overrides": {
                         "type": "array",
                         "items": {
                           "type": "object",
