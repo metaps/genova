@@ -31,6 +31,8 @@ module Genova
           container_overrides: run_task_config[:container_overrides]
         }
         options[:launch_type] = run_task_config[:launch_type].downcase if run_task_config[:launch_type].present?
+        options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
+        options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
         run_task_client = Ecs::Deployer::RunTask::Client.new(@cluster)
         run_task_client.execute(task_definition.task_definition_arn, options)

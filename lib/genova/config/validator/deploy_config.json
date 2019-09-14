@@ -63,6 +63,8 @@
                 "properties": {
                   "launch_type": { "type": "string" },
                   "path": { "type": "string" },
+                  "task_role": { "type": "string" },
+                  "task_execution_role": { "type": "string" },
                   "containers": { "$ref": "#/definitions/containers" },
                   "ecs_configuration": { "type": "object" }
                 }
