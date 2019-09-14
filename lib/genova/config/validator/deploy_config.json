@@ -76,7 +76,8 @@
                 "required": ["path", "containers"],
                 "properties": {
                   "path": { "type": "string" },
-                  "containers": { "$ref": "#/definitions/containers" }
+                  "containers": { "$ref": "#/definitions/containers" },
+                  "desired_count": { "type": "number" }
                 }
               }
             }
