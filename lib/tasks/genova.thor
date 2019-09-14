@@ -11,9 +11,7 @@ module GenovaCli
       def deploy(options)
         return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
 
-        code_manager = if options[:repository].present?
-          ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch])
-        end
+        code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch]) if options[:repository].present?
 
         options.merge!(code_manager.load_deploy_config.target(options[:target])) if options[:target].present?
 
@@ -47,9 +45,7 @@ module GenovaCli
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def run_task
-      if options[:run_task].blank? && options[:target].blank?
-        raise Genova::Exceptions::InvalidArgumentError, 'Task or target must be specified.'
-      end
+      raise Genova::Exceptions::InvalidArgumentError, 'Task or target must be specified.' if options[:run_task].blank? && options[:target].blank?
 
       hash_options = options.to_hash.symbolize_keys
       hash_options[:type] = DeployJob.type.find_value(:run_task)
@@ -63,9 +59,7 @@ module GenovaCli
     option :service, aliases: :s, desc: 'Service name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def service
-      if options[:service].blank? && options[:target].blank?
-        raise Genova::Exceptions::InvalidArgumentError, 'Service or target must be specified.'
-      end
+      raise Genova::Exceptions::InvalidArgumentError, 'Service or target must be specified.' if options[:service].blank? && options[:target].blank?
 
       hash_options = options.to_hash.symbolize_keys
       hash_options[:type] = DeployJob.type.find_value(:service)
@@ -80,9 +74,7 @@ module GenovaCli
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def scheduled_task
-      if (options[:scheduled_task_rule].blank? || options[:scheduled_task_target].blank?) || options[:target].blank?
-        raise Genova::Exceptions::InvalidArgumentError, 'Scheduled task or target must be specified.'
-      end
+      raise Genova::Exceptions::InvalidArgumentError, 'Scheduled task or target must be specified.' if (options[:scheduled_task_rule].blank? || options[:scheduled_task_target].blank?) && options[:target].blank?
 
       hash_options = options.to_hash.symbolize_keys
       hash_options[:type] = DeployJob.type.find_value(:scheduled_task)

@@ -6,6 +6,7 @@ module Genova
       describe 'execute' do
         let(:container_mock) { double(::Docker::Container) }
         let(:image_mock) { double(::Docker::Image) }
+        let(:logger_mock) { double(::Logger) }
 
         it 'should be return execute result' do
           # cleanup_unused_containers
@@ -35,7 +36,11 @@ module Genova
           # cleanup_unused_volumes
           allow(::Docker::Volume).to receive(:prune)
 
-          Genova::Docker::Cleaner.execute
+          allow(logger_mock).to receive(:info)
+          allow(::Logger).to receive(:new).and_return(logger_mock)
+
+          expect { Genova::Docker::Cleaner.execute }.not_to raise_error
+          expect(logger_mock).to have_received(:info).exactly(7).times
         end
       end
     end

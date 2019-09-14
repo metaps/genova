@@ -3,7 +3,7 @@ require 'rails_helper'
 module Genova
   module Command
     describe Executor do
-      let(:executor) { Genova::Command::Executor.new }
+      let(:executor) { Command::Executor.new }
       let(:io_mock) { double(IO) }
 
       describe 'command' do
