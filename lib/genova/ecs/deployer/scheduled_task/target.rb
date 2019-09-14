@@ -3,56 +3,55 @@ module Genova
     module Deployer
       module ScheduledTask
         class Target
-          attr_reader :id
-          attr_accessor :cloudwatch_event_role_arn, :task_definition_arn, :task_count, :task_role_arn
+          class << self
+            attr_accessor :task_role_arn
 
-          def initialize(cluster, id)
-            ecs = Aws::ECS::Client.new
-            clusters = ecs.describe_clusters(clusters: [cluster]).clusters
-            raise Exceptions::ClusterNotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
+            def build_hash(cluster, name, options = {})
+              ecs = Aws::ECS::Client.new
+              clusters = ecs.describe_clusters(clusters: [cluster]).clusters
+              raise Exceptions::ClusterNotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
 
-            @id = id
-            @arn = clusters[0].cluster_arn
-            @task_count = 1
-            @container_overrides = []
-          end
-
-          # @param [Hash] environments
-          def override_container(name, command = nil, environments = {})
-            override_environments = []
-            environments.each do |environment|
-              environment.each do |env_name, env_value|
-                override_environments << {
-                  name: env_name,
-                  value: env_value
-                }
+              container_overrides = []
+              options[:container_overrides].each do |container_override|
+                override_environment = container_override[:environment] || []
+                container_overrides << override_container(container_override[:name], container_override[:command], override_environment)
               end
+
+              {
+                id: name,
+                arn: clusters[0].cluster_arn,
+                role_arn: options[:cloudwatch_event_iam_role_arn],
+                ecs_parameters: {
+                  task_definition_arn: options[:task_definition_arn],
+                  task_count: options[:desired_count].present? ? options[:desired_count] : 1
+                },
+                input: {
+                  taskRoleArn: options[:task_role_arn],
+                  containerOverrides: container_overrides
+                }.to_json
+              }
             end
 
-            container_override = {
-              name: name,
-              command: command
-            }
-            container_override[:environment] = override_environments if override_environments.count.positive?
+            private
 
-            @container_overrides << container_override
-          end
+            def override_container(name, command = nil, environments = {})
+              environment_overrides = []
+              environments.each do |environment|
+                environment.each do |env_name, env_value|
+                  environment_overrides << {
+                    name: env_name,
+                    value: env_value
+                  }
+                end
+              end
 
-          # @return [Hash]
-          def to_hash
-            {
-              id: @id,
-              arn: @arn,
-              role_arn: @cloudwatch_event_role_arn,
-              ecs_parameters: {
-                task_definition_arn: @task_definition_arn,
-                task_count: @task_count
-              },
-              input: {
-                taskRoleArn: @task_role_arn,
-                containerOverrides: @container_overrides
-              }.to_json.to_s
-            }
+              container_override = {
+                name: name,
+                command: command
+              }
+              container_override[:environment] = environment_overrides if environment_overrides.count.positive?
+              container_override
+            end
           end
         end
       end

@@ -61,7 +61,10 @@
                 "type": "object",
                 "required": ["path", "containers"],
                 "properties": {
+                  "launch_type": { "type": "string" },
                   "path": { "type": "string" },
+                  "task_role": { "type": "string" },
+                  "task_execution_role": { "type": "string" },
                   "containers": { "$ref": "#/definitions/containers" },
                   "ecs_configuration": { "type": "object" }
                 }
@@ -76,7 +79,12 @@
                 "required": ["path", "containers"],
                 "properties": {
                   "path": { "type": "string" },
-                  "containers": { "$ref": "#/definitions/containers" }
+                  "containers": { "$ref": "#/definitions/containers" },
+                  "desired_count": { "type": "number" },
+                  "force_new_deployment": { "type": "boolean" },
+                  "health_check_grace_period_seconds": { "type": "number" },
+                  "minimum_healthy_percent": { "type": "number" },
+                  "maximum_percent": { "type": "number" }
                 }
               }
             }
@@ -88,18 +96,22 @@
               "properties": {
                 "rule": { "type": "string" },
                 "expression": { "type": "string" },
+                "enabled": { "type": "boolean" },
+                "description": { "type": "string" },
                 "targets": {
                   "type": "array",
                   "items": {
                     "type": "object",
                     "required": ["name", "containers", "path"],
                     "properties": {
+                      "launch_type": { "type": "string" },
                       "name": { "type": "string" },
                       "task_role": { "type": "string" },
+                      "cloudwatch_event_iam_role": { "type": "string" },
                       "depend_service": { "type": "string" },
                       "path": { "type": "string" },
-                      "task_count": { "type": "number" },
-                      "overrides": {
+                      "desired_count": { "type": "number" },
+                      "container_overrides": {
                         "type": "array",
                         "items": {
                           "type": "object",

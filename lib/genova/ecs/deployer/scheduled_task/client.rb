@@ -15,15 +15,15 @@ module Genova
             false
           end
 
-          def update(rule, schedule_expression, targets = [], options = { description: nil })
+          def update(name, schedule_expression, targets = [], options = {})
             response = @cloud_watch_events.put_rule(
-              name: rule,
+              name: name,
               schedule_expression: schedule_expression,
-              state: 'ENABLED',
+              state: options[:enabled].nil? || options[:enabled] ? 'ENABLED' : 'DISABLED',
               description: options[:description]
             )
             @cloud_watch_events.put_targets(
-              rule: rule,
+              rule: name,
               targets: targets
             )
 
