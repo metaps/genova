@@ -16,10 +16,6 @@ module Genova
 
           describe 'update' do
             it 'should be return service arn' do
-              task_definition_mock = double(Aws::ECS::Types::TaskDefinition)
-              allow(task_definition_mock).to receive(:[]).with(:family).and_return('family')
-              allow(task_definition_mock).to receive(:[]).with(:revision).and_return('revision')
-
               update_service_response_mock = double(Aws::ECS::Types::UpdateServiceResponse)
               service_mock = double(Aws::ECS::Types::Service)
 
@@ -28,7 +24,7 @@ module Genova
               allow(ecs_client_mock).to receive(:update_service).and_return(update_service_response_mock)
               allow(service_client).to receive(:wait_for_deploy)
 
-              expect(service_client.update('service', task_definition_mock, true)).to be_a(service_mock.class)
+              expect(service_client.update('service')).to be_a(service_mock.class)
             end
           end
 
