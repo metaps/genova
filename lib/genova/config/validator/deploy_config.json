@@ -61,6 +61,7 @@
                 "type": "object",
                 "required": ["path", "containers"],
                 "properties": {
+                  "launch_type": { "type": "string" },
                   "path": { "type": "string" },
                   "containers": { "$ref": "#/definitions/containers" },
                   "ecs_configuration": { "type": "object" }
@@ -101,6 +102,7 @@
                     "type": "object",
                     "required": ["name", "containers", "path"],
                     "properties": {
+                      "launch_type": { "type": "string" },
                       "name": { "type": "string" },
                       "task_role": { "type": "string" },
                       "cloudwatch_event_iam_role": { "type": "string" },
