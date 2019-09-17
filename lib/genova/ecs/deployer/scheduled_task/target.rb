@@ -15,7 +15,7 @@ module Genova
               options[:container_overrides].each do |container_override|
                 override_environment = container_override[:environment] || []
                 container_overrides << override_container(container_override[:name], container_override[:command], override_environment)
-              end
+              end if options[:container_overrides].present?
 
               {
                 id: name,
