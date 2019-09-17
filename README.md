@@ -49,7 +49,7 @@ Please place following files in your application.
   - deploy.yml
 
   - deploy
-    # Task configuration
+    # Task configurations
     - development.yml
     - staging.yml
     - production.yml
