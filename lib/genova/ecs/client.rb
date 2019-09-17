@@ -114,7 +114,7 @@ module Genova
               desired_count: target_config[:task_count] || target_config[:desired_count] || 1,
               container_overrides: target_config[:overrides] || target_config[:container_overrides]
             }
-            options[:launch_type] = target_config[:launch_type].downcase if task_config[:launch_type].present?
+            options[:launch_type] = target_config[:launch_type].downcase if target_config[:launch_type].present?
             options[:task_role_arn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
 
             @logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
