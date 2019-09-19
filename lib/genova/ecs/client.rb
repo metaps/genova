@@ -59,10 +59,9 @@ module Genova
           :minimum_healthy_percent,
           :maximum_percent
         )
-        params[:task_definition] = task_definition_arn
 
         service_client.wait_timeout = Settings.deploy.wait_timeout
-        service_client.update(service, params)
+        service_client.update(service, task_definition_arn, params)
 
         deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
