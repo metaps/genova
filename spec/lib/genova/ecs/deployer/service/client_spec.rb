@@ -24,7 +24,7 @@ module Genova
               allow(ecs_client_mock).to receive(:update_service).and_return(update_service_response_mock)
               allow(service_client).to receive(:wait_for_deploy)
 
-              expect(service_client.update('service')).to be_a(service_mock.class)
+              expect(service_client.update('service', 'task_definition_arn')).to be_a(service_mock.class)
             end
           end
 

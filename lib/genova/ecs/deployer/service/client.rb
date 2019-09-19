@@ -18,18 +18,19 @@ module Genova
             @polling_interval = 20
           end
 
-          def update(service, params = {}, wait = true)
-            options = {
+          def update(service, task_definition_arn, options = {}, wait = true)
+            params = {
               cluster: @cluster,
-              service: service
+              service: service,
+              task_definition: task_definition_arn
             }
 
-            options.merge(params.slice(:desired_count, :force_new_deployment, :health_check_grace_period_seconds))
+            params.merge(options.slice(:desired_count, :force_new_deployment, :health_check_grace_period_seconds))
 
-            deployment_config = params.slice(:minimum_healthy_percent, :maximum_percent)
-            options[:deployment_configuration] = deployment_config if deployment_config.count.positive?
+            deployment_config = options.slice(:minimum_healthy_percent, :maximum_percent)
+            params[:deployment_configuration] = deployment_config if deployment_config.count.positive?
 
-            result = @ecs.update_service(options)
+            result = @ecs.update_service(params)
 
             wait_for_deploy(service, result.service.task_definition) if wait
             result.service
