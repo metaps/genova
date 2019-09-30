@@ -40,8 +40,8 @@ module GenovaCli
     end
 
     desc 'run-task', 'Deploy run task to ECS'
-    option :cluster, required: true, aliases: :c, desc: 'Cluster name.'
-    option :run_task, aliases: :t, desc: 'Task name.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
+    option :run_task, desc: 'Task name.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def run_task
@@ -54,7 +54,7 @@ module GenovaCli
     end
 
     desc 'service', 'Deploy service to ECS'
-    option :cluster, aliases: :c, desc: 'Cluster name.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     option :service, aliases: :s, desc: 'Service name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
@@ -68,7 +68,7 @@ module GenovaCli
     end
 
     desc 'scheduled-task', 'Deploy scheduled task to ECS'
-    option :cluster, aliases: :c, desc: 'Cluster name.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
     option :scheduled_task_rule, desc: 'Schedule rule name.'
     option :scheduled_task_target, desc: 'Schedule target name.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
