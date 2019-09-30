@@ -83,6 +83,27 @@ module GenovaCli
     end
   end
 
+  class Env < Thor
+    desc 'encrypt', 'Encrypt value.'
+    option :master_key, required: true, desc: 'KMS Master key for encryption.'
+    option :value, required: true, desc: 'Value to encrypt.'
+    def encrypt
+      cipher = Genova::Utils::Cipher.new
+      value = cipher.encrypt(options[:master_key], options[:value])
+
+      puts "Encrypted value: #{value}"
+    end
+
+    desc 'decrypt', 'Decrypt value.'
+    option :value, required: true, desc: 'Value to decrypt.'
+    def decrypt
+      cipher = Genova::Utils::Cipher.new
+      value = cipher.decrypt(options[:value])
+
+      puts "Decrypted value: #{value}"
+    end
+  end
+
   class Debug < Thor
     desc 'slack-greeting', 'Slack bot says Hello'
     def slack_greeting
@@ -128,6 +149,9 @@ module GenovaCli
 
     desc 'deploy', 'Deploy application to ECS.'
     subcommand 'deploy', Deploy
+
+    desc 'env', 'Environment variable encryption and decryption.'
+    subcommand 'env', Env
 
     desc 'debug', 'Debug genova'
     subcommand 'debug', Debug
