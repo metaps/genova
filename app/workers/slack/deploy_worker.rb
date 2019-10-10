@@ -8,6 +8,7 @@ module Slack
       logger.info('Started Slack::DeployWorker')
 
       deploy_job = DeployJob.find(id)
+
       client = Genova::Client.new(deploy_job, lock_timeout: Settings.github.deploy_lock_timeout)
       bot = Genova::Slack::Bot.new
 
@@ -18,6 +19,7 @@ module Slack
       bot.post_started_deploy(deploy_job, jid)
 
       client.run
+
       bot.post_finished_deploy(deploy_job)
     end
   end

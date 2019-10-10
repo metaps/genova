@@ -20,6 +20,7 @@ module Genova
         @deploy_job.account,
         @deploy_job.repository,
         @deploy_job.branch,
+        base_path: @deploy_job.base_path,
         logger: @logger
       )
       @ecs_client = Ecs::Client.new(@deploy_job.cluster, @code_manager, logger: @logger)

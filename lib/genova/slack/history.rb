@@ -13,6 +13,7 @@ module Genova
           repository: deploy_job.repository,
           branch: deploy_job.branch,
           cluster: deploy_job.cluster,
+          base_path: deploy_job.base_path,
           run_task: deploy_job.run_task,
           service: deploy_job.service,
           scheduled_task_rule: deploy_job.scheduled_task_rule,
