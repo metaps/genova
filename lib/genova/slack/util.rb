@@ -21,9 +21,10 @@ module Genova
         def repository_options
           options = []
 
-          repositories = Settings.github.repositories.map { |h| h[:name] } || []
+          repositories = Settings.github.repositories || []
           repositories.each do |repository|
-            options.push(text: repository, value: repository)
+            text = repository[:alias] || repository[:name]
+            options.push(text: text, value: text)
           end
 
           options
@@ -44,9 +45,9 @@ module Genova
           branches
         end
 
-        def cluster_options(account, repository, branch)
+        def cluster_options(account, repository, branch, base_path)
           clusters = []
-          code_manager = CodeManager::Git.new(account, repository, branch)
+          code_manager = CodeManager::Git.new(account, repository, branch, base_path: base_path)
 
           deploy_config = code_manager.load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
@@ -56,12 +57,12 @@ module Genova
           clusters
         end
 
-        def target_options(account, repository, branch, cluster)
+        def target_options(account, repository, branch, cluster, base_path)
           run_task_options = []
           service_options = []
           scheduled_task_options = []
 
-          code_manager = CodeManager::Git.new(account, repository, branch)
+          code_manager = CodeManager::Git.new(account, repository, branch, base_path: base_path)
           cluster_config = code_manager.load_deploy_config.cluster(cluster)
 
           if cluster_config[:run_tasks].present?

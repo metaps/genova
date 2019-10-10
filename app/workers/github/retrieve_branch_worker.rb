@@ -10,8 +10,10 @@ module Github
       job = Genova::Sidekiq::Queue.find(id)
       params = {
         account: job.account,
-        repository: job.repository
+        repository: job.repository,
+        base_path: job.base_path
       }
+
       callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_cluster', params)
       options = Genova::Slack::Util.branch_options(job.account, job.repository)
 
