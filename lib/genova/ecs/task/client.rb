@@ -4,7 +4,7 @@ module Genova
       class Client
         def initialize
           @ecs_client = Aws::ECS::Client.new
-          @cipher = Utils::Cipher.new
+          @cipher = Genova::Utils::Cipher.new
         end
 
         def register(path, replace_variables = {})

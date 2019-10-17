@@ -8,7 +8,7 @@ module Genova
         @task_definitions = {}
 
         @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
-        @ecr_client = Ecr::Client.new(logger: @logger)
+        @ecr_client = Genova::Ecr::Client.new(logger: @logger)
         @deploy_config = @code_manager.load_deploy_config
       end
 
@@ -34,7 +34,7 @@ module Genova
         options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
-        run_task_client = Ecs::Deployer::RunTask::Client.new(@cluster)
+        run_task_client = Deployer::RunTask::Client.new(@cluster)
         run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
@@ -47,7 +47,7 @@ module Genova
         service_task_definition_path = @code_manager.task_definition_config_path('config/' + service_config[:path])
         service_task_definition = create_task(service_task_definition_path, tag)
 
-        service_client = Ecs::Deployer::Service::Client.new(@cluster, @logger)
+        service_client = Deployer::Service::Client.new(@cluster, @logger)
 
         raise Exceptions::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
 

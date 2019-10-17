@@ -31,7 +31,7 @@ module Genova
         end
 
         def branch_options(account, repository, branch_limit = Settings.slack.interactive.branch_limit)
-          code_manager = CodeManager::Git.new(account, repository)
+          code_manager = Genova::CodeManager::Git.new(account, repository)
           branches = []
           size = 0
 
@@ -47,7 +47,7 @@ module Genova
 
         def cluster_options(account, repository, branch, base_path)
           clusters = []
-          code_manager = CodeManager::Git.new(account, repository, branch, base_path: base_path)
+          code_manager = Genova::CodeManager::Git.new(account, repository, branch, base_path: base_path)
 
           deploy_config = code_manager.load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
@@ -62,7 +62,7 @@ module Genova
           service_options = []
           scheduled_task_options = []
 
-          code_manager = CodeManager::Git.new(account, repository, branch, base_path: base_path)
+          code_manager = Genova::CodeManager::Git.new(account, repository, branch, base_path: base_path)
           cluster_config = code_manager.load_deploy_config.cluster(cluster)
 
           if cluster_config[:run_tasks].present?
