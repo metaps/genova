@@ -18,6 +18,7 @@ module Slack
       bot.post_started_deploy(deploy_job, jid)
 
       client.run
+
       bot.post_finished_deploy(deploy_job)
     end
   end

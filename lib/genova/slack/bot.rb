@@ -88,7 +88,7 @@ module Genova
 
       def post_choose_cluster(params)
         callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_target', params)
-        options = Genova::Slack::Util.cluster_options(params[:account], params[:repository], params[:branch])
+        options = Genova::Slack::Util.cluster_options(params[:account], params[:repository], params[:branch], params[:base_path])
         selected_options = []
 
         if options.size.positive?
@@ -129,7 +129,8 @@ module Genova
           params[:account],
           params[:repository],
           params[:branch],
-          params[:cluster]
+          params[:cluster],
+          params[:base_path]
         )
         selected_options = []
 

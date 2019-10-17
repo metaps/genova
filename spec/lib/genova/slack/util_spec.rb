@@ -60,7 +60,7 @@ module Genova
         include_context 'load code_manager_mock'
 
         it 'should be return clusters' do
-          results = Genova::Slack::Util.cluster_options('account', 'repository', 'branch')
+          results = Genova::Slack::Util.cluster_options('account', 'repository', 'branch', 'base_path')
 
           expect(results.count).to eq(1)
           expect(results[0][:text]).to eq('cluster')

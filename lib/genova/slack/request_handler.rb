@@ -18,7 +18,18 @@ module Genova
         private
 
         def choose_deploy_branch
-          selected_repository = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
+          selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
+          selected_base_path = nil
+          selected_repository = nil
+
+          Settings.github.repositories.each do |repository|
+            if repository[:name] == selected_value || repository[:alias] == selected_value
+              selected_base_path = repository[:base_path]
+              selected_repository = repository[:name]
+
+              break
+            end
+          end
 
           if selected_repository.present?
             result = {
@@ -32,11 +43,14 @@ module Genova
 
             @logger.info('Invoke Github::RetrieveBranchWorker')
 
-            id = Genova::Sidekiq::Queue.add(
+            params = {
               account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account),
               repository: selected_repository,
-              response_url: @payload_body[:response_url]
-            )
+              response_url: @payload_body[:response_url],
+              base_path: selected_base_path
+            }
+
+            id = Genova::Sidekiq::Queue.add(params)
 
             jid = ::Github::RetrieveBranchWorker.perform_async(id)
             ::Github::RetrieveBranchWatchWorker.perform_async(jid)
@@ -61,11 +75,14 @@ module Genova
               ]
             }
 
-            id = Genova::Sidekiq::Queue.add(
+            params = {
               account: @callback[:account],
               repository: @callback[:repository],
-              branch: selected_branch
-            )
+              branch: selected_branch,
+              base_path: @callback[:base_path]
+            }
+
+            id = Genova::Sidekiq::Queue.add(params)
             ::Slack::DeployClusterWorker.perform_async(id)
           else
             result = cancel_message
@@ -91,12 +108,15 @@ module Genova
               ]
             }
 
-            id = Genova::Sidekiq::Queue.add(
+            params = {
               account: @callback[:account],
               repository: @callback[:repository],
               branch: @callback[:branch],
-              cluster: selected_cluster
-            )
+              cluster: selected_cluster,
+              base_path: @callback[:base_path]
+            }
+
+            id = Genova::Sidekiq::Queue.add(params)
             ::Slack::DeployTargetWorker.perform_async(id)
           else
             result = cancel_message
@@ -130,6 +150,7 @@ module Genova
               repository: @callback[:repository],
               branch: @callback[:branch],
               cluster: @callback[:cluster],
+              base_path: @callback[:base_path],
               type: DeployJob.type.find_value(type)
             }
 
@@ -236,6 +257,7 @@ module Genova
                              repository: @callback[:repository],
                              branch: @callback[:branch],
                              cluster: @callback[:cluster],
+                             base_path: @callback[:base_path],
                              run_task: @callback[:run_task],
                              service: @callback[:service],
                              scheduled_task_rule: @callback[:scheduled_task_rule],
