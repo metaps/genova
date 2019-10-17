@@ -12,11 +12,19 @@ github:
   default_branch: 'master'
   deploy_lock_timeout: 1800
 
+  # List of repositories.
+  # This is used in repository list when deploying from Slack.
+  # Also, it must be specified even if `base_path` of different.
   repositories:
-    # Repository name. Name must be specified uniquely.
+    # Repository name.
     - name: ''
-      # Base path to build image. (optional)
-      base_path: ''
+      # Application root directory. Default is `./`.
+      # You need to put `config/deploy.yml` file under root directory. (Optional)
+      base_path: './'
+
+      # Alias parameter is deployment target by name and base_path
+      # Parameter must be specified uniquely. (Optional)
+      alias: ''
 
 aws:
   service:
