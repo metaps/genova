@@ -52,7 +52,7 @@ module GenovaCli
     desc 'run-task', 'Deploy run task to ECS'
     option :cluster, required: true, aliases: :c, desc: 'Cluster name.'
     option :run_task, aliases: :t, desc: 'Task name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def run_task
       raise Genova::Exceptions::InvalidArgumentError, 'Task or target must be specified.' if options[:run_task].blank? && options[:target].blank?
@@ -65,7 +65,7 @@ module GenovaCli
 
     desc 'service', 'Deploy service to ECS'
     option :cluster, aliases: :c, desc: 'Cluster name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :service, aliases: :s, desc: 'Service name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def service
@@ -81,7 +81,7 @@ module GenovaCli
     option :cluster, aliases: :c, desc: 'Cluster name.'
     option :scheduled_task_rule, desc: 'Schedule rule name.'
     option :scheduled_task_target, desc: 'Schedule target name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def scheduled_task
       raise Genova::Exceptions::InvalidArgumentError, 'Scheduled task or target must be specified.' if (options[:scheduled_task_rule].blank? || options[:scheduled_task_target].blank?) && options[:target].blank?
