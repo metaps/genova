@@ -12,7 +12,7 @@ module Genova
             @logger = logger
 
             @ecs = Aws::ECS::Client.new
-            @task = Ecs::Task::Client.new
+            @task = Genova::Ecs::Task::Client.new
 
             @wait_timeout = 900
             @polling_interval = 20
