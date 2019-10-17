@@ -50,8 +50,8 @@ module GenovaCli
     end
 
     desc 'run-task', 'Deploy run task to ECS'
-    option :cluster, required: true, aliases: :c, desc: 'Cluster name.'
-    option :run_task, aliases: :t, desc: 'Task name.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
+    option :run_task, desc: 'Task name.'
     option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def run_task
@@ -64,7 +64,7 @@ module GenovaCli
     end
 
     desc 'service', 'Deploy service to ECS'
-    option :cluster, aliases: :c, desc: 'Cluster name.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
     option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :service, aliases: :s, desc: 'Service name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
@@ -78,7 +78,7 @@ module GenovaCli
     end
 
     desc 'scheduled-task', 'Deploy scheduled task to ECS'
-    option :cluster, aliases: :c, desc: 'Cluster name.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
     option :scheduled_task_rule, desc: 'Schedule rule name.'
     option :scheduled_task_target, desc: 'Schedule target name.'
     option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
@@ -90,6 +90,27 @@ module GenovaCli
       hash_options[:type] = DeployJob.type.find_value(:scheduled_task)
 
       deploy(hash_options)
+    end
+  end
+
+  class Env < Thor
+    desc 'encrypt', 'Encrypt value.'
+    option :master_key, required: true, desc: 'KMS Master key for encryption.'
+    option :value, required: true, desc: 'Value to encrypt.'
+    def encrypt
+      cipher = Genova::Utils::Cipher.new
+      value = cipher.encrypt(options[:master_key], options[:value])
+
+      puts "Encrypted value: #{value}"
+    end
+
+    desc 'decrypt', 'Decrypt value.'
+    option :value, required: true, desc: 'Value to decrypt.'
+    def decrypt
+      cipher = Genova::Utils::Cipher.new
+      value = cipher.decrypt(options[:value])
+
+      puts "Decrypted value: #{value}"
     end
   end
 
@@ -138,6 +159,9 @@ module GenovaCli
 
     desc 'deploy', 'Deploy application to ECS.'
     subcommand 'deploy', Deploy
+
+    desc 'env', 'Environment variable encryption and decryption.'
+    subcommand 'env', Env
 
     desc 'debug', 'Debug genova'
     subcommand 'debug', Debug
