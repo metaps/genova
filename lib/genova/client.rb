@@ -14,7 +14,7 @@ module Genova
 
       @logger.warn('"github.account" parameter is deprecated. Set variable "GITHUB_ACCOUNT" instead.') if ENV['GITHUB_ACCOUNT'].nil?
 
-      @mutex = Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
+      @mutex = Genova::Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
       @code_manager = CodeManager::Git.new(
         @deploy_job.account,
