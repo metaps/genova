@@ -17,6 +17,7 @@ class DeployJob
   field :repository, type: String
   field :account, type: String
   field :branch, type: String
+  field :base_path, type: String
   field :commit_id, type: String
   field :cluster, type: String
   field :run_task, type: String

@@ -14,6 +14,15 @@ module GenovaCli
         code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch]) if options[:repository].present?
 
         options.merge!(code_manager.load_deploy_config.target(options[:target])) if options[:target].present?
+        base_path = nil
+
+        Settings.github.repositories.each do |repository|
+          next unless repository[:alias] == options[:repository]
+
+          options[:repository] = repository[:name]
+          base_path = repository[:base_path]
+          break
+        end
 
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual).to_sym,
@@ -21,6 +30,7 @@ module GenovaCli
           account: options[:account],
           branch: options[:branch],
           cluster: options[:cluster],
+          base_path: base_path,
           service: options[:service],
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],
@@ -42,7 +52,7 @@ module GenovaCli
     desc 'run-task', 'Deploy run task to ECS'
     option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
     option :run_task, desc: 'Task name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def run_task
       raise Genova::Exceptions::InvalidArgumentError, 'Task or target must be specified.' if options[:run_task].blank? && options[:target].blank?
@@ -55,7 +65,7 @@ module GenovaCli
 
     desc 'service', 'Deploy service to ECS'
     option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :service, aliases: :s, desc: 'Service name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def service
@@ -71,7 +81,7 @@ module GenovaCli
     option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
     option :scheduled_task_rule, desc: 'Schedule rule name.'
     option :scheduled_task_target, desc: 'Schedule target name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
     def scheduled_task
       raise Genova::Exceptions::InvalidArgumentError, 'Scheduled task or target must be specified.' if (options[:scheduled_task_rule].blank? || options[:scheduled_task_target].blank?) && options[:target].blank?

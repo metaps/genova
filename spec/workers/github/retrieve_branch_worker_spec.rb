@@ -11,9 +11,10 @@ module Github
 
         job = Genova::Sidekiq::Job.new(
           'id',
-            account: 'account',
-            repository: 'repository',
-            response_url: 'response_url'
+          account: 'account',
+          repository: 'repository',
+          response_url: 'response_url',
+          base_path: 'base_path'
         )
         allow(Genova::Sidekiq::Queue).to receive(:find).and_return(job)
         subject.perform(job.id)

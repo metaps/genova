@@ -17,6 +17,7 @@ module Genova
                 repository: history[:repository],
                 branch: history[:branch],
                 cluster: history[:cluster],
+                base_path: history[:base_path],
                 run_task: history[:run_task],
                 service: history[:service],
                 scheduled_task_rule: history[:scheduled_task_rule],

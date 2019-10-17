@@ -28,12 +28,7 @@ module Genova
         @logger = options[:logger] || ::Logger.new(nil)
         @repository = repository
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
-
-        param = Settings.github.repositories.find do |k, _v|
-          k[:name] == repository
-        end
-
-        @base_path = param.nil? ? @repos_path : Pathname(@repos_path).join(param[:base_path] || '').to_s
+        @base_path = options[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(options[:base_path]).to_s
       end
 
       def clone
