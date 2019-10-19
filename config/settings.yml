@@ -1,5 +1,8 @@
 docker:
   retention_days: 20
+  build:
+    # Allocate memory. For example, `1024m`
+    memory: ''
 
 deploy:
   wait_timeout: 900
