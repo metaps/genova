@@ -24,7 +24,14 @@ module Genova
 
         repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
-        command = "docker build -t #{repository_name}:latest -f #{docker_file_path} .#{build[:build_args]}"
+        build_options = {
+          '-t': "#{repository_name}:latest",
+          '-f': docker_file_path
+        }
+        build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
+        build_option_string = build_options.map{ |key, value| "#{key} #{value}" }.join(' ') + build[:build_args]
+
+        command = "docker build #{build_option_string} ."
         @logger.info("Docker build path: #{docker_base_path}")
 
         executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
