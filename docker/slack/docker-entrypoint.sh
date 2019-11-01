@@ -7,4 +7,4 @@ if [ -z $SLACK_CLIENT_ID ]; then
   exit
 fi
 
-bundle exec rackup bin/slack_bot_server.ru
+bundle exec rackup -o 0.0.0.0 bin/slack_bot_server.ru
