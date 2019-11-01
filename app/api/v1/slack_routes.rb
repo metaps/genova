@@ -4,14 +4,20 @@ module V1
 
     # /api/v1/slack
     resource :slack do
-      before do
-        error! 'Signature do not match.', 403 unless verify_signature?
-        @payload_body = payload_to_json
+      get :auth do
+        begin
+          result = RestClient.post('http://slack:9292/api/teams', {code: params[:code], state: params[:state]})
+          Oj.load(result.body)
+
+        rescue RestClient::ExceptionWithResponse => e
+          error!(Oj.load(e.response.body, symbol_keys: true).slice(:type, :message))
+        end
       end
 
       # /api/v1/slack/post
       post :post do
-        result = Genova::Slack::RequestHandler.handle_request(@payload_body, logger)
+        error! 'Signature do not match.', 403 unless verify_signature?
+        result = Genova::Slack::RequestHandler.handle_request(payload_to_json, logger)
 
         {
           response_type: 'in_channel',
