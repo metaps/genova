@@ -6,7 +6,13 @@ module V1
     resource :slack do
       get :auth do
         begin
-          result = RestClient.post('http://slack:9292/api/teams', {code: params[:code], state: params[:state]})
+          slack_host = ENV.fetch('SLACK_HOST', 'slack')
+          slack_port = ENV.fetch('SLACK_PORT', 9292)
+
+          logger.warn('Please add "SLACK_HOST" to the environment variable.') if ENV['SLACK_HOST'].nil?
+          logger.warn('Please add "SLACK_PORT" to the environment variable.') if ENV['SLACK_PORT'].nil?
+
+          result = RestClient.post("http://#{slack_host}:#{slack_port}/api/teams", {code: params[:code], state: params[:state]})
           Oj.load(result.body)
 
         rescue RestClient::ExceptionWithResponse => e
