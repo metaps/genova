@@ -14,15 +14,7 @@ module GenovaCli
         code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch]) if options[:repository].present?
 
         options.merge!(code_manager.load_deploy_config.target(options[:target])) if options[:target].present?
-        base_path = nil
-
-        Settings.github.repositories.each do |repository|
-          next unless repository[:alias] == options[:repository]
-
-          options[:repository] = repository[:name]
-          base_path = repository[:base_path]
-          break
-        end
+        repository = Genova::Config::SettingsHelper.find_repository(options[:repository])
 
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual).to_sym,
@@ -30,7 +22,7 @@ module GenovaCli
           account: options[:account],
           branch: options[:branch],
           cluster: options[:cluster],
-          base_path: base_path,
+          base_path: repository[:base_path],
           service: options[:service],
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],
@@ -118,7 +110,6 @@ module GenovaCli
     desc 'slack-greeting', 'Slack bot says Hello'
     def slack_greeting
       ::Genova::Slack::Bot.new.post_simple_message(text: 'Hello')
-      puts "Sent message. (Destination channel: #{ENV.fetch('SLACK_CHANNEL')})"
     end
 
     desc 'emulate-github-push', 'Emulate GitHub push'
