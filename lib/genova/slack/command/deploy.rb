@@ -30,7 +30,7 @@ module Genova
                 expressions = match['expression'].split(' ')
                 results = send("parse_#{type}", expressions)
 
-                bot.post_confirm_deploy(
+                params = {
                   type: type,
                   account: results[:account],
                   repository: results[:repository],
@@ -41,7 +41,12 @@ module Genova
                   scheduled_task_rule: results[:scheduled_task_rule],
                   scheduled_task_target: results[:scheduled_task_target],
                   confirm: true
-                )
+                }
+
+                repository = Genova::Config::SettingsHelper.find_repository(results[:repository])
+                params[:base_path] = repository[:base_path]
+
+                bot.post_confirm_deploy(params)
               end
             rescue => e
               logger.error(e)
