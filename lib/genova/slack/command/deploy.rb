@@ -43,7 +43,7 @@ module Genova
                   confirm: true
                 }
 
-                repository = Genova::Config::SettingsHelper.find_repository(results[:repository])
+                repository = Genova::Config::SettingsHelper.find_repository!(results[:repository])
                 params[:base_path] = repository[:base_path]
 
                 bot.post_confirm_deploy(params)
