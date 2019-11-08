@@ -785,7 +785,7 @@ GEM
     console (1.4.0)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
-    crass (1.0.4)
+    crass (1.0.5)
     debug_inspector (0.0.3)
     declarative (0.0.10)
     declarative-option (0.1.0)
@@ -827,10 +827,6 @@ GEM
       dry-equalizer (~> 0.2)
       dry-logic (~> 0.5, >= 0.5.0)
       dry-types (~> 0.14, >= 0.14)
-    ecs_deployer (2.3.2)
-      aws-sdk
-      oj
-      thor
     enumerize (2.2.2)
       activesupport (>= 3.2)
     equalizer (0.0.11)
@@ -897,7 +893,7 @@ GEM
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
       ruby_dep (~> 1.2)
-    loofah (2.2.3)
+    loofah (2.3.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -932,7 +928,7 @@ GEM
       mustermann (~> 1.0.0)
     netrc (0.11.0)
     nio4r (2.4.0)
-    nokogiri (1.10.4)
+    nokogiri (1.10.5)
       mini_portile2 (~> 2.4.0)
     octokit (4.13.0)
       sawyer (~> 0.8.0, >= 0.5.3)
@@ -1116,7 +1112,6 @@ DEPENDENCIES
   byebug
   config
   docker-api
-  ecs_deployer (~> 2.3.2)
   enumerize
   git
   grape (~> 1.1.0)
