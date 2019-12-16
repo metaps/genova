@@ -831,7 +831,7 @@ GEM
       activesupport (>= 3.2)
     equalizer (0.0.11)
     erubi (1.8.0)
-    excon (0.62.0)
+    excon (0.71.0)
     faraday (0.15.4)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.13.1)
