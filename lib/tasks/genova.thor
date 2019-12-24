@@ -26,7 +26,7 @@ module GenovaCli
           service: options[:service],
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],
-          repository: options[:repository],
+          repository: repository[:name],
           ssh_secret_key_path: options[:ssh_secret_key_path],
           run_task: options[:run_task]
         )
