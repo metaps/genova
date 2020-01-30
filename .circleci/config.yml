@@ -6,6 +6,7 @@ jobs:
     working_directory: ~/genova
     environment:
       AWS_ACCESS_KEY: ""
+      AWS_ACCOUNT_ID: ""
       AWS_REGION: ""
       AWS_SECRET_KEY: ""
       GENOVA_URL: http://localhost:3000
