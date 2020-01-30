@@ -1,7 +1,6 @@
 version: "3.7"
 services:
   base:
-    container_name: genova-base
     build:
       context: .
       dockerfile: docker/base/Dockerfile
@@ -10,7 +9,6 @@ services:
     volumes:
       - .:/app:cached
   rails:
-    container_name: genova-rails
     build:
       context: .
       dockerfile: docker/rails/Dockerfile
@@ -28,7 +26,6 @@ services:
       - redis
     restart: ${DOCKER_RESTART}
   slack:
-    container_name: genova-slack
     build:
       context: .
       dockerfile: docker/slack/Dockerfile
@@ -42,7 +39,6 @@ services:
       - redis
     restart: on-failure
   sidekiq:
-    container_name: genova-sidekiq
     build:
       context: .
       dockerfile: docker/sidekiq/Dockerfile
@@ -56,7 +52,6 @@ services:
       - redis
     restart: ${DOCKER_RESTART}
   cron:
-    container_name: genova-cron
     build:
       context: .
       dockerfile: docker/cron/Dockerfile
@@ -67,7 +62,6 @@ services:
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     restart: ${DOCKER_RESTART}
   node:
-    container_name: genova-node
     build:
       context: .
       dockerfile: docker/node/Dockerfile
@@ -76,11 +70,9 @@ services:
       - node_modules:/app/frontend/node_modules:delegated
       - assets:/app/public/assets:delegated
   mongo:
-    container_name: genova-mongo
     image: mongo:3.4
     restart: ${DOCKER_RESTART}
   redis:
-    container_name: genova-redis
     image: redis:5-alpine
     restart: ${DOCKER_RESTART}
 
