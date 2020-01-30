@@ -11,7 +11,7 @@ module Genova
     class ClusterNotFoundError < Error; end
     class ServiceNotFoundError < Error; end
     class TaskRunningError < Error; end
-    class TaskDefinitionValidateError < Error; end
+    class TaskDefinitionValidationError < Error; end
     class TaskStoppedError < Error; end
     class KmsEncryptError < Error; end
     class KmsDecryptError < Error; end
