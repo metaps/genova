@@ -14,7 +14,7 @@ module GenovaCli
         code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch]) if options[:repository].present?
 
         options.merge!(code_manager.load_deploy_config.target(options[:target])) if options[:target].present?
-        repository = Genova::Config::SettingsHelper.find_repository(options[:repository])
+        repository_settings = Genova::Config::SettingsHelper.find_repository(options[:repository])
 
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual).to_sym,
@@ -22,11 +22,11 @@ module GenovaCli
           account: options[:account],
           branch: options[:branch],
           cluster: options[:cluster],
-          base_path: repository[:base_path],
+          base_path: repository_settings[:base_path],
           service: options[:service],
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],
-          repository: repository[:name],
+          repository: repository_settings[:name] || options[:repository],
           ssh_secret_key_path: options[:ssh_secret_key_path],
           run_task: options[:run_task]
         )
