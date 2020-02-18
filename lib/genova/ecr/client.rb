@@ -4,7 +4,7 @@ module Genova
       IMAGE_TAG_LATEST = 'latest'.freeze
 
       def self.base_path
-        account = ENV.fetch('AWS_ACCOUNT_ID')
+        account = ENV.fetch('AWS_ACCOUNT_ID', '')
         account = Aws::STS::Client.new.get_caller_identity[:account] if account.blank?
 
         "#{account}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
