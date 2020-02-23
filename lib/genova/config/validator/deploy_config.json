@@ -62,11 +62,25 @@
                 "required": ["path", "containers"],
                 "properties": {
                   "launch_type": { "type": "string" },
+                  "desired_count": { "type": "number" },
+                  "group": { "type": "string" },
                   "path": { "type": "string" },
                   "task_role": { "type": "string" },
                   "task_execution_role": { "type": "string" },
                   "containers": { "$ref": "#/definitions/containers" },
-                  "ecs_configuration": { "type": "object" }
+                  "network_configuration": {
+                    "type": "object",
+                    "required": ["awsvpc_configuration"],
+                    "properties": {
+                      "type": "object",
+                      "required": ["subnets"],
+                      "properties": {
+                        "subnets": { "type": "array" },
+                        "security_groups": { "type": "array" },
+                        "assign_public_ip": { "type": "string" }
+                      }
+                    }
+                  }
                 }
               }
             }
