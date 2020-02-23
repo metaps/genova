@@ -28,9 +28,11 @@ module Genova
 
         options = {
           desired_count: run_task_config[:desired_count],
-          container_overrides: run_task_config[:container_overrides]
+          group: run_task_config[:group],
+          container_overrides: run_task_config[:container_overrides],
+          network_configuration: run_task_config[:network_configuration]
         }
-        options[:launch_type] = run_task_config[:launch_type].downcase if run_task_config[:launch_type].present?
+        options[:launch_type] = run_task_config[:launch_type] if run_task_config[:launch_type].present?
         options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
@@ -113,7 +115,7 @@ module Genova
               desired_count: target_config[:task_count] || target_config[:desired_count] || 1,
               container_overrides: target_config[:overrides] || target_config[:container_overrides]
             }
-            options[:launch_type] = target_config[:launch_type].downcase if target_config[:launch_type].present?
+            options[:launch_type] = target_config[:launch_type] if target_config[:launch_type].present?
             options[:task_role_arn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
 
             @logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
