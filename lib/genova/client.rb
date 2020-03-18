@@ -39,7 +39,7 @@ module Genova
 
       task_definition_arns = case @deploy_job.type
                              when DeployJob.type.find_value(:run_task)
-                               @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.tag)
+                               @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.override_container, @deploy_job.override_command, @deploy_job.tag)
                              when DeployJob.type.find_value(:service)
                                [@ecs_client.deploy_service(@deploy_job.service, @deploy_job.tag)]
                              when DeployJob.type.find_value(:scheduled_task)

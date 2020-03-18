@@ -19,10 +19,17 @@ module Genova
         @code_manager.pull
       end
 
-      def deploy_run_task(run_task, tag)
+      def deploy_run_task(run_task, override_container, override_command, tag)
         run_task_config = @deploy_config.run_task(@cluster, run_task)
+        run_task_config[:container_overrides] = [
+          {
+            name: override_container,
+            command: override_command.split(' ')
+          }
+        ] if override_container.present?
 
         build(run_task_config[:containers], run_task_config[:path], tag)
+
         task_definition_path = @code_manager.task_definition_config_path('config/' + run_task_config[:path])
         task_definition = create_task(task_definition_path, tag)
 
