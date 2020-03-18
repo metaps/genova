@@ -21,6 +21,8 @@ class DeployJob
   field :commit_id, type: String
   field :cluster, type: String
   field :run_task, type: String
+  field :override_container, type: String
+  field :override_command, type: String
   field :service, type: String
   field :scheduled_task_rule, type: String
   field :scheduled_task_target, type: String
