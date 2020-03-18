@@ -23,9 +23,6 @@ module Genova
             }
 
             results = @ecs_client.run_task(options)
-            task_arns = results[:tasks].map { |key| key[:task_arn] }
-            puts @ecs_client.describe_tasks(tasks: task_arns)
-
             results[:tasks].map { |key| key[:task_definition_arn] }
           end
         end
