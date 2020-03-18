@@ -28,7 +28,9 @@ module GenovaCli
           scheduled_task_target: options[:scheduled_task_target],
           repository: repository_settings[:name] || options[:repository],
           ssh_secret_key_path: options[:ssh_secret_key_path],
-          run_task: options[:run_task]
+          run_task: options[:run_task],
+          override_container: options[:override_container],
+          override_command: options[:override_command]
         )
 
         extra = {
@@ -43,6 +45,8 @@ module GenovaCli
 
     desc 'run-task', 'Deploy run task to ECS'
     option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
+    option :override_container, desc: 'Container that overrides command'
+    option :override_command, desc: 'Execution command'
     option :run_task, desc: 'Task name.'
     option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
     option :target, aliases: :t, desc: 'Deploy by specifying target.'
