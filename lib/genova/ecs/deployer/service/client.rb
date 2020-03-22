@@ -5,17 +5,12 @@ module Genova
         class Client
           LOG_SEPARATOR = '-' * 96
 
-          attr_accessor :wait_timeout, :polling_interval
-
           def initialize(cluster, logger)
             @cluster = cluster
             @logger = logger
 
             @ecs = Aws::ECS::Client.new
             @task = Genova::Ecs::Task::Client.new
-
-            @wait_timeout = 900
-            @polling_interval = 20
           end
 
           def update(service, task_definition_arn, options = {}, wait = true)
@@ -32,7 +27,7 @@ module Genova
 
             result = @ecs.update_service(params)
 
-            wait_for_deploy(service, result.service.task_definition) if wait
+            wait(service, result.service.task_definition) if wait
             result.service
           end
 
@@ -110,7 +105,7 @@ module Genova
             }
           end
 
-          def wait_for_deploy(service, task_definition_arn)
+          def wait(service, task_definition_arn)
             raise Exceptions::ServiceNotFoundError, "'#{service}' service is not found." unless exist?(service)
 
             wait_time = 0
@@ -123,8 +118,8 @@ module Genova
             desired_count = result[:services][0][:desired_count]
 
             loop do
-              sleep(@polling_interval)
-              wait_time += @polling_interval
+              sleep(Settings.deploy.polling_interval)
+              wait_time += Settings.deploy.polling_interval
               result = deploy_status(service, task_definition_arn)
 
               @logger.info "Deploying service... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)"
@@ -147,7 +142,7 @@ module Genova
               else
                 @logger.info 'You can stop process with Ctrl+C. Deployment continues in background.'
 
-                if wait_time > @wait_timeout
+                if wait_time > Settings.deploy.wait_timeout
                   @logger.info "New task definition: #{task_definition_arn}"
                   raise Exceptions::DeployTimeoutError, 'Service is being updating, but process is timed out.'
                 end
