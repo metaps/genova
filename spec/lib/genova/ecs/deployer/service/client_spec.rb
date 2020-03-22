@@ -22,7 +22,7 @@ module Genova
               allow(service_mock).to receive(:task_definition)
               allow(update_service_response_mock).to receive(:service).and_return(service_mock)
               allow(ecs_client_mock).to receive(:update_service).and_return(update_service_response_mock)
-              allow(service_client).to receive(:wait_for_deploy)
+              allow(service_client).to receive(:wait)
 
               expect(service_client.update('service', 'task_definition_arn')).to be_a(service_mock.class)
             end
@@ -66,6 +66,7 @@ module Genova
 
             context 'when deploying' do
               it 'should be return result' do
+                allow(task_mock).to receive(:[]).with(:task_arn).and_return('current_task_arn')
                 allow(task_mock).to receive(:[]).with(:task_definition_arn).and_return('old_task_arn')
                 allow(task_mock).to receive(:[]).with(:last_status).and_return('RUNNING')
                 allow(describe_tasks_response_mock).to receive(:[]).with(:tasks).and_return([task_mock])
@@ -79,6 +80,7 @@ module Genova
 
             context 'when deployed' do
               it 'should be return result' do
+                allow(task_mock).to receive(:[]).with(:task_arn).and_return('current_task_arn')
                 allow(task_mock).to receive(:[]).with(:task_definition_arn).and_return('new_task_arn')
                 allow(task_mock).to receive(:[]).with(:last_status).and_return('RUNNING')
                 allow(describe_tasks_response_mock).to receive(:[]).with(:tasks).and_return([task_mock, task_mock])
@@ -91,12 +93,12 @@ module Genova
             end
           end
 
-          describe 'wait_for_deploy' do
+          describe 'wait' do
             before do
               allow(service_client).to receive(:exist?).and_return(true)
 
-              service_client.wait_timeout = 0.3
-              service_client.polling_interval = 0.1
+              allow(Settings.deploy).to receive(:wait_timeout).and_return(0.3)
+              allow(Settings.deploy).to receive(:polling_interval).and_return(0.1)
             end
 
             context 'when deploy complete' do
@@ -105,7 +107,7 @@ module Genova
                                                                             current_task_count: 0,
                                                                             status_logs: ['task_status_logs'])
                 allow(ecs_client_mock).to receive(:describe_services).and_return(services: [desired_count: 1])
-                expect { service_client.send(:wait_for_deploy, 'service', 'task_definition_arn') }.to_not raise_error
+                expect { service_client.send(:wait, 'service', 'task_definition_arn') }.to_not raise_error
               end
             end
 
@@ -115,7 +117,7 @@ module Genova
                                                                             current_task_count: 1,
                                                                             status_logs: ['task_status_logs'])
                 allow(ecs_client_mock).to receive(:describe_services).and_return(services: [desired_count: 1])
-                expect { service_client.send(:wait_for_deploy, 'service', 'task_definition_arn') }.to raise_error(Exceptions::DeployTimeoutError)
+                expect { service_client.send(:wait, 'service', 'task_definition_arn') }.to raise_error(Exceptions::DeployTimeoutError)
               end
             end
           end
