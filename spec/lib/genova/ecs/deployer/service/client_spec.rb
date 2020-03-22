@@ -66,6 +66,7 @@ module Genova
 
             context 'when deploying' do
               it 'should be return result' do
+                allow(task_mock).to receive(:[]).with(:task_arn).and_return('current_task_arn')
                 allow(task_mock).to receive(:[]).with(:task_definition_arn).and_return('old_task_arn')
                 allow(task_mock).to receive(:[]).with(:last_status).and_return('RUNNING')
                 allow(describe_tasks_response_mock).to receive(:[]).with(:tasks).and_return([task_mock])
@@ -79,6 +80,7 @@ module Genova
 
             context 'when deployed' do
               it 'should be return result' do
+                allow(task_mock).to receive(:[]).with(:task_arn).and_return('current_task_arn')
                 allow(task_mock).to receive(:[]).with(:task_definition_arn).and_return('new_task_arn')
                 allow(task_mock).to receive(:[]).with(:last_status).and_return('RUNNING')
                 allow(describe_tasks_response_mock).to receive(:[]).with(:tasks).and_return([task_mock, task_mock])
