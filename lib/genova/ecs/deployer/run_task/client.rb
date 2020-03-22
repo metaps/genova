@@ -37,8 +37,12 @@ module Genova
           def wait(task_arns)
             wait_time = 0
 
+            @logger.info 'Start task.'
+            @logger.info LOG_SEPARATOR
+
             loop do
               pending = false
+              exit_task_arns = []
 
               describe_tasks = @ecs_client.describe_tasks(cluster: @cluster, tasks: task_arns)
               describe_tasks[:tasks].each do |task|
@@ -55,18 +59,20 @@ module Genova
                     raise Exceptions::DeployTimeoutError, 'Process is timed out. (Task ARN: #{[:task_arn]})'
                   end
 
-                else
+                elsif !exit_task_arns.include?(task[:task_arn])
                   task[:containers].each do |container|
                     @logger.info 'Container'
                     @logger.info "  Name: #{container[:name]}"
                     @logger.info "  Exit code: #{container[:exit_code]}"
-                    @logger.info "  Reason: #{container[:reason]}"
+                    @logger.info "  Reason: #{container[:reason]}" unless container[:exit_code] == 0
                     @logger.info LOG_SEPARATOR
                   end
 
                   @logger.info "Task ARN: #{task[:task_arn]}"
                   @logger.info "Stopped reason: #{task[:stopped_reason]}"
                   @logger.info LOG_SEPARATOR
+
+                  exit_task_arns << task[:task_arn]
                 end
               end
 
