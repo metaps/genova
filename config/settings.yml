@@ -6,6 +6,7 @@ docker:
 
 deploy:
   wait_timeout: 900
+  polling_interval: 10
 
 github:
   # Create tag after deployment.
