@@ -43,7 +43,7 @@ module Genova
         options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
-        run_task_client = Deployer::RunTask::Client.new(@cluster)
+        run_task_client = Deployer::RunTask::Client.new(@cluster, @logger)
         run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
@@ -69,9 +69,7 @@ module Genova
           :maximum_percent
         )
 
-        service_client.wait_timeout = Settings.deploy.wait_timeout
         service_client.update(service, task_definition_arn, params)
-
         deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
         task_definition_arn
