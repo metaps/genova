@@ -4,7 +4,7 @@ module Genova
       module ScheduledTask
         class Client
           def initialize(cluster)
-            @cluster = cluster1
+            @cluster = cluster
             @cloud_watch_events = Aws::CloudWatchEvents::Client.new
           end
 
