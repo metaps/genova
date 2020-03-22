@@ -83,6 +83,8 @@ module Genova
             status_logs = []
 
             if result[:task_arns].size.positive?
+              status_logs << 'Current services:'
+
               result = @ecs.describe_tasks(
                 cluster: @cluster,
                 tasks: result[:task_arns]
@@ -94,7 +96,9 @@ module Genova
                 else
                   current_task_count += 1
                 end
-                status_logs << "  #{task[:task_definition_arn]} [#{task[:last_status]}]"
+
+                status_logs << "- Task ARN: #{task[:task_arn]}"
+                status_logs << "  Task definition ARN: #{task[:task_definition_arn]} [#{task[:last_status]}]"
               end
             end
 
@@ -109,7 +113,9 @@ module Genova
             raise Exceptions::ServiceNotFoundError, "'#{service}' service is not found." unless exist?(service)
 
             wait_time = 0
+
             @logger.info 'Start deployment.'
+            @logger.info LOG_SEPARATOR
 
             result = @ecs.describe_services(
               cluster: @cluster,
@@ -124,7 +130,6 @@ module Genova
 
               @logger.info "Deploying service... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)"
               @logger.info "New task: #{task_definition_arn}"
-              @logger.info LOG_SEPARATOR
 
               if result[:status_logs].count.positive?
                 result[:status_logs].each do |log|
