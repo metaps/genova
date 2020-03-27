@@ -12,10 +12,12 @@ module Genova
               raise Exceptions::ClusterNotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
 
               container_overrides = []
-              options[:container_overrides].each do |container_override|
-                override_environment = container_override[:environment] || []
-                container_overrides << override_container(container_override[:name], container_override[:command], override_environment)
-              end if options[:container_overrides].present?
+              if options[:container_overrides].present?
+                options[:container_overrides].each do |container_override|
+                  override_environment = container_override[:environment] || []
+                  container_overrides << override_container(container_override[:name], container_override[:command], override_environment)
+                end
+              end
 
               {
                 id: name,

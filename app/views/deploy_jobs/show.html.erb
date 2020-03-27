@@ -25,11 +25,19 @@
           <i class="fab fa-github"></i>
           <%= link_to(@deploy_job.repository, github_client.build_repository_uri) %>
         </div>
-        <div class="column is-2">Branch</div>
-        <div class="column is-4">
-          <i class="fab fa-github"></i>
-          <%= link_to(@deploy_job.branch, github_client.build_branch_uri(@deploy_job.branch)) %>
-        </div>
+        <% if @deploy_job.branch.present? %>
+          <div class="column is-2">Branch</div>
+          <div class="column is-4">
+            <i class="fab fa-github"></i>
+            <%= link_to(@deploy_job.branch, github_client.build_branch_uri(@deploy_job.branch)) %>
+          </div>
+        <% else %>
+          <div class="column is-2">Tag</div>
+          <div class="column is-4">
+            <i class="fab fa-github"></i>
+            <%= link_to(@deploy_job.tag, github_client.build_branch_uri(@deploy_job.tag)) %>
+          </div>
+        <% end %>
       </div>
       <div class="columns">
         <div class="column is-2">Commit</div>
@@ -39,11 +47,13 @@
             <%= link_to(@deploy_job.commit_id[0, 7], github_client.build_commit_uri(@deploy_job.commit_id)) %>
           <% end %>
         </div>
-        <div class="column is-2">Tag</div>
+        <div class="column is-2">Deployment Tag</div>
         <div class="column is-4">
-          <% if @deploy_job.tag.present? %>
+          <% if @deploy_job.deployment_tag.present? %>
             <i class="fab fa-github"></i>
-            <%= link_to(@deploy_job.tag, github_client.build_tag_uri(@deploy_job.tag)) %>
+            <%= link_to(@deploy_job.deployment_tag, github_client.build_tag_uri(@deploy_job.deployment_tag)) %>
+          <% else %>
+            (Deployed with tag)
           <% end %>
         </div>
       </div>

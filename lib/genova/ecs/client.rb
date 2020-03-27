@@ -21,12 +21,14 @@ module Genova
 
       def deploy_run_task(run_task, override_container, override_command, tag)
         run_task_config = @deploy_config.run_task(@cluster, run_task)
-        run_task_config[:container_overrides] = [
-          {
-            name: override_container,
-            command: override_command.split(' ')
-          }
-        ] if override_container.present?
+        if override_container.present?
+          run_task_config[:container_overrides] = [
+            {
+              name: override_container,
+              command: override_command.split(' ')
+            }
+          ]
+        end
 
         build(run_task_config[:containers], run_task_config[:path], tag)
 
