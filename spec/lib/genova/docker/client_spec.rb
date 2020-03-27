@@ -5,7 +5,7 @@ module Genova
     describe Client do
       describe 'build_image' do
         let(:cipher_mock) { double(Utils::Cipher) }
-        let(:code_manager) { CodeManager::Git.new('account', 'repository', 'master') }
+        let(:code_manager) { CodeManager::Git.new('account', 'repository') }
         let(:docker_client) { Genova::Docker::Client.new(code_manager) }
 
         include_context 'load code_manager_mock'

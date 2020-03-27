@@ -19,7 +19,8 @@ module Genova
       @code_manager = CodeManager::Git.new(
         @deploy_job.account,
         @deploy_job.repository,
-        @deploy_job.branch,
+        branch: @deploy_job.branch,
+        tag: @deploy_job.tag,
         base_path: @deploy_job.base_path,
         logger: @logger
       )
@@ -33,7 +34,6 @@ module Genova
 
       @deploy_job.start
       @deploy_job.commit_id = @ecs_client.ready
-      @deploy_job.tag = create_tag(@deploy_job.commit_id)
 
       @logger.info("Deploy target commit: #{@deploy_job.commit_id}")
 
@@ -46,9 +46,11 @@ module Genova
                                @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
                              end
 
-      if Settings.github.tag
-        @logger.info("Pushed Git tag: #{@deploy_job.tag}")
-        @code_manager.release(@deploy_job.tag, @deploy_job.commit_id)
+      if Settings.github.add_deployment_tag && @deploy_job.branch.present?
+        @deploy_job.deployment_tag = create_tag(@deploy_job.commit_id)
+        @code_manager.release(@deploy_job.deployment_tag, @deploy_job.commit_id)
+
+        @logger.info("Pushed Git tag: #{@deploy_job.deployment_tag}")
       end
 
       @deploy_job.done(task_definition_arns)

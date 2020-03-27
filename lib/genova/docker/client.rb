@@ -29,7 +29,7 @@ module Genova
           '-f': docker_file_path
         }
         build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
-        build_option_string = build_options.map{ |key, value| "#{key} #{value}" }.join(' ') + build[:build_args]
+        build_option_string = build_options.map { |key, value| "#{key} #{value}" }.join(' ') + build[:build_args]
 
         command = "docker build #{build_option_string} ."
         @logger.info("Docker build path: #{docker_base_path}")

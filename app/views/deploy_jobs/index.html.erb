@@ -6,7 +6,7 @@
         <th>ID</th>
         <th>Status</th>
         <th>Repository</th>
-        <th>Branch</th>
+        <th>Branch/Tag</th>
         <th>Commit</th>
         <th>Mode</th>
         <th>Type</th>
@@ -29,7 +29,13 @@
               <%= deploy_job.status %>
             </td>
             <td><%= deploy_job.repository %></td>
-            <td><%= deploy_job.branch.truncate(24) %></td>
+            <td>
+              <% if deploy_job.branch.present? %>
+                <%= deploy_job.branch.truncate(20) %>
+              <% else %>
+                refs/tags/<%= deploy_job.tag.truncate(20) %>
+              <% end %>
+            </td>
             <td>
               <% if deploy_job.commit_id.present? %>
                 <i class="fab fa-github"></i>

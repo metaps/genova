@@ -6,15 +6,15 @@ module Genova
           @logger = ::Logger.new(STDOUT)
           @logger.info('Start cleanup')
 
-          cleanup_gcontainers
+          cleanup_containers
           cleanup_images
-          cleanup_gnetworks
-          cleanup_gvolumes
+          cleanup_networks
+          cleanup_volumes
         end
 
         private
 
-        def cleanup_gcontainers
+        def cleanup_containers
           @logger.info('Cleanup unused containers')
 
           ::Docker::Container.all(all: true).each do |container|
@@ -44,6 +44,7 @@ module Genova
 
             image.info['RepoTags'].each do |repo_tag|
               next if used_images.include?(image.id)
+
               values = repo_tag.split(':')
 
               if repo_tag == '<none>:<none>'
@@ -57,12 +58,12 @@ module Genova
           end
         end
 
-        def cleanup_gnetworks
+        def cleanup_networks
           @logger.info('Cleanup unused networks')
           ::Docker::Network.prune
         end
 
-        def cleanup_gvolumes
+        def cleanup_volumes
           @logger.info('Cleanup unused volumes')
           ::Docker::Volume.prune
         end
