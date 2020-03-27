@@ -22,9 +22,10 @@ module Genova
     class Git
       attr_reader :repos_path, :base_path
 
-      def initialize(account, repository, branch = Settings.github.default_branch, options = {})
+      def initialize(account, repository, options = {})
         @account = account
-        @branch = branch
+        @branch = options[:branch]
+        @tag = options[:tag]
         @logger = options[:logger] || ::Logger.new(nil)
         @repository = repository
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
@@ -48,11 +49,19 @@ module Genova
 
         @logger.info("Git checkout: #{@branch}")
 
+        if @branch.present?
+          checkout = @branch
+          reset_hard = "origin/#{@branch}"
+        else
+          checkout = "refs/tags/#{@tag}"
+          reset_hard = "origin/#{Settings.github.default_branch}"
+        end
+
         git = client
         git.fetch
         git.clean(force: true, d: true)
-        git.checkout(@branch) if git.branch != @branch
-        git.reset_hard("origin/#{@branch}")
+        git.checkout(checkout)
+        git.reset_hard(reset_hard)
 
         git.log(1).to_s
       end

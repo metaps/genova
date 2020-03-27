@@ -47,7 +47,7 @@ module Genova
 
         def cluster_options(account, repository, branch, base_path)
           clusters = []
-          code_manager = Genova::CodeManager::Git.new(account, repository, branch, base_path: base_path)
+          code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch, base_path: base_path)
 
           deploy_config = code_manager.load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
@@ -62,7 +62,7 @@ module Genova
           service_options = []
           scheduled_task_options = []
 
-          code_manager = Genova::CodeManager::Git.new(account, repository, branch, base_path: base_path)
+          code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch, base_path: base_path)
           cluster_config = code_manager.load_deploy_config.cluster(cluster)
 
           if cluster_config[:run_tasks].present?

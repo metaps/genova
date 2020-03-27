@@ -18,7 +18,7 @@ module Genova
 
             result = {
               name: repository[:name],
-              base_path: repository[:base_path],
+              base_path: repository[:base_path]
             }
           end
 

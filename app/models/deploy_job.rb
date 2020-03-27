@@ -17,6 +17,7 @@ class DeployJob
   field :repository, type: String
   field :account, type: String
   field :branch, type: String
+  field :tag, type: String
   field :base_path, type: String
   field :commit_id, type: String
   field :cluster, type: String
@@ -32,7 +33,7 @@ class DeployJob
   field :started_at, type: Time
   field :finished_at, type: Time
   field :execution_time, type: Float
-  field :tag, type: String
+  field :deployment_tag, type: String
 
   validates :mode, :account, :repository, :cluster, :ssh_secret_key_path, presence: true
   validate :check_type
@@ -47,8 +48,13 @@ class DeployJob
 
     self.id = DeployJob.generate_id
     self.account = params[:account] ||= ENV.fetch('GITHUB_ACCOUNT', Settings.github.account)
-    self.branch = params[:branch] || Settings.github.default_branch
+    self.branch = params[:branch]
+    self.tag = params[:tag]
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
+  end
+
+  def label
+    "build-#{id}"
   end
 
   def start

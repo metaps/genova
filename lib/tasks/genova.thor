@@ -1,19 +1,31 @@
 module GenovaCli
   class Deploy < Thor
     class_option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account name'
-    class_option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
-    class_option :force, default: false, type: :boolean, aliases: :f, desc: 'Ignore deploy lock and force deploy.'
-    class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Prompt before exectuion.'
-    class_option :ssh_secret_key_path, desc: 'Private key for retrieving repository.'
-    class_option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Output verbose log.'
+    class_option :branch, aliases: :b, desc: 'Branch to deploy.'
+    class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
+    class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Show confirmation message before deploying.'
+    class_option :ssh_secret_key_path, desc: 'SSH key to use when retrieving repository.'
+    class_option :tag, desc: 'Tag to deploy.'
+    class_option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Outputting detailed logs.'
 
     no_commands do
+      def prepare(options)
+        options[:branch] = Settings.github.default_branch if options[:branch].nil? && options[:tag].nil?
+        return if options[:repository].nil? || options[:target].nil?
+
+        code_manager = ::Genova::CodeManager::Git.new(
+          options[:account],
+          options[:repository],
+          branch: options[:branch],
+          tag: options[:tag]
+        )
+        options.merge!(code_manager.load_deploy_config.target(options[:target]))
+      end
+
       def deploy(options)
         return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
 
-        code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch]) if options[:repository].present?
-
-        options.merge!(code_manager.load_deploy_config.target(options[:target])) if options[:target].present?
+        prepare(options)
         repository_settings = Genova::Config::SettingsHelper.find_repository(options[:repository])
 
         deploy_job = DeployJob.new(
@@ -21,6 +33,7 @@ module GenovaCli
           type: options[:type],
           account: options[:account],
           branch: options[:branch],
+          tag: options[:tag],
           cluster: options[:cluster],
           base_path: repository_settings[:base_path],
           service: options[:service],
@@ -43,13 +56,13 @@ module GenovaCli
       end
     end
 
-    desc 'run-task', 'Deploy run task to ECS'
-    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
-    option :override_container, desc: 'Container that overrides command'
-    option :override_command, desc: 'Execution command'
-    option :run_task, desc: 'Task name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
-    option :target, aliases: :t, desc: 'Deploy by specifying target.'
+    desc 'run-task', 'Execute run task'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster to deploy.'
+    option :override_container, desc: 'Container name to override'
+    option :override_command, desc: 'Command to override'
+    option :run_task, desc: 'Name of task to execute.'
+    option :repository, required: true, aliases: :r, desc: 'Repository name or alias name.'
+    option :target, aliases: :t, desc: 'Target to deploy. (https://github.com/metaps/genova/wiki/Deploy-target)'
     def run_task
       raise Genova::Exceptions::InvalidArgumentError, 'Task or target must be specified.' if options[:run_task].blank? && options[:target].blank?
 
@@ -60,10 +73,10 @@ module GenovaCli
     end
 
     desc 'service', 'Deploy service to ECS'
-    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
-    option :service, aliases: :s, desc: 'Service name.'
-    option :target, aliases: :t, desc: 'Deploy by specifying target.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster to deploy.'
+    option :repository, required: true, aliases: :r, desc: 'Repository name or alias name.'
+    option :service, aliases: :s, desc: 'Service to deploy.'
+    option :target, aliases: :t, desc: 'Target to deploy. (https://github.com/metaps/genova/wiki/Deploy-target)'
     def service
       raise Genova::Exceptions::InvalidArgumentError, 'Service or target must be specified.' if options[:service].blank? && options[:target].blank?
 
@@ -74,11 +87,11 @@ module GenovaCli
     end
 
     desc 'scheduled-task', 'Deploy scheduled task to ECS'
-    option :cluster, aliases: :c, default: 'default', desc: 'Cluster name.'
-    option :scheduled_task_rule, desc: 'Schedule rule name.'
-    option :scheduled_task_target, desc: 'Schedule target name.'
-    option :repository, required: true, aliases: :r, desc: 'Repository or alias name.'
-    option :target, aliases: :t, desc: 'Deploy by specifying target.'
+    option :cluster, aliases: :c, default: 'default', desc: 'Cluster to deploy.'
+    option :scheduled_task_rule, desc: 'Schedule rule to deploy.'
+    option :scheduled_task_target, desc: 'Schedule target to deploy.'
+    option :repository, required: true, aliases: :r, desc: 'Repository name or alias name.'
+    option :target, aliases: :t, desc: 'Target to deploy. (https://github.com/metaps/genova/wiki/Deploy-target)'
     def scheduled_task
       raise Genova::Exceptions::InvalidArgumentError, 'Scheduled task or target must be specified.' if (options[:scheduled_task_rule].blank? || options[:scheduled_task_target].blank?) && options[:target].blank?
 
@@ -90,9 +103,9 @@ module GenovaCli
   end
 
   class Env < Thor
-    desc 'encrypt', 'Encrypt value.'
-    option :master_key, required: true, desc: 'KMS Master key for encryption.'
-    option :value, required: true, desc: 'Value to encrypt.'
+    desc 'encrypt', 'Encrypt argument values with KMS.'
+    option :master_key, required: true, desc: 'KMS master key used for encryption.'
+    option :value, required: true, desc: 'Strings to encrypt'
     def encrypt
       cipher = Genova::Utils::Cipher.new
       value = cipher.encrypt(options[:master_key], options[:value])
@@ -100,8 +113,8 @@ module GenovaCli
       puts "Encrypted value: #{value}"
     end
 
-    desc 'decrypt', 'Decrypt value.'
-    option :value, required: true, desc: 'Value to decrypt.'
+    desc 'decrypt', 'Decrypt KMS encrypted values.'
+    option :value, required: true, desc: 'Strings to decrypt'
     def decrypt
       cipher = Genova::Utils::Cipher.new
       value = cipher.decrypt(options[:value])
@@ -117,9 +130,9 @@ module GenovaCli
     end
 
     desc 'emulate-github-push', 'Emulate GitHub push'
-    option :account, required: false, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
+    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
-    option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
+    option :branch, aliases: :b, desc: 'Source branch.'
     def emulate_github_push
       post_data = {
         repository: {
@@ -140,11 +153,11 @@ module GenovaCli
     end
 
     desc 'git-pull', 'Retrieve latest source'
-    option :account, required: false, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
+    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
-    option :branch, required: false, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
+    option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
     def git_pull
-      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch])
+      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], branch: options[:branch])
       puts "Commit ID: #{code_manager.pull}"
     end
   end
@@ -155,13 +168,13 @@ module GenovaCli
     desc 'deploy', 'Deploy application to ECS.'
     subcommand 'deploy', Deploy
 
-    desc 'env', 'Environment variable encryption and decryption.'
+    desc 'env', 'It supports encryption and compounding using KMS.'
     subcommand 'env', Env
 
     desc 'debug', 'Debug genova'
     subcommand 'debug', Debug
 
-    desc 'docker-cleanup', 'Delete old containers and images. This program is running on Genova.'
+    desc 'docker-cleanup', 'Deletes unused containers, images, networks, and volumes built with genova.'
     def docker_cleanup
       ::Genova::Docker::Cleaner.execute
     end
@@ -172,7 +185,7 @@ module GenovaCli
     option :path, required: true, desc: 'Task path.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def register_task
-      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], options[:branch])
+      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], branch: options[:branch])
       code_manager.pull
 
       path = code_manager.task_definition_config_path(options[:path])
