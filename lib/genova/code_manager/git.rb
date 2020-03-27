@@ -49,12 +49,12 @@ module Genova
 
         @logger.info("Git checkout: #{@branch}")
 
-        if @tag.present?
-          checkout = "refs/tags/#{@tag}"
-          reset_hard = "origin/#{Settings.github.default_branch}"
-        else
+        if @branch.present?
           checkout = @branch
           reset_hard = "origin/#{@branch}"
+        else
+          checkout = "refs/tags/#{@tag}"
+          reset_hard = "origin/#{Settings.github.default_branch}"
         end
 
         git = client

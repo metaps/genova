@@ -53,6 +53,10 @@ class DeployJob
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
   end
 
+  def label
+    "build-#{id}"
+  end
+
   def start
     self.started_at = Time.now.utc
     save
