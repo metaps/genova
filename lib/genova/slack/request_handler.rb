@@ -23,12 +23,12 @@ module Genova
           selected_repository = nil
 
           Settings.github.repositories.each do |repository|
-            if repository[:name] == selected_value || repository[:alias] == selected_value
-              selected_base_path = repository[:base_path]
-              selected_repository = repository[:name]
+            next unless [repository[:name], repository[:alias]].include?(selected_value)
 
-              break
-            end
+            selected_base_path = repository[:base_path]
+            selected_repository = repository[:name]
+
+            break
           end
 
           if selected_repository.present?
