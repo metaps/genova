@@ -22,7 +22,7 @@ module Genova
             options[:overrides] = {
               container_overrides: params[:container_overrides],
               task_role_arn: params[:task_role_arn],
-              execution_role_arn: params[:task_execution_role_arn],
+              execution_role_arn: params[:task_execution_role_arn]
             }
 
             results = @ecs_client.run_task(options)
@@ -55,16 +55,14 @@ module Genova
                 if task[:last_status] == 'PENDING'
                   pending = true
 
-                  if wait_time > Settings.deploy.wait_timeout
-                    raise Exceptions::DeployTimeoutError, 'Process is timed out. (Task ARN: #{[:task_arn]})'
-                  end
+                  raise Exceptions::DeployTimeoutError, "Process is timed out. (Task ARN: #{task[:task_arn]})" if wait_time > Settings.deploy.wait_timeout
 
                 elsif !exit_task_arns.include?(task[:task_arn])
                   task[:containers].each do |container|
                     @logger.info 'Container'
                     @logger.info "  Name: #{container[:name]}"
                     @logger.info "  Exit code: #{container[:exit_code]}"
-                    @logger.info "  Reason: #{container[:reason]}" unless container[:exit_code] == 0
+                    @logger.info "  Reason: #{container[:reason]}" unless container[:exit_code].zero?
                     @logger.info LOG_SEPARATOR
                   end
 
