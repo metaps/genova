@@ -31,7 +31,7 @@ module Genova
       describe 'deploy_service' do
         include_context 'load code_manager_mock'
 
-        let(:code_manager) { CodeManager::Git.new('account', 'repository') }
+        let(:code_manager) { CodeManager::Git.new('account', 'repository', branch: 'master') }
         let(:client)  { Ecs::Client.new('cluster', code_manager) }
 
         it 'should be return Aws::ECS::Types::TaskDefinition' do
