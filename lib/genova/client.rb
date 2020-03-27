@@ -46,7 +46,7 @@ module Genova
                                @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.tag)
                              end
 
-      if Settings.github.add_deployment_tag && @deploy_job.branch.present?
+      if Settings.github.deployment_tag && @deploy_job.branch.present?
         @deploy_job.deployment_tag = create_tag(@deploy_job.commit_id)
         @code_manager.release(@deploy_job.deployment_tag, @deploy_job.commit_id)
 
