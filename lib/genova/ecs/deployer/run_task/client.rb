@@ -62,7 +62,7 @@ module Genova
                     @logger.info 'Container'
                     @logger.info "  Name: #{container[:name]}"
                     @logger.info "  Exit code: #{container[:exit_code]}"
-                    @logger.info "  Reason: #{container[:reason]}" unless container[:exit_code].zero?
+                    @logger.info "  Reason: #{container[:reason]}"
                     @logger.info LOG_SEPARATOR
                   end
 
