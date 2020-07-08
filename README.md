@@ -23,7 +23,7 @@ When you request deployment, starts deployment as follows.
 6. Request ECS task update
 7. ECS switches to new task
 
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/overview.png" width="50%">
+<img src="https://user-images.githubusercontent.com/1632478/86935249-95fee380-c177-11ea-84bb-5c55f2ca9024.png" width="50%">
 
 ## Features
 
