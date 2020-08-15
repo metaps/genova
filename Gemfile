@@ -7,11 +7,11 @@ end
 
 gem 'aws-sdk', '~> 3.0.1'
 gem 'bootsnap', require: false
-gem 'config'
+gem 'config', '~> 2.2.1'
 gem 'docker-api'
 gem 'enumerize'
 gem 'git'
-gem 'grape', '~> 1.1.0'
+gem 'grape', '~> 1.4.0'
 gem 'grape_logging'
 gem 'hash_validator'
 gem 'health_check'
