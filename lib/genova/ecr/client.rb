@@ -37,7 +37,7 @@ module Genova
             has_repository = true
             break
           end
-        end until results[:next_token].nil?
+        end until next_token.nil?
 
         @ecr.create_repository(repository_name: repository_name) unless has_repository
 
