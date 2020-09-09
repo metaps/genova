@@ -26,9 +26,20 @@ module Genova
       end
 
       def push_image(image_tag, repository_name)
-        repositories = @ecr.describe_repositories[:repositories]
+        next_token = nil
+        has_repository = false
 
-        @ecr.create_repository(repository_name: repository_name) if repositories.find { |item| item[:repository_name] == repository_name }.nil?
+        begin
+          results = @ecr.describe_repositories(next_token: next_token)
+          next_token = results[:next_token]
+
+          if results[:repositories].find { |item| item[:repository_name] == repository_name }.present?
+            has_repository = true
+            break
+          end
+        end until results[:next_token].nil?
+
+        @ecr.create_repository(repository_name: repository_name) unless has_repository
 
         repo_tag_latest = "#{@base_path}/#{repository_name}:#{IMAGE_TAG_LATEST}"
         repo_tag_version = "#{@base_path}/#{repository_name}:#{image_tag}"
