@@ -1,7 +1,7 @@
 module Genova
   module Docker
     class Client
-      BUILD_KEY = 'com.metaps.genova.build_id'.freeze
+      BUILD_KEY = 'com.metaps.genova.build_key'.freeze
 
       def initialize(code_manager, options = {})
         @code_manager = code_manager
