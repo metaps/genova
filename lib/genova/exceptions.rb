@@ -7,7 +7,6 @@ module Genova
     class DeployLockError < Error; end
     class RoutingError < Error; end
     class InvalidArgumentError < Error; end
-    class OutputError < Error; end
     class ClusterNotFoundError < Error; end
     class ServiceNotFoundError < Error; end
     class TaskRunningError < Error; end
@@ -16,5 +15,6 @@ module Genova
     class KmsEncryptError < Error; end
     class KmsDecryptError < Error; end
     class DeployTimeoutError < Error; end
+    class ImageBuildError < Error; end
   end
 end
