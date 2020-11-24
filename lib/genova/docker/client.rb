@@ -1,6 +1,8 @@
 module Genova
   module Docker
     class Client
+      BUILD_KEY = 'com.metaps.genova.build_key'.freeze
+
       def initialize(code_manager, options = {})
         @code_manager = code_manager
         @logger = options[:logger] || ::Logger.new(nil)
@@ -23,10 +25,12 @@ module Genova
         raise Exceptions::ValidationError, "'#{container}' container does not exist in task definition." if container_definition.nil?
 
         repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
+        build_value = SecureRandom.alphanumeric(8)
 
         build_options = {
           '-t': "#{repository_name}:latest",
-          '-f': docker_file_path
+          '-f': docker_file_path,
+          '--label': BUILD_KEY + '=' + build_value
         }
         build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
         build_option_string = build_options.map { |key, value| "#{key} #{value}" }.join(' ') + build[:build_args]
@@ -36,6 +40,9 @@ module Genova
 
         executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
         executor.command(command)
+
+        result = ::Docker::Image.all(all: true, filters: { label: [ "#{BUILD_KEY}=#{build_value}" ] }.to_json)
+        raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." if result.empty?
 
         repository_name
       end
