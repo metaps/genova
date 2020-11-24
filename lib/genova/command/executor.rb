@@ -9,8 +9,7 @@ module Genova
       end
 
       def command(command, chdir = nil)
-        stdout = []
-        stderr = []
+        outputs = []
 
         begin
           @logger.info("$ #{command}")
@@ -25,19 +24,17 @@ module Genova
             o.each do |line|
               line.chomp!
               @logger.info(line)
-              stdout << line
+              outputs << line
             end
 
             e.each do |line|
               line.chomp!
               @logger.error(line)
-              stderr << line
+              outputs << line
             end
           end
 
-          raise Exceptions::OutputError, stderr.join("\n") unless stderr.empty?
-
-          stdout.join("\n")
+          outputs.join("\n")
         rescue Interrupt
           message = 'command was forcibly terminated.'
           @logger.error(message)

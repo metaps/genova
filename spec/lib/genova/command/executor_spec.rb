@@ -22,21 +22,6 @@ module Genova
           end
         end
 
-        context 'when command was failure.' do
-          it 'should be raise error' do
-            allow(io_mock).to receive(:write)
-            allow(io_mock).to receive(:close)
-
-            response = []
-            response << io_mock
-            response << ['stdout']
-            response << ['stderr']
-
-            allow(Open3).to receive(:popen3).and_yield(*response)
-            expect { executor.command('dummy') }.to raise_error(Exceptions::OutputError)
-          end
-        end
-
         context 'when forcibly terminated' do
           it 'should be raise error' do
             allow(io_mock).to receive(:write)
