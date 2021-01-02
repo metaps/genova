@@ -6,28 +6,52 @@ module Genova
           Hello, I'm ECS deploy Bot.
 
           *Service deploy*
-          - `deploy[:service]` Run intractive mode.
-          - `deploy[:service] <repository>[:<branch>] cluster=<cluster> service=<service>` Run statement mode.
-          - `deploy[:service] <repository>[:<branch>] target=<target>` Specify target and run statement mode.
+          ```
+          # Run intractive mode.
+          deploy[:service]
+
+          # Run statement mode.
+          deploy[:service] repository={repository} [branch={branch}] cluster={cluster} service={service}
+
+          # Specify target and run statement mode.
+          deploy[:service] repository={repository} [branch={branch}] target={target}
+          ```
 
           *Execute run task*
-          - `deploy:run-task <repository>[:<branch>] cluster=<cluster> run-task=<run task>` Run statement mode.
-          - `deploy:run-task <repository>[:<branch>] target=<target>` Specify target and run statement mode.
+          ```
+          # Run statement mode.
+          deploy:run-task reposisoty={repository} [branch={branch}] cluster={cluster} run-task=<run task>
+
+          # Specify target and run statement mode.
+          deploy:run-task repository={repository} [branch={branch}] target={target}
+          ```
 
           *Scheduled task deploy*
-          - `deploy:scheduled-task <repository>[:<branch>] cluster=<cluster> scheduled-task-rule=<scheduled task rule> scheduled-task-target=<scheduled task target>` Run statement mode.
-          - `deploy:scheduled-task <repository>[:<branch>] target=<target>` Specify target and run statement mode.
+          ```
+          # Run statement mode.
+          deploy:scheduled-task repository={repository} [branch={branch}] cluster={cluster} scheduled-task-rule={scheduled task rule} scheduled-task-target={scheduled task target}
+
+          # Specify target and run statement mode.
+          deploy:scheduled-task repository={repository} [branch={branch}] target={target}
+          ```
 
           *Util*
-          - `help` Get helpful message.
-          - `history` Show deployment histories.
-          - `redeploy` Run previous deployment again.
+          ```
+          # Get helpful message.
+          help
+
+          # Show deployment histories.
+          history
+
+          # Run previous deployment again.
+          redeploy
+
+          # Show version.
+          version
+          ```
         DOC
 
-        def self.call(client, command, sub_commands, user, logger)
-          #logger.info("Execute help command: (UNAME: #{client.owner}, user=#{data.user})")
-          #logger.info("Input command: #{match['command']} #{match['expression']}")
-
+        def self.call(client, statements, user)
           client.post_simple_message(text: HELP)
         end
       end

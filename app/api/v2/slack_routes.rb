@@ -35,35 +35,26 @@ module V2
       end
 
       post :event do
-        if params['event'].present?
-          text = params['event']['blocks'][0]['elements'][0]['elements'].find { |k, v| k['type'] == 'text' }[:text].strip
-          expressions = text.split(' ')
-          command = expressions[0]
-          sub_commands = {}
+        if headers['X-Slack-Retry-Num'].present?
+          e = Genova::Exceptions::SlackEventsAPIError.new(headers['X-Slack-Retry-Reason'])
 
-          if expressions.size > 1
-            expressions.slice!(0)
-            expressions.each do |sub_command|
-              value = sub_command.split('=')
-              sub_commands[value[0]] = value[1]
-            end
-          end
-
-          command_class = "Genova::Slack::Command::#{command.capitalize}"
           client = Genova::Slack::Bot.new
-puts '>>>>>>>>>>>>>>>>>>>'
-puts text
-puts command_class
-puts sub_commands
+          client.post_error(error: e, slack_user_id: params[:event][:user])
 
-          begin
-            Object.const_get(command_class).call(client, command, sub_commands, params['event']['user'], logger)
-          rescue NameError
-            client.post_simple_message(text: "Command does not exist. [#{command}]")
-          end
+          raise e
         end
 
-        params['challenge']
+        if params[:event].present?
+          text = params[:event][:blocks][0][:elements][0][:elements].find { |k, v| k[:type] == 'text' }[:text].strip.gsub("\u00A0", '')
+          id = Genova::Sidekiq::Queue.add(
+            text: text, 
+            user: params[:event][:user]
+          )
+
+          Slack::CommandWorker.perform_async(id)
+        end
+
+        params[:challenge]
       end
     end
   end

@@ -16,5 +16,6 @@ module Genova
     class KmsDecryptError < Error; end
     class DeployTimeoutError < Error; end
     class ImageBuildError < Error; end
+    class SlackEventsAPIError < Error; end
   end
 end

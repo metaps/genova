@@ -2,10 +2,7 @@ module Genova
   module Slack
     module Command
       class Redeploy
-        def self.call(client, commands, sub_commands, user, logger)
-          #logger.info("Execute redeploy command: (UNAME: #{client.owner}, user=#{data.user})")
-          #logger.info("Input command: #{match['command']} #{match['expression']}")
-
+        def self.call(client, statements, user)
           history = Genova::Slack::History.new(user).last
 
           if history.present?
@@ -24,7 +21,7 @@ module Genova
             )
           else
             e = Exceptions::NotFoundError.new('History does not exist.')
-            client.post_error(error: e, slack_user_id: data.user)
+            client.post_error(error: e, slack_user_id: user)
           end
         end
       end
