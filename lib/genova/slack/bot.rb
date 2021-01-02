@@ -19,7 +19,6 @@ module Genova
       def initialize(client = nil)
         @client = client || ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
         @channel = ENV.fetch('SLACK_CHANNEL')
-        @ecs = Aws::ECS::Client.new
       end
 
       def post_simple_message(params)
@@ -457,8 +456,10 @@ module Genova
       end
 
       def git_deployed_commit_id(params)
+        ecs = Aws::ECS::Client.new
+
         if params[:service].present?
-          services = @ecs.describe_services(cluster: params[:cluster], services: [params[:service]]).services
+          services = ecs.describe_services(cluster: params[:cluster], services: [params[:service]]).services
           raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
 
           task_definition_arn = services[0].task_definition
@@ -472,7 +473,7 @@ module Genova
           task_definition_arn = target.ecs_parameters.task_definition_arn
         end
 
-        task_definition = @ecs.describe_task_definition(task_definition: task_definition_arn)
+        task_definition = ecs.describe_task_definition(task_definition: task_definition_arn)
         task_definitions = task_definition.task_definition.container_definitions
 
         deployed_commit_id = nil

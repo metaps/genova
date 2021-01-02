@@ -1,15 +1,15 @@
-module V1
+module V2
   class GithubRoutes < Grape::API
     helpers Helper::GithubHelper
 
-    # /api/v1/github
+    # /api/v2/github
     resource :github do
       before do
         @payload_body = request.body.read
         error! 'Signature is invalid.', 403 unless verify_signature?(@payload_body)
       end
 
-      # POST /api/v1/github/push
+      # POST /api/v2/github/push
       post :push do
         result = parse(@payload_body)
 

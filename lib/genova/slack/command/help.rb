@@ -1,7 +1,7 @@
 module Genova
   module Slack
     module Command
-      class Help < SlackRubyBot::Commands::Base
+      class Help
         HELP = <<~DOC.freeze
           Hello, I'm ECS deploy Bot.
 
@@ -24,11 +24,11 @@ module Genova
           - `redeploy` Run previous deployment again.
         DOC
 
-        def self.call(client, data, match)
-          logger.info("Execute help command: (UNAME: #{client.owner}, user=#{data.user})")
-          logger.info("Input command: #{match['command']} #{match['expression']}")
+        def self.call(client, command, sub_commands, user, logger)
+          #logger.info("Execute help command: (UNAME: #{client.owner}, user=#{data.user})")
+          #logger.info("Input command: #{match['command']} #{match['expression']}")
 
-          client.say(channel: data.channel, text: HELP)
+          client.post_simple_message(text: HELP)
         end
       end
     end

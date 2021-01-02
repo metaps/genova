@@ -1,63 +1,56 @@
 module Genova
   module Slack
     module Command
-      class Deploy < SlackRubyBot::Commands::Base
-        command 'deploy'
-        command 'deploy:service'
-        command 'deploy:run-task'
-        command 'deploy:scheduled-task'
+      class Deploy
+        def self.call(client, command, sub_commands, deploy, logger)
+          #logger.info("Execute deploy command: (UNAME: #{client.owner}, user=#{data.user})")
+          #logger.info("Input command: #{match['command']} #{match['expression']}")
+
+          begin
+            type = case command.split(':')[1]
+                   when 'run-task'
+                     DeployJob.type.find_value(:run_task)
+                   when 'scheduled-task'
+                     DeployJob.type.find_value(:scheduled_task)
+                   else
+                     DeployJob.type.find_value(:service)
+                   end
+
+            if sub_commands.size.zero?
+              client.post_choose_repository
+            else
+              expressions = match['expression'].split(' ')
+              results = send("parse_#{type}", expressions)
+
+              params = {
+                type: type,
+                account: results[:account],
+                repository: results[:repository],
+                branch: results[:branch],
+                cluster: results[:cluster],
+                run_task: results[:run_task],
+                service: results[:service],
+                scheduled_task_rule: results[:scheduled_task_rule],
+                scheduled_task_target: results[:scheduled_task_target],
+                confirm: true
+              }
+
+              repository_settings = Genova::Config::SettingsHelper.find_repository!(results[:repository])
+              params[:base_path] = repository_settings[:base_path]
+
+              client.post_confirm_deploy(params)
+            end
+          rescue => e
+            logger.error(e)
+
+            client.post_error(
+              error: e,
+              slack_user_id: data.user
+            )
+          end
+        end
 
         class << self
-          def call(client, data, match)
-            logger.info("Execute deploy command: (UNAME: #{client.owner}, user=#{data.user})")
-            logger.info("Input command: #{match['command']} #{match['expression']}")
-
-            bot = Genova::Slack::Bot.new(client.web_client)
-
-            begin
-              type = case match['command'].split(':')[1]
-                     when 'run-task'
-                       DeployJob.type.find_value(:run_task)
-                     when 'scheduled-task'
-                       DeployJob.type.find_value(:scheduled_task)
-                     else
-                       DeployJob.type.find_value(:service)
-                     end
-
-              if match['expression'].blank?
-                bot.post_choose_repository
-              else
-                expressions = match['expression'].split(' ')
-                results = send("parse_#{type}", expressions)
-
-                params = {
-                  type: type,
-                  account: results[:account],
-                  repository: results[:repository],
-                  branch: results[:branch],
-                  cluster: results[:cluster],
-                  run_task: results[:run_task],
-                  service: results[:service],
-                  scheduled_task_rule: results[:scheduled_task_rule],
-                  scheduled_task_target: results[:scheduled_task_target],
-                  confirm: true
-                }
-
-                repository_settings = Genova::Config::SettingsHelper.find_repository!(results[:repository])
-                params[:base_path] = repository_settings[:base_path]
-
-                bot.post_confirm_deploy(params)
-              end
-            rescue => e
-              logger.error(e)
-
-              bot.post_error(
-                error: e,
-                slack_user_id: data.user
-              )
-            end
-          end
-
           private
 
           def parse_run_task(expressions)

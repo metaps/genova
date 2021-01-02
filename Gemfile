@@ -29,7 +29,7 @@ gem 'rails', '~> 5.2.3'
 gem 'redis'
 gem 'rest-client'
 gem 'sidekiq'
-gem 'slack-ruby-bot-server', '~> 0.11.1'
+gem 'slack-ruby-bot-server-events'
 gem 'tzinfo-data'
 
 group :development, :test do
