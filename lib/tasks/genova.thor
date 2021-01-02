@@ -196,7 +196,7 @@ module GenovaCli
 
     desc 'version', 'Show version'
     def version
-      puts "genova #{Genova::VERSION::STRING}"
+      puts "genova #{Genova::VERSION::LONG_STRING}"
     end
   end
 end

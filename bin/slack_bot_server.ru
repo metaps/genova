@@ -10,7 +10,4 @@ SlackRubyBotServer.configure do |config|
   config.logger = logger
 end
 
-#SlackRubyBotServer::App.instance.prepare!
-#SlackRubyBotServer::Service.start!
-
 run SlackRubyBotServer::Api::Middleware.instance
