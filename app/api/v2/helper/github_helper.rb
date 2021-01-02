@@ -1,4 +1,4 @@
-module V1
+module V2
   module Helper
     module GithubHelper
       extend Grape::API::Helpers

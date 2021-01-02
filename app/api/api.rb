@@ -29,6 +29,6 @@ module API
       { result: 'success' }
     end
 
-    mount V1::Routes
+    mount V2::Routes
   end
 end
