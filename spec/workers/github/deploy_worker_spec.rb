@@ -2,7 +2,7 @@ require 'rails_helper'
 
 module Github
   describe DeployWorker do
-    include ::V1::Helper::GithubHelper
+    include ::V2::Helper::GithubHelper
 
     let(:slack_bot_mock) { double(Genova::Slack::Bot) }
     let(:client_mock) { double(Genova::Client) }

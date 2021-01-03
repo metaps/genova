@@ -20,12 +20,10 @@ require 'simplecov'
 
 SimpleCov.start do
   add_filter 'config'
-  add_filter 'lib/genova/slack/commands.rb'
   add_filter 'spec'
 end
 
 require 'json_spec'
-require 'slack-ruby-bot/rspec'
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-module V1
+module V2
   module Helper
     describe SlackHelper do
     end

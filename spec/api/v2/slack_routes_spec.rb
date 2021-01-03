@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-module V1
+module V2
   describe SlackRoutes do
     describe 'POST /post' do
       let(:payload_body) do
@@ -20,7 +20,7 @@ module V1
               text: 'text',
               fields: []
             )
-            post '/api/v1/slack/post', params: payload_body
+            post '/api/v2/slack/post', params: payload_body
 
             expect(response).to have_http_status :created
             expect(response.body).to be_json_eql('in_channel'.to_json).at_path('response_type')
@@ -34,7 +34,7 @@ module V1
 
             allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
             allow(Genova::Slack::RequestHandler).to receive(:handle_request).and_raise(Genova::Exceptions::RoutingError.new('No route.'))
-            post '/api/v1/slack/post', params: payload_body
+            post '/api/v2/slack/post', params: payload_body
 
             expect(response).to have_http_status :internal_server_error
             expect(response.body).to be_json_eql('No route.'.to_json).at_path('error')
@@ -49,7 +49,7 @@ module V1
           let(:callback_id) { '' }
 
           it 'should be return error' do
-            post '/api/v1/slack/post', params: payload_body
+            post '/api/v2/slack/post', params: payload_body
             expect(response).to have_http_status :forbidden
             expect(response.body).to be_json_eql('Signature do not match.'.to_json).at_path('error')
           end

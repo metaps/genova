@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-module V1
+module V2
   module Helper
     describe GithubHelper do
-      include ::V1::Helper::GithubHelper
+      include ::V2::Helper::GithubHelper
     end
   end
 end

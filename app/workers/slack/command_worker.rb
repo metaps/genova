@@ -22,13 +22,15 @@ module Slack
         expressions.slice!(0)
         expressions.each do |param|
           value = param.split('=')
-          statements[:params][value[0]] = value[1]
+          statements[:params][value[0].to_sym] = value[1]
         end
       end
 
       command_class = "Genova::Slack::Command::#{statements[:command].capitalize}"
       client = Genova::Slack::Bot.new
 
+      puts '>>>>>>>>>>>>>>>'
+      puts statements
       Object.const_get(command_class).call(client, statements, queue.user)
     end
   end

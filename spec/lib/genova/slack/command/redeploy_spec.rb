@@ -21,8 +21,7 @@ module Genova
             allow(bot_mock).to receive(:post_confirm_deploy)
             allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
 
-            command = "#{SlackRubyBot.config.user} redeploy"
-            expect(message: command, channel: 'channel').to not_respond
+            expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.not_to raise_error
             expect(bot_mock).to have_received(:post_confirm_deploy).once
           end
         end
@@ -36,8 +35,7 @@ module Genova
             allow(bot_mock).to receive(:post_error)
             allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
 
-            command = "#{SlackRubyBot.config.user} redeploy"
-            expect(message: command, channel: 'channel').to not_respond
+            expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.not_to raise_error
             expect(bot_mock).to have_received(:post_error).once
           end
         end

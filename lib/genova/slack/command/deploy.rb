@@ -38,7 +38,7 @@ module Genova
         class << self
           private
 
-          def parse_run_task(expressions)
+          def parse_run_task(params)
             validations = {
               account: String,
               repository: String,
@@ -47,10 +47,10 @@ module Genova
               run_task: String
             }
 
-            parse_expressions(expressions, validations)
+            parse_params(params, validations)
           end
 
-          def parse_service(expressions)
+          def parse_service(params)
             validations = {
               account: String,
               repository: String,
@@ -59,10 +59,10 @@ module Genova
               service: String
             }
 
-            parse_expressions(expressions, validations)
+            parse_params(params, validations)
           end
 
-          def parse_scheduled_task(expressions)
+          def parse_scheduled_task(params)
             validations = {
               account: String,
               repository: String,
@@ -72,7 +72,7 @@ module Genova
               scheduled_task_target: String
             }
 
-            parse_expressions(expressions, validations)
+            parse_params(params, validations)
           end
 
           def validate!(values, validations)
@@ -80,16 +80,16 @@ module Genova
             raise Genova::Exceptions::InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.values[0]}" unless validator.valid?
           end
 
-          def parse_expressions(expressions, validations)
+          def parse_params(params, validations)
             results = {
               account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account)
             }
 
-            expressions.each do |key, value|
-              results[key.tr('-', '_').to_sym] = value
+            params.each do |key, value|
+              results[key.to_s.tr('-', '_').to_sym] = value
             end
 
-            results[:branch] = Settings.github.default_branch if expressions[:branch].nil?
+            results[:branch] = Settings.github.default_branch if params[:branch].nil?
 
             if results.include?(:target)
               code_manager = Genova::CodeManager::Git.new(results[:account], results[:repository], branch: results[:branch])
