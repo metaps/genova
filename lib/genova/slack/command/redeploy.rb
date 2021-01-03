@@ -2,7 +2,7 @@ module Genova
   module Slack
     module Command
       class Redeploy
-        def self.call(client, statements, user)
+        def self.call(client, _statements, user)
           history = Genova::Slack::History.new(user).last
 
           if history.present?
