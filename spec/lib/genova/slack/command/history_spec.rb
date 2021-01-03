@@ -15,7 +15,7 @@ module Genova
             allow(Genova::Slack::Util).to receive(:history_options).and_return([text: 'text', value: 'value'])
             allow(bot_mock).to receive(:post_choose_history)
 
-            expect(message: "#{SlackRubyBot.config.user} history", channel: 'channel').to not_respond
+            expect { Genova::Slack::Command::History.call(bot_mock, {}, 'user') }.not_to raise_error
             expect(bot_mock).to have_received(:post_choose_history).once
           end
         end
@@ -25,7 +25,7 @@ module Genova
             allow(Genova::Slack::Util).to receive(:history_options).and_return([])
             allow(bot_mock).to receive(:post_error)
 
-            expect(message: "#{SlackRubyBot.config.user} history", channel: 'channel').to not_respond
+            expect { Genova::Slack::Command::History.call(bot_mock, {}, 'user') }.not_to raise_error
             expect(bot_mock).to have_received(:post_error).once
           end
         end

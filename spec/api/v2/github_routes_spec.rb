@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-module V1
+module V2
   describe GithubRoutes do
-    describe 'POST /api/v1/github/push' do
+    describe 'POST /api/v2/github/push' do
       let(:payload_body) do
         post_data = {
           repository: {
@@ -23,7 +23,7 @@ module V1
         it 'should be return success' do
           allow(Github::DeployWorker).to receive(:perform_async)
 
-          post '/api/v1/github/push', params: payload_body, headers: headers
+          post '/api/v2/github/push', params: payload_body, headers: headers
 
           expect(response).to have_http_status :created
           expect(response.body).to be_json_eql('Deploy request was executed.'.to_json).at_path('result')
@@ -34,7 +34,7 @@ module V1
         let(:signature) { 'sha1=invalid_signature' }
 
         it 'should be return error' do
-          post '/api/v1/github/push', params: payload_body, headers: headers
+          post '/api/v2/github/push', params: payload_body, headers: headers
 
           expect(response).to have_http_status :forbidden
           expect(response.body).to be_json_eql('Signature is invalid.'.to_json).at_path('error')
