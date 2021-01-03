@@ -3,8 +3,6 @@ module Genova
     module Command
       class Help
         HELP = <<~DOC.freeze
-          Hello, I'm ECS deploy Bot.
-
           *Service deploy*
           ```
           # Run intractive mode.

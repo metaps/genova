@@ -47,7 +47,7 @@ module Genova
               run_task: String
             }
 
-            parse_params(params, validations)
+            parse(params, validations)
           end
 
           def parse_service(params)
@@ -59,7 +59,7 @@ module Genova
               service: String
             }
 
-            parse_params(params, validations)
+            parse(params, validations)
           end
 
           def parse_scheduled_task(params)
@@ -72,7 +72,7 @@ module Genova
               scheduled_task_target: String
             }
 
-            parse_params(params, validations)
+            parse(params, validations)
           end
 
           def validate!(values, validations)
@@ -80,28 +80,21 @@ module Genova
             raise Genova::Exceptions::InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.values[0]}" unless validator.valid?
           end
 
-          def parse_params(params, validations)
-            results = {
-              account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account)
-            }
+          def parse(params, validations)
+            params[:account] = ENV.fetch('GITHUB_ACCOUNT', Settings.github.account)
+            params[:branch] = Settings.github.default_branch if params[:branch].nil?
 
-            params.each do |key, value|
-              results[key.to_s.tr('-', '_').to_sym] = value
+            if params.include?(:target)
+              code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository], branch: params[:branch])
+              target = code_manager.load_deploy_config.target(params[:target])
+
+              params.merge!(target)
+              params.delete(params[:target])
             end
 
-            results[:branch] = Settings.github.default_branch if params[:branch].nil?
+            validate!(params, validations)
 
-            if results.include?(:target)
-              code_manager = Genova::CodeManager::Git.new(results[:account], results[:repository], branch: results[:branch])
-              target = code_manager.load_deploy_config.target(results[:target])
-
-              results.merge!(target)
-              results.delete(results[:target])
-            end
-
-            validate!(results, validations)
-
-            results
+            params
           end
         end
       end

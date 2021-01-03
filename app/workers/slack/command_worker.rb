@@ -19,17 +19,18 @@ module Slack
       }
 
       if expressions.size > 1
-        expressions.slice!(0)
-        expressions.each do |param|
-          value = param.split('=')
-          statements[:params][value[0].to_sym] = value[1]
+        params = expressions.slice(1..)
+        params.each do |param|
+          element = param.split('=')
+          key = element[0].tr('-', '_').to_sym
+          statements[:params][key] = element[1]
         end
       end
 
-      command_class = "Genova::Slack::Command::#{statements[:command].capitalize}"
+      klass = "Genova::Slack::Command::#{statements[:command].capitalize}"
       client = Genova::Slack::Bot.new
 
-      Object.const_get(command_class).call(client, statements, queue.user)
+      Object.const_get(klass).call(client, statements, queue.user)
     end
   end
 end
