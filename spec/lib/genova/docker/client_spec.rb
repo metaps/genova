@@ -24,7 +24,7 @@ module Genova
           allow(executor_mock).to receive(:command)
           allow(Command::Executor).to receive(:new).and_return(executor_mock)
 
-          allow(::Docker::Image).to receive(:all).and_return({ foo: 'bar' })
+          allow(::Docker::Image).to receive(:all).and_return(foo: 'bar')
 
           expect(docker_client.build_image(container_config, 'test.yml')).to eq('nginx')
         end

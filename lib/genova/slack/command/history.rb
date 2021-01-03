@@ -2,7 +2,7 @@ module Genova
   module Slack
     module Command
       class History
-        def self.call(client, statements, user)
+        def self.call(client, _statements, user)
           options = Genova::Slack::Util.history_options(user)
 
           if options.present?

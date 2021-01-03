@@ -45,9 +45,9 @@ module V2
         end
 
         if params[:event].present?
-          text = params[:event][:blocks][0][:elements][0][:elements].find { |k, v| k[:type] == 'text' }[:text].strip.gsub("\u00A0", '')
+          text = params[:event][:blocks][0][:elements][0][:elements].find { |k, _v| k[:type] == 'text' }[:text].strip.delete("\u00A0")
           id = Genova::Sidekiq::Queue.add(
-            text: text, 
+            text: text,
             user: params[:event][:user]
           )
 
