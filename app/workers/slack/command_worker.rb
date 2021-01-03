@@ -29,8 +29,6 @@ module Slack
       command_class = "Genova::Slack::Command::#{statements[:command].capitalize}"
       client = Genova::Slack::Bot.new
 
-      puts '>>>>>>>>>>>>>>>'
-      puts statements
       Object.const_get(command_class).call(client, statements, queue.user)
     end
   end
