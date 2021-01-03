@@ -2,7 +2,7 @@ module Genova
   module Slack
     module Command
       class Deploy
-        def self.call(client, statements, user)
+        def self.call(client, statements, _user)
           type = case statements[:sub_command]
                  when 'run-task'
                    DeployJob.type.find_value(:run_task)

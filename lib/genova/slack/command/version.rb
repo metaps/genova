@@ -8,7 +8,7 @@ module Genova
           ```
         DOC
 
-        def self.call(client, statements, user)
+        def self.call(client, _statements, _user)
           client.post_simple_message(text: VERSION)
         end
       end
