@@ -8,7 +8,8 @@ module API
     logger Logger.new(STDOUT)
 
     rescue_from :all do |e|
-      logger.fatal(e.to_s + ':' + e.backtrace.to_s)
+      logger.fatal(e.message)
+      logger.fatal(e.full_message)
 
       bot = Genova::Slack::Bot.new
       bot.post_error(error: e)

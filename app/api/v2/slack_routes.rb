@@ -37,7 +37,7 @@ module V2
       post :event do
         if headers['X-Slack-Retry-Num'].present?
           message = "#{headers['X-Slack-Retry-Reason']} (Count: #{headers['X-Slack-Retry-Num']})"
-          raise Genova::Exceptions::SlackEventsAPIError.new(message)
+          raise Genova::Exceptions::SlackEventsAPIError, message
         end
 
         if params[:event].present?
