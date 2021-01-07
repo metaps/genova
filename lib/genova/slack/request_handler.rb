@@ -6,7 +6,7 @@ module Genova
           return if payload_body.blank?
 
           @payload_body = payload_body
-          @logger = Logger.new(STDOUT)
+          @logger = ::Logger.new(STDOUT)
           @bot = Genova::Slack::Bot.new
           @callback = Genova::Slack::CallbackIdManager.find(@payload_body[:callback_id])
 
