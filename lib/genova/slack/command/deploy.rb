@@ -26,8 +26,7 @@ module Genova
               run_task: results[:run_task],
               service: results[:service],
               scheduled_task_rule: results[:scheduled_task_rule],
-              scheduled_task_target: results[:scheduled_task_target],
-              confirm: true
+              scheduled_task_target: results[:scheduled_task_target]
             }
 
             params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
