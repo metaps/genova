@@ -5,7 +5,7 @@ module Genova
 
       def initialize(code_manager, options = {})
         @code_manager = code_manager
-        @logger = options[:logger]
+        @logger = options[:logger] || ::Logger.new(STDOUT)
         @cipher = Genova::Utils::Cipher.new
       end
 
