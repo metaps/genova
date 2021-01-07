@@ -50,10 +50,9 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  config.log_formatter = ::Logger::Formatter.new
-  logger = ActiveSupport::Logger.new('log/development.log')
+  logger           = ActiveSupport::Logger.new(STDOUT)
   logger.formatter = config.log_formatter
-  config.logger = ActiveSupport::TaggedLogging.new(logger)
+  config.logger    = ActiveSupport::TaggedLogging.new(logger)
 
   BetterErrors::Middleware.allow_ip! '0.0.0.0/0'
 end
