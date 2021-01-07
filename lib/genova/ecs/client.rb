@@ -4,7 +4,7 @@ module Genova
       def initialize(cluster, code_manager, options = {})
         @cluster = cluster
         @code_manager = code_manager
-        @logger = options[:logger] || ::Logger.new(nil)
+        @logger = options[:logger] || ::Logger.new(STDOUT)
         @task_definitions = {}
 
         @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)

@@ -20,7 +20,7 @@ module V2
       # /api/v2/slack/post
       post :post do
         error! 'Signature do not match.', 403 unless verify_signature?
-        result = Genova::Slack::RequestHandler.handle_request(payload_to_json, logger)
+        result = Genova::Slack::RequestHandler.handle_request(payload_to_json)
 
         {
           response_type: 'in_channel',
