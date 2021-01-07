@@ -8,11 +8,12 @@ module Genova
           @payload_body = payload_body
           @logger = ::Logger.new(STDOUT)
           @bot = Genova::Slack::Bot.new
-          @callback = Genova::Slack::CallbackIdManager.find(@payload_body[:callback_id])
 
-          raise Exceptions::RoutingError, "No route. [#{@callback[:action]}]" unless RequestHandler.respond_to?(@callback[:action], true)
+          action_id = @payload_body.dig(:actions, 0, :action_id)
 
-          send(@callback[:action])
+          raise Exceptions::RoutingError, "No route. [#{action_id}]" unless RequestHandler.respond_to?(action_id, true)
+
+          send(action_id)
         end
 
         private
@@ -76,10 +77,10 @@ module Genova
             }
 
             params = {
-              account: @callback[:account],
-              repository: @callback[:repository],
+              account: @request[:account],
+              repository: @request[:repository],
               branch: selected_branch,
-              base_path: @callback[:base_path]
+              base_path: @request[:base_path]
             }
 
             id = Genova::Sidekiq::Queue.add(params)
@@ -109,11 +110,11 @@ module Genova
             }
 
             params = {
-              account: @callback[:account],
-              repository: @callback[:repository],
-              branch: @callback[:branch],
+              account: @request[:account],
+              repository: @request[:repository],
+              branch: @request[:branch],
               cluster: selected_cluster,
-              base_path: @callback[:base_path]
+              base_path: @request[:base_path]
             }
 
             id = Genova::Sidekiq::Queue.add(params)
@@ -146,11 +147,11 @@ module Genova
             type = split[0].to_sym
 
             params = {
-              account: @callback[:account],
-              repository: @callback[:repository],
-              branch: @callback[:branch],
-              cluster: @callback[:cluster],
-              base_path: @callback[:base_path],
+              account: @request[:account],
+              repository: @request[:repository],
+              branch: @request[:branch],
+              cluster: @request[:cluster],
+              base_path: @request[:base_path],
               type: DeployJob.type.find_value(type)
             }
 
@@ -174,7 +175,7 @@ module Genova
         end
 
         def confirm_deploy_from_history
-          selected_history = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
+          selected_history = @payload_body.dig(:actions, 0, :selected_option, :value)
           slack_user_id = @payload_body[:user][:id]
 
           if selected_history.present?
@@ -222,7 +223,6 @@ module Genova
             id = Genova::Sidekiq::Queue.add(params)
             ::Slack::DeployHistoryWorker.perform_async(id)
 
-          else
             result = cancel_message
           end
 
@@ -248,20 +248,20 @@ module Genova
             id = DeployJob.generate_id
 
             DeployJob.create(id: id,
-                             type: @callback[:type],
+                             type: @request[:type],
                              status: DeployJob.status.find_value(:in_progress),
                              mode: DeployJob.mode.find_value(:slack),
                              slack_user_id: @payload_body[:user][:id],
                              slack_user_name: @payload_body[:user][:name],
-                             account: @callback[:account],
-                             repository: @callback[:repository],
-                             branch: @callback[:branch],
-                             cluster: @callback[:cluster],
-                             base_path: @callback[:base_path],
-                             run_task: @callback[:run_task],
-                             service: @callback[:service],
-                             scheduled_task_rule: @callback[:scheduled_task_rule],
-                             scheduled_task_target: @callback[:scheduled_task_target])
+                             account: @request[:account],
+                             repository: @request[:repository],
+                             branch: @request[:branch],
+                             cluster: @request[:cluster],
+                             base_path: @request[:base_path],
+                             run_task: @request[:run_task],
+                             service: @request[:service],
+                             scheduled_task_rule: @request[:scheduled_task_rule],
+                             scheduled_task_target: @request[:scheduled_task_target])
 
             ::Slack::DeployWorker.perform_async(id)
           else

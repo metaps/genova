@@ -16,8 +16,7 @@ module Genova
               run_task: history[:run_task],
               service: history[:service],
               scheduled_task_rule: history[:scheduled_task_rule],
-              scheduled_task_target: history[:scheduled_task_target],
-              confirm: true
+              scheduled_task_target: history[:scheduled_task_target]
             )
           else
             e = Exceptions::NotFoundError.new('History does not exist.')

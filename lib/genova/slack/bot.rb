@@ -36,29 +36,31 @@ module Genova
       end
 
       def post_choose_history(params)
-        callback_id = Genova::Slack::CallbackIdManager.create('confirm_deploy_from_history')
-
-        @client.chat_postMessage(
+        data = {
           channel: @channel,
-          response_type: 'in_channel',
-          text: 'Please specify job to be redeployed.',
-          attachments: [
-            title: 'History',
-            text: "#{ENV.fetch('GENOVA_URL')}/",
-            color: Settings.slack.message.color.interactive,
-            attachment_type: 'default',
-            callback_id: callback_id,
-            actions: [
-              {
-                name: 'history',
-                text: 'Pick command...',
-                type: 'select',
-                options: params[:options]
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'plain_text',
+                emoji: true,
+                text: 'Please specify job to be redeployed.'
               },
-              SUBMIT_CANCEL
-            ]
+              accessory: {
+                type: 'static_select',
+                placeholder: {
+                  type: 'plain_text',
+                  emoji: true,
+                  text: 'Pick history...'
+                },
+                options: params[:options],
+                action_id: 'confirm_deploy_from_history'
+              },
+            },
           ]
-        )
+        }
+        
+        @client.chat_postMessage(data)
       end
 
       def post_choose_repository
@@ -171,50 +173,48 @@ module Genova
       end
 
       def post_confirm_deploy(params)
-        if params[:confirm]
-          fields = [
-            {
-              title: 'Repository',
-              value: params[:repository]
-            },
-            {
-              title: 'Branch',
-              value: params[:branch]
-            },
-            {
-              title: 'Cluster',
-              value: params[:cluster]
-            }
-          ]
+        fields = [
+          {
+            title: 'Repository',
+            value: params[:repository]
+          },
+          {
+            title: 'Branch',
+            value: params[:branch]
+          },
+          {
+            title: 'Cluster',
+            value: params[:cluster]
+          }
+        ]
 
-          case params[:type]
-          when DeployJob.type.find_value(:run_task)
-            fields << {
-              title: 'Run task',
-              value: params[:run_task]
-            }
+        case params[:type]
+        when DeployJob.type.find_value(:run_task)
+          fields << {
+            title: 'Run task',
+            value: params[:run_task]
+          }
 
-          when DeployJob.type.find_value(:service)
-            fields << {
-              title: 'Service',
-              value: params[:service]
-            }
+        when DeployJob.type.find_value(:service)
+          fields << {
+            title: 'Service',
+            value: params[:service]
+          }
 
-          when DeployJob.type.find_value(:scheduled_task)
-            fields << {
-              title: 'Scheduled task rule',
-              value: params[:scheduled_task_rule]
-            }
-            fields << {
-              title: 'Scheduled task target',
-              value: params[:scheduled_task_target]
-            }
-          end
-
-          post_simple_message(fields: fields)
+        when DeployJob.type.find_value(:scheduled_task)
+          fields << {
+            title: 'Scheduled task rule',
+            value: params[:scheduled_task_rule]
+           }
+           fields << {
+            title: 'Scheduled task target',
+            value: params[:scheduled_task_target]
+          }
         end
 
-        callback_id = Genova::Slack::CallbackIdManager.create('execute_deploy', params)
+        post_simple_message(fields: fields)
+
+        action_manager = Genova::Slack::ActionManager.new('execute_deploy', params)
 
         unless params[:type] == DeployJob.type.find_value(:run_task)
           fields = []
@@ -238,21 +238,43 @@ module Genova
           end
         end
 
-        @client.chat_postMessage(
+        data = {
           channel: @channel,
-          response_type: 'in_channel',
-          text: 'Begin deployment to ECS.',
-          attachments: [
-            color: Settings.slack.message.color.interactive,
-            attachment_type: 'default',
-            callback_id: callback_id,
-            fields: fields,
-            actions: [
-              SUBMIT_APPROVE,
-              SUBMIT_CANCEL
-            ]
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'plain_text',
+                text: 'Begin deployment to ECS.'
+              }
+            },
+            {
+              type: 'actions',
+              elements: [
+                {
+                  type: 'button',
+                  text: {
+                    type: 'plain_text',
+                    text: 'Approve'
+                  },
+                  value: 'approve',
+                  style: 'primary',
+                  action_id: action_manager.create_id
+                },
+                {
+                  type: 'button',
+                  text: {
+                    type: 'plain_text',
+                    text: 'Cancel'
+                  },
+                  value: 'cancel',
+                  action_id: action_manager.create_id
+                }
+              ]
+            }
           ]
-        )
+        }
+        @client.chat_postMessage(data)
       end
 
       def post_deploy_queue

@@ -9,9 +9,15 @@ module Genova
           histories.each do |history|
             history = Oj.load(history)
             options.push(
-              text: history[:id],
+              text: {
+                type: 'plain_text',
+                text: history[:id]
+              },
               value: history[:id],
-              description: "#{history[:repository]} (#{history[:branch]})"
+              description: {
+                type: 'plain_text',
+                text: "#{history[:repository]}/#{history[:branch]}"
+              }
             )
           end
 
