@@ -28,6 +28,8 @@ module Slack
       end
 
       klass = "Genova::Slack::Command::#{statements[:command].capitalize}"
+      raise Genova::Exceptions::InvalidArgumentError, "#{commands[0]} command does not exist." if klass.safe_constantize.nil?
+
       client = Genova::Slack::Bot.new
 
       Object.const_get(klass).call(client, statements, queue.user)
