@@ -41,6 +41,7 @@ module Genova
 
           ::Docker::Image.all.each do |image|
             next if current_time - image.info['Created'] <= retention_sec
+            next if image.info['RepoTags'].nil?
 
             image.info['RepoTags'].each do |repo_tag|
               next if used_images.include?(image.id)
