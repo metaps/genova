@@ -21,8 +21,8 @@ module Genova
 
       def authenticate
         authorization_token = @ecr.get_authorization_token[:authorization_data][0][:authorization_token]
-        result = Base64.strict_decode64(authorization_token).split(':')
-        ::Docker.authenticate!(username: result[0], password: result[1], serveraddress: "https://#{@base_path}")
+        username, password = Base64.strict_decode64(authorization_token).split(':')
+        ::Docker.authenticate!(username: username, password: password, serveraddress: "https://#{@base_path}")
       end
 
       def push_image(image_tag, repository_name)

@@ -36,7 +36,6 @@ module Genova
           used_images.uniq!
           current_time = Time.new.utc.to_i
           retention_sec = Settings.docker.retention_days * 60 * 60 * 24
-          ecr_image_key = "#{Aws::STS::Client.new.get_caller_identity[:account]}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
           ecr_image_key = Genova::Ecr::Client.base_path
 
           ::Docker::Image.all.each do |image|

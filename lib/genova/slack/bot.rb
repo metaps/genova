@@ -22,17 +22,19 @@ module Genova
       end
 
       def post_simple_message(params)
-        text = params[:text] || ''
-
-        @client.chat_postMessage(
+        data = {
           channel: @channel,
-          as_user: true,
-          text: escape_emoji(text),
-          attachments: [
-            color: Settings.slack.message.color.confirm,
-            fields: params[:fields]
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: params[:text]
+              }
+            }
           ]
-        )
+        }
+        @client.chat_postMessage(data)
       end
 
       def post_choose_history(params)
@@ -64,27 +66,89 @@ module Genova
       end
 
       def post_choose_repository
-        callback_id = Genova::Slack::CallbackIdManager.create('choose_deploy_branch')
-
-        @client.chat_postMessage(
+        options = Genova::Slack::Util.repository_options
+        data = {
           channel: @channel,
-          response_type: 'in_channel',
-          attachments: [
-            title: 'Target repository.',
-            color: Settings.slack.message.color.interactive,
-            attachment_type: 'default',
-            callback_id: callback_id,
-            actions: [
-              {
-                name: 'repository',
-                text: 'Pick repository...',
-                type: 'select',
-                options: Genova::Slack::Util.repository_options
-              },
-              SUBMIT_CANCEL
-            ]
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'plain_text',
+                text: 'Target repository.'
+              }
+            },
+            {
+              type: 'actions',
+              elements: [
+                {
+                  type: 'static_select',
+                  placeholder: {
+                    type: 'plain_text',
+                    text: 'Pick repository...'
+                  },
+                  options: options,
+                  action_id: build_action_id('choose_deploy_branch')
+                },
+                {
+                  type: 'button',
+                  text: {
+                    type: 'plain_text',
+                    text: 'Cancel'
+                  },
+                  value: 'cancel',
+                  action_id: build_action_id('cancel')
+                }
+              ],
+            }
           ]
-        )
+        }
+        @client.chat_postMessage(data)
+      end
+
+      def post_choose_branch(params)
+        options = Genova::Slack::Util.branch_options(params[:account], params[:repository])
+        data = {
+          channel: ENV.fetch('SLACK_CHANNEL'),
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'plain_text',
+                text: 'Target branch.'
+              }
+            },
+            {
+              type: 'actions',
+              elements: [
+                {
+                  type: 'static_select',
+                  placeholder: {
+                    type: 'plain_text',
+                    text: 'Pick branch...'
+                  },
+                  options: options,
+                  initial_option: {
+                    value: Settings.github.default_branch,
+                    text: {
+                      type: 'plain_text',
+                      text: Settings.github.default_branch
+                    }
+                  }
+                },
+                {
+                  type: 'button',
+                  text: {
+                    type: 'plain_text',
+                    text: 'Cancel'
+                  },
+                  value: 'cancel',
+                  action_id: build_action_id('cancel')
+                }
+              ]
+            }
+          ]
+        }
+        @client.chat_postMessage(data)
       end
 
       def post_choose_cluster(params)
@@ -420,41 +484,45 @@ module Genova
       end
 
       def post_error(params)
-        fields = [{
-          title: 'Name',
-          value: escape_emoji(params[:error].class.to_s)
-        }, {
-          title: 'Message',
-          value: escape_emoji(params[:error].message)
-        }]
+        markdown = "*Error*\n#{params[:error].class.to_s}\n*Reason*\n#{escape_emoji(params[:error].message)}\n"
 
         if params[:error].backtrace.present?
-          fields << {
-            title: 'Backtrace',
-            value: "```\n#{params[:error].backtrace.to_s.truncate(512)}```\n"
-          }
+          markdown += "*Backtrace*\n```#{params[:error].backtrace.to_s.truncate(512)}```\n"
         end
 
-        if params.include?(:deploy_job_id)
-          fields << {
-            title: 'Deploy Job ID',
-            value: params[:deploy_job_id]
-          }
+        if params[:dieploy_job_id].present?
+          markdown += "*Deploy Job ID*\n#{params[:deploy_job_id]}\n"
         end
 
-        @client.chat_postMessage(
+        data = {
           channel: @channel,
-          as_user: true,
           text: build_mension(params[:slack_user_id]),
-          attachments: [{
-            text: 'Exception occurred.',
-            color: Settings.slack.message.color.error,
-            fields: fields
-          }]
-        )
+          attachments: [
+            blocks: [{
+              type: 'header',
+              text: {
+                type: 'plain_text',
+                text: 'Oops! Runtime error has occurred.'
+              }
+            }, {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: markdown
+              }
+            }],
+            color: Settings.slack.message.color.error
+          ]
+        }
+
+        @client.chat_postMessage(data)
       end
 
       private
+
+      def build_action_id(action)
+        "#{action}:#{Time.new.to_f}"
+      end
 
       def build_mension(slack_user_id)
         slack_user_id.present? ? "<@#{slack_user_id}>" : nil

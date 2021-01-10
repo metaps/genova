@@ -1,6 +1,6 @@
 module GenovaCli
   class Deploy < Thor
-    class_option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account name'
+    class_option :account, default: ENV.fetch('GITHUB_ACCOUNT'), desc: 'GitHub account name'
     class_option :branch, aliases: :b, desc: 'Branch to deploy.'
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
     class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Show confirmation message before deploying.'
@@ -130,7 +130,7 @@ module GenovaCli
     end
 
     desc 'emulate-github-push', 'Emulate GitHub push'
-    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
+    option :account, default: ENV.fetch('GITHUB_ACCOUNT'), desc: 'GitHub account'
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
     option :branch, aliases: :b, desc: 'Source branch.'
     def emulate_github_push
@@ -153,7 +153,7 @@ module GenovaCli
     end
 
     desc 'git-pull', 'Retrieve latest source'
-    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
+    option :account, default: ENV.fetch('GITHUB_ACCOUNT'), desc: 'GitHub account'
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
     option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
     def git_pull
@@ -180,7 +180,7 @@ module GenovaCli
     end
 
     desc 'register-task', 'Register task definition.'
-    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account name'
+    option :account, default: ENV.fetch('GITHUB_ACCOUNT'), desc: 'GitHub account name'
     option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
     option :path, required: true, desc: 'Task path.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
