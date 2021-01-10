@@ -80,7 +80,7 @@ module Genova
           end
 
           def parse(params, validations)
-            params[:account] = ENV.fetch('GITHUB_ACCOUNT', Settings.github.account)
+            params[:account] = ENV.fetch('GITHUB_ACCOUNT')
             params[:branch] = Settings.github.default_branch if params[:branch].nil?
 
             if params.include?(:target)

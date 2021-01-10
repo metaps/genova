@@ -20,18 +20,32 @@ module V2
       # /api/v2/slack/post
       post :post do
         error! 'Signature do not match.', 403 unless verify_signature?
-        result = Genova::Slack::RequestHandler.handle_request(payload_to_json)
+        payload_body = payload_to_json
 
-        {
-          response_type: 'in_channel',
-          attachments: [
-            {
-              color: Settings.slack.message.color.confirm,
-              text: result[:text],
-              fields: result[:fields]
-            }
-          ]
-        }
+        action = payload_body.dig(:actions, 0)
+        value = nil
+
+        case action[:type] 
+        when 'static_select' then
+          value = action[:selected_option][:value]
+        when 'button' then
+          value = action[:value]
+        end
+
+        action_id, timestamp = action[:action_id].split(':')
+
+        if Time.new.to_f - timestamp.to_f > Settings.slack.wait_timeout.to_f
+          raise Genova::Exceptions::SlackTimeoutError, 'The command timed out. Please re-run command.'
+        end
+
+        id = Genova::Sidekiq::Queue.add(
+          action: action_id,
+          value: value,
+          timestamp: timestamp,
+          response_url: payload_body[:response_url]
+        )
+
+        Slack::InteractionWorker.perform_async(id)
       end
 
       post :event do
@@ -41,7 +55,9 @@ module V2
         end
 
         if params[:event].present?
-          text = params[:event][:blocks][0][:elements][0][:elements].find { |k, _v| k[:type] == 'text' }[:text].strip.delete("\u00A0")
+          element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
+          text = element.present? ? element[:text].strip.delete("\u00A0") : ''
+
           id = Genova::Sidekiq::Queue.add(
             text: text,
             user: params[:event][:user]

@@ -37,6 +37,7 @@ aws:
 
 slack:
   deploy_lock_timeout: 1800
+  wait_timeout: 1800
   command:
     max_history: 5
   interactive:

@@ -9,6 +9,8 @@ module Slack
 
       queue = Genova::Sidekiq::Queue.find(id)
 
+      raise Genova::Exceptions::SlackCommandNotFoundError, 'Command not specified.' if queue.text.empty?
+
       expressions = queue.text.split(' ')
       commands = expressions[0].split(':')
 
@@ -27,10 +29,12 @@ module Slack
         end
       end
 
-      klass = "Genova::Slack::Command::#{statements[:command].capitalize}"
+      klass = "Genova::Slack::Command::#{statements[:command].capitalize}".safe_constantize
+      raise Genova::Exceptions::SlackCommandNotFoundError, "`#{commands[0]}` command does not exist." if klass.nil?
+
       client = Genova::Slack::Bot.new
 
-      Object.const_get(klass).call(client, statements, queue.user)
+      klass.call(client, statements, queue.user)
     end
   end
 end

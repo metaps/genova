@@ -2,6 +2,24 @@ module Genova
   module Slack
     class Util
       class << self
+        def repository_options
+          options = []
+
+          repositories = Settings.github.repositories || []
+          repositories.each do |repository|
+            text = repository[:alias] || repository[:name]
+            options.push(
+              text: {
+                type: 'plain_text',
+               text: text
+              },
+              value: text
+            )
+          end
+
+          options
+        end
+
         def history_options(slack_user_id)
           options = []
 
@@ -24,43 +42,37 @@ module Genova
           options
         end
 
-        def repository_options
-          options = []
-
-          repositories = Settings.github.repositories || []
-          repositories.each do |repository|
-            text = repository[:alias] || repository[:name]
-            options.push(text: text, value: text)
-          end
-
-          options
-        end
-
         def branch_options(account, repository, branch_limit = Settings.slack.interactive.branch_limit)
           code_manager = Genova::CodeManager::Git.new(account, repository)
-          branches = []
+          options = []
           size = 0
 
           code_manager.origin_branches.each do |branch|
             break if size >= branch_limit
 
             size += 1
-            branches.push(text: branch.name, value: branch.name)
+            options.push(
+              text: {
+                type: 'plain_text',
+                text:  branch.name
+              },
+              value:branch.name
+            )
           end
 
-          branches
+          options
         end
 
         def cluster_options(account, repository, branch, base_path)
-          clusters = []
+          options = []
           code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch, base_path: base_path)
 
           deploy_config = code_manager.load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
-            clusters.push(text: cluster_params[:name], value: cluster_params[:name])
+            options.push(text: cluster_params[:name], value: cluster_params[:name])
           end
 
-          clusters
+          options
         end
 
         def target_options(account, repository, branch, cluster, base_path)

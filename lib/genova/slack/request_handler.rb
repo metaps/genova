@@ -2,62 +2,57 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        def handle_request(payload_body)
-          return if payload_body.blank?
-
-          @payload_body = payload_body
+        def handle_request(params)
+          @params = params
           @logger = ::Logger.new(STDOUT)
           @bot = Genova::Slack::Bot.new
 
-          action_id = @payload_body.dig(:actions, 0, :action_id)
+          raise Genova::Exceptions::RoutingError, "`#{params[:action]}` action does not exist." unless RequestHandler.respond_to?(params[:action], true)
 
-          raise Exceptions::RoutingError, "No route. [#{action_id}]" unless RequestHandler.respond_to?(action_id, true)
+          result = send(params[:action])
 
-          send(action_id)
+          result = {
+            update_original: true,
+            blocks: [{
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: result
+              }
+            }]
+          }
+
+          RestClient.post(@params[:response_url], result.to_json, content_type: :json)
         end
 
         private
 
+        def cancel
+          'Deployment has been canceled.'
+        end
+
         def choose_deploy_branch
-          selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
-          selected_base_path = nil
-          selected_repository = nil
+          params = {
+            account: ENV.fetch('GITHUB_ACCOUNT'),
+            base_path: nil,
+            repository: nil
+          }
 
-          Settings.github.repositories.each do |repository|
-            next unless [repository[:name], repository[:alias]].include?(selected_value)
+          Settings.github.repositories.each.find {|k|
+            if [k[:name], k[:alias]].include?(@params[:value])
+              params[:base_path] = k[:base_path]
+              params[:repository] = k[:name]
 
-            selected_base_path = repository[:base_path]
-            selected_repository = repository[:name]
+              break
+            end
+          }
 
-            break
-          end
+          raise Genova::Exceptions::UnexpectedError, "#{@params[:value]} repository does not exist." if params[:repository].nil?
+          result = "*Repository*\n#{params[:repository]}"
 
-          if selected_repository.present?
-            result = {
-              fields: [
-                {
-                  title: 'Repository',
-                  value: selected_repository
-                }
-              ]
-            }
+          @bot.post_choose_branch(params)
 
-            @logger.info('Invoke Github::RetrieveBranchWorker')
-
-            params = {
-              account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account),
-              repository: selected_repository,
-              response_url: @payload_body[:response_url],
-              base_path: selected_base_path
-            }
-
-            id = Genova::Sidekiq::Queue.add(params)
-
-            jid = ::Github::RetrieveBranchWorker.perform_async(id)
-            ::Github::RetrieveBranchWatchWorker.perform_async(jid)
-          else
-            result = cancel_message
-          end
+            #::Github::RetrieveBranchWatchWorker.perform_async(jid)
 
           result
         end
