@@ -20,31 +20,12 @@ module V2
       # /api/v2/slack/post
       post :post do
         error! 'Signature do not match.', 403 unless verify_signature?
-        payload_body = payload_to_json
+        payload = payload_to_json
 
-        action = payload_body.dig(:actions, 0)
-        value = nil
+puts '>>>>>>>>>>>>>PAYLOAD'
+puts payload.to_json
 
-        case action[:type] 
-        when 'static_select' then
-          value = action[:selected_option][:value]
-        when 'button' then
-          value = action[:value]
-        end
-
-        action_id, timestamp = action[:action_id].split(':')
-
-        if Time.new.to_f - timestamp.to_f > Settings.slack.wait_timeout.to_f
-          raise Genova::Exceptions::SlackTimeoutError, 'The command timed out. Please re-run command.'
-        end
-
-        id = Genova::Sidekiq::Queue.add(
-          action: action_id,
-          value: value,
-          timestamp: timestamp,
-          response_url: payload_body[:response_url]
-        )
-
+        id = Genova::Sidekiq::Queue.add(payload)
         Slack::InteractionWorker.perform_async(id)
       end
 

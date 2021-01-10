@@ -26,7 +26,7 @@ module Genova
         @account = account
         @branch = options[:branch]
         @tag = options[:tag]
-        @logger = options[:logger] || ::Logger.new(STDOUT)
+        @logger = options[:logger] || ::Logger.new(STDOUT, level: Settings.logger.level)
         @repository = repository
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
         @base_path = options[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(options[:base_path]).to_s

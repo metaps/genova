@@ -11,7 +11,7 @@ module Genova
           id = "job_#{Time.new.utc.to_i}"
 
           Redis.current.multi do
-            Redis.current.mapped_hmset(id, values) if values.present?
+            Redis.current.set(id, values.to_json) if values.present?
             Redis.current.expire(id, CACHE_TTL)
           end
 
@@ -19,10 +19,10 @@ module Genova
         end
 
         def find(id)
-          values = Redis.current.hgetall(id)
+          values = Oj.load(Redis.current.get(id), symbol_keys: true)
           raise Exceptions::NotFoundError, "#{id} is not found." if values.nil?
 
-          Genova::Sidekiq::Job.new(id, values.symbolize_keys)
+          Genova::Sidekiq::Job.new(id, values)
         end
       end
     end

@@ -33,7 +33,7 @@ module Genova
           deploy:scheduled-task repository={repository} [branch={branch}] target={target}
           ```
 
-          *Util*
+          *Utility*
           ```
           # Get helpful message.
           help

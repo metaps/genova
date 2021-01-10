@@ -1,3 +1,5 @@
+logger:
+  level: info
 docker:
   retention_days: 20
   build:
@@ -13,7 +15,7 @@ github:
   # If you enable it, please specify GITHUB_OAUTH_TOKEN environment.
   deployment_tag: false
 
-  default_branch: 'master'
+  default_branch: master
   deploy_lock_timeout: 1800
 
   # List of repositories.
@@ -24,7 +26,7 @@ github:
     - name: ''
       # Application root directory. Default is `./`.
       # You need to put `config/deploy.yml` file under root directory. (Optional)
-      base_path: './'
+      base_path: ./
 
       # Alias parameter is deployment target by name and base_path
       # Parameter must be specified uniquely. (Optional)
@@ -36,15 +38,8 @@ aws:
       read_timeout: 900
 
 slack:
-  deploy_lock_timeout: 1800
-  wait_timeout: 1800
   command:
-    max_history: 5
+    max_history: 10
   interactive:
     branch_limit: 20
-  message:
-    color:
-      interactive: '#3aa3e3'
-      info: '#3cb371'
-      error: '#cd5c5c'
-      confirm: '#d8d8d8'
+    command_timeout: 1800

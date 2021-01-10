@@ -3,7 +3,7 @@ module Genova
     class Cleaner
       class << self
         def execute
-          @logger = ::Logger.new(STDOUT)
+          @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
           @logger.info('Start cleanup')
 
           cleanup_containers

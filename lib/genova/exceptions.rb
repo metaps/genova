@@ -18,8 +18,8 @@ module Genova
     class ImageBuildError < Error; end
     class SlackEventsAPIError < Error; end
     class SlackCommandNotFoundError < Error; end
-    class SlackTimeoutError < Error; end
+    class SlackSessionConflictError < Error; end
     class UnexpectedError < Error; end
-    class MigrationError < Error; end 
+    class MigrationError < Error; end
   end
 end
