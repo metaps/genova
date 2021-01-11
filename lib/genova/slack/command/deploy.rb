@@ -3,34 +3,41 @@ module Genova
     module Command
       class Deploy
         def self.call(client, statements, user)
-          type = case statements[:sub_command]
-                 when 'run-task'
-                   DeployJob.type.find_value(:run_task)
-                 when 'scheduled-task'
-                   DeployJob.type.find_value(:scheduled_task)
-                 else
-                   DeployJob.type.find_value(:service)
-                 end
+          session_store = Genova::Slack::SessionStore.new(user)
+          session_store.start
 
-          if statements[:params].size.zero?
-            client.post_choose_repository
-          else
-            results = send("parse_#{type}", statements[:params])
+          begin
+            type = case statements[:sub_command]
+                   when 'run-task'
+                     DeployJob.type.find_value(:run_task)
+                   when 'scheduled-task'
+                     DeployJob.type.find_value(:scheduled_task)
+                   else
+                     DeployJob.type.find_value(:service)
+                   end
 
-            params = {
-              type: type,
-              account: results[:account],
-              repository: results[:repository],
-              branch: results[:branch],
-              cluster: results[:cluster],
-              run_task: results[:run_task],
-              service: results[:service],
-              scheduled_task_rule: results[:scheduled_task_rule],
-              scheduled_task_target: results[:scheduled_task_target]
-            }
+            if statements[:params].size.zero?
+              client.post_choose_repository
+            else
+              results = send("parse_#{type}", statements[:params])
 
-            params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
-            client.post_confirm_deploy(params)
+              params = {
+                type: type,
+                account: results[:account],
+                repository: results[:repository],
+                branch: results[:branch],
+                cluster: results[:cluster],
+                run_task: results[:run_task],
+                service: results[:service],
+                scheduled_task_rule: results[:scheduled_task_rule],
+                scheduled_task_target: results[:scheduled_task_target]
+              }
+
+              params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
+              client.post_confirm_deploy(params)
+            end
+          rescue
+            session_store.clear
           end
         end
 

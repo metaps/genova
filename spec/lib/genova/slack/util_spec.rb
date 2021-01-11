@@ -28,9 +28,9 @@ module Genova
           results = Genova::Slack::Util.history_options('slack_user_id')
 
           expect(results.count).to eq(1)
-          expect(results[0][:text]).to eq(deploy_job.id)
+          expect(results[0][:text][:text]).to eq(Time.strptime(deploy_job.id, '%Y%m%d-%H%M%S').strftime('%Y/%m/%d %H:%M'))
           expect(results[0][:value]).to eq(deploy_job.id)
-          expect(results[0][:description]).to eq("#{deploy_job.repository} (#{deploy_job.branch})")
+          expect(results[0][:description][:text]).to eq("#{deploy_job.repository}/#{deploy_job.branch}/#{deploy_job.cluster}")
         end
       end
 
@@ -39,7 +39,7 @@ module Genova
           results = Genova::Slack::Util.repository_options
 
           expect(results.count).to eq(1)
-          expect(results[0][:text]).to eq('repository')
+          expect(results[0][:text][:text]).to eq('repository')
           expect(results[0][:value]).to eq('repository')
         end
       end
@@ -51,7 +51,7 @@ module Genova
           results = Genova::Slack::Util.branch_options('account', 'repository')
 
           expect(results.count).to eq(1)
-          expect(results[0][:text]).to eq('feature/branch')
+          expect(results[0][:text][:text]).to eq('feature/branch')
           expect(results[0][:value]).to eq('feature/branch')
         end
       end
@@ -63,7 +63,7 @@ module Genova
           results = Genova::Slack::Util.cluster_options('account', 'repository', 'branch', 'base_path')
 
           expect(results.count).to eq(1)
-          expect(results[0][:text]).to eq('cluster')
+          expect(results[0][:text][:text]).to eq('cluster')
           expect(results[0][:value]).to eq('cluster')
         end
       end

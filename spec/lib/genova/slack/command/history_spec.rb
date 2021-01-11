@@ -8,6 +8,8 @@ module Genova
 
         before do
           allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+
+          Genova::Slack::SessionStore.new('user').clear
         end
 
         context 'when history exists' do
@@ -16,17 +18,6 @@ module Genova
             allow(bot_mock).to receive(:post_choose_history)
 
             expect { Genova::Slack::Command::History.call(bot_mock, {}, 'user') }.not_to raise_error
-            expect(bot_mock).to have_received(:post_choose_history).once
-          end
-        end
-
-        context 'when history does not exists' do
-          it 'should be sent error to slack' do
-            allow(Genova::Slack::Util).to receive(:history_options).and_return([])
-            allow(bot_mock).to receive(:post_error)
-
-            expect { Genova::Slack::Command::History.call(bot_mock, {}, 'user') }.not_to raise_error
-            expect(bot_mock).to have_received(:post_error).once
           end
         end
       end

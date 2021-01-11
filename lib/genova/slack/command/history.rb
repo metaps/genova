@@ -3,7 +3,17 @@ module Genova
     module Command
       class History
         def self.call(client, _statements, user)
-          client.post_choose_history(user: user)
+          begin
+            session_store = Genova::Slack::SessionStore.new(user)
+            session_store.start
+
+            client.post_choose_history(user: user)
+
+          rescue => e
+            puts '>>>>>>'
+            puts e.class
+            session_store.clear
+          end
         end
       end
     end

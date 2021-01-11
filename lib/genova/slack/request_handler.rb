@@ -7,7 +7,6 @@ module Genova
 
         def handle_request(params)
           @params = params
-          @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
           @bot = Genova::Slack::Bot.new
           @session_store = Genova::Slack::SessionStore.new(@params[:user][:id])
 
@@ -134,7 +133,6 @@ module Genova
           params = Genova::Slack::History.new(@params[:user][:id]).find(value)
           params[:confirm] = true
 
-          @session_store.create
           @session_store.add(params)
           ::Slack::DeployHistoryWorker.perform_async(@params[:user][:id])
 
@@ -142,7 +140,6 @@ module Genova
         end
 
         def approve_deploy
-          @logger.info('Invoke Slack::DeployWorker')
           @bot.post_deploy_queue
 
           id = DeployJob.generate_id

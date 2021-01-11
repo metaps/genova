@@ -355,24 +355,32 @@ module Genova
 
       def post_detect_auto_deploy(deploy_job)
         github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
-        uri = github_client.build_branch_uri(deploy_job.branch)
+        repository_uri = github_client.build_repository_uri
+        branch_uri = github_client.build_branch_uri(deploy_job.branch)
 
-        @client.chat_postMessage(
+        markdown = "*Repository*\n<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>\n" +
+                   "*Branch*\n<#{branch_uri}|#{deploy_job.branch}>\n"
+
+        data = {
           channel: @channel,
-          as_user: true,
-          attachments: [{
-            text: 'GitHub deployment was detected.',
-            fields: [{
-              title: 'Repository',
-              value: "<#{uri}|#{deploy_job.account}/#{deploy_job.repository}>",
-              short: true
-            }, {
-              title: 'Branch',
-              value: deploy_job.branch,
-              short: true
-            }]
-          }]
-        )
+          blocks: [
+            {
+              type: 'header',
+              text: {
+                type: 'plain_text',
+                text: 'GitHub deployment was detected.'
+              }
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: markdown
+              }
+            }
+          ]
+        }
+        @client.chat_postMessage(data)
       end
 
       def post_detect_slack_deploy(deploy_job)

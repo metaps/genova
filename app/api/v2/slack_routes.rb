@@ -22,9 +22,6 @@ module V2
         error! 'Signature do not match.', 403 unless verify_signature?
         payload = payload_to_json
 
-puts '>>>>>>>>>>>>>PAYLOAD'
-puts payload.to_json
-
         id = Genova::Sidekiq::Queue.add(payload)
         Slack::InteractionWorker.perform_async(id)
       end
