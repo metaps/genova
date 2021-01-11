@@ -435,8 +435,6 @@ module Genova
             }
           ]
         }
-        puts '>>>>>>>>>>>>>'
-        puts data.to_json
         @client.chat_postMessage(data)
       end
 

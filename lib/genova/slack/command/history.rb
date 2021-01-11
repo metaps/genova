@@ -10,7 +10,6 @@ module Genova
             client.post_choose_history(user: user)
 
           rescue => e
-            puts '>>>>>>'
             puts e.class
             session_store.clear
           end

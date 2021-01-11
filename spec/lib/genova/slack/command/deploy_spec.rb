@@ -7,7 +7,7 @@ module Genova
         let(:bot_mock) { double(Genova::Slack::Bot) }
 
         before do
-          Genova::Slack::SessionStore.new('user').clear
+          Redis.current.flushdb
         end
 
         context 'when manual deploy' do

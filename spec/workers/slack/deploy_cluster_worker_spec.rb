@@ -3,22 +3,16 @@ require 'rails_helper'
 module Slack
   describe DeployClusterWorker do
     describe 'perform' do
-      let(:id) { Genova::Sidekiq::Queue.add }
-      let(:job_mock) { double(Genova::Sidekiq::Job) }
       let(:bot_mock) { double(Genova::Slack::Bot) }
 
       before do
-        allow(job_mock).to receive(:account)
-        allow(job_mock).to receive(:repository)
-        allow(job_mock).to receive(:branch)
-        allow(job_mock).to receive(:base_path)
-
-        allow(Genova::Sidekiq::Queue).to receive(:find).and_return(job_mock)
+        Redis.current.flushdb
+        Genova::Slack::SessionStore.new('user').start
 
         allow(bot_mock).to receive(:post_choose_cluster)
         allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
 
-        subject.perform(id)
+        subject.perform('user')
       end
 
       it 'should be in queeue' do

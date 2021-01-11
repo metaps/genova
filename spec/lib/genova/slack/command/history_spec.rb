@@ -7,9 +7,9 @@ module Genova
         let(:bot_mock) { double(Genova::Slack::Bot) }
 
         before do
-          allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+          Redis.current.flushdb
 
-          Genova::Slack::SessionStore.new('user').clear
+          allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
         end
 
         context 'when history exists' do
