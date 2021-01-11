@@ -7,12 +7,12 @@ module Genova
 
         def handle_request(params)
           @params = params
-          @bot = Genova::Slack::Bot.new
           @session_store = Genova::Slack::SessionStore.new(@params[:user][:id])
 
           action = @params.dig(:actions, 0)
 
           raise Genova::Exceptions::RoutingError, "`#{ation[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
+
           result = send(action[:action_id])
 
           result = {
@@ -45,14 +45,14 @@ module Genova
             repository: nil
           }
 
-          Settings.github.repositories.each.find {|k|
-            if [k[:name], k[:alias]].include?(value)
-              params[:base_path] = k[:base_path]
-              params[:repository] = k[:name]
+          Settings.github.repositories.each.find do |k|
+            next unless k[:name] == value || k[:alias].present? && k[:alias] == value
 
-              break
-            end
-          }
+            params[:base_path] = k[:base_path]
+            params[:repository] = k[:name]
+
+            break
+          end
 
           raise Genova::Exceptions::UnexpectedError, "#{value} repository does not exist." if params[:repository].nil?
 
@@ -61,7 +61,7 @@ module Genova
           jid = ::Github::RetrieveBranchWorker.perform_async(@params[:user][:id])
           ::Github::RetrieveBranchWatchWorker.perform_async(jid)
 
-          "*Repository*\n#{params[:repository]}"
+          "*Repository*\n#{params[:repository]}\n"
         end
 
         def approve_branch
@@ -130,7 +130,7 @@ module Genova
         def approve_deploy_from_history
           value = @params.dig(:actions, 0, :selected_option, :value)
 
-          params = Genova::Slack::History.new(@params[:user][:id]).find(value)
+          params = Genova::Slack::History.new(@params[:user][:id]).find!(value)
           params[:confirm] = true
 
           @session_store.add(params)
@@ -140,8 +140,6 @@ module Genova
         end
 
         def approve_deploy
-          @bot.post_deploy_queue
-
           id = DeployJob.generate_id
           params = @session_store.params
 

@@ -11,7 +11,7 @@ module Genova
             options.push(
               text: {
                 type: 'plain_text',
-               text: text
+                text: text
               },
               value: text
             )
@@ -56,7 +56,7 @@ module Genova
             options.push(
               text: {
                 type: 'plain_text',
-                text:  branch.name
+                text: branch.name
               },
               value: branch.name
             )

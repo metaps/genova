@@ -82,12 +82,6 @@ module Genova
         end
       end
 
-      describe 'post_deploy_queue' do
-        it 'should be call bot' do
-          expect { bot.post_deploy_queue }.to_not raise_error
-        end
-      end
-
       describe 'post_detect_auto_deploy' do
         let(:deploy_job) { DeployJob.new }
 

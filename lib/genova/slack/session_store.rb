@@ -18,7 +18,7 @@ module Genova
 
       def params
         id = make_id
-        raise Exceptions::NotFoundError, "Session does not exist. Please re-run command." unless Redis.current.exists(id)
+        raise Exceptions::NotFoundError, 'Session does not exist. Please re-run command.' unless Redis.current.exists(id)
 
         Oj.load(Redis.current.get(id), symbol_keys: true)
       end

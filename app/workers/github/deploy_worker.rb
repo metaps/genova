@@ -7,9 +7,9 @@ module Github
     def perform(id)
       logger.info('Started Github::DeployDeployTargetWorker')
 
-      job = Genova::Sidekiq::Queue.find(id)
+      values = Genova::Sidekiq::JobStore.find(id)
 
-      deploy_target = deploy_target(job[:account], job[:repository], job[:branch])
+      deploy_target = deploy_target(values[:account], values[:repository], values[:branch])
       return if deploy_target.nil?
 
       deploy_job = DeployJob.create(
@@ -17,9 +17,9 @@ module Github
         type: DeployJob.type.find_value(:service),
         status: DeployJob.status.find_value(:in_progress),
         mode: DeployJob.mode.find_value(:auto),
-        account: job[:account],
-        repository: job[:repository],
-        branch: job[:branch],
+        account: values[:account],
+        repository: values[:repository],
+        branch: values[:branch],
         cluster: deploy_target[:cluster],
         service: deploy_target[:service]
       )

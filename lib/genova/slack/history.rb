@@ -44,6 +44,13 @@ module Genova
         result
       end
 
+      def find!
+        result = find(id)
+        raise Genova::Exceptions::NotFoundError, 'History does not exist.' if result.nil?
+
+        result
+      end
+
       def last
         result = Redis.current.lindex(@id, 0)
         result = Oj.load(result) if result.present?

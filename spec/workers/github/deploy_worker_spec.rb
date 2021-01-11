@@ -4,11 +4,13 @@ module Github
   describe DeployWorker do
     include ::V2::Helper::GithubHelper
 
-    let(:id) { Genova::Sidekiq::Queue.add(
-      account: 'account',
-      repository: 'repository',
-      branch: 'branch')
-    }
+    let(:id) do
+      Genova::Sidekiq::JobStore.create(
+        account: 'account',
+        repository: 'repository',
+        branch: 'branch'
+      )
+    end
     let(:slack_bot_mock) { double(Genova::Slack::Bot) }
     let(:client_mock) { double(Genova::Client) }
 

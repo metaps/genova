@@ -7,8 +7,8 @@ module Slack
     def perform(id)
       logger.info('Started Slack::InteractionWorker')
 
-      job = Genova::Sidekiq::Queue.find(id)
-      Genova::Slack::RequestHandler.handle_request(job.options)
+      values = Genova::Sidekiq::JobStore.find(id)
+      Genova::Slack::RequestHandler.handle_request(values)
     end
   end
 end

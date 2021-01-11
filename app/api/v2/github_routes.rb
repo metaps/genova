@@ -13,7 +13,7 @@ module V2
       post :push do
         result = parse(@payload_body)
 
-        id = Genova::Sidekiq::Queue.add(
+        id = Genova::Sidekiq::JobStore.create(
           account: result[:account],
           repository: result[:repository],
           branch: result[:branch]

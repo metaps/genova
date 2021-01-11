@@ -7,11 +7,10 @@ module Slack
     def perform(id)
       logger.info('Started Slack::CommandWorker')
 
-      queue = Genova::Sidekiq::Queue.find(id)
+      values = Genova::Sidekiq::JobStore.find(id)
+      raise Genova::Exceptions::SlackCommandNotFoundError, 'Command not specified.' if values[:text].empty?
 
-      raise Genova::Exceptions::SlackCommandNotFoundError, 'Command not specified.' if queue.text.empty?
-
-      expressions = queue.text.split(' ')
+      expressions = values[:text].split(' ')
       commands = expressions[0].split(':')
 
       statements = {
@@ -34,7 +33,7 @@ module Slack
 
       client = Genova::Slack::Bot.new
 
-      klass.call(client, statements, queue.user)
+      klass.call(client, statements, values[:user])
     end
   end
 end

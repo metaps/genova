@@ -39,7 +39,7 @@ module Genova
 
       def post_choose_history(params)
         options = Genova::Slack::Util.history_options(params[:user])
-        raise Genova::Exceptions::NotFoundError, 'Clusters is undefined.' if options.size.zero?
+        raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
 
         data = {
           channel: @channel,
@@ -65,11 +65,11 @@ module Genova
                   options: options,
                   action_id: 'approve_deploy_from_history'
                 }
-              ],
-            },
+              ]
+            }
           ]
         }
-       
+
         @client.chat_postMessage(data)
       end
 
@@ -109,7 +109,7 @@ module Genova
                   value: 'cancel',
                   action_id: 'cancel'
                 }
-              ],
+              ]
             }
           ]
         }
@@ -330,35 +330,12 @@ module Genova
         @client.chat_postMessage(data)
       end
 
-      def post_deploy_queue
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'header',
-              text: {
-                type: 'plain_text',
-                text: 'Deployment queue has been sent.'
-              }
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: "#{ENV.fetch('GENOVA_URL')}/sidekiq"
-              }
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
-      end
-
       def post_detect_auto_deploy(deploy_job)
         github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
         repository_uri = github_client.build_repository_uri
         branch_uri = github_client.build_branch_uri(deploy_job.branch)
 
-        markdown = "*Repository*\n<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>\n" +
+        markdown = "*Repository*\n<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>\n" \
                    "*Branch*\n<#{branch_uri}|#{deploy_job.branch}>\n"
 
         data = {
@@ -480,7 +457,7 @@ module Genova
               type: 'header',
               text: {
                 type: 'plain_text',
-                text: "Deployment is complete."
+                text: 'Deployment is complete.'
               }
             },
             {
@@ -496,15 +473,11 @@ module Genova
       end
 
       def post_error(params)
-        markdown = "*Error*\n#{params[:error].class.to_s}\n*Reason*\n#{escape_emoji(params[:error].message)}\n"
+        markdown = "*Error*\n#{params[:error].class}\n*Reason*\n#{escape_emoji(params[:error].message)}\n"
 
-        if params[:error].backtrace.present?
-          markdown += "*Backtrace*\n```#{params[:error].backtrace.to_s.truncate(512)}```\n"
-        end
+        markdown += "*Backtrace*\n```#{params[:error].backtrace.to_s.truncate(512)}```\n" if params[:error].backtrace.present?
 
-        if params[:dieploy_job_id].present?
-          markdown += "*Deploy Job ID*\n#{params[:deploy_job_id]}\n"
-        end
+        markdown += "*Deploy Job ID*\n#{params[:deploy_job_id]}\n" if params[:dieploy_job_id].present?
 
         data = {
           channel: @channel,
@@ -559,7 +532,7 @@ module Genova
         when DeployJob.type.find_value(:scheduled_task)
           fields << {
             type: 'mrkdwn',
-            text: "*Scheduled task rule*\n#{params[:scheduled_task_rule]}\n",
+            text: "*Scheduled task rule*\n#{params[:scheduled_task_rule]}\n"
           }
           fields << {
             type: 'mrkdwn',
@@ -590,11 +563,13 @@ module Genova
           text += "Commit ID is unchanged.\n"
         elsif deployed_commit_id.present?
           github_client = Genova::Github::Client.new(params[:account], params[:repository])
-          uri = "#{github_client.build_compare_uri(deployed_commit_id, latest_commit_id)}"
+          uri = github_client.build_compare_uri(deployed_commit_id, latest_commit_id).to_s
           text += "#{uri}\n"
         else
           text += "Unknown.\n"
         end
+
+        text
       end
 
       def build_mension(slack_user_id)
