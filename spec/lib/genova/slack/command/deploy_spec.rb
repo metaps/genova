@@ -6,6 +6,10 @@ module Genova
       describe Deploy do
         let(:bot_mock) { double(Genova::Slack::Bot) }
 
+        before do
+          Genova::Slack::SessionStore.new('user').clear
+        end
+
         context 'when manual deploy' do
           it 'should be return confirm message' do
             allow(bot_mock).to receive(:post_confirm_deploy)

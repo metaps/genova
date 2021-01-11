@@ -6,6 +6,10 @@ module Genova
       describe Redeploy do
         let(:bot_mock) { double(Genova::Slack::Bot) }
 
+        before do
+          Genova::Slack::SessionStore.new('user').clear
+        end
+
         context 'when exists history' do
           it 'should be return confirm message' do
             history_mock = double(Genova::Slack::History)

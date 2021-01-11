@@ -15,13 +15,13 @@ module Genova
 
       describe 'post_choose_history' do
         it 'should be not error' do
-          expect { bot.post_choose_history({}) }.not_to raise_error
+          expect { bot.post_choose_history({}) }.to raise_error(Genova::Exceptions::NotFoundError)
         end
       end
 
       describe 'post_choose_repository' do
         it 'should be not error' do
-          expect { bot.post_choose_repository }.not_to raise_error
+          expect { bot.post_choose_repository }.not_to raise_error(Genova::Exceptions::NotFoundError)
         end
       end
 
@@ -29,7 +29,7 @@ module Genova
         include_context 'load code_manager_mock'
 
         it 'should be not error' do
-          expect { bot.post_choose_cluster({}) }.not_to raise_error
+          expect { bot.post_choose_cluster({}) }.not_to raise_error(Genova::Exceptions::NotFoundError)
         end
       end
 
