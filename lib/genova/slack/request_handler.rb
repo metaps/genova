@@ -73,28 +73,17 @@ module Genova
           "*Branch*\n#{value}"
         end
 
-        def approve_default_branch
-          block_id = @params.dig(:actions, 0, :block_id)
-          value = @params.dig(:state, :values, block_id.to_sym, :approve_branch, :selected_option, :value)
+        def approve_tag
+          value = @params.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.add(branch: value)
+          @session_store.add(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@params[:user][:id])
 
-          "*Branch*\n#{value}"
+          "*Tag*\n#{value}"
         end
 
         def approve_cluster
           value = @params.dig(:actions, 0, :selected_option, :value)
-
-          @session_store.add(cluster: value)
-          ::Slack::DeployTargetWorker.perform_async(@params[:user][:id])
-
-          "*Cluster*\n#{value}"
-        end
-
-        def approve_default_cluster
-          block_id = @params.dig(:actions, 0, :block_id)
-          value = @params.dig(:state, :values, block_id.to_sym, :approve_cluster, :selected_option, :value)
 
           @session_store.add(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@params[:user][:id])
@@ -152,6 +141,7 @@ module Genova
                            account: params[:account],
                            repository: params[:repository],
                            branch: params[:branch],
+                           tag: params[:tag],
                            cluster: params[:cluster],
                            base_path: params[:base_path],
                            run_task: params[:run_task],

@@ -7,20 +7,21 @@ module Genova
           @cipher = Genova::Utils::Cipher.new
         end
 
-        def register(path, replace_variables = {})
+        def register(path, params = {})
           raise IOError, "File does not exist. [#{path}]" unless File.exist?(path)
 
-          register_hash(YAML.load(File.read(path)), replace_variables)
+          register_hash(YAML.load(File.read(path)), params)
         end
 
-        def register_hash(task_definition, replace_variables = {})
+        def register_hash(task_definition, params = {})
           task_definition = Oj.load(Oj.dump(task_definition), symbol_keys: true)
 
-          replace_parameter_variables!(task_definition, replace_variables)
+          replace_parameter_variables!(task_definition, params)
           decrypt_environment_variables!(task_definition)
 
           task_definition[:tags] = [] if task_definition[:tags].nil?
-          task_definition[:tags] << { key: 'genova', value: VERSION::STRING }
+          task_definition[:tags] << { key: 'genova.version', value: VERSION::STRING }
+          task_definition[:tags] << { key: 'genova.tag', value: params[:tag] }
 
           result = @ecs_client.register_task_definition(task_definition)
           result[:task_definition]
@@ -28,12 +29,12 @@ module Genova
 
         private
 
-        def replace_parameter_variables!(variables, replace_variables = {})
+        def replace_parameter_variables!(variables, params = {})
           variables.each do |variable|
             if variable.class == Array || variable.class == Hash
-              replace_parameter_variables!(variable, replace_variables)
+              replace_parameter_variables!(variable, params)
             elsif variable.class == String
-              replace_variables.each do |replace_key, replace_value|
+              params.each do |replace_key, replace_value|
                 variable.gsub!("{{#{replace_key}}}", replace_value)
               end
             end

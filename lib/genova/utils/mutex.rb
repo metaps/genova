@@ -1,16 +1,16 @@
 module Genova
   module Utils
     class Mutex
-      def initialize(key, cache_ttl = 1800)
+      def initialize(key, ttl = Settings.github.deploy_lock_timeout)
         @key = key
-        @cache_ttl = cache_ttl
+        @ttl = ttl
       end
 
       def lock
         Redis.current.multi do
           return false unless Redis.current.setnx(@key, true)
 
-          Redis.current.expire(@key, @cache_ttl)
+          Redis.current.expire(@key, @ttl)
         end
 
         true

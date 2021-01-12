@@ -126,7 +126,7 @@ module GenovaCli
   class Debug < Thor
     desc 'slack-greeting', 'Slack bot says Hello'
     def slack_greeting
-      ::Genova::Slack::Bot.new.post_simple_message(text: 'Hello')
+      Genova::Slack::Bot.new.post_simple_message(text: 'Hello')
     end
 
     desc 'emulate-github-push', 'Emulate GitHub push'
@@ -150,15 +150,6 @@ module GenovaCli
 
       puts 'Sent deploy notification to Slack.'
       puts result
-    end
-
-    desc 'git-pull', 'Retrieve latest source'
-    option :account, default: ENV.fetch('GITHUB_ACCOUNT'), desc: 'GitHub account'
-    option :repository, required: true, aliases: :r, desc: 'Source repository.'
-    option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
-    def git_pull
-      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], branch: options[:branch])
-      puts "Commit ID: #{code_manager.pull}"
     end
   end
 

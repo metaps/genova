@@ -7,7 +7,7 @@ module Genova
 
       def start
         id = make_id
-        raise Exceptions::SlackSessionConflictError, 'Command being executed exists.' if Redis.current.exists(id)
+        raise Exceptions::SlackSessionConflictError, 'Another command is already running.' if Redis.current.exists(id)
 
         write(id, user: @user)
       end

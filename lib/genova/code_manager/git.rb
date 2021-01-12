@@ -1,11 +1,9 @@
 module Git
   class Lib
-    alias __branches_all__ branches_all
-
+    # Add '--sort=--authordate'
     def branches_all
       arr = []
 
-      # Add '--sort=--authordate' parameter
       command_lines('branch', ['-a', '--sort=-authordate']).each do |b|
         current = (b[0, 2] == '* ')
         arr << [b.gsub('* ', '').strip, current]
@@ -13,7 +11,10 @@ module Git
       arr
     end
 
-    private :__branches_all__
+    # Add '--sort=--authordate'
+    def tags
+      command_lines('tag', ['--sort=-authordate'])
+    end
   end
 end
 
@@ -32,20 +33,8 @@ module Genova
         @base_path = options[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(options[:base_path]).to_s
       end
 
-      def clone
-        return if File.exist?("#{@repos_path}/.git/config")
-
-        FileUtils.rm_rf(@repos_path)
-
-        uri = Genova::Github::Client.new(@account, @repository).build_clone_uri
-        @logger.info("Git clone: #{uri}")
-
-        FileUtils.mkdir_p(@repos_path) unless Dir.exist?(@repos_path)
-        ::Git.clone(uri, '', path: @repos_path)
-      end
-
-      def pull
-        clone
+      def update
+        git = client
 
         @logger.info("Git checkout: #{@branch}")
 
@@ -54,10 +43,9 @@ module Genova
           reset_hard = "origin/#{@branch}"
         else
           checkout = "refs/tags/#{@tag}"
-          reset_hard = "origin/#{Settings.github.default_branch}"
+          reset_hard = "refs/tags/#{@tag}"
         end
 
-        git = client
         git.fetch
         git.clean(force: true, d: true)
         git.checkout(checkout)
@@ -67,7 +55,7 @@ module Genova
       end
 
       def load_deploy_config
-        pull
+        update
 
         path = Pathname(@base_path).join('config/deploy.yml')
         raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
@@ -89,40 +77,49 @@ module Genova
       end
 
       def origin_branches
-        clone
-
         git = client
-        git.fetch
-
         branches = []
+
         git.branches.remote.each do |branch|
           next if branch.name.include?('->')
-
-          branches << branch
+          branches << branch.name
         end
 
         branches
       end
 
-      # @return [Git::Object::Commit]
-      def origin_last_commit_id
-        clone
+      def origin_tags
+        git = client
+        tags = []
 
+        git.tags.each do |tag|
+          tags << tag.name
+        end
+
+        tags
+      end
+
+      def origin_last_commit_id
         git = client
         git.fetch
-        git.remote.branch(@branch).gcommit.log(1).first
+
+        if @branch.present?
+          git.remote.branch(@branch).gcommit.log(1).first
+        else
+          git.tag(@tag).sha
+        end
       end
 
       def find_commit_id(tag)
         git = client
         git.fetch
-        git.tag(tag)
+        git.tag(tag).sha
       rescue ::Git::GitTagNameDoesNotExist
         nil
       end
 
       def release(tag, commit_id)
-        pull
+        update
 
         git = client
         git.add_tag(tag, commit_id)
@@ -131,7 +128,18 @@ module Genova
 
       private
 
+      def clone
+        return if File.exist?("#{@repos_path}/.git/config")
+
+        FileUtils.rm_rf(@repos_path)
+        uri = Genova::Github::Client.new(@account, @repository).build_clone_uri
+        @logger.info("Git clone: #{uri}")
+
+        ::Git.clone(uri, '', path: @repos_path)
+      end
+
       def client
+        clone
         ::Git.open(@repos_path, log: @logger)
       end
     end

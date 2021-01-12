@@ -2,7 +2,7 @@ require 'rails_helper'
 
 module Genova
   module Slack
-    describe Util do
+    describe BlockKitElementObject do
       describe 'history_options' do
         let(:deploy_job) do
           DeployJob.create(
@@ -60,7 +60,7 @@ module Genova
         include_context 'load code_manager_mock'
 
         it 'should be return clusters' do
-          results = Genova::Slack::Util.cluster_options('account', 'repository', 'branch', 'base_path')
+          results = Genova::Slack::Util.cluster_options('account', 'repository', 'branch', 'tag', 'base_path')
 
           expect(results.count).to eq(1)
           expect(results[0][:text][:text]).to eq('cluster')

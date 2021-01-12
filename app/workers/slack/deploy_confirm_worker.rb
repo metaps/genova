@@ -7,8 +7,14 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployConfirmWorker')
 
-      params = Genova::Slack::SessionStore.new(id).params
-      Genova::Slack::Bot.new.post_confirm_deploy(params)
+      session_store = Genova::Slack::SessionStore.new(id)
+
+      begin
+        Genova::Slack::Bot.new.post_confirm_deploy(session_store.params)
+      rescue => e
+        session_store.clear
+        raise e
+      end
     end
   end
 end

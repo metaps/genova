@@ -10,7 +10,7 @@ gem 'bootsnap', require: false
 gem 'config', '~> 2.2.1'
 gem 'docker-api'
 gem 'enumerize'
-gem 'git'
+gem 'git', '~> 1.8.1'
 gem 'grape', '~> 1.4.0'
 gem 'grape_logging'
 gem 'hash_validator'

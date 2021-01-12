@@ -14,7 +14,7 @@ module Genova
 
         context 'when history exists' do
           it 'should be sent history to slack' do
-            allow(Genova::Slack::Util).to receive(:history_options).and_return([text: 'text', value: 'value'])
+            allow(Genova::Slack::BlockKitElementObject).to receive(:history_options).and_return([text: 'text', value: 'value'])
             allow(bot_mock).to receive(:post_choose_history)
 
             expect { Genova::Slack::Command::History.call(bot_mock, {}, 'user') }.not_to raise_error

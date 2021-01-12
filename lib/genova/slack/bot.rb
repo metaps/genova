@@ -1,21 +1,6 @@
 module Genova
   module Slack
     class Bot
-      SUBMIT_APPROVE = {
-        name: 'submit',
-        text: 'Approve',
-        type: 'button',
-        style: 'primary',
-        value: 'approve'
-      }.freeze
-      SUBMIT_CANCEL = {
-        name: 'submit',
-        text: 'Cancel',
-        type: 'button',
-        style: 'default',
-        value: 'cancel'
-      }.freeze
-
       def initialize(client = nil)
         @client = client || ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
         @channel = ENV.fetch('SLACK_CHANNEL')
@@ -38,7 +23,7 @@ module Genova
       end
 
       def post_choose_history(params)
-        options = Genova::Slack::Util.history_options(params[:user])
+        options = Genova::Slack::BlockKitElementObject.history_options(params[:user])
         raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
 
         data = {
@@ -74,7 +59,7 @@ module Genova
       end
 
       def post_choose_repository
-        options = Genova::Slack::Util.repository_options
+        options = Genova::Slack::BlockKitElementObject.repository_options
 
         raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if options.size.zero?
 
@@ -117,7 +102,9 @@ module Genova
       end
 
       def post_choose_branch(params)
-        options = Genova::Slack::Util.branch_options(params[:account], params[:repository])
+        branch_options = Genova::Slack::BlockKitElementObject.branch_options(params[:account], params[:repository])
+        tag_options = Genova::Slack::BlockKitElementObject.tag_options(params[:account], params[:repository])
+
         data = {
           channel: @channel,
           blocks: [
@@ -137,44 +124,49 @@ module Genova
                     type: 'plain_text',
                     text: 'Pick branch...'
                   },
-                  options: options,
-                  initial_option: {
-                    value: options[0][:text][:text],
-                    text: {
-                      type: 'plain_text',
-                      text: options[0][:value]
-                    }
-                  },
+                  options: branch_options,
                   action_id: 'approve_branch'
-                },
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Approve'
-                  },
-                  value: 'approve',
-                  style: 'primary',
-                  action_id: 'approve_default_branch'
-                },
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Cancel'
-                  },
-                  value: 'cancel',
-                  action_id: 'cancel'
                 }
               ]
             }
           ]
         }
+
+        if tag_options.size.positive?
+          data[:blocks][1][:elements] << 
+            {
+              type: 'static_select',
+              placeholder: {
+                type: 'plain_text',
+                text: 'Pick tag...'
+              },
+              options: tag_options,
+              action_id: 'approve_tag'
+            }
+        end
+
+        data[:blocks][1][:elements] << 
+          {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'Cancel'
+            },
+            value: 'cancel',
+            action_id: 'cancel'
+          }
+
         @client.chat_postMessage(data)
       end
 
       def post_choose_cluster(params)
-        options = Genova::Slack::Util.cluster_options(params[:account], params[:repository], params[:branch], params[:base_path])
+        options = Genova::Slack::BlockKitElementObject.cluster_options(
+          params[:account],
+          params[:repository],
+          params[:branch],
+          params[:tag],
+          params[:base_path]
+        )
         raise Genova::Exceptions::NotFoundError, 'Clusters is undefined.' if options.size.zero?
 
         data = {
@@ -197,24 +189,7 @@ module Genova
                     text: 'Pick cluster...'
                   },
                   options: options,
-                  initial_option: {
-                    value: options[0][:text][:text],
-                    text: {
-                      type: 'plain_text',
-                      text: options[0][:value]
-                    }
-                  },
                   action_id: 'approve_cluster'
-                },
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Approve'
-                  },
-                  value: 'approve',
-                  style: 'primary',
-                  action_id: 'approve_default_cluster'
                 },
                 {
                   type: 'button',
@@ -234,10 +209,11 @@ module Genova
       end
 
       def post_choose_target(params)
-        option_groups = Genova::Slack::Util.target_options(
+        option_groups = Genova::Slack::BlockKitElementObject.target_options(
           params[:account],
           params[:repository],
           params[:branch],
+          params[:tag],
           params[:cluster],
           params[:base_path]
         )
@@ -360,7 +336,7 @@ module Genova
         @client.chat_postMessage(data)
       end
 
-      def post_detect_slack_deploy(deploy_job)
+      def post_detect_slack_deploy(deploy_job, jid)
         github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
         repository_uri = github_client.build_repository_uri
         branch_uri = github_client.build_branch_uri(deploy_job.branch)
@@ -369,16 +345,25 @@ module Genova
           {
             type: 'mrkdwn',
             text: "*Repository*\n<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>\n"
-          },
-          {
-            type: 'mrkdwn',
-            text: "*Branch*\n<#{branch_uri}|#{deploy_job.branch}>\n"
-          },
-          {
-            type: 'mrkdwn',
-            text: "*Cluster*\n#{deploy_job.cluster}\n"
           }
         ]
+
+        if deploy_job.branch.present?
+          fields << {
+            type: 'mrkdwn',
+            text: "*Branch*\n<#{branch_uri}|#{deploy_job.branch}>\n"
+          }
+        else
+          fields << {
+            type: 'mrkdwn',
+            text: "*Tag*\n#{deploy_job.tag}\n"
+          }
+        end
+
+        fields << {
+          type: 'mrkdwn',
+          text: "*Cluster*\n#{deploy_job.cluster}\n"
+        }
 
         if deploy_job.service.present?
           fields << {
@@ -396,6 +381,9 @@ module Genova
           }
         end
 
+        console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/home" +
+                     "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
+
         data = {
           channel: @channel,
           blocks: [
@@ -409,31 +397,15 @@ module Genova
             {
               type: 'section',
               fields: fields
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
-      end
-
-      def post_started_deploy(deploy_job, jid)
-        url = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com" \
-              "/ecs/home?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
-
-        data = {
-          channel: @channel,
-          blocks: [
+            },
             {
-              type: 'header',
-              text: {
-                type: 'plain_text',
-                text: 'Deployment has started.'
-              }
+              type: 'divider'
             },
             {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: "*ECS Console*\n#{url}\n*Log*\n#{build_log_url(deploy_job.id)}\n*Sidekiq*\n#{jid}\n"
+                text: "*ECS Console*\n#{console_uri}\n*Log*\n#{build_log_url(deploy_job.id)}\n*Sidekiq*\n#{jid}\n"
               }
             }
           ]
@@ -481,20 +453,23 @@ module Genova
 
         data = {
           channel: @channel,
-          blocks: [{
-            type: 'header',
-            text: {
-              type: 'plain_text',
-              text: 'Oops! Runtime error has occurred.'
+          blocks: [
+              {
+              type: 'header',
+              text: {
+                type: 'plain_text',
+                text: 'Oops! Runtime error has occurred.'
+              }
+            }, {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: markdown
+              }
             }
-          }, {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: markdown
-            }
-          }]
+          ]
         }
+
         @client.chat_postMessage(data)
       end
 
@@ -588,7 +563,8 @@ module Genova
         code_manager = Genova::CodeManager::Git.new(
           params[:account],
           params[:repository],
-          branch: params[:branch]
+          branch: params[:branch],
+          tag: params[:tag]
         )
         code_manager.origin_last_commit_id.to_s
       end

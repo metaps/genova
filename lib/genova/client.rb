@@ -2,7 +2,6 @@ module Genova
   class Client
     def initialize(deploy_job, options = {})
       @options = options
-      @options[:lock_wait_interval] = options[:lock_wait_interval] || 60
 
       @deploy_job = deploy_job
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
@@ -28,7 +27,7 @@ module Genova
     def run
       @logger.info('Start deploy.')
 
-      lock(@options[:lock_timeout])
+      lock
 
       @deploy_job.start
       @deploy_job.commit_id = @ecs_client.ready
@@ -69,21 +68,22 @@ module Genova
 
     private
 
-    def lock(lock_timeout = nil)
+    def lock
       return if @options[:force]
 
+      lock_wait_interval = 60
       waiting_time = 0
 
       while @mutex.locked? || !@mutex.lock
-        if lock_timeout.nil? || waiting_time >= lock_timeout
+        if waiting_time >= Settings.github.deploy_lock_timeout
           cancel
           raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
         end
 
-        @logger.warn("Deploy locked. Retry in #{@options[:lock_wait_interval]} seconds.")
+        @logger.warn("Deploy locked. Retry in #{lock_wait_interval} seconds.")
 
-        sleep(@options[:lock_wait_interval])
-        waiting_time += @options[:lock_wait_interval]
+        sleep(lock_wait_interval)
+        waiting_time += lock_wait_interval
       end
     end
 

@@ -20,31 +20,33 @@ module V2
       # /api/v2/slack/post
       post :post do
         error! 'Signature do not match.', 403 unless verify_signature?
-        payload = payload_to_json
 
-        id = Genova::Sidekiq::JobStore.create(payload)
+        id = Genova::Sidekiq::JobStore.create(payload_to_json)
         Slack::InteractionWorker.perform_async(id)
       end
 
       post :event do
-        if headers['X-Slack-Retry-Num'].present?
-          message = "#{headers['X-Slack-Retry-Reason']} (Count: #{headers['X-Slack-Retry-Num']})"
-          raise Genova::Exceptions::SlackEventsAPIError, message
+        begin
+          if headers['X-Slack-Retry-Num'].present?
+            message = "#{headers['X-Slack-Retry-Reason']} (Count: #{headers['X-Slack-Retry-Num']})"
+            raise Genova::Exceptions::SlackEventsAPIError, message
+          end
+
+          if params[:event].present?
+            element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
+            statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
+
+            id = Genova::Sidekiq::JobStore.create(statement: statement, user: params[:event][:user])
+            Slack::CommandWorker.perform_async(id)
+          end
+
+          params[:challenge]
+        rescue => e
+          Genova::Slack::SessionStore.new(params[:event][:user]).clear
+          header 'X-Slack-No-Retry', '1'
+
+          raise e
         end
-
-        if params[:event].present?
-          element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
-          text = element.present? ? element[:text].strip.delete("\u00A0") : ''
-
-          id = Genova::Sidekiq::JobStore.create(
-            text: text,
-            user: params[:event][:user]
-          )
-
-          Slack::CommandWorker.perform_async(id)
-        end
-
-        params[:challenge]
       end
     end
   end

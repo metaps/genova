@@ -7,10 +7,15 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployClusterWorker')
 
-      params = Genova::Slack::SessionStore.new(id).params
+      session_store = Genova::Slack::SessionStore.new(id)
 
-      bot = Genova::Slack::Bot.new
-      bot.post_choose_cluster(params)
+      begin
+        params = Genova::Slack::SessionStore.new(id).params
+        Genova::Slack::Bot.new.post_choose_cluster(params)
+      rescue => e
+        session_store.clear
+        raise e 
+      end
     end
   end
 end

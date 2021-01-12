@@ -95,7 +95,6 @@ shared_context 'load code_manager_mock' do
     )
   end
   let(:code_manager_mock) { double(Genova::CodeManager::Git) }
-  let(:branch_mock) { double(Git::Branch) }
 
   before do
     allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
@@ -107,9 +106,7 @@ shared_context 'load code_manager_mock' do
     allow(code_manager_mock).to receive(:pull)
     allow(code_manager_mock).to receive(:release)
     allow(code_manager_mock).to receive(:find_commit_id)
-
-    allow(branch_mock).to receive(:name).and_return('feature/branch')
-    allow(code_manager_mock).to receive(:origin_branches).and_return([branch_mock])
+    allow(code_manager_mock).to receive(:origin_branches).and_return(['feature/branch'])
 
     allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
   end

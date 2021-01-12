@@ -35,7 +35,7 @@ module Genova
 
       describe 'post_choose_target' do
         it 'should be not error' do
-          allow(Genova::Slack::Util).to receive(:target_options).and_return(
+          allow(Genova::Slack::BlockKitElementObject).to receive(:target_options).and_return(
             [
               options: [
                 {
@@ -87,22 +87,6 @@ module Genova
 
         it 'should be call bot' do
           expect { bot.post_detect_auto_deploy(deploy_job) }.to_not raise_error
-        end
-      end
-
-      describe 'post_detect_slack_deploy' do
-        let(:deploy_job) { DeployJob.new }
-
-        it 'should be call bot' do
-          expect { bot.post_detect_slack_deploy(deploy_job) }.to_not raise_error
-        end
-      end
-
-      describe 'post_started_deploy' do
-        let(:deploy_job) { DeployJob.new }
-
-        it 'should be call bot' do
-          expect { bot.post_started_deploy(deploy_job, 'jid') }.to_not raise_error
         end
       end
 

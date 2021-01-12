@@ -1,6 +1,6 @@
 module Genova
   module Slack
-    class Util
+    class BlockKitElementObject
       class << self
         def repository_options
           options = []
@@ -56,18 +56,44 @@ module Genova
             options.push(
               text: {
                 type: 'plain_text',
-                text: branch.name
+                text: branch
               },
-              value: branch.name
+              value: branch
             )
           end
 
           options
         end
 
-        def cluster_options(account, repository, branch, base_path)
+        def tag_options(account, repository, tag_limit = Settings.slack.interactive.tag_limit)
+          code_manager = Genova::CodeManager::Git.new(account, repository)
           options = []
-          code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch, base_path: base_path)
+          size = 0
+
+          code_manager.origin_tags.each do|tag|
+            break if size >= tag_limit
+            size += 1
+            options.push(
+              text: {
+                type: 'plain_text',
+                text: tag
+              },
+              value: tag
+            )
+          end
+
+          options
+        end
+
+        def cluster_options(account, repository, branch, tag, base_path)
+          options = []
+          code_manager = Genova::CodeManager::Git.new(
+            account,
+            repository,
+            branch: branch,
+            tag: tag,
+            base_path: base_path
+          )
 
           deploy_config = code_manager.load_deploy_config
           deploy_config[:clusters].each do |cluster_params|
@@ -83,13 +109,13 @@ module Genova
           options
         end
 
-        def target_options(account, repository, branch, cluster, base_path)
+        def target_options(account, repository, branch, tag, cluster, base_path)
           target_options = []
           run_tasks = []
           services = []
           scheduled_tasks = []
 
-          code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch, base_path: base_path)
+          code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch, tag: tag, base_path: base_path)
           cluster_config = code_manager.load_deploy_config.cluster(cluster)
 
           if cluster_config[:run_tasks].present?

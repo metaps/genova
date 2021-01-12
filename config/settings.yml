@@ -42,4 +42,5 @@ slack:
     max_history: 10
   interactive:
     branch_limit: 20
+    tag_limit: 20
     command_timeout: 1800

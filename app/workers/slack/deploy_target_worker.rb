@@ -7,10 +7,15 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployTargetWorker')
 
-      params = Genova::Slack::SessionStore.new(id).params
+      session_store = Genova::Slack::SessionStore.new(id)
 
-      bot = Genova::Slack::Bot.new
-      bot.post_choose_target(params)
+      begin
+        params = session_store.params
+        Genova::Slack::Bot.new.post_choose_target(params)
+      rescue => e
+        session_store.clear
+        raise e
+      end
     end
   end
 end

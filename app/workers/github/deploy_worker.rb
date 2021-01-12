@@ -25,13 +25,9 @@ module Github
       )
 
       bot = Genova::Slack::Bot.new
-      bot.post_detect_auto_deploy(deploy_job)
-      bot.post_started_deploy(deploy_job, jid)
+      bot.post_detect_auto_deploy(deploy_job, jid)
 
-      client = Genova::Client.new(
-        deploy_job,
-        lock_timeout: Settings.github.deploy_lock_timeout
-      )
+      client = Genova::Client.new(deploy_job)
       client.run
 
       bot.post_finished_deploy(deploy_job)

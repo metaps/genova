@@ -16,7 +16,7 @@ module Genova
         @logger.info('Start sending images to ECR.')
 
         @ecr_client.authenticate
-        @code_manager.pull
+        @code_manager.update
       end
 
       def deploy_run_task(run_task, override_container, override_command, tag)
@@ -157,7 +157,10 @@ module Genova
 
       def create_task(task_definition_path, tag)
         task_client = Ecs::Task::Client.new
-        @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag) unless @task_definitions.include?(task_definition_path)
+
+        unless @task_definitions.include?(task_definition_path)
+          @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag)
+        end
 
         @task_definitions[task_definition_path]
       end

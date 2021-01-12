@@ -836,7 +836,8 @@ GEM
     fiber-local (1.0.0)
     foreman (0.87.2)
     get_process_mem (0.2.3)
-    git (1.5.0)
+    git (1.8.1)
+      rchardet (~> 1.8)
     gli (2.19.2)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
@@ -979,6 +980,7 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
+    rchardet (1.8.0)
     redis (4.1.0)
     representable (3.0.4)
       declarative (< 0.1.0)
@@ -1039,10 +1041,6 @@ GEM
       json (>= 1.8, < 3)
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
-    slack-ruby-bot (0.16.1)
-      activesupport
-      hashie
-      slack-ruby-client (>= 0.14.0)
     slack-ruby-bot-server (1.2.0)
       async
       foreman
@@ -1109,7 +1107,7 @@ DEPENDENCIES
   config (~> 2.2.1)
   docker-api
   enumerize
-  git
+  git (~> 1.8.1)
   grape (~> 1.4.0)
   grape_logging
   hash_validator
@@ -1133,7 +1131,6 @@ DEPENDENCIES
   rubocop
   sidekiq
   simplecov
-  slack-ruby-bot
   slack-ruby-bot-server-events
   spring
   spring-watcher-listen
