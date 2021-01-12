@@ -20,23 +20,23 @@ module Genova
           options
         end
 
-        def history_options(slack_user_id)
+        def history_options(user)
           options = []
 
-          histories = Genova::Slack::History.new(slack_user_id).list
+          histories = Genova::Slack::History.new(user).list
           histories.each do |history|
-            history = Oj.load(history)
-            time = Time.strptime(history[:id], '%Y%m%d-%H%M%S').strftime('%Y/%m/%d %H:%M')
+            data = Oj.load(history)
+            time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').strftime('%Y/%m/%d %H:%M')
 
             options.push(
               text: {
                 type: 'plain_text',
                 text: time
               },
-              value: history[:id],
+              value: data[:id],
               description: {
                 type: 'plain_text',
-                text: "#{history[:repository]}/#{history[:branch]}/#{history[:cluster]}"
+                text: "#{data[:repository]}/#{data[:branch]}/#{data[:cluster]}"
               }
             )
           end
