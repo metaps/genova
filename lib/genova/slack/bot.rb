@@ -161,7 +161,7 @@ module Genova
 
       def post_finished_deploy(deploy_job)
         fields = []
-        fields << BlockKitHelper.section_short_field('New task definition ARN', escape_emoji(deploy_job.task_definition_arns.join("\n")))
+        fields << BlockKitHelper.section_field('New task definition ARN', deploy_job.task_definition_arns.join("\n"))
 
         if deploy_job.tag.present?
           github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
@@ -178,7 +178,7 @@ module Genova
       def post_error(params)
         fields = []
         fields << BlockKitHelper.section_field('Error', params[:error].class)
-        fields << BlockKitHelper.section_field('Reason', escape_emoji(params[:error].message))
+        fields << BlockKitHelper.section_field('Reason', params[:error].message)
         fields << BlockKitHelper.section_field('Backtrace', "```#{params[:error].backtrace.to_s.truncate(512)}```") if params[:error].backtrace.present?
         fields << BlockKitHelper.section_field('Deploy Job ID', params[:deploy_job_id]) if params[:dieploy_job_id].present?
 
@@ -252,10 +252,6 @@ module Genova
 
       def build_log_url(deploy_job_id)
         "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job_id}"
-      end
-
-      def escape_emoji(string)
-        string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")
       end
 
       def git_latest_commit_id(params)
