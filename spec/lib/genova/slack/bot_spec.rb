@@ -89,12 +89,6 @@ module Genova
           expect { bot.post_detect_auto_deploy(deploy_job) }.to_not raise_error
         end
       end
-
-      describe 'escape_emoji' do
-        it 'should be escape string' do
-          expect(bot.send(:escape_emoji, ':test:')).to eq(":\u00ADtest\u00AD:")
-        end
-      end
     end
   end
 end

@@ -23,8 +23,7 @@ module Genova
                 service: 'service'
               }
             }
-            expect { Genova::Slack::Command::Deploy.call(bot_mock, statements, 'user') }.not_to raise_error
-            expect(bot_mock).to have_received(:post_confirm_deploy).once
+            expect { Genova::Slack::Command::Deploy.call(statements, 'user', Time.new.utc.to_f) }.not_to raise_error
           end
         end
 
@@ -38,8 +37,7 @@ module Genova
               params: {}
             }
 
-            expect { Genova::Slack::Command::Deploy.call(bot_mock, statements, 'user') }.not_to raise_error
-            expect(bot_mock).to have_received(:post_choose_repository).once
+            expect { Genova::Slack::Command::Deploy.call(statements, 'user', Time.new.utc.to_f) }.not_to raise_error
           end
         end
       end

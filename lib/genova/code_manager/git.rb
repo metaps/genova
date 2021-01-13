@@ -82,6 +82,7 @@ module Genova
 
         git.branches.remote.each do |branch|
           next if branch.name.include?('->')
+
           branches << branch.name
         end
 

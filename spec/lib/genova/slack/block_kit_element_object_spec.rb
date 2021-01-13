@@ -20,12 +20,12 @@ module Genova
         let(:history_mock) { double(Genova::Slack::History) }
 
         it 'should be return histories' do
-          allow(history_mock).to receive(:list).and_return([Oj.dump({
+          allow(history_mock).to receive(:list).and_return([Oj.dump(
             id: Time.now.utc.strftime('%Y%m%d-%H%M%S'),
             repository: 'repository',
             branch: 'branch',
             cluster: 'cluster'
-          })])
+          )])
           allow(Genova::Slack::History).to receive(:new).and_return(history_mock)
 
           results = Genova::Slack::BlockKitElementObject.history_options('user')

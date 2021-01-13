@@ -70,8 +70,9 @@ module Genova
           options = []
           size = 0
 
-          code_manager.origin_tags.each do|tag|
+          code_manager.origin_tags.each do |tag|
             break if size >= tag_limit
+
             size += 1
             options.push(
               text: {

@@ -158,9 +158,7 @@ module Genova
       def create_task(task_definition_path, tag)
         task_client = Ecs::Task::Client.new
 
-        unless @task_definitions.include?(task_definition_path)
-          @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag)
-        end
+        @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag) unless @task_definitions.include?(task_definition_path)
 
         @task_definitions[task_definition_path]
       end

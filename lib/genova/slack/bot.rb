@@ -16,12 +16,12 @@ module Genova
         raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
 
         send([
-          BlockKitHelper.section('Please specify job to be redeployed.'),
-          BlockKitHelper.actions([
-            BlockKitHelper.static_select('approve_deploy_from_history', options, 'Pick history...'),
-            BlockKitHelper.cancel_button
-          ])
-        ])
+               BlockKitHelper.section('Please specify job to be redeployed.'),
+               BlockKitHelper.actions([
+                                        BlockKitHelper.static_select('approve_deploy_from_history', options, 'Pick history...'),
+                                        BlockKitHelper.cancel_button
+                                      ])
+             ])
       end
 
       def post_choose_repository
@@ -30,12 +30,12 @@ module Genova
         raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if options.size.zero?
 
         send([
-          BlockKitHelper.section('Deploy repository.'),
-          BlockKitHelper.actions([
-            BlockKitHelper.static_select('approve_repository', options, 'Pick repository...'),
-            BlockKitHelper.cancel_button
-          ])
-        ])
+               BlockKitHelper.section('Deploy repository.'),
+               BlockKitHelper.actions([
+                                        BlockKitHelper.static_select('approve_repository', options, 'Pick repository...'),
+                                        BlockKitHelper.cancel_button
+                                      ])
+             ])
       end
 
       def post_choose_branch(params)
@@ -48,9 +48,9 @@ module Genova
         elements << BlockKitHelper.cancel_button
 
         send([
-          BlockKitHelper.section('Deploy branch.'),
-          BlockKitHelper.actions(elements)
-        ])
+               BlockKitHelper.section('Deploy branch.'),
+               BlockKitHelper.actions(elements)
+             ])
       end
 
       def post_choose_cluster(params)
@@ -64,12 +64,12 @@ module Genova
         raise Genova::Exceptions::NotFoundError, 'Clusters is undefined.' if options.size.zero?
 
         send([
-          BlockKitHelper.section('Deploy cluster.'),
-          BlockKitHelper.actions([
-            BlockKitHelper.static_select('approve_cluster', options, 'Pick cluster...'),
-            BlockKitHelper.cancel_button
-          ])
-        ])
+               BlockKitHelper.section('Deploy cluster.'),
+               BlockKitHelper.actions([
+                                        BlockKitHelper.static_select('approve_cluster', options, 'Pick cluster...'),
+                                        BlockKitHelper.cancel_button
+                                      ])
+             ])
       end
 
       def post_choose_target(params)
@@ -84,25 +84,25 @@ module Genova
         raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if option_groups.size.zero?
 
         send([
-          BlockKitHelper.section('Deploy target.'),
-          BlockKitHelper.actions([
-            BlockKitHelper.static_select('approve_target', option_groups, 'Pick target...', group: true),
-            BlockKitHelper.cancel_button
-          ])
-        ])
+               BlockKitHelper.section('Deploy target.'),
+               BlockKitHelper.actions([
+                                        BlockKitHelper.static_select('approve_target', option_groups, 'Pick target...', group: true),
+                                        BlockKitHelper.cancel_button
+                                      ])
+             ])
       end
 
       def post_confirm_deploy(params, show_target = true)
         post_confirm_command(params) if show_target
 
         send([
-          BlockKitHelper.section('Begin deployment to ECS.'),
-          BlockKitHelper.section_short_fieldset([git_compare(params)]),
-          BlockKitHelper.actions([
-            BlockKitHelper.approve_button('approve_deploy'),
-            BlockKitHelper.cancel_button
-          ])
-        ])
+               BlockKitHelper.section('Begin deployment to ECS.'),
+               BlockKitHelper.section_short_fieldset([git_compare(params)]),
+               BlockKitHelper.actions([
+                                        BlockKitHelper.approve_button('approve_deploy'),
+                                        BlockKitHelper.cancel_button
+                                      ])
+             ])
       end
 
       def post_detect_auto_deploy(deploy_job)
@@ -111,14 +111,14 @@ module Genova
         branch_uri = github_client.build_branch_uri(deploy_job.branch)
 
         send([
-          BlockKitHelper.header('GitHub deployment was detected.'),
-          BlockKitHelper.section_short_fieldset(
-            [
-              BlockKitHelper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>"),
-              BlockKitHelper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
-            ]
-          )
-        ])
+               BlockKitHelper.header('GitHub deployment was detected.'),
+               BlockKitHelper.section_short_fieldset(
+                 [
+                   BlockKitHelper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>"),
+                   BlockKitHelper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
+                 ]
+               )
+             ])
       end
 
       def post_detect_slack_deploy(deploy_job, jid)
@@ -129,11 +129,11 @@ module Genova
         fields = []
         fields << BlockKitHelper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>")
 
-        if deploy_job.branch.present?
-          fields << BlockKitHelper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
-        else
-          fields << BlockKitHelper.section_short_field('Tag', deploy_job.tag)
-        end
+        fields << if deploy_job.branch.present?
+                    BlockKitHelper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
+                  else
+                    BlockKitHelper.section_short_field('Tag', deploy_job.tag)
+                  end
 
         fields << BlockKitHelper.section_short_field('Cluster', deploy_job.cluster)
 
@@ -144,21 +144,21 @@ module Genova
           fields << BlockKitHelper.section_short_field('Scheduled task target', deploy_job.scheduled_task_target)
         end
 
-        console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/home" +
-                     "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
+        console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/home" \
+                      "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
 
         send([
-          BlockKitHelper.header('Slack deployment was detected.'),
-          BlockKitHelper.section_short_fieldset(fields),
-          BlockKitHelper.divider,
-          BlockKitHelper.section_short_fieldset(
-            [
-              BlockKitHelper.section_short_field('ECS Console', console_uri),
-              BlockKitHelper.section_short_field('Log', build_log_url(deploy_job.id)),
-              BlockKitHelper.section_short_field('Sidekiq', "#{jid}")
-            ]
-          )
-        ])
+               BlockKitHelper.header('Slack deployment was detected.'),
+               BlockKitHelper.section_short_fieldset(fields),
+               BlockKitHelper.divider,
+               BlockKitHelper.section_short_fieldset(
+                 [
+                   BlockKitHelper.section_short_field('ECS Console', console_uri),
+                   BlockKitHelper.section_short_field('Log', build_log_url(deploy_job.id)),
+                   BlockKitHelper.section_short_field('Sidekiq', jid.to_s)
+                 ]
+               )
+             ])
       end
 
       def post_finished_deploy(deploy_job)
@@ -171,10 +171,10 @@ module Genova
         end
 
         send([
-          BlockKitHelper.header('Deployment is complete.'),
-          BlockKitHelper.section("<@#{deploy_job.slack_user_id}>"),
-          BlockKitHelper.section_fieldset(fields)
-        ])
+               BlockKitHelper.header('Deployment is complete.'),
+               BlockKitHelper.section("<@#{deploy_job.slack_user_id}>"),
+               BlockKitHelper.section_fieldset(fields)
+             ])
       end
 
       def post_error(params)
@@ -185,9 +185,9 @@ module Genova
         fields << BlockKitHelper.section_field('Deploy Job ID', params[:deploy_job_id]) if params[:dieploy_job_id].present?
 
         send([
-          BlockKitHelper.header('Oops! Runtime error has occurred.'),
-          BlockKitHelper.section_fieldset(fields)
-        ])
+               BlockKitHelper.header('Oops! Runtime error has occurred.'),
+               BlockKitHelper.section_fieldset(fields)
+             ])
       end
 
       private
@@ -207,11 +207,11 @@ module Genova
         fields = []
         fields << BlockKitHelper.section_short_field('Repository', params[:repository])
 
-        if params[:branch].present?
-          fields << BlockKitHelper.section_short_field('Branch', params[:branch])
-        else
-          fields << BlockKitHelper.section_short_field('Tag', params[:tag])
-        end
+        fields << if params[:branch].present?
+                    BlockKitHelper.section_short_field('Branch', params[:branch])
+                  else
+                    BlockKitHelper.section_short_field('Tag', params[:tag])
+                  end
 
         fields << BlockKitHelper.section_short_field('Cluster', params[:cluster])
 

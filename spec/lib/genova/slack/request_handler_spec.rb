@@ -3,9 +3,11 @@ require 'rails_helper'
 module Genova
   module Slack
     describe RequestHandler do
+      let(:thread_ts) { Time.new.utc.to_f }
+
       before do
         Redis.current.flushdb
-        Genova::Slack::SessionStore.new('user').start
+        Genova::Slack::SessionStore.new(thread_ts).start
 
         allow(RestClient).to receive(:post)
       end
@@ -14,6 +16,9 @@ module Genova
         context 'when invoke cancel' do
           it 'should be execute cancel' do
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -33,6 +38,9 @@ module Genova
             allow(::Github::RetrieveBranchWatchWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -55,6 +63,9 @@ module Genova
             allow(::Slack::DeployClusterWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -77,6 +88,9 @@ module Genova
             allow(::Slack::DeployClusterWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -108,6 +122,9 @@ module Genova
             allow(::Slack::DeployTargetWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -130,6 +147,9 @@ module Genova
             allow(::Slack::DeployTargetWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -160,6 +180,9 @@ module Genova
             allow(::Slack::DeployConfirmWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -186,6 +209,9 @@ module Genova
             allow(::Slack::DeployHistoryWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },
@@ -206,6 +232,9 @@ module Genova
             allow(::Slack::DeployWorker).to receive(:perform_async)
 
             payload = {
+              container: {
+                thread_ts: thread_ts
+              },
               user: {
                 id: 'user'
               },

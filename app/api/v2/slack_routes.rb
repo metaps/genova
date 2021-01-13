@@ -26,29 +26,27 @@ module V2
       end
 
       post :event do
-        begin
-          if headers['X-Slack-Retry-Num'].present?
-            message = "#{headers['X-Slack-Retry-Reason']} (Count: #{headers['X-Slack-Retry-Num']})"
-            raise Genova::Exceptions::SlackEventsAPIError, message
-          end
-
-          if params[:event].present?
-            element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
-            statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
-
-            id = Genova::Sidekiq::JobStore.create(
-              statement: statement,
-              user: params[:event][:user],
-              parent_message_ts: params[:event][:ts]
-            )
-            Slack::CommandWorker.perform_async(id)
-          end
-
-          params[:challenge]
-        rescue => e
-          header 'X-Slack-No-Retry', '1'
-          raise e
+        if headers['X-Slack-Retry-Num'].present?
+          message = "#{headers['X-Slack-Retry-Reason']} (Count: #{headers['X-Slack-Retry-Num']})"
+          raise Genova::Exceptions::SlackEventsAPIError, message
         end
+
+        if params[:event].present?
+          element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
+          statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
+
+          id = Genova::Sidekiq::JobStore.create(
+            statement: statement,
+            user: params[:event][:user],
+            parent_message_ts: params[:event][:ts]
+          )
+          Slack::CommandWorker.perform_async(id)
+        end
+
+        params[:challenge]
+      rescue => e
+        header 'X-Slack-No-Retry', '1'
+        raise e
       end
     end
   end
