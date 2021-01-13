@@ -1,15 +1,13 @@
 module Genova
   module Slack
     class SessionStore
-      def initialize(user)
-        @user = user
+      def initialize(timestamp)
+        @timestamp = timestamp
       end
 
       def start
         id = make_id
-        raise Exceptions::SlackSessionConflictError, 'Another command is already running.' if Redis.current.exists(id)
-
-        write(id, user: @user)
+        write(id, timestamp: @timestamp)
       end
 
       def add(values)
@@ -23,14 +21,10 @@ module Genova
         Oj.load(Redis.current.get(id), symbol_keys: true)
       end
 
-      def clear
-        Redis.current.del(make_id)
-      end
-
       private
 
       def make_id
-        "slack_#{@user}"
+        "slack_#{@timestamp}"
       end
 
       def write(id, values)

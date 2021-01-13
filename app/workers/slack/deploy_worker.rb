@@ -7,9 +7,11 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployWorker')
 
-      deploy_job = DeployJob.find(id)
+      deploy_job_id = Genova::Slack::SessionStore.new(id).params[:deploy_job_id]
+
+      deploy_job = DeployJob.find(deploy_job_id)
       client = Genova::Client.new(deploy_job)
-      bot = Genova::Slack::Bot.new
+      bot = Genova::Slack::Bot.new(parent_message_ts: id)
 
       history = Genova::Slack::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)

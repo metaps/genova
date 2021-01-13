@@ -13,6 +13,8 @@ module Github
       start_time = Time.new.utc.to_i
       workers = Sidekiq::Workers.new
 
+      jid =  Genova::Slack::SessionStore.new(id).params[:retrieve_branch_jid]
+
       loop do
         sleep(WAIT_INTERVAL)
         elapsed_time = Time.new.utc.to_i - start_time
@@ -23,9 +25,9 @@ module Github
         next if elapsed_time < NOTIFY_THRESHOLD
 
         workers.each do |_process_id, _thread_id, worker|
-          next unless worker['payload']['jid'] == id
+          next unless worker['payload']['jid'] == jid
 
-          bot = Genova::Slack::Bot.new
+          bot = Genova::Slack::Bot.new(parent_message_ts: id)
           bot.post_simple_message(text: 'Retrieving repository. Please wait...')
         end
 

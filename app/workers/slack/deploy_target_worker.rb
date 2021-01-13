@@ -9,13 +9,10 @@ module Slack
 
       session_store = Genova::Slack::SessionStore.new(id)
 
-      begin
-        params = session_store.params
-        Genova::Slack::Bot.new.post_choose_target(params)
-      rescue => e
-        session_store.clear
-        raise e
-      end
+      params = session_store.params
+
+      bot = Genova::Slack::Bot.new(parent_message_ts: id)
+      bot.post_choose_target(params)
     end
   end
 end

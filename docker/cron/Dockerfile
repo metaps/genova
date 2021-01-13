@@ -1,5 +1,5 @@
 FROM base
 
-COPY ./docker/cron/periodic/15min /etc/periodic/15min
+COPY ./docker/cron/periodic/hourly /etc/periodic/hourly
 
 CMD ["crond", "-f"]

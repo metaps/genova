@@ -38,6 +38,7 @@ aws:
       read_timeout: 900
 
 slack:
+  thread_conversion: true
   command:
     max_history: 10
   interactive:

@@ -49,7 +49,8 @@ module Genova
           ```
         DOC
 
-        def self.call(client, _statements, _user)
+        def self.call(_statements, _user, _parent_message_ts)
+          client = Genova::Slack::Bot.new
           client.post_simple_message(text: HELP)
         end
       end

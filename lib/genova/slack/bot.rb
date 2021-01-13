@@ -1,8 +1,10 @@
 module Genova
   module Slack
     class Bot
-      def initialize(client = nil)
-        @client = client || ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
+      def initialize(params = {})
+        @client = ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
+        @parent_message_ts = params[:parent_message_ts]
+        @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
       end
 
       def post_simple_message(params)
@@ -170,8 +172,8 @@ module Genova
 
         send([
           BlockKitHelper.header('Deployment is complete.'),
-          BlockKitHelper.section(build_mension(deploy_job.slack_user_id)),
-          BlockKitHelper.section_short_fieldset(fields)
+          BlockKitHelper.section("<@#{deploy_job.slack_user_id}>"),
+          BlockKitHelper.section_fieldset(fields)
         ])
       end
 
@@ -195,6 +197,9 @@ module Genova
           channel: ENV.fetch('SLACK_CHANNEL'),
           blocks: blocks
         }
+        data[:thread_ts] = @parent_message_ts if Settings.slack.thread_conversion
+
+        @logger.info(data.to_json)
         @client.chat_postMessage(data)
       end
 
@@ -244,10 +249,6 @@ module Genova
         end
 
         BlockKitHelper.section_short_field('Git compare', text)
-      end
-
-      def build_mension(slack_user_id)
-        slack_user_id.present? ? "<@#{slack_user_id}>" : nil
       end
 
       def build_log_url(deploy_job_id)

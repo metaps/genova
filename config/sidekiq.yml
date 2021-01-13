@@ -1,6 +1,6 @@
 :verbose: false
 :pidfile: ./tmp/pids/sidekiq.pid
-:concurrency: 10
+:concurrency: 20
 :queues:
   - github_deploy
   - github_retrieve_branch

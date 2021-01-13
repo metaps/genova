@@ -8,7 +8,9 @@ module Slack
       logger.info('Started Slack::DeployHistoryWorker')
 
       params = Genova::Slack::SessionStore.new(id).params
-      Genova::Slack::Bot.new.post_confirm_deploy(params)
+
+      bot = Genova::Slack::Bot.new(parent_message_ts: id)
+      bot.post_confirm_deploy(params)
     end
   end
 end
