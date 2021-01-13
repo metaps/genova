@@ -33,10 +33,11 @@ module Slack
         raise Genova::Exceptions::SlackCommandNotFoundError, "`#{commands[0]}` command does not exist." if klass.nil?
 
         client = Genova::Slack::Bot.new
-
         klass.call(client, statements, values[:user])
+
       rescue => e
         Genova::Slack::SessionStore.new(values[:user]).clear
+        raise e
       end
     end
   end

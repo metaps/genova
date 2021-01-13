@@ -120,7 +120,6 @@ module Genova
           value = @params.dig(:actions, 0, :selected_option, :value)
 
           params = Genova::Slack::History.new(@params[:user][:id]).find!(value)
-          params[:confirm] = true
 
           @session_store.add(params)
           ::Slack::DeployHistoryWorker.perform_async(@params[:user][:id])

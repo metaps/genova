@@ -36,8 +36,9 @@ module Genova
               params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
               client.post_confirm_deploy(params)
             end
-          rescue
+          rescue => e
             session_store.clear
+            raise e
           end
         end
 

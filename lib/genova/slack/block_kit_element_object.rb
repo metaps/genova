@@ -36,7 +36,7 @@ module Genova
               value: data[:id],
               description: {
                 type: 'plain_text',
-                text: "#{data[:repository]}/#{data[:branch]}/#{data[:cluster]}"
+                text: "#{data[:repository]}/#{data[:branch].present? ? data[:branch] : data[:tag]}/#{data[:cluster]}"
               }
             )
           end

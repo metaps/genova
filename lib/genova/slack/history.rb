@@ -12,6 +12,7 @@ module Genova
           account: deploy_job.account,
           repository: deploy_job.repository,
           branch: deploy_job.branch,
+          tag: deploy_job.tag,
           cluster: deploy_job.cluster,
           base_path: deploy_job.base_path,
           run_task: deploy_job.run_task,
@@ -44,7 +45,7 @@ module Genova
         result
       end
 
-      def find!
+      def find!(id)
         result = find(id)
         raise Genova::Exceptions::NotFoundError, 'History does not exist.' if result.nil?
 

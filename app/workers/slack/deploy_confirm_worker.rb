@@ -10,7 +10,7 @@ module Slack
       session_store = Genova::Slack::SessionStore.new(id)
 
       begin
-        Genova::Slack::Bot.new.post_confirm_deploy(session_store.params)
+        Genova::Slack::Bot.new.post_confirm_deploy(session_store.params, false)
       rescue => e
         session_store.clear
         raise e

@@ -11,8 +11,7 @@ module Genova
 
             if history.present?
               session_store.add(history)
-
-              client.post_confirm_deploy(
+              params = {
                 type: history[:type],
                 account: history[:account],
                 repository: history[:repository],
@@ -22,9 +21,9 @@ module Genova
                 run_task: history[:run_task],
                 service: history[:service],
                 scheduled_task_rule: history[:scheduled_task_rule],
-                scheduled_task_target: history[:scheduled_task_target],
-                confirm: true
-              )
+                scheduled_task_target: history[:scheduled_task_target]
+              }
+              client.post_confirm_deploy(params)
             else
               e = Exceptions::NotFoundError.new('History does not exist.')
               client.post_error(error: e, slack_user_id: user)

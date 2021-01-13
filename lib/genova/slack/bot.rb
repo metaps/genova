@@ -3,164 +3,56 @@ module Genova
     class Bot
       def initialize(client = nil)
         @client = client || ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
-        @channel = ENV.fetch('SLACK_CHANNEL')
       end
 
       def post_simple_message(params)
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: params[:text]
-              }
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
+        send([BlockKitHelper.section(params[:text])])
       end
 
       def post_choose_history(params)
-        options = Genova::Slack::BlockKitElementObject.history_options(params[:user])
+        options = BlockKitElementObject.history_options(params[:user])
         raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'plain_text',
-                emoji: true,
-                text: 'Please specify job to be redeployed.'
-              }
-            },
-            {
-              type: 'actions',
-              elements: [
-                {
-                  type: 'static_select',
-                  placeholder: {
-                    type: 'plain_text',
-                    emoji: true,
-                    text: 'Pick history...'
-                  },
-                  options: options,
-                  action_id: 'approve_deploy_from_history'
-                }
-              ]
-            }
-          ]
-        }
-
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.section('Please specify job to be redeployed.'),
+          BlockKitHelper.actions([
+            BlockKitHelper.static_select('approve_deploy_from_history', options, 'Pick history...'),
+            BlockKitHelper.cancel_button
+          ])
+        ])
       end
 
       def post_choose_repository
-        options = Genova::Slack::BlockKitElementObject.repository_options
+        options = BlockKitElementObject.repository_options
 
         raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if options.size.zero?
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'plain_text',
-                text: 'Target repository.'
-              }
-            },
-            {
-              type: 'actions',
-              elements: [
-                {
-                  type: 'static_select',
-                  placeholder: {
-                    type: 'plain_text',
-                    text: 'Pick repository...'
-                  },
-                  options: options,
-                  action_id: 'approve_repository'
-                },
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Cancel'
-                  },
-                  value: 'cancel',
-                  action_id: 'cancel'
-                }
-              ]
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.section('Deploy repository.'),
+          BlockKitHelper.actions([
+            BlockKitHelper.static_select('approve_repository', options, 'Pick repository...'),
+            BlockKitHelper.cancel_button
+          ])
+        ])
       end
 
       def post_choose_branch(params)
-        branch_options = Genova::Slack::BlockKitElementObject.branch_options(params[:account], params[:repository])
-        tag_options = Genova::Slack::BlockKitElementObject.tag_options(params[:account], params[:repository])
+        branch_options = BlockKitElementObject.branch_options(params[:account], params[:repository])
+        tag_options = BlockKitElementObject.tag_options(params[:account], params[:repository])
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'plain_text',
-                text: 'Target branch.'
-              }
-            },
-            {
-              type: 'actions',
-              elements: [
-                {
-                  type: 'static_select',
-                  placeholder: {
-                    type: 'plain_text',
-                    text: 'Pick branch...'
-                  },
-                  options: branch_options,
-                  action_id: 'approve_branch'
-                }
-              ]
-            }
-          ]
-        }
+        elements = []
+        elements << BlockKitHelper.static_select('approve_branch', branch_options, 'Pick branch...')
+        elements << BlockKitHelper.static_select('approve_tag', tag_options, 'Pick tag...') if tag_options.size.positive?
+        elements << BlockKitHelper.cancel_button
 
-        if tag_options.size.positive?
-          data[:blocks][1][:elements] << 
-            {
-              type: 'static_select',
-              placeholder: {
-                type: 'plain_text',
-                text: 'Pick tag...'
-              },
-              options: tag_options,
-              action_id: 'approve_tag'
-            }
-        end
-
-        data[:blocks][1][:elements] << 
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'Cancel'
-            },
-            value: 'cancel',
-            action_id: 'cancel'
-          }
-
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.section('Deploy branch.'),
+          BlockKitHelper.actions(elements)
+        ])
       end
 
       def post_choose_cluster(params)
-        options = Genova::Slack::BlockKitElementObject.cluster_options(
+        options = BlockKitElementObject.cluster_options(
           params[:account],
           params[:repository],
           params[:branch],
@@ -169,47 +61,17 @@ module Genova
         )
         raise Genova::Exceptions::NotFoundError, 'Clusters is undefined.' if options.size.zero?
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'plain_text',
-                text: 'Target cluster.'
-              }
-            },
-            {
-              type: 'actions',
-              elements: [
-                {
-                  type: 'static_select',
-                  placeholder: {
-                    type: 'plain_text',
-                    text: 'Pick cluster...'
-                  },
-                  options: options,
-                  action_id: 'approve_cluster'
-                },
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Cancel'
-                  },
-                  value: 'cancel',
-                  action_id: 'cancel'
-                }
-              ]
-            }
-          ]
-        }
-
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.section('Deploy cluster.'),
+          BlockKitHelper.actions([
+            BlockKitHelper.static_select('approve_cluster', options, 'Pick cluster...'),
+            BlockKitHelper.cancel_button
+          ])
+        ])
       end
 
       def post_choose_target(params)
-        option_groups = Genova::Slack::BlockKitElementObject.target_options(
+        option_groups = BlockKitElementObject.target_options(
           params[:account],
           params[:repository],
           params[:branch],
@@ -219,91 +81,26 @@ module Genova
         )
         raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if option_groups.size.zero?
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'plain_text',
-                text: 'Target target.'
-              }
-            },
-            {
-              type: 'actions',
-              elements: [
-                {
-                  type: 'static_select',
-                  placeholder: {
-                    type: 'plain_text',
-                    text: 'Pick target...'
-                  },
-                  option_groups: option_groups,
-                  action_id: 'approve_target'
-                },
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Cancel'
-                  },
-                  value: 'cancel',
-                  action_id: 'cancel'
-                }
-              ]
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.section('Deploy target.'),
+          BlockKitHelper.actions([
+            BlockKitHelper.static_select('approve_target', option_groups, 'Pick target...', group: true),
+            BlockKitHelper.cancel_button
+          ])
+        ])
       end
 
-      def post_confirm_deploy(params)
-        post_confirm_command(params) if params[:confirm]
+      def post_confirm_deploy(params, show_target = true)
+        post_confirm_command(params) if show_target
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'plain_text',
-                text: 'Begin deployment to ECS.'
-              }
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: git_diff(params)
-              }
-            },
-            {
-              type: 'actions',
-              elements: [
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Approve'
-                  },
-                  value: 'approve',
-                  style: 'primary',
-                  action_id: 'approve_deploy'
-                },
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Cancel'
-                  },
-                  value: 'cancel',
-                  action_id: 'cancel'
-                }
-              ]
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.section('Begin deployment to ECS.'),
+          BlockKitHelper.section_short_fieldset([git_compare(params)]),
+          BlockKitHelper.actions([
+            BlockKitHelper.approve_button('approve_deploy'),
+            BlockKitHelper.cancel_button
+          ])
+        ])
       end
 
       def post_detect_auto_deploy(deploy_job)
@@ -311,29 +108,15 @@ module Genova
         repository_uri = github_client.build_repository_uri
         branch_uri = github_client.build_branch_uri(deploy_job.branch)
 
-        markdown = "*Repository*\n<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>\n" \
-                   "*Branch*\n<#{branch_uri}|#{deploy_job.branch}>\n"
-
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'header',
-              text: {
-                type: 'plain_text',
-                text: 'GitHub deployment was detected.'
-              }
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: markdown
-              }
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.header('GitHub deployment was detected.'),
+          BlockKitHelper.section_short_fieldset(
+            [
+              BlockKitHelper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>"),
+              BlockKitHelper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
+            ]
+          )
+        ])
       end
 
       def post_detect_slack_deploy(deploy_job, jid)
@@ -341,210 +124,126 @@ module Genova
         repository_uri = github_client.build_repository_uri
         branch_uri = github_client.build_branch_uri(deploy_job.branch)
 
-        fields = [
-          {
-            type: 'mrkdwn',
-            text: "*Repository*\n<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>\n"
-          }
-        ]
+        fields = []
+        fields << BlockKitHelper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>")
 
         if deploy_job.branch.present?
-          fields << {
-            type: 'mrkdwn',
-            text: "*Branch*\n<#{branch_uri}|#{deploy_job.branch}>\n"
-          }
+          fields << BlockKitHelper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
         else
-          fields << {
-            type: 'mrkdwn',
-            text: "*Tag*\n#{deploy_job.tag}\n"
-          }
+          fields << BlockKitHelper.section_short_field('Tag', deploy_job.tag)
         end
 
-        fields << {
-          type: 'mrkdwn',
-          text: "*Cluster*\n#{deploy_job.cluster}\n"
-        }
+        fields << BlockKitHelper.section_short_field('Cluster', deploy_job.cluster)
 
         if deploy_job.service.present?
-          fields << {
-            type: 'mrkdwn',
-            text: "*Service*\n#{deploy_job.service}"
-          }
+          fields << BlockKitHelper.section_short_field('Service', deploy_job.service)
         elsif deploy_job.scheduled_task_rule.present?
-          fields << {
-            type: 'mrkdwn',
-            text: "*Scheduled task rule*\n#{deploy_job.scheduled_task_rule}\n"
-          }
-          fields << {
-            type: 'mrkdwn',
-            text: "Scheduled task target*\n#{deploy_job.scheduled_task_target}\n"
-          }
+          fields << BlockKitHelper.section_short_field('Scheduled task rule', deploy_job.scheduled_task_rule)
+          fields << BlockKitHelper.section_short_field('Scheduled task target', deploy_job.scheduled_task_target)
         end
 
         console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/home" +
                      "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'header',
-              text: {
-                type: 'plain_text',
-                text: 'Slack deployment was detected.'
-              }
-            },
-            {
-              type: 'section',
-              fields: fields
-            },
-            {
-              type: 'divider'
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: "*ECS Console*\n#{console_uri}\n*Log*\n#{build_log_url(deploy_job.id)}\n*Sidekiq*\n#{jid}\n"
-              }
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.header('Slack deployment was detected.'),
+          BlockKitHelper.section_short_fieldset(fields),
+          BlockKitHelper.divider,
+          BlockKitHelper.section_short_fieldset(
+            [
+              BlockKitHelper.section_short_field('ECS Console', console_uri),
+              BlockKitHelper.section_short_field('Log', build_log_url(deploy_job.id)),
+              BlockKitHelper.section_short_field('Sidekiq', "#{jid}")
+            ]
+          )
+        ])
       end
 
       def post_finished_deploy(deploy_job)
-        text = "#{build_mension(deploy_job.slack_user_id)}\n"
-        text += "*New task definition ARN*\n#{escape_emoji(deploy_job.task_definition_arns.join("\n"))}\n"
+        fields = []
+        fields << BlockKitHelper.section_short_field('New task definition ARN', escape_emoji(deploy_job.task_definition_arns.join("\n")))
 
         if deploy_job.tag.present?
           github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
-          text += "*GitHub tag*\n#{github_client.build_tag_uri(deploy_job.tag)}\n"
+          fields << BlockKitHelper.section_short_field('GitHub tag', github_client.build_tag_uri(deploy_job.tag))
         end
 
-        data = {
-          channel: @channel,
-          blocks: [
-            {
-              type: 'header',
-              text: {
-                type: 'plain_text',
-                text: 'Deployment is complete.'
-              }
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: text
-              }
-            }
-          ]
-        }
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.header('Deployment is complete.'),
+          BlockKitHelper.section(build_mension(deploy_job.slack_user_id)),
+          BlockKitHelper.section_short_fieldset(fields)
+        ])
       end
 
       def post_error(params)
-        markdown = "*Error*\n#{params[:error].class}\n*Reason*\n#{escape_emoji(params[:error].message)}\n"
+        fields = []
+        fields << BlockKitHelper.section_field('Error', params[:error].class)
+        fields << BlockKitHelper.section_field('Reason', escape_emoji(params[:error].message))
+        fields << BlockKitHelper.section_field('Backtrace', "```#{params[:error].backtrace.to_s.truncate(512)}```") if params[:error].backtrace.present?
+        fields << BlockKitHelper.section_field('Deploy Job ID', params[:deploy_job_id]) if params[:dieploy_job_id].present?
 
-        markdown += "*Backtrace*\n```#{params[:error].backtrace.to_s.truncate(512)}```\n" if params[:error].backtrace.present?
-
-        markdown += "*Deploy Job ID*\n#{params[:deploy_job_id]}\n" if params[:dieploy_job_id].present?
-
-        data = {
-          channel: @channel,
-          blocks: [
-              {
-              type: 'header',
-              text: {
-                type: 'plain_text',
-                text: 'Oops! Runtime error has occurred.'
-              }
-            }, {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: markdown
-              }
-            }
-          ]
-        }
-
-        @client.chat_postMessage(data)
+        send([
+          BlockKitHelper.header('Oops! Runtime error has occurred.'),
+          BlockKitHelper.section_fieldset(fields)
+        ])
       end
 
       private
 
-      def post_confirm_command(params)
-        fields = [
-          {
-            type: 'mrkdwn',
-            text: "*Repository*\n#{params[:repository]}\n"
-          },
-          {
-            type: 'mrkdwn',
-            text: "*Branch*\n#{params[:branch]}\n"
-          },
-          {
-            type: 'mrkdwn',
-            text: "*Cluster*\n#{params[:cluster]}\n"
-          }
-        ]
-
-        case params[:type]
-        when DeployJob.type.find_value(:run_task)
-          fields << {
-            type: 'mrkdwn',
-            text: "*Run task*\n#{params[:run_task]}\n"
-          }
-
-        when DeployJob.type.find_value(:service)
-          fields << {
-            type: 'mrkdwn',
-            text: "*Service*\n#{params[:service]}\n"
-          }
-
-        when DeployJob.type.find_value(:scheduled_task)
-          fields << {
-            type: 'mrkdwn',
-            text: "*Scheduled task rule*\n#{params[:scheduled_task_rule]}\n"
-          }
-          fields << {
-            type: 'mrkdwn',
-            value: "*Scheduled task target*\n#{params[:scheduled_task_target]}\n"
-          }
-        end
-
+      def send(blocks)
         data = {
-          channel: @channel,
-          blocks: [
-            type: 'section',
-            fields: fields
-          ]
+          channel: ENV.fetch('SLACK_CHANNEL'),
+          blocks: blocks
         }
-
         @client.chat_postMessage(data)
       end
 
-      def git_diff(params)
-        return 'Run task diff is not yet supported.' if params[:run_task].present?
+      def post_confirm_command(params)
+        fields = []
+        fields << BlockKitHelper.section_short_field('Repository', params[:repository])
 
-        latest_commit_id = git_latest_commit_id(params)
-        deployed_commit_id = git_deployed_commit_id(params)
-
-        text = "*Git compare*\n"
-
-        if latest_commit_id == deployed_commit_id
-          text += "Commit ID is unchanged.\n"
-        elsif deployed_commit_id.present?
-          github_client = Genova::Github::Client.new(params[:account], params[:repository])
-          uri = github_client.build_compare_uri(deployed_commit_id, latest_commit_id).to_s
-          text += "#{uri}\n"
+        if params[:branch].present?
+          fields << BlockKitHelper.section_short_field('Branch', params[:branch])
         else
-          text += "Unknown.\n"
+          fields << BlockKitHelper.section_short_field('Tag', params[:tag])
         end
 
-        text
+        fields << BlockKitHelper.section_short_field('Cluster', params[:cluster])
+
+        case params[:type]
+        when DeployJob.type.find_value(:run_task)
+          fields << BlockKitHelper.section_short_field('Run task', params[:run_task])
+
+        when DeployJob.type.find_value(:service)
+          fields << BlockKitHelper.section_short_field('Service', params[:service])
+
+        when DeployJob.type.find_value(:scheduled_task)
+          fields << BlockKitHelper.section_short_field('Scheduled task rule', params[:scheduled_task_rule])
+          fields << BlockKitHelper.section_short_field('Scheduled task target', params[:scheduled_task_target])
+        end
+
+        send([BlockKitHelper.section_short_fieldset(fields)])
+      end
+
+      def git_compare(params)
+        if params[:run_task].present?
+          text = 'Run task diff is not yet supported.'
+        else
+          latest_commit_id = git_latest_commit_id(params)
+          deployed_commit_id = git_deployed_commit_id(params)
+
+          if latest_commit_id == deployed_commit_id
+            text = 'Commit ID is unchanged.'
+          elsif deployed_commit_id.present?
+            github_client = Genova::Github::Client.new(params[:account], params[:repository])
+            uri = github_client.build_compare_uri(deployed_commit_id, latest_commit_id).to_s
+            text = uri
+          else
+            text = 'Unknown.'
+          end
+        end
+
+        BlockKitHelper.section_short_field('Git compare', text)
       end
 
       def build_mension(slack_user_id)
