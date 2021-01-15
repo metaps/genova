@@ -1,5 +1,8 @@
 logger:
   level: info
+
+timezone: UTC
+
 docker:
   retention_days: 20
   build:

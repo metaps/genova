@@ -26,7 +26,7 @@ module Genova
           histories = Genova::Slack::History.new(user).list
           histories.each do |history|
             data = Oj.load(history)
-            time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').strftime('%Y/%m/%d %H:%M')
+            time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').in_time_zone(Settings.timezone).strftime('%Y/%m/%d %H:%M')
 
             options.push(
               text: {

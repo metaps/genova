@@ -28,5 +28,7 @@ module Genova
     # the framework and any gems in your application.
     config.autoload_paths << Rails.root.join('lib')
     config.eager_load_paths << Rails.root.join('lib')
+
+    config.time_zone = Settings.timezone
   end
 end

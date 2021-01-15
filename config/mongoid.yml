@@ -6,7 +6,6 @@ default: &default
         - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
   options:
     raise_not_found_error: false
-    use_utc: true
 
 development:
   <<: *default
