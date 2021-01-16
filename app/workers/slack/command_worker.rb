@@ -30,7 +30,6 @@ module Slack
       raise Genova::Exceptions::SlackCommandNotFoundError, "`#{commands[0]}` command does not exist." if klass.nil?
 
       klass.call(statements, values[:user], values[:parent_message_ts])
-
     rescue => e
       slack_notify(e, jid)
       raise e

@@ -21,7 +21,7 @@ module Genova
 
           task_definition[:tags] = [] if task_definition[:tags].nil?
           task_definition[:tags] << { key: 'genova.version', value: VERSION::STRING }
-          task_definition[:tags] << { key: 'genova.tag', value: params[:tag] }
+          task_definition[:tags] << { key: 'genova.build', value: params[:tag] }
 
           result = @ecs_client.register_task_definition(task_definition)
           result[:task_definition]

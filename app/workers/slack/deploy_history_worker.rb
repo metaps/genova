@@ -9,7 +9,6 @@ module Slack
 
       bot = Genova::Slack::Bot.new(parent_message_ts: id)
       bot.post_confirm_deploy(params)
-
     rescue => e
       slack_notify(e, jid, id)
       raise e

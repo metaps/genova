@@ -44,13 +44,13 @@ module Genova
           options
         end
 
-        def branch_options(account, repository, branch_limit = Settings.slack.interactive.branch_limit)
+        def branch_options(account, repository)
           code_manager = Genova::CodeManager::Git.new(account, repository)
           options = []
           size = 0
 
           code_manager.origin_branches.each do |branch|
-            break if size >= branch_limit
+            break if size >= Settings.slack.interactive.branch_limit
 
             size += 1
             options.push(
@@ -65,13 +65,13 @@ module Genova
           options
         end
 
-        def tag_options(account, repository, tag_limit = Settings.slack.interactive.tag_limit)
+        def tag_options(account, repository)
           code_manager = Genova::CodeManager::Git.new(account, repository)
           options = []
           size = 0
 
           code_manager.origin_tags.each do |tag|
-            break if size >= tag_limit
+            break if size >= Settings.slack.interactive.tag_limit
 
             size += 1
             options.push(

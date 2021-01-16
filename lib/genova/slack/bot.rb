@@ -154,7 +154,7 @@ module Genova
                BlockKitHelper.section_short_fieldset(
                  [
                    BlockKitHelper.section_short_field('ECS Console', console_uri),
-                   BlockKitHelper.section_short_field('Log', build_log_url(deploy_job.id)),
+                   BlockKitHelper.section_short_field('Log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job.id}"),
                    BlockKitHelper.section_short_field('Sidekiq', jid.to_s)
                  ]
                )
@@ -192,17 +192,6 @@ module Genova
 
       private
 
-      def send(blocks)
-        data = {
-          channel: ENV.fetch('SLACK_CHANNEL'),
-          blocks: blocks
-        }
-        data[:thread_ts] = @parent_message_ts if Settings.slack.thread_conversion
-
-        @logger.info(data.to_json)
-        @client.chat_postMessage(data)
-      end
-
       def post_confirm_command(params)
         fields = []
         fields << BlockKitHelper.section_short_field('Repository', params[:repository])
@@ -230,73 +219,66 @@ module Genova
         send([BlockKitHelper.section_short_fieldset(fields)])
       end
 
+      def send(blocks)
+        data = {
+          channel: ENV.fetch('SLACK_CHANNEL'),
+          blocks: blocks
+        }
+        data[:thread_ts] = @parent_message_ts if Settings.slack.thread_conversion
+
+        @logger.info(data.to_json)
+        @client.chat_postMessage(data)
+      end
+
       def git_compare(params)
         if params[:run_task].present?
           text = 'Run task diff is not yet supported.'
         else
-          latest_commit_id = git_latest_commit_id(params)
-          deployed_commit_id = git_deployed_commit_id(params)
+          code_manager = Genova::CodeManager::Git.new(
+            params[:account],
+            params[:repository],
+            branch: params[:branch],
+            tag: params[:tag]
+          )
+          last_commit = code_manager.origin_last_commit
+          ecs_client = Aws::ECS::Client.new
 
-          if latest_commit_id == deployed_commit_id
-            text = 'Commit ID is unchanged.'
-          elsif deployed_commit_id.present?
-            github_client = Genova::Github::Client.new(params[:account], params[:repository])
-            uri = github_client.build_compare_uri(deployed_commit_id, latest_commit_id).to_s
-            text = uri
+          if params[:service].present?
+            services = ecs_client.describe_services(cluster: params[:cluster], services: [params[:service]]).services
+            raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
+
+            task_definition_arn = services[0].task_definition
           else
-            text = 'Unknown.'
+            cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
+            rules = cloudwatch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
+            raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
+
+            targets = cloudwatch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
+            target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
+            raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
+
+            task_definition_arn = target.ecs_parameters.task_definition_arn
+          end
+
+          task_definition = ecs_client.describe_task_definition(task_definition: task_definition_arn, include: ['TAGS'])
+
+          build = task_definition[:tags].find { |v| v[:key] == 'genova.build' }
+
+          if build.present?
+            deployed_commit = code_manager.find_commit(build[:value])
+
+            if last_commit == deployed_commit
+              text = 'Commit ID is unchanged.'
+            else
+              github_client = Genova::Github::Client.new(params[:account], params[:repository])
+              text = github_client.build_compare_uri(deployed_commit, last_commit)
+            end
+          else
+            text = 'Unknown'
           end
         end
 
         BlockKitHelper.section_short_field('Git compare', text)
-      end
-
-      def build_log_url(deploy_job_id)
-        "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job_id}"
-      end
-
-      def git_latest_commit_id(params)
-        code_manager = Genova::CodeManager::Git.new(
-          params[:account],
-          params[:repository],
-          branch: params[:branch],
-          tag: params[:tag]
-        )
-        code_manager.origin_last_commit_id.to_s
-      end
-
-      def git_deployed_commit_id(params)
-        ecs = Aws::ECS::Client.new
-
-        if params[:service].present?
-          services = ecs.describe_services(cluster: params[:cluster], services: [params[:service]]).services
-          raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
-
-          task_definition_arn = services[0].task_definition
-        else
-          cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
-          targets = cloudwatch_events_client.list_targets_by_rule(rule: params[:scheduled_task_rule])
-          target = targets.targets.find do |k, _v|
-            k.id == params[:scheduled_task_target]
-          end
-
-          task_definition_arn = target.ecs_parameters.task_definition_arn
-        end
-
-        task_definition = ecs.describe_task_definition(task_definition: task_definition_arn)
-        task_definitions = task_definition.task_definition.container_definitions
-
-        deployed_commit_id = nil
-        code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository])
-
-        task_definitions.each do |task|
-          matches = task[:image].match(/(build\-.*$)/)
-          next if matches.nil?
-
-          deployed_commit_id = code_manager.find_commit_id(matches[1]).to_s
-        end
-
-        deployed_commit_id
       end
     end
   end

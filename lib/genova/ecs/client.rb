@@ -19,7 +19,7 @@ module Genova
         @code_manager.update
       end
 
-      def deploy_run_task(run_task, override_container, override_command, tag)
+      def deploy_run_task(run_task, override_container, override_command, id)
         run_task_config = @deploy_config.run_task(@cluster, run_task)
 
         if override_container.present?
@@ -31,10 +31,10 @@ module Genova
           ]
         end
 
-        build(run_task_config[:containers], run_task_config[:path], tag)
+        build(run_task_config[:containers], run_task_config[:path], id)
 
         task_definition_path = @code_manager.task_definition_config_path('config/' + run_task_config[:path])
-        task_definition = create_task(task_definition_path, tag)
+        task_definition = create_task(task_definition_path, id)
 
         options = {
           desired_count: run_task_config[:desired_count],
@@ -50,14 +50,14 @@ module Genova
         run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
-      def deploy_service(service, tag)
+      def deploy_service(service, id)
         service_config = @deploy_config.service(@cluster, service)
         cluster_config = @deploy_config.cluster(@cluster)
 
-        build(service_config[:containers], service_config[:path], tag)
+        build(service_config[:containers], service_config[:path], id)
 
         service_task_definition_path = @code_manager.task_definition_config_path('config/' + service_config[:path])
-        service_task_definition = create_task(service_task_definition_path, tag)
+        service_task_definition = create_task(service_task_definition_path, id)
 
         service_client = Deployer::Service::Client.new(@cluster, @logger)
 
@@ -73,29 +73,29 @@ module Genova
         )
 
         service_client.update(service, task_definition_arn, params)
-        deploy_scheduled_tasks(tag, depend_service: service) if cluster_config.include?(:scheduled_tasks)
+        deploy_scheduled_tasks(id, depend_service: service) if cluster_config.include?(:scheduled_tasks)
 
         task_definition_arn
       end
 
-      def deploy_scheduled_task(rule, target, tag)
-        deploy_scheduled_tasks(tag, rule: rule, target: target)
+      def deploy_scheduled_task(rule, target, id)
+        deploy_scheduled_tasks(id, rule: rule, target: target)
       end
 
       private
 
-      def build(containers_config, path, tag)
+      def build(containers_config, path, id)
         count = 0
 
         containers_config.each do |container_config|
-          @ecr_client.push_image(tag, @docker_client.build_image(container_config, path))
+          @ecr_client.push_image(id, @docker_client.build_image(container_config, path))
           count += 1
         end
 
         raise Exceptions::ValidationError, 'Push image is not found.' if count.zero?
       end
 
-      def deploy_scheduled_tasks(tag, options)
+      def deploy_scheduled_tasks(id, options)
         task_definition_arns = []
 
         cluster_config = @deploy_config.cluster(@cluster)
@@ -110,10 +110,10 @@ module Genova
             next if options[:depend_service].present? && target_config[:depend_service] != options[:depend_service]
             next if options[:target].present? && target_config[:name] != options[:target]
 
-            build(target_config[:containers], target_config[:path], tag) if options[:target].present?
+            build(target_config[:containers], target_config[:path], id) if options[:target].present?
 
             task_definition_path = File.expand_path(target_config[:path], config_base_path)
-            task_definition = create_task(task_definition_path, tag)
+            task_definition = create_task(task_definition_path, id)
 
             task_definition_arn = task_definition.task_definition_arn
 
@@ -155,10 +155,10 @@ module Genova
         task_definition_arns
       end
 
-      def create_task(task_definition_path, tag)
+      def create_task(task_definition_path, id)
         task_client = Ecs::Task::Client.new
 
-        @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: tag) unless @task_definitions.include?(task_definition_path)
+        @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: id) unless @task_definitions.include?(task_definition_path)
 
         @task_definitions[task_definition_path]
       end

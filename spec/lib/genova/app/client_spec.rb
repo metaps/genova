@@ -75,7 +75,7 @@ module Genova
         end
       end
 
-      describe 'find_commit_id' do
+      describe 'find_commit' do
         let(:git_mock) { double(::Git) }
         let(:tag_mock) { double(::Git::Object::Tag) }
 
@@ -86,7 +86,7 @@ module Genova
           allow(git_mock).to receive(:tag).and_return(tag_mock)
           allow(code_manager).to receive(:client).and_return(git_mock)
 
-          expect(code_manager.find_commit_id('tag')).to eq('id')
+          expect(code_manager.find_commit('tag')).to eq('id')
         end
       end
     end

@@ -100,18 +100,18 @@ module Genova
         tags
       end
 
-      def origin_last_commit_id
+      def origin_last_commit
         git = client
         git.fetch
 
         if @branch.present?
-          git.remote.branch(@branch).gcommit.log(1).first
+          git.remote.branch(@branch).gcommit.log(1).first.to_s
         else
           git.tag(@tag).sha
         end
       end
 
-      def find_commit_id(tag)
+      def find_commit(tag)
         git = client
         git.fetch
         git.tag(tag).sha
@@ -119,11 +119,11 @@ module Genova
         nil
       end
 
-      def release(tag, commit_id)
+      def release(tag, commit)
         update
 
         git = client
-        git.add_tag(tag, commit_id)
+        git.add_tag(tag, commit)
         git.push('origin', @branch, tags: tag)
       end
 

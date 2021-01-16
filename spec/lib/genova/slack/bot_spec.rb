@@ -52,41 +52,29 @@ module Genova
       describe 'post_confirm_deploy' do
         let(:params) do
           {
-            confirm: true,
             service: 'service'
           }
         end
-
-        let(:github_client_mock) { double(Genova::Github::Client) }
-        include_context 'load code_manager_mock'
-
+        let(:code_manager_mock) { double(Genova::CodeManager::Git) }
         let(:ecs_client_mock) { double(Aws::ECS::Client) }
         let(:describe_services_response_mock) { double(Aws::ECS::Types::DescribeServicesResponse) }
-        let(:describe_task_definition_response_mock) { double(Aws::ECS::Types::DescribeTaskDefinitionResponse) }
         let(:service_mock) { double(Aws::ECS::Types::Service) }
-        let(:task_definition_mock) { double(Aws::ECS::Types::TaskDefinition) }
-        let(:container_definitions) { double(Array) }
+        let(:describe_task_definition_response_mock) { double(Aws::ECS::Types::DescribeTaskDefinitionResponse) }
 
         it 'should be not error' do
-          allow(service_mock).to receive(:task_definition)
+          allow(code_manager_mock).to receive(:origin_last_commit).and_return('xxx')
+          allow(code_manager_mock).to receive(:find_commit).and_return('yyy')
+          allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+          allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client_mock)
           allow(describe_services_response_mock).to receive(:services).and_return([service_mock])
-          allow(container_definitions).to receive(:each).and_yield(image: 'build-xxx')
-          allow(task_definition_mock).to receive(:container_definitions).and_return(container_definitions)
-          allow(describe_task_definition_response_mock).to receive(:task_definition).and_return(task_definition_mock)
           allow(ecs_client_mock).to receive(:describe_services).and_return(describe_services_response_mock)
+          allow(service_mock).to receive(:task_definition)
+          allow(describe_task_definition_response_mock).to receive(:[]).with(:tags).and_return([{
+                                                                                                 key: 'genova.build'
+                                                                                               }])
           allow(ecs_client_mock).to receive(:describe_task_definition).and_return(describe_task_definition_response_mock)
 
-          allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client_mock)
-
           expect { bot.post_confirm_deploy(params) }.not_to raise_error
-        end
-      end
-
-      describe 'post_detect_auto_deploy' do
-        let(:deploy_job) { DeployJob.new }
-
-        it 'should be call bot' do
-          expect { bot.post_detect_auto_deploy(deploy_job) }.to_not raise_error
         end
       end
     end

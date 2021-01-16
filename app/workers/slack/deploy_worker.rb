@@ -18,7 +18,6 @@ module Slack
       client.run
 
       bot.post_finished_deploy(deploy_job)
-
     rescue => e
       slack_notify(e, jid, id)
       raise e

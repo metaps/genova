@@ -23,7 +23,7 @@ module Genova
       end
 
       def build_compare_uri(target1, target2)
-        build_uri("#{@account}/#{@repository}/compare/#{target1}...#{target2}")
+        build_uri("#{@account}/#{@repository}/compare/#{target1}..#{target2}")
       end
 
       def build_branch_uri(branch)
