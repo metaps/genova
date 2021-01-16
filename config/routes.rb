@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   mount Sidekiq::Web, at: '/sidekiq'
   mount API::Route => '/api'
 
+  health_check_routes
+
   root to: 'deploy_jobs#index'
   resources :deploy_jobs, only: %i[index show]
   get '*path', controller: 'application', action: 'render_404'

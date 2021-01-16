@@ -13,6 +13,10 @@ module Slack
 
       bot = Genova::Slack::Bot.new(parent_message_ts: id)
       bot.post_choose_target(params)
+
+    rescue => e
+      slack_notify(e, jid, id)
+      raise e
     end
   end
 end

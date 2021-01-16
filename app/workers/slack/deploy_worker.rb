@@ -1,7 +1,5 @@
 module Slack
-  class DeployWorker
-    include Sidekiq::Worker
-
+  class DeployWorker < BaseWorker
     sidekiq_options queue: :slack_deploy, retry: false
 
     def perform(id)
@@ -20,6 +18,10 @@ module Slack
       client.run
 
       bot.post_finished_deploy(deploy_job)
+
+    rescue => e
+      slack_notify(e, jid, id)
+      raise e
     end
   end
 end

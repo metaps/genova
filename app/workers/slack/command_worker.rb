@@ -1,7 +1,5 @@
 module Slack
-  class CommandWorker
-    include Sidekiq::Worker
-
+  class CommandWorker < BaseWorker
     sidekiq_options queue: :slack_command, retry: false
 
     def perform(id)
@@ -32,6 +30,10 @@ module Slack
       raise Genova::Exceptions::SlackCommandNotFoundError, "`#{commands[0]}` command does not exist." if klass.nil?
 
       klass.call(statements, values[:user], values[:parent_message_ts])
+
+    rescue => e
+      slack_notify(e, jid)
+      raise e
     end
   end
 end

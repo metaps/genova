@@ -182,7 +182,7 @@ module Genova
         fields << BlockKitHelper.section_field('Error', params[:error].class)
         fields << BlockKitHelper.section_field('Reason', params[:error].message)
         fields << BlockKitHelper.section_field('Backtrace', "```#{params[:error].backtrace.to_s.truncate(512)}```") if params[:error].backtrace.present?
-        fields << BlockKitHelper.section_field('Deploy Job ID', params[:deploy_job_id]) if params[:dieploy_job_id].present?
+        fields << BlockKitHelper.section_field('Deploy Job ID', params[:deploy_job_id]) if params[:deploy_job_id].present?
 
         send([
                BlockKitHelper.header('Oops! Runtime error has occurred.'),

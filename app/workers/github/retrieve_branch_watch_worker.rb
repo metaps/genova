@@ -1,7 +1,5 @@
 module Github
-  class RetrieveBranchWatchWorker
-    include Sidekiq::Worker
-
+  class RetrieveBranchWatchWorker < BaseWorker
     sidekiq_options queue: :github_retrieve_branch_watch, retry: false
 
     WAIT_INTERVAL = 1
@@ -33,6 +31,10 @@ module Github
 
         break
       end
+
+    rescue => e
+      slack_notify(e, jid)
+      raise e
     end
   end
 end

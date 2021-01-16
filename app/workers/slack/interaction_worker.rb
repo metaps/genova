@@ -1,7 +1,5 @@
 module Slack
-  class InteractionWorker
-    include Sidekiq::Worker
-
+  class InteractionWorker < BaseWorker
     sidekiq_options queue: :slack_interaction, retry: false
 
     def perform(id)
@@ -9,6 +7,10 @@ module Slack
 
       values = Genova::Sidekiq::JobStore.find(id)
       Genova::Slack::RequestHandler.handle_request(values)
+
+    rescue => e
+      slack_notify(e, jid)
+      raise e
     end
   end
 end

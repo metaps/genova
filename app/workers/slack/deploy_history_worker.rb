@@ -1,7 +1,5 @@
 module Slack
-  class DeployHistoryWorker
-    include Sidekiq::Worker
-
+  class DeployHistoryWorker < BaseWorker
     sidekiq_options queue: :slack_deploy_history, retry: false
 
     def perform(id)
@@ -11,6 +9,10 @@ module Slack
 
       bot = Genova::Slack::Bot.new(parent_message_ts: id)
       bot.post_confirm_deploy(params)
+
+    rescue => e
+      slack_notify(e, jid, id)
+      raise e
     end
   end
 end

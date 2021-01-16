@@ -1,7 +1,5 @@
 module Github
-  class DeployWorker
-    include Sidekiq::Worker
-
+  class DeployWorker < BaseWorker
     sidekiq_options queue: :github_deploy, retry: false
 
     def perform(id)
@@ -31,6 +29,10 @@ module Github
       client.run
 
       bot.post_finished_deploy(deploy_job)
+
+    rescue => e
+      slack_notify(e, jid)
+      raise e
     end
 
     private

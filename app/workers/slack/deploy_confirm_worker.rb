@@ -1,7 +1,5 @@
 module Slack
-  class DeployConfirmWorker
-    include Sidekiq::Worker
-
+  class DeployConfirmWorker < BaseWorker
     sidekiq_options queue: :slack_deploy_confirm, retry: false
 
     def perform(id)
@@ -11,6 +9,10 @@ module Slack
 
       bot = Genova::Slack::Bot.new(parent_message_ts: id)
       bot.post_confirm_deploy(session_store.params, false)
+
+    rescue => e
+      slack_notify(e, jid, id)
+      raise e
     end
   end
 end
