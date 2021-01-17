@@ -40,7 +40,7 @@ module V2
             user: params[:event][:user],
             parent_message_ts: params[:event][:ts]
           )
-          Slack::CommandWorker.perform_async(id)
+          Slack::CommandReceiveWorker.perform_async(id)
         end
 
         params[:challenge]

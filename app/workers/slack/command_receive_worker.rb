@@ -1,9 +1,9 @@
 module Slack
-  class CommandWorker < BaseWorker
-    sidekiq_options queue: :slack_command, retry: false
+  class CommandReceiveWorker < BaseWorker
+    sidekiq_options queue: :slack_command_receive, retry: false
 
     def perform(id)
-      logger.info('Started Slack::CommandWorker')
+      logger.info('Started Slack::CommandReceiveWorker')
 
       values = Genova::Sidekiq::JobStore.find(id)
       raise Genova::Exceptions::SlackCommandNotFoundError, 'Command not specified.' if values[:statement].empty?

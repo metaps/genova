@@ -19,14 +19,13 @@ module Github
 
         logger.info("Elapsed time: #{elapsed_time}s...")
 
-        # RetrieveBranchWorkerの処理が一定時間を超えた場合にSlack通知
         next if elapsed_time < NOTIFY_THRESHOLD
 
         workers.each do |_process_id, _thread_id, worker|
           next unless worker['payload']['jid'] == jid
 
           bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-          bot.post_simple_message(text: 'Retrieving repository. Please wait...')
+          bot.post_simple_message(text: 'Getting branches...')
         end
 
         break
