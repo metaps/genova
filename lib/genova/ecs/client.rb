@@ -95,7 +95,7 @@ module Genova
         raise Exceptions::ValidationError, 'Push image is not found.' if count.zero?
       end
 
-      def deploy_scheduled_tasks(id, options)
+      def deploy_scheduled_tasks(id, params)
         task_definition_arns = []
 
         cluster_config = @deploy_config.cluster(@cluster)
@@ -104,32 +104,32 @@ module Genova
           config_base_path = Pathname(@code_manager.base_path).join('config').to_s
           targets = []
 
-          next if options[:rule].present? && scheduled_task_config[:rule] != options[:rule]
+          next if params[:rule].present? && scheduled_task_config[:rule] != params[:rule]
 
           scheduled_task_config[:targets].each do |target_config|
-            next if options[:depend_service].present? && target_config[:depend_service] != options[:depend_service]
-            next if options[:target].present? && target_config[:name] != options[:target]
+            next if params[:depend_service].present? && target_config[:depend_service] != params[:depend_service]
+            next if params[:target].present? && target_config[:name] != params[:target]
 
-            build(target_config[:containers], target_config[:path], id) if options[:target].present?
+            build(target_config[:containers], target_config[:path], id) if params[:target].present?
 
             task_definition_path = File.expand_path(target_config[:path], config_base_path)
             task_definition = create_task(task_definition_path, id)
 
             task_definition_arn = task_definition.task_definition_arn
 
-            options = {
+            values = {
               task_definition_arn: task_definition_arn,
               cloudwatch_event_iam_role_arn: Aws::IAM::Role.new(target_config[:cloudwatch_event_iam_role] || 'ecsEventsRole').arn,
               desired_count: target_config[:task_count] || target_config[:desired_count] || 1,
               container_overrides: target_config[:overrides] || target_config[:container_overrides]
             }
-            options[:launch_type] = target_config[:launch_type] if target_config[:launch_type].present?
-            options[:task_role_arn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
+            values[:launch_type] = target_config[:launch_type] if target_config[:launch_type].present?
+            values[:task_role_arn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
 
             @logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
             @logger.warn('"overrides" parameter is deprecated. Set variable "container_overrides" instead.') if target_config[:overrides].present?
 
-            targets << Ecs::Deployer::ScheduledTask::Target.build_hash(@cluster, target_config[:name], options)
+            targets << Ecs::Deployer::ScheduledTask::Target.build_hash(@cluster, target_config[:name], values)
             task_definition_arns << task_definition_arn
           end
 
@@ -137,7 +137,7 @@ module Genova
 
           @logger.info("Update '#{scheduled_task_config[:rule]}' rule.")
 
-          options = {
+          values = {
             enabled: scheduled_task_config[:enabled],
             description: scheduled_task_config[:description]
           }
@@ -146,11 +146,11 @@ module Genova
             scheduled_task_config[:rule],
             scheduled_task_config[:expression],
             targets,
-            options
+            values
           )
         end
 
-        raise Exceptions::ValidationError, 'Scheduled task target or rule is undefined.' if options[:rule].present? && task_definition_arns.count.zero?
+        raise Exceptions::ValidationError, 'Scheduled task target or rule is undefined.' if params[:rule].present? && task_definition_arns.count.zero?
 
         task_definition_arns
       end
