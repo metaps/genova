@@ -7,8 +7,14 @@ module Slack
 
       values = Genova::Sidekiq::JobStore.find(id)
       Genova::Slack::RequestHandler.handle_request(values)
+
     rescue => e
-      slack_notify(e, jid)
+      if values.present?
+        slack_notify(e, jid, values[:container][:thread_ts])
+      else
+        slack_notify(e, jid)
+      end
+
       raise e
     end
   end
