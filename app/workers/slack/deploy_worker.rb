@@ -9,9 +9,9 @@ module Slack
 
       deploy_job = DeployJob.find(deploy_job_id)
       client = Genova::Client.new(deploy_job)
-      bot = Genova::Slack::Bot.new(parent_message_ts: id)
+      bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
 
-      history = Genova::Slack::History.new(deploy_job.slack_user_id)
+      history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)
 
       bot.post_detect_slack_deploy(deploy_job, jid)

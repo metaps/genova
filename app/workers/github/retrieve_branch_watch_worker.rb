@@ -25,7 +25,7 @@ module Github
         workers.each do |_process_id, _thread_id, worker|
           next unless worker['payload']['jid'] == jid
 
-          bot = Genova::Slack::Bot.new(parent_message_ts: id)
+          bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
           bot.post_simple_message(text: 'Retrieving repository. Please wait...')
         end
 

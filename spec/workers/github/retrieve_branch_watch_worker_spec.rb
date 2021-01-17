@@ -5,7 +5,7 @@ module Github
     describe 'perform' do
       let(:jid) { Time.new.utc.to_i }
       let(:workers_mock) { double(Sidekiq::Workers) }
-      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
       let(:session_store_mock) { double(Genova::Slack::SessionStore) }
 
       before do
@@ -23,7 +23,7 @@ module Github
         allow(Sidekiq::Workers).to receive(:new).and_return(workers_mock)
 
         allow(bot_mock).to receive(:post_simple_message)
-        allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         subject.perform(jid)
       end

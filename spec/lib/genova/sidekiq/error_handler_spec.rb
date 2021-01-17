@@ -3,12 +3,12 @@ require 'rails_helper'
 module Genova
   module Sidekiq
     describe ErrorHandler do
-      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       describe 'notify' do
         it 'should be send slack message' do
           allow(bot_mock).to receive(:post_error)
-          allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+          allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
           context_hash = {
             job: {

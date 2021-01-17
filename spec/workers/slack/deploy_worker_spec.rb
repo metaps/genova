@@ -17,7 +17,7 @@ module Slack
         deploy_job.save!
         deploy_job.id
       end
-      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
       let(:genova_client_mock) { double(Genova::Client) }
 
       before do
@@ -29,7 +29,7 @@ module Slack
 
         allow(bot_mock).to receive(:post_detect_slack_deploy)
         allow(bot_mock).to receive(:post_finished_deploy)
-        allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         allow(genova_client_mock).to receive(:run)
         allow(Genova::Client).to receive(:new).and_return(genova_client_mock)

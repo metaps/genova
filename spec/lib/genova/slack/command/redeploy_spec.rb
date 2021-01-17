@@ -4,7 +4,7 @@ module Genova
   module Slack
     module Command
       describe Redeploy do
-        let(:bot_mock) { double(Genova::Slack::Bot) }
+        let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
         before do
           Redis.current.flushdb
@@ -12,7 +12,7 @@ module Genova
 
         context 'when exists history' do
           it 'should be return confirm message' do
-            history_mock = double(Genova::Slack::History)
+            history_mock = double(Genova::Slack::Interactive::History)
             allow(history_mock).to receive(:last).and_return(
               account: 'account',
               repository: 'repository',
@@ -20,10 +20,10 @@ module Genova
               cluster: 'cluster',
               service: 'service'
             )
-            allow(Genova::Slack::History).to receive(:new).and_return(history_mock)
+            allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
 
             allow(bot_mock).to receive(:post_confirm_deploy)
-            allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+            allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
             expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.not_to raise_error
             expect(bot_mock).to have_received(:post_confirm_deploy).once
@@ -32,12 +32,12 @@ module Genova
 
         context 'when not exist history' do
           it 'should be return error' do
-            history_mock = double(Genova::Slack::History)
+            history_mock = double(Genova::Slack::Interactive::History)
             allow(history_mock).to receive(:last).and_return(nil)
-            allow(Genova::Slack::History).to receive(:new).and_return(history_mock)
+            allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
 
             allow(bot_mock).to receive(:post_error)
-            allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+            allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
             expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.not_to raise_error
             expect(bot_mock).to have_received(:post_error).once

@@ -3,7 +3,7 @@ module Genova
     module Command
       class Version
         def self.call(_statements, _user, _parent_message_ts)
-          client = Genova::Slack::Bot.new
+          client = Genova::Slack::Interactive::Bot.new
           client.post_simple_message(text: Genova::VERSION::LONG_STRING)
         end
       end

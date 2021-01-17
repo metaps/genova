@@ -3,14 +3,14 @@ require 'rails_helper'
 module Slack
   describe DeployClusterWorker do
     describe 'perform' do
-      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       before do
         Redis.current.flushdb
         Genova::Slack::SessionStore.new('user').start
 
         allow(bot_mock).to receive(:post_choose_cluster)
-        allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         subject.perform('user')
       end

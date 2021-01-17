@@ -5,11 +5,11 @@ module Slack
     describe 'perform' do
       let(:id) { Time.new.utc.to_f }
       let(:session_store) { Genova::Slack::SessionStore.new(id) }
-      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       before do
         allow(bot_mock).to receive(:post_confirm_deploy)
-        allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         session_store.start
         subject.perform(id)

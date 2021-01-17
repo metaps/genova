@@ -22,7 +22,7 @@ module Github
         service: deploy_target[:service]
       )
 
-      bot = Genova::Slack::Bot.new
+      bot = Genova::Slack::Interactive::Bot.new
       bot.post_detect_auto_deploy(deploy_job, jid)
 
       client = Genova::Client.new(deploy_job)

@@ -201,10 +201,10 @@ module Genova
         end
 
         context 'when invoke approve_deploy_from_history' do
-          let(:history_mock) { double(Genova::Slack::History) }
+          let(:history_mock) { double(Genova::Slack::Interactive::History) }
 
           it 'should be execute approve_deploy_from_history' do
-            allow(Genova::Slack::History).to receive(:new).and_return(history_mock)
+            allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
             allow(history_mock).to receive(:find!).and_return({})
             allow(::Slack::DeployHistoryWorker).to receive(:perform_async)
 

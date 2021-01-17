@@ -3,7 +3,7 @@ module Genova
     module Command
       class Deploy
         def self.call(statements, user, parent_message_ts)
-          client = Genova::Slack::Bot.new(parent_message_ts: parent_message_ts)
+          client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
 
           session_store = Genova::Slack::SessionStore.new(parent_message_ts)
           session_store.start

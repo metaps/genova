@@ -6,8 +6,8 @@ module Genova
           session_store = Genova::Slack::SessionStore.new(parent_message_ts)
           session_store.start
 
-          client = Genova::Slack::Bot.new(parent_message_ts: parent_message_ts)
-          history = Genova::Slack::History.new(user).last
+          client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
+          history = Genova::Slack::Interactive::History.new(user).last
 
           if history.present?
             session_store.add(history)

@@ -11,7 +11,7 @@ module Github
         branch: 'branch'
       )
     end
-    let(:slack_bot_mock) { double(Genova::Slack::Bot) }
+    let(:slack_bot_mock) { double(Genova::Slack::Interactive::Bot) }
     let(:client_mock) { double(Genova::Client) }
 
     before(:each) do
@@ -20,7 +20,7 @@ module Github
       allow(slack_bot_mock).to receive(:post_detect_auto_deploy)
       allow(slack_bot_mock).to receive(:post_started_deploy)
       allow(slack_bot_mock).to receive(:post_finished_deploy)
-      allow(Genova::Slack::Bot).to receive(:new).and_return(slack_bot_mock)
+      allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
 
       allow(client_mock).to receive(:run)
       allow(Genova::Client).to receive(:new).and_return(client_mock)

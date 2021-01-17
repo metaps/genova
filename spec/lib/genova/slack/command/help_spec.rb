@@ -4,10 +4,10 @@ module Genova
   module Slack
     module Command
       describe Help do
-        let(:bot_mock) { double(Genova::Slack::Bot) }
+        let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
         before do
-          allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+          allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
         end
 
         it 'should be return help message' do

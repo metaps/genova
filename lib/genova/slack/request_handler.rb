@@ -15,7 +15,7 @@ module Genova
 
           result = {
             update_original: true,
-            blocks: [BlockKitHelper.section(send(action[:action_id]))],
+            blocks: [BlockKit::Helper.section(send(action[:action_id]))],
             thread_ts: @params[:container][:thread_ts]
           }
 
@@ -52,7 +52,7 @@ module Genova
           @session_store.add(retrieve_branch_jid: jid)
           ::Github::RetrieveBranchWatchWorker.perform_async(@params[:container][:thread_ts])
 
-          BlockKitHelper.section_field('Repository', params[:repository])
+          BlockKit::Helper.section_field('Repository', params[:repository])
         end
 
         def approve_branch
@@ -61,7 +61,7 @@ module Genova
           @session_store.add(branch: value)
           ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
-          BlockKitHelper.section_field('Branch', value)
+          BlockKit::Helper.section_field('Branch', value)
         end
 
         def approve_tag
@@ -70,7 +70,7 @@ module Genova
           @session_store.add(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
-          BlockKitHelper.section_field('Tag', value)
+          BlockKit::Helper.section_field('Tag', value)
         end
 
         def approve_cluster
@@ -79,7 +79,7 @@ module Genova
           @session_store.add(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@params[:container][:thread_ts])
 
-          BlockKitHelper.section_field('Cluster', value)
+          BlockKit::Helper.section_field('Cluster', value)
         end
 
         def approve_target
@@ -104,13 +104,13 @@ module Genova
           @session_store.add(params)
           ::Slack::DeployConfirmWorker.perform_async(@params[:container][:thread_ts])
 
-          BlockKitHelper.section_field('Target', value)
+          BlockKit::Helper.section_field('Target', value)
         end
 
         def approve_deploy_from_history
           value = @params.dig(:actions, 0, :selected_option, :value)
 
-          params = Genova::Slack::History.new(@params[:user][:id]).find!(value)
+          params = Genova::Slack::Interactive::History.new(@params[:user][:id]).find!(value)
 
           @session_store.add(params)
           ::Slack::DeployHistoryWorker.perform_async(@params[:container][:thread_ts])
