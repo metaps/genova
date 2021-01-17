@@ -47,7 +47,7 @@ class DeployJob
     super
 
     self.id = DeployJob.generate_id
-    self.account = params[:account] ||= ENV.fetch('GITHUB_ACCOUNT')
+    self.account = params[:account]
     self.branch = params[:branch]
     self.tag = params[:tag]
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"

@@ -18,20 +18,12 @@ module Genova
         describe 'register' do
           it 'should be return new task' do
             allow(File).to receive(:exist?).and_return(true)
-            allow(File).to receive(:read).and_return('')
-            allow(task_client).to receive(:register_hash).and_return(task_definition_mock)
+            allow(File).to receive(:read).and_return('{container_definitions: {}}')
+
+            allow(task_definition_mock).to receive(:[]).with(:task_definition).and_return(double(Aws::ECS::Types::TaskDefinition))
+            allow(ecs_client_mock).to receive(:register_task_definition).and_return(task_definition_mock)
 
             expect(task_client.register(any_args)).to be_a(task_definition_mock.class)
-          end
-        end
-
-        describe 'register_hash' do
-          it 'should be registered task definition' do
-            allow(task_client).to receive(:replace_parameter_variables!)
-            allow(task_client).to receive(:decrypt_environment_variables!)
-            allow(ecs_client_mock).to receive(:register_task_definition).and_return(task_definition: task_definition_mock)
-
-            expect(task_client.register_hash({})).to be_a(task_definition_mock.class)
           end
         end
 

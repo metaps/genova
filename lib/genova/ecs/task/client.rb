@@ -39,7 +39,7 @@ module Genova
         end
 
         def decrypt_environment_variables!(task_definition)
-          raise Exceptions::TaskDefinitionValidationError, '\'container_definition\' is undefined.' unless task_definition.key?(:container_definitions)
+          raise Exceptions::TaskDefinitionValidationError, '\'container_definitions\' is undefined.' unless task_definition.key?(:container_definitions)
 
           task_definition[:container_definitions].each do |container_definition|
             next unless container_definition.key?(:environment)
