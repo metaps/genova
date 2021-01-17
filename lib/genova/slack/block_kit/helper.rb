@@ -9,7 +9,6 @@ module Genova
               text: {
                 type: 'plain_text',
                 text: header,
-                emoji: false
               }
             }
           end
@@ -19,7 +18,7 @@ module Genova
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: escape_emoji(text)
+                text: text
               }
             }
           end
@@ -33,7 +32,7 @@ module Genova
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: escape_emoji(fields.join)
+                text: fields.join
               }
             }
           end
@@ -41,7 +40,7 @@ module Genova
           def section_short_field(header, text)
             {
               type: 'mrkdwn',
-              text: escape_emoji("*#{header}:*\n#{text}\n")
+              text: "*#{header}:*\n#{text}\n"
             }
           end
 
@@ -104,8 +103,6 @@ module Genova
               type: 'divider'
             }
           end
-
-          private
 
           def escape_emoji(string)
             string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")

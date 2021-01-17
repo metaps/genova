@@ -5,19 +5,13 @@ module V2
     # /api/v2/github
     resource :github do
       before do
-        @payload_body = request.body.read
-        error! 'Signature is invalid.', 403 unless verify_signature?(@payload_body)
+        @payload = request.body.read
+        error! 'Signature is invalid.', 403 unless verify_signature?(@payload)
       end
 
       # POST /api/v2/github/push
       post :push do
-        result = parse(@payload_body)
-
-        id = Genova::Sidekiq::JobStore.create(
-          account: result[:account],
-          repository: result[:repository],
-          branch: result[:branch]
-        )
+        id = Genova::Sidekiq::JobStore.create(parse(@payload))
         Github::DeployWorker.perform_async(id)
 
         { result: 'Deploy request was executed.' }

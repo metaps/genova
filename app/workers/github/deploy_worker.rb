@@ -23,7 +23,7 @@ module Github
       )
 
       bot = Genova::Slack::Interactive::Bot.new
-      bot.detect_github_event(deploy_job, jid)
+      bot.detect_github_event(deploy_job: deploy_job, commit_url: values[:commit_url], author: values[:author])
 
       client = Genova::Client.new(deploy_job)
       client.run

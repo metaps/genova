@@ -106,23 +106,27 @@ module Genova
                ])
         end
 
-        def detect_github_event(deploy_job)
-          github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
+        def detect_github_event(params)
+          github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
           repository_uri = github_client.build_repository_uri
-          branch_uri = github_client.build_branch_uri(deploy_job.branch)
+          branch_uri = github_client.build_branch_uri(params[:deploy_job].branch)
 
           send([
-                 BlockKit::Helper.header('GitHub deployment was detected.'),
+                 BlockKit::Helper.header('Detected Push on GitHub.'),
                  BlockKit::Helper.section_short_fieldset(
                    [
-                     BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>"),
-                     BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
+                     BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{params[:deploy_job].account}/#{params[:deploy_job].repository}>"),
+                     BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{params[:deploy_job].branch}>"),
+                     BlockKit::Helper.section_short_field('Commit URL', params[:commit_url]),
+                     BlockKit::Helper.section_short_field('Author', params[:author]),
+                     BlockKit::Helper.section_short_field('Cluster', params[:deploy_job].cluster),
+                     BlockKit::Helper.section_short_field('Service', params[:deploy_job].service)
                    ]
                  )
                ])
         end
 
-        def detect_slack_deploy(deploy_job, jid)
+        def detect_slack_deploy(deploy_job)
           github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
           repository_uri = github_client.build_repository_uri
           branch_uri = github_client.build_branch_uri(deploy_job.branch)
@@ -156,7 +160,6 @@ module Genova
                    [
                      BlockKit::Helper.section_short_field('AWS Console', console_uri),
                      BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job.id}"),
-                     BlockKit::Helper.section_short_field('Sidekiq', jid.to_s)
                    ]
                  )
                ])
@@ -164,24 +167,27 @@ module Genova
 
         def finished_deploy(deploy_job)
           fields = []
-          fields << BlockKit::Helper.section_field('New task definition ARN', deploy_job.task_definition_arns.join("\n"))
+
+          task_difinition_arn = BlockKit::Helper.escape_emoji(deploy_job.task_definition_arns.join("\n"))
+          fields << BlockKit::Helper.section_field('New task definition ARN', task_difinition_arn)
 
           if deploy_job.tag.present?
             github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
             fields << BlockKit::Helper.section_field('Tag', "<#{github_client.build_tag_uri(deploy_job.tag)}|#{deploy_job.tag}>")
           end
 
+          to = deploy_job.mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{deploy_job.slack_user_id}"
           send([
                  BlockKit::Helper.header('Deployment is complete.'),
-                 BlockKit::Helper.section("<@#{deploy_job.slack_user_id}>"),
+                 BlockKit::Helper.section("<#{to}>"),
                  BlockKit::Helper.section_fieldset(fields)
                ])
         end
 
         def error(params)
           fields = []
-          fields << BlockKit::Helper.section_field('Error', params[:error].class)
-          fields << BlockKit::Helper.section_field('Reason', params[:error].message)
+          fields << BlockKit::Helper.section_field('Error', BlockKit::Helper.escape_emoji(params[:error].class.to_s))
+          fields << BlockKit::Helper.section_field('Reason', BlockKit::Helper.escape_emoji(params[:error].message))
           fields << BlockKit::Helper.section_field('Backtrace', "```#{params[:error].backtrace.join("\n").truncate(512)}```") if params[:error].backtrace.present?
           fields << BlockKit::Helper.section_field('Deploy job ID', params[:deploy_job_id]) if params[:deploy_job_id].present?
 

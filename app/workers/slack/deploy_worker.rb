@@ -14,7 +14,7 @@ module Slack
       history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)
 
-      bot.detect_slack_deploy(deploy_job, jid)
+      bot.detect_slack_deploy(deploy_job)
       client.run
 
       bot.finished_deploy(deploy_job)
