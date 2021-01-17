@@ -5,10 +5,8 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployHistoryWorker')
 
-      params = Genova::Slack::SessionStore.new(id).params
-
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.ask_confirm_deploy(params, true, false)
+      bot.ask_confirm_deploy(Genova::Slack::SessionStore.new(id).params, true, false)
     rescue => e
       slack_notify(e, jid, id)
       raise e

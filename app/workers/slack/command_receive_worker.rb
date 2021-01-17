@@ -6,7 +6,7 @@ module Slack
       logger.info('Started Slack::CommandReceiveWorker')
 
       values = Genova::Sidekiq::JobStore.find(id)
-      raise Genova::Exceptions::SlackCommandNotFoundError, 'Command not specified.' if values[:statement].empty?
+      raise Genova::Exceptions::NotFoundError, 'Command not specified.' if values[:statement].empty?
 
       statement = values[:statement].split(' ')
       commands = statement[0].split(':')
@@ -27,7 +27,7 @@ module Slack
       end
 
       klass = "Genova::Slack::Command::#{statements[:command].capitalize}".safe_constantize
-      raise Genova::Exceptions::SlackCommandNotFoundError, "`#{commands[0]}` command does not exist." if klass.nil?
+      raise Genova::Exceptions::NotFoundError, "`#{commands[0]}` command does not exist." if klass.nil?
 
       klass.call(statements, values[:user], values[:parent_message_ts])
     rescue => e

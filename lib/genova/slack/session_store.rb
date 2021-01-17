@@ -1,13 +1,13 @@
 module Genova
   module Slack
     class SessionStore
-      def initialize(timestamp)
-        @timestamp = timestamp
+      def initialize(parent_message_ts)
+        @parent_message_ts = parent_message_ts
       end
 
       def start
         id = make_id
-        write(id, timestamp: @timestamp)
+        write(id, parent_message_ts: @parent_message_ts)
       end
 
       def add(values)
@@ -24,7 +24,7 @@ module Genova
       private
 
       def make_id
-        "slack_#{@timestamp}"
+        "slack_#{@parent_message_ts}"
       end
 
       def write(id, values)

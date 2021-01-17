@@ -2,9 +2,6 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        WAIT_INTERVAL = 1
-        NOTIFY_THRESHOLD = 4
-
         def handle_request(params)
           @params = params
           @session_store = Genova::Slack::SessionStore.new(@params[:container][:thread_ts])

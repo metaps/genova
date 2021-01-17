@@ -7,8 +7,6 @@ module Genova
     class DeployLockError < Error; end
     class RoutingError < Error; end
     class InvalidArgumentError < Error; end
-    class ClusterNotFoundError < Error; end
-    class ServiceNotFoundError < Error; end
     class TaskRunningError < Error; end
     class TaskDefinitionValidationError < Error; end
     class TaskStoppedError < Error; end
@@ -17,7 +15,6 @@ module Genova
     class DeployTimeoutError < Error; end
     class ImageBuildError < Error; end
     class SlackEventsAPIError < Error; end
-    class SlackCommandNotFoundError < Error; end
     class UnexpectedError < Error; end
     class MigrationError < Error; end
   end

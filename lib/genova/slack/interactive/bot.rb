@@ -19,9 +19,9 @@ module Genova
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select history to deploy."),
                  BlockKit::Helper.actions([
-                                          BlockKit::Helper.static_select('approve_deploy_from_history', options, 'Pick history...'),
-                                          BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                        ])
+                                            BlockKit::Helper.static_select('approve_deploy_from_history', options, 'Pick history...'),
+                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                          ])
                ])
         end
 
@@ -33,9 +33,9 @@ module Genova
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select repository to deploy."),
                  BlockKit::Helper.actions([
-                                          BlockKit::Helper.static_select('approve_repository', options, 'Pick repository...'),
-                                          BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                        ])
+                                            BlockKit::Helper.static_select('approve_repository', options, 'Pick repository...'),
+                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                          ])
                ])
         end
 
@@ -67,9 +67,9 @@ module Genova
           send([
                  BlockKit::Helper.section('Please select cluster to deploy.'),
                  BlockKit::Helper.actions([
-                                          BlockKit::Helper.static_select('approve_cluster', options, 'Pick cluster...'),
-                                          BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                        ])
+                                            BlockKit::Helper.static_select('approve_cluster', options, 'Pick cluster...'),
+                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                          ])
                ])
         end
 
@@ -87,9 +87,9 @@ module Genova
           send([
                  BlockKit::Helper.section('Please select target to deploy.'),
                  BlockKit::Helper.actions([
-                                          BlockKit::Helper.static_select('approve_target', option_groups, 'Pick target...', group: true),
-                                          BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                        ])
+                                            BlockKit::Helper.static_select('approve_target', option_groups, 'Pick target...', group: true),
+                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                          ])
                ])
         end
 
@@ -97,12 +97,12 @@ module Genova
           confirm_command(params, mention) if show_target
 
           send([
-                 BlockKit::Helper.section("Ready to deploy!"),
+                 BlockKit::Helper.section('Ready to deploy!'),
                  BlockKit::Helper.section_short_fieldset([git_compare(params)]),
                  BlockKit::Helper.actions([
-                                          BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
-                                          BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                        ])
+                                            BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
+                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                          ])
                ])
         end
 
@@ -159,7 +159,7 @@ module Genova
                  BlockKit::Helper.section_short_fieldset(
                    [
                      BlockKit::Helper.section_short_field('AWS Console', console_uri),
-                     BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job.id}"),
+                     BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job.id}")
                    ]
                  )
                ])
@@ -228,9 +228,9 @@ module Genova
           text = mention ? "<@#{params[:user]}> " : ''
 
           send([
-            BlockKit::Helper.section("#{text}Please confirm."),
-            BlockKit::Helper.section_short_fieldset(fields)
-          ])
+                 BlockKit::Helper.section("#{text}Please confirm."),
+                 BlockKit::Helper.section_short_fieldset(fields)
+               ])
         end
 
         def send(blocks)

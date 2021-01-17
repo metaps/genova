@@ -8,7 +8,7 @@ module Genova
               type: 'header',
               text: {
                 type: 'plain_text',
-                text: header,
+                text: header
               }
             }
           end

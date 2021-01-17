@@ -16,10 +16,10 @@ module Genova
         end
 
         def find(id)
-          params = Oj.load(Redis.current.get(id), symbol_keys: true)
-          raise Exceptions::NotFoundError, "#{id} is not found." if params.nil?
+          values = Redis.current.get(id)
+          raise Exceptions::NotFoundError, "Job #{id} not found." if values.nil?
 
-          params
+          Oj.load(values, symbol_keys: true)
         end
       end
     end

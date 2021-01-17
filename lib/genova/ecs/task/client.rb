@@ -10,11 +10,8 @@ module Genova
         def register(path, params = {})
           raise IOError, "File does not exist. [#{path}]" unless File.exist?(path)
 
-          register_hash(YAML.load(File.read(path)), params)
-        end
-
-        def register_hash(task_definition, params = {})
-          task_definition = Oj.load(Oj.dump(task_definition), symbol_keys: true)
+          yaml = YAML.load(File.read(path))
+          task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)
 
           replace_parameter_variables!(task_definition, params)
           decrypt_environment_variables!(task_definition)

@@ -9,7 +9,7 @@ module Genova
             def build_hash(cluster, name, options = {})
               ecs = Aws::ECS::Client.new
               clusters = ecs.describe_clusters(clusters: [cluster]).clusters
-              raise Exceptions::ClusterNotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
+              raise Exceptions::NotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
 
               container_overrides = []
               if options[:container_overrides].present?
