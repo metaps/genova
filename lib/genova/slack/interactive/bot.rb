@@ -112,7 +112,7 @@ module Genova
           branch_uri = github_client.build_branch_uri(params[:deploy_job].branch)
 
           send([
-                 BlockKit::Helper.header('Detected Push on GitHub.'),
+                 BlockKit::Helper.header('Detected push on GitHub.'),
                  BlockKit::Helper.section_short_fieldset(
                    [
                      BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{params[:deploy_job].account}/#{params[:deploy_job].repository}>"),
