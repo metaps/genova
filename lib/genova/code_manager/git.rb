@@ -1,19 +1,32 @@
 module Git
   class Lib
-    # Add '--sort=--authordate'
+    HARD_LIMIT = 100
+
     def branches_all
       arr = []
+      count = 0
 
       command_lines('branch', ['-a', '--sort=-authordate']).each do |b|
         current = (b[0, 2] == '* ')
         arr << [b.gsub('* ', '').strip, current]
+        count += 1
+
+        break if count == HARD_LIMIT
       end
       arr
     end
 
-    # Add '--sort=--authordate'
     def tags
-      command_lines('tag', ['--sort=-authordate'])
+      arr = []
+      count = 0
+
+      command_lines('tag', ['--sort=-authordate']).each do |t|
+        arr << t
+        count += 1
+
+        break if count == HARD_LIMIT
+      end
+      arr
     end
   end
 end
@@ -90,10 +103,9 @@ module Genova
       end
 
       def origin_tags
-        git = client
         tags = []
 
-        git.tags.each do |tag|
+        client.tags.each do |tag|
           tags << tag.name
         end
 
