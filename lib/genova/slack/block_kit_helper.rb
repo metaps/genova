@@ -66,28 +66,28 @@ module Genova
           element
         end
 
-        def approve_button(action_id)
+        def primary_button(text, value, action_id)
           {
             type: 'button',
             text: {
               type: 'plain_text',
-              text: 'Approve'
+              text: text
             },
-            value: 'approve',
+            value: value,
             style: 'primary',
             action_id: action_id
           }
         end
 
-        def cancel_button
+        def cancel_button(text, value, action_id)
           {
             type: 'button',
             text: {
               type: 'plain_text',
-              text: 'Cancel'
+              text: text
             },
-            value: 'cancel',
-            action_id: 'cancel'
+            value: value,
+            action_id: action_id
           }
         end
 

@@ -3,7 +3,7 @@ require 'rails_helper'
 module Slack
   describe InteractionWorker do
     describe 'perform' do
-      let (:id) { Genova::Sidekiq::JobStore.create(foo: 'bar') }
+      let(:id) { Genova::Sidekiq::JobStore.create(foo: 'bar') }
 
       before do
         allow(Genova::Slack::RequestHandler).to receive(:handle_request)

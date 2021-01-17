@@ -29,7 +29,7 @@ module Genova
         next_token = nil
         has_repository = false
 
-        begin
+        loop do
           results = @ecr.describe_repositories(next_token: next_token)
           next_token = results[:next_token]
 
@@ -37,7 +37,9 @@ module Genova
             has_repository = true
             break
           end
-        end until next_token.nil?
+
+          break if next_token.nil?
+        end
 
         @ecr.create_repository(repository_name: repository_name) unless has_repository
 

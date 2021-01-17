@@ -13,16 +13,9 @@ module Genova
 
           raise Genova::Exceptions::RoutingError, "`#{ation[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
-          text = send(action[:action_id])
           result = {
             update_original: true,
-            blocks: [{
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: text
-              }
-            }],
+            blocks: [BlockKitHelper.section(send(action[:action_id]))],
             thread_ts: @params[:container][:thread_ts]
           }
 
@@ -32,7 +25,7 @@ module Genova
         private
 
         def cancel
-          'Deployment has been canceled.'
+          'Deployment was canceled.'
         end
 
         def approve_repository
@@ -59,7 +52,7 @@ module Genova
           @session_store.add(retrieve_branch_jid: jid)
           ::Github::RetrieveBranchWatchWorker.perform_async(@params[:container][:thread_ts])
 
-          "*Repository*\n#{params[:repository]}\n"
+          BlockKitHelper.section_field('Repository', params[:repository])
         end
 
         def approve_branch
@@ -68,7 +61,7 @@ module Genova
           @session_store.add(branch: value)
           ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
-          "*Branch*\n#{value}"
+          BlockKitHelper.section_field('Branch', value)
         end
 
         def approve_tag
@@ -77,7 +70,7 @@ module Genova
           @session_store.add(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
-          "*Tag*\n#{value}"
+          BlockKitHelper.section_field('Tag', value)
         end
 
         def approve_cluster
@@ -86,7 +79,7 @@ module Genova
           @session_store.add(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@params[:container][:thread_ts])
 
-          "*Cluster*\n#{value}"
+          BlockKitHelper.section_field('Cluster', value)
         end
 
         def approve_target
@@ -111,7 +104,7 @@ module Genova
           @session_store.add(params)
           ::Slack::DeployConfirmWorker.perform_async(@params[:container][:thread_ts])
 
-          "*Target*\n#{value}"
+          BlockKitHelper.section_field('Target', value)
         end
 
         def approve_deploy_from_history
@@ -150,7 +143,7 @@ module Genova
 
           ::Slack::DeployWorker.perform_async(@params[:container][:thread_ts])
 
-          'Start deployment'
+          'Deployment started.'
         end
       end
     end

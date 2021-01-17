@@ -107,7 +107,7 @@ module Genova
         if @branch.present?
           git.remote.branch(@branch).gcommit.log(1).first.to_s
         else
-          git.tag(@tag).sha
+          puts git.tag(@tag).sha
         end
       end
 

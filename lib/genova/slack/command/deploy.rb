@@ -2,7 +2,7 @@ module Genova
   module Slack
     module Command
       class Deploy
-        def self.call(statements, _user, parent_message_ts)
+        def self.call(statements, user, parent_message_ts)
           client = Genova::Slack::Bot.new(parent_message_ts: parent_message_ts)
 
           session_store = Genova::Slack::SessionStore.new(parent_message_ts)
@@ -18,7 +18,7 @@ module Genova
                  end
 
           if statements[:params].size.zero?
-            client.post_choose_repository
+            client.post_choose_repository(user: user)
           else
             results = send("parse_#{type}", statements[:params])
 
@@ -35,7 +35,7 @@ module Genova
             }
 
             params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
-            client.post_confirm_deploy(params)
+            client.post_confirm_deploy(params, false)
           end
         end
 
