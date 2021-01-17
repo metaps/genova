@@ -27,8 +27,8 @@ module Slack
         session_store.start
         session_store.add(deploy_job_id: deploy_job_id)
 
-        allow(bot_mock).to receive(:post_detect_slack_deploy)
-        allow(bot_mock).to receive(:post_finished_deploy)
+        allow(bot_mock).to receive(:detect_slack_deploy)
+        allow(bot_mock).to receive(:finished_deploy)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         allow(genova_client_mock).to receive(:run)

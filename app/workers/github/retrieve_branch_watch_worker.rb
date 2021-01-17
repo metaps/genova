@@ -25,7 +25,7 @@ module Github
           next unless worker['payload']['jid'] == jid
 
           bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-          bot.post_simple_message(text: 'Getting branches...')
+          bot.send_message('Getting branches...')
         end
 
         break

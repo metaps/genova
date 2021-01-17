@@ -7,7 +7,7 @@ module Genova
 
       describe 'notify' do
         it 'should be send slack message' do
-          allow(bot_mock).to receive(:post_error)
+          allow(bot_mock).to receive(:error)
           allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
           context_hash = {

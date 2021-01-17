@@ -14,10 +14,10 @@ module Slack
       history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)
 
-      bot.post_detect_slack_deploy(deploy_job, jid)
+      bot.detect_slack_deploy(deploy_job, jid)
       client.run
 
-      bot.post_finished_deploy(deploy_job)
+      bot.finished_deploy(deploy_job)
     rescue => e
       slack_notify(e, jid, id)
       raise e

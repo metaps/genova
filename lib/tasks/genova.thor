@@ -126,7 +126,7 @@ module GenovaCli
   class Debug < Thor
     desc 'slack-greeting', 'Slack bot says Hello'
     def slack_greeting
-      Genova::Slack::Interactive::Bot.new.post_simple_message(text: 'Hello')
+      Genova::Slack::Interactive::Bot.new.send_message('Hello')
     end
 
     desc 'emulate-github-push', 'Emulate GitHub push'

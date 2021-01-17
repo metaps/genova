@@ -8,7 +8,7 @@ module Github
       before do
         Redis.current.flushdb
 
-        allow(bot_mock).to receive(:post_choose_branch)
+        allow(bot_mock).to receive(:ask_branch)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         Genova::Slack::SessionStore.new('user').start

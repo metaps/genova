@@ -8,7 +8,7 @@ module Slack
       let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       before do
-        allow(bot_mock).to receive(:post_confirm_deploy)
+        allow(bot_mock).to receive(:ask_confirm_deploy)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         session_store.start

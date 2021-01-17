@@ -22,7 +22,7 @@ module Github
         )
         allow(Sidekiq::Workers).to receive(:new).and_return(workers_mock)
 
-        allow(bot_mock).to receive(:post_simple_message)
+        allow(bot_mock).to receive(:send_message)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         subject.perform(jid)

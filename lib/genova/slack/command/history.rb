@@ -7,7 +7,7 @@ module Genova
           session_store.start
 
           client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
-          client.post_choose_history(user: user)
+          client.ask_history(user: user)
         end
       end
     end

@@ -8,7 +8,7 @@ module Github
       session_store = Genova::Slack::SessionStore.new(id)
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.post_choose_branch(session_store.params)
+      bot.ask_branch(session_store.params)
     rescue => e
       slack_notify(e, jid)
       raise e

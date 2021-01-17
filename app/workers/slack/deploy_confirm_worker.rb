@@ -8,7 +8,7 @@ module Slack
       session_store = Genova::Slack::SessionStore.new(id)
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.post_confirm_deploy(session_store.params, false)
+      bot.ask_confirm_deploy(session_store.params, false)
     rescue => e
       slack_notify(e, jid, id)
       raise e

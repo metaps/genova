@@ -8,7 +8,7 @@ module Slack
       params = Genova::Slack::SessionStore.new(id).params
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.post_choose_cluster(params)
+      bot.ask_cluster(params)
     rescue => e
       slack_notify(e, jid, id)
       raise e

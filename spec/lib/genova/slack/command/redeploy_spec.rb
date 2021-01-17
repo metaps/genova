@@ -22,11 +22,11 @@ module Genova
             )
             allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
 
-            allow(bot_mock).to receive(:post_confirm_deploy)
+            allow(bot_mock).to receive(:ask_confirm_deploy)
             allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
             expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.not_to raise_error
-            expect(bot_mock).to have_received(:post_confirm_deploy).once
+            expect(bot_mock).to have_received(:ask_confirm_deploy).once
           end
         end
 
@@ -36,11 +36,11 @@ module Genova
             allow(history_mock).to receive(:last).and_return(nil)
             allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
 
-            allow(bot_mock).to receive(:post_error)
+            allow(bot_mock).to receive(:error)
             allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
             expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.not_to raise_error
-            expect(bot_mock).to have_received(:post_error).once
+            expect(bot_mock).to have_received(:error).once
           end
         end
       end

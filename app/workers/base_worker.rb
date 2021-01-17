@@ -3,7 +3,7 @@ class BaseWorker
 
   def slack_notify(error, jid, parent_message_ts = nil)
     bot = ::Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
-    bot.post_error(
+    bot.error(
       error: error,
       deploy_job_id: jid
     )

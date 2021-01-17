@@ -11,7 +11,7 @@ module Slack
         allow(session_store_mock).to receive(:params)
 
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
-        allow(bot_mock).to receive(:post_confirm_deploy)
+        allow(bot_mock).to receive(:ask_confirm_deploy)
 
         subject.perform('id')
       end

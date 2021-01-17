@@ -11,7 +11,7 @@ module API
       logger.fatal(e.message)
       logger.fatal(e.full_message)
 
-      Genova::Slack::Interactive::Bot.new.post_error(error: e)
+      Genova::Slack::Interactive::Bot.new.error(error: e)
 
       error! e, 500
     end

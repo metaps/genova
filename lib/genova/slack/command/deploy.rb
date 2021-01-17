@@ -18,7 +18,7 @@ module Genova
                  end
 
           if statements[:params].size.zero?
-            client.post_choose_repository(user: user)
+            client.ask_repository(user: user)
           else
             results = send("parse_#{type}", statements[:params])
 
@@ -35,7 +35,7 @@ module Genova
             }
 
             params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
-            client.post_confirm_deploy(params, false)
+            client.ask_confirm_deploy(params, false)
           end
         end
 

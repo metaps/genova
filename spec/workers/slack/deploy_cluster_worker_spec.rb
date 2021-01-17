@@ -9,7 +9,7 @@ module Slack
         Redis.current.flushdb
         Genova::Slack::SessionStore.new('user').start
 
-        allow(bot_mock).to receive(:post_choose_cluster)
+        allow(bot_mock).to receive(:ask_cluster)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         subject.perform('user')

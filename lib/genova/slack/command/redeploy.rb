@@ -26,10 +26,10 @@ module Genova
               scheduled_task_target: history[:scheduled_task_target]
             }
 
-            client.post_confirm_deploy(params, true, true)
+            client.ask_confirm_deploy(params, true, true)
           else
             e = Exceptions::NotFoundError.new('History does not exist.')
-            client.post_error(error: e, slack_user_id: user)
+            client.error(error: e, slack_user_id: user)
           end
         end
       end

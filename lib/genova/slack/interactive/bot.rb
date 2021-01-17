@@ -8,11 +8,11 @@ module Genova
           @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
         end
 
-        def post_simple_message(params)
-          send([BlockKit::Helper.section(params[:text])])
+        def send_message(text)
+          send([BlockKit::Helper.section(text)])
         end
 
-        def post_choose_history(params)
+        def ask_history(params)
           options = BlockKit::ElementObject.history_options(params[:user])
           raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
 
@@ -25,7 +25,7 @@ module Genova
                ])
         end
 
-        def post_choose_repository(params)
+        def ask_repository(params)
           options = BlockKit::ElementObject.repository_options
 
           raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if options.size.zero?
@@ -39,7 +39,7 @@ module Genova
                ])
         end
 
-        def post_choose_branch(params)
+        def ask_branch(params)
           branch_options = BlockKit::ElementObject.branch_options(params[:account], params[:repository])
           tag_options = BlockKit::ElementObject.tag_options(params[:account], params[:repository])
 
@@ -54,7 +54,7 @@ module Genova
                ])
         end
 
-        def post_choose_cluster(params)
+        def ask_cluster(params)
           options = BlockKit::ElementObject.cluster_options(
             params[:account],
             params[:repository],
@@ -73,7 +73,7 @@ module Genova
                ])
         end
 
-        def post_choose_target(params)
+        def ask_target(params)
           option_groups = BlockKit::ElementObject.target_options(
             params[:account],
             params[:repository],
@@ -93,8 +93,8 @@ module Genova
                ])
         end
 
-        def post_confirm_deploy(params, show_target, mention = false)
-          post_confirm_command(params, mention) if show_target
+        def ask_confirm_deploy(params, show_target, mention = false)
+          confirm_command(params, mention) if show_target
 
           send([
                  BlockKit::Helper.section("Ready to deploy!"),
@@ -106,7 +106,7 @@ module Genova
                ])
         end
 
-        def post_detect_auto_deploy(deploy_job)
+        def detect_github_event(deploy_job)
           github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
           repository_uri = github_client.build_repository_uri
           branch_uri = github_client.build_branch_uri(deploy_job.branch)
@@ -122,7 +122,7 @@ module Genova
                ])
         end
 
-        def post_detect_slack_deploy(deploy_job, jid)
+        def detect_slack_deploy(deploy_job, jid)
           github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
           repository_uri = github_client.build_repository_uri
           branch_uri = github_client.build_branch_uri(deploy_job.branch)
@@ -162,7 +162,7 @@ module Genova
                ])
         end
 
-        def post_finished_deploy(deploy_job)
+        def finished_deploy(deploy_job)
           fields = []
           fields << BlockKit::Helper.section_field('New task definition ARN', deploy_job.task_definition_arns.join("\n"))
 
@@ -178,7 +178,7 @@ module Genova
                ])
         end
 
-        def post_error(params)
+        def error(params)
           fields = []
           fields << BlockKit::Helper.section_field('Error', params[:error].class)
           fields << BlockKit::Helper.section_field('Reason', params[:error].message)
@@ -193,7 +193,7 @@ module Genova
 
         private
 
-        def post_confirm_command(params, mention)
+        def confirm_command(params, mention)
           github_client = Genova::Github::Client.new(params[:account], params[:repository])
 
           fields = []

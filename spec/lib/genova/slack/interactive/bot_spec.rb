@@ -14,27 +14,27 @@ module Genova
           allow(slack_web_client_mock).to receive(:chat_postMessage)
         end
 
-        describe 'post_choose_history' do
+        describe 'ask_history' do
           it 'should be not error' do
-            expect { bot.post_choose_history({}) }.to raise_error(Genova::Exceptions::NotFoundError)
+            expect { bot.ask_history({}) }.to raise_error(Genova::Exceptions::NotFoundError)
           end
         end
 
-        describe 'post_choose_repository' do
+        describe 'ask_repository' do
           it 'should be not error' do
-            expect { bot.post_choose_repository }.not_to raise_error(Genova::Exceptions::NotFoundError)
+            expect { bot.ask_repository }.not_to raise_error(Genova::Exceptions::NotFoundError)
           end
         end
 
-        describe 'post_choose_cluster' do
+        describe 'ask_cluster' do
           include_context 'load code_manager_mock'
 
           it 'should be not error' do
-            expect { bot.post_choose_cluster({}) }.not_to raise_error(Genova::Exceptions::NotFoundError)
+            expect { bot.ask_cluster({}) }.not_to raise_error(Genova::Exceptions::NotFoundError)
           end
         end
 
-        describe 'post_choose_target' do
+        describe 'ask_target' do
           it 'should be not error' do
             allow(Genova::Slack::BlockKit::ElementObject).to receive(:target_options).and_return(
               [
@@ -46,11 +46,11 @@ module Genova
                 ]
               ]
             )
-            expect { bot.post_choose_target({}) }.not_to raise_error
+            expect { bot.ask_target({}) }.not_to raise_error
           end
         end
 
-        describe 'post_confirm_deploy' do
+        describe 'ask_confirm_deploy' do
           let(:params) do
             {
               service: 'service'
@@ -75,7 +75,7 @@ module Genova
                                                                                                  }])
             allow(ecs_client_mock).to receive(:describe_task_definition).and_return(describe_task_definition_response_mock)
 
-            expect { bot.post_confirm_deploy(params, true) }.not_to raise_error
+            expect { bot.ask_confirm_deploy(params, true) }.not_to raise_error
           end
         end
       end

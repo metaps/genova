@@ -17,9 +17,9 @@ module Github
     before(:each) do
       DeployJob.delete_all
 
-      allow(slack_bot_mock).to receive(:post_detect_auto_deploy)
+      allow(slack_bot_mock).to receive(:detect_github_event)
       allow(slack_bot_mock).to receive(:post_started_deploy)
-      allow(slack_bot_mock).to receive(:post_finished_deploy)
+      allow(slack_bot_mock).to receive(:finished_deploy)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
 
       allow(client_mock).to receive(:run)
