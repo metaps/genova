@@ -4,7 +4,7 @@ module Genova
     MINOR = 0
     TINY = 0
 
-    STRING = [MAJOR, MINOR, TINY].compact.join('.')
-    LONG_STRING = 'genova v' + [MAJOR, MINOR, TINY].compact.join('.')
+    STRING = [MAJOR, MINOR, TINY].join('.')
+    LONG_STRING = "genova v#{[MAJOR, MINOR, TINY].join('.')}".freeze
   end
 end

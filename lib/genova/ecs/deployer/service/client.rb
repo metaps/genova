@@ -13,7 +13,7 @@ module Genova
             @task = Genova::Ecs::Task::Client.new
           end
 
-          def update(service, task_definition_arn, options = {}, wait = true)
+          def update(service, task_definition_arn, options = {})
             params = {
               cluster: @cluster,
               service: service,
@@ -27,7 +27,7 @@ module Genova
 
             result = @ecs.update_service(params)
 
-            wait(service, result.service.task_definition) if wait
+            wait(service, result.service.task_definition)
             result.service
           end
 

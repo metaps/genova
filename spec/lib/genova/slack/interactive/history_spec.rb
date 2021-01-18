@@ -29,7 +29,7 @@ module Genova
           end
 
           context 'when adding key for second (new key)' do
-            let(:deploy_job1) do
+            let(:deploy_job_1) do
               DeployJob.new(
                 account: 'metaps',
                 repository: 'genova',
@@ -38,7 +38,7 @@ module Genova
                 service: 'development'
               )
             end
-            let(:deploy_job2) do
+            let(:deploy_job_2) do
               DeployJob.new(
                 account: 'metaps',
                 repository: 'genova',
@@ -48,8 +48,8 @@ module Genova
               )
             end
             it 'should be return two history' do
-              history.add(deploy_job1)
-              history.add(deploy_job2)
+              history.add(deploy_job_1)
+              history.add(deploy_job_2)
 
               expect(history.list.size).to eq(2)
             end
@@ -75,7 +75,7 @@ module Genova
           end
 
           context 'when history holdings is exceeded' do
-            let(:deploy_job1) do
+            let(:deploy_job_1) do
               DeployJob.new(
                 account: 'metaps',
                 repository: 'genova',
@@ -84,7 +84,7 @@ module Genova
                 service: 'development'
               )
             end
-            let(:deploy_job2) do
+            let(:deploy_job_2) do
               DeployJob.new(
                 account: 'metaps',
                 repository: 'genova',
@@ -93,7 +93,7 @@ module Genova
                 service: 'development'
               )
             end
-            let(:deploy_job3) do
+            let(:deploy_job_3) do
               DeployJob.new(
                 account: 'metaps',
                 repository: 'genova',
@@ -103,9 +103,9 @@ module Genova
               )
             end
             it 'should be delete old history' do
-              history.add(deploy_job1)
-              history.add(deploy_job2)
-              history.add(deploy_job3)
+              history.add(deploy_job_1)
+              history.add(deploy_job_2)
+              history.add(deploy_job_3)
 
               expect(history.list.size).to eq(2)
             end
@@ -136,7 +136,7 @@ module Genova
           end
 
           context 'when adding key for second (first key)' do
-            let(:deploy_job1) do
+            let(:deploy_job_1) do
               DeployJob.new(
                 account: 'metaps',
                 repository: 'genova',
@@ -145,7 +145,7 @@ module Genova
                 service: 'development'
               )
             end
-            let(:deploy_job2) do
+            let(:deploy_job_2) do
               DeployJob.new(
                 account: 'metaps',
                 repository: 'genova',
@@ -156,8 +156,8 @@ module Genova
             end
 
             it 'should be return last value' do
-              history.add(deploy_job1)
-              history.add(deploy_job2)
+              history.add(deploy_job_1)
+              history.add(deploy_job_2)
 
               last = history.last
 

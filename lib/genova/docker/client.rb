@@ -5,7 +5,7 @@ module Genova
 
       def initialize(code_manager, options = {})
         @code_manager = code_manager
-        @logger = options[:logger] || ::Logger.new(STDOUT, level: Settings.logger.level)
+        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @cipher = Genova::Utils::Cipher.new
       end
 
@@ -19,7 +19,7 @@ module Genova
 
         raise Exceptions::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
 
-        task_definition_config = @code_manager.load_task_definition_config('config/' + task_definition_path)
+        task_definition_config = @code_manager.load_task_definition_config("config/#{task_definition_path}")
         container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
 
         raise Exceptions::ValidationError, "'#{container}' container does not exist in task definition." if container_definition.nil?
@@ -30,7 +30,7 @@ module Genova
         build_options = {
           '-t': "#{repository_name}:latest",
           '-f': docker_file_path,
-          '--label': BUILD_KEY + '=' + build_value
+          '--label': "#{BUILD_KEY}=#{build_value}"
         }
         build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
         build_option_string = build_options.map { |key, value| "#{key} #{value}" }.join(' ') + build[:build_args]

@@ -10,7 +10,7 @@ module Genova
         def register(path, params = {})
           raise IOError, "File does not exist. [#{path}]" unless File.exist?(path)
 
-          yaml = YAML.load(File.read(path))
+          yaml = YAML.safe_load(File.read(path), [], [], true)
           task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)
 
           replace_parameter_variables!(task_definition, params)
@@ -28,9 +28,9 @@ module Genova
 
         def replace_parameter_variables!(variables, params = {})
           variables.each do |variable|
-            if variable.class == Array || variable.class == Hash
+            if variable.instance_of?(Array) || variable.instance_of?(Hash)
               replace_parameter_variables!(variable, params)
-            elsif variable.class == String
+            elsif variable.instance_of?(String)
               params.each do |replace_key, replace_value|
                 variable.gsub!("{{#{replace_key}}}", replace_value)
               end
@@ -45,7 +45,7 @@ module Genova
             next unless container_definition.key?(:environment)
 
             container_definition[:environment].each do |environment|
-              if environment[:value].class == String
+              if environment[:value].instance_of?(String)
                 environment[:value] = @cipher.decrypt(environment[:value]) if @cipher.encrypt_format?(environment[:value])
               else
                 # https://github.com/naomichi-y/ecs_deployer/issues/6

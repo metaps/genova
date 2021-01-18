@@ -5,7 +5,7 @@ module Api
     logger.formatter = GrapeLogging::Formatters::Default.new
     use GrapeLogging::Middleware::RequestLogger, logger: logger
 
-    logger Logger.new(STDOUT, level: Settings.logger.level)
+    logger Logger.new($stdout, level: Settings.logger.level)
 
     rescue_from :all do |e|
       logger.fatal(e.message)

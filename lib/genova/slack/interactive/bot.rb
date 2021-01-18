@@ -5,7 +5,7 @@ module Genova
         def initialize(params = {})
           @client = ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
           @parent_message_ts = params[:parent_message_ts]
-          @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
+          @logger = ::Logger.new($stdout, level: Settings.logger.level)
         end
 
         def send_message(text)
@@ -93,7 +93,7 @@ module Genova
                ])
         end
 
-        def ask_confirm_deploy(params, show_target, mention = false)
+        def ask_confirm_deploy(params, show_target, mention: false)
           confirm_command(params, mention) if show_target
 
           send([

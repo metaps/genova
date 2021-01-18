@@ -9,7 +9,7 @@ module Genova
 
       mongo_logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
 
-      @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
+      @logger = ::Logger.new($stdout, level: Settings.logger.level)
       @logger.extend(ActiveSupport::Logger.broadcast(mongo_logger))
 
       @logger.level = @options[:verbose] ? :debug : Settings.logger.level

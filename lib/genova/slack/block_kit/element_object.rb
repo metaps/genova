@@ -121,7 +121,7 @@ module Genova
             cluster_config = code_manager.load_deploy_config.cluster(cluster)
 
             if cluster_config[:run_tasks].present?
-              cluster_config[:run_tasks].keys.each do |run_task|
+              cluster_config[:run_tasks].each_key do |run_task|
                 run_tasks.push(
                   text: {
                     type: 'plain_text',
@@ -141,7 +141,7 @@ module Genova
             end
 
             if cluster_config[:services].present?
-              cluster_config[:services].keys.each do |service|
+              cluster_config[:services].each_key do |service|
                 services.push(
                   text: {
                     type: 'plain_text',

@@ -3,7 +3,7 @@ module Genova
     class ErrorHandler
       class << self
         def notify(error, _context_hash)
-          ::Sidekiq::logger.error(error)
+          ::Sidekiq.logger.error(error)
         end
       end
     end
