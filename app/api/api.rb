@@ -1,4 +1,4 @@
-module API
+module Api
   class Route < Grape::API
     format :json
 
