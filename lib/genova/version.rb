@@ -1,5 +1,5 @@
 module Genova
-  module VERSION
+  module Version
     MAJOR = 3
     MINOR = 0
     TINY = 0

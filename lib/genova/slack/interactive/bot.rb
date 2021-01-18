@@ -187,7 +187,7 @@ module Genova
         def error(params)
           fields = []
           fields << BlockKit::Helper.section_field('Error', BlockKit::Helper.escape_emoji(params[:error].class.to_s))
-          fields << BlockKit::Helper.section_field('Reason', BlockKit::Helper.escape_emoji(params[:error].message))
+          fields << BlockKit::Helper.section_field('Reason', "```#{BlockKit::Helper.escape_emoji(params[:error].message)}```")
           fields << BlockKit::Helper.section_field('Backtrace', "```#{params[:error].backtrace.join("\n").truncate(512)}```") if params[:error].backtrace.present?
 
           send([

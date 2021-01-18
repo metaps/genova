@@ -17,7 +17,7 @@ module Genova
           decrypt_environment_variables!(task_definition)
 
           task_definition[:tags] = [] if task_definition[:tags].nil?
-          task_definition[:tags] << { key: 'genova.version', value: VERSION::STRING }
+          task_definition[:tags] << { key: 'genova.version', value: Version::STRING }
           task_definition[:tags] << { key: 'genova.build', value: params[:tag] }
 
           result = @ecs_client.register_task_definition(task_definition)

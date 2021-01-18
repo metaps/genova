@@ -31,7 +31,7 @@ module Slack
 
       klass.call(statements, values[:user], values[:parent_message_ts])
     rescue => e
-      slack_notify(e, jid)
+      slack_notify(e, jid, values[:parent_message_ts])
       raise e
     end
   end
