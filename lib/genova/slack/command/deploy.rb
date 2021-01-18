@@ -2,7 +2,12 @@ module Genova
   module Slack
     module Command
       class Deploy
-        def self.call(client, statements, _user)
+        def self.call(statements, user, parent_message_ts)
+          client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
+
+          session_store = Genova::Slack::SessionStore.new(parent_message_ts)
+          session_store.start
+
           type = case statements[:sub_command]
                  when 'run-task'
                    DeployJob.type.find_value(:run_task)
@@ -13,7 +18,7 @@ module Genova
                  end
 
           if statements[:params].size.zero?
-            client.post_choose_repository
+            client.ask_repository(user: user)
           else
             results = send("parse_#{type}", statements[:params])
 
@@ -26,12 +31,11 @@ module Genova
               run_task: results[:run_task],
               service: results[:service],
               scheduled_task_rule: results[:scheduled_task_rule],
-              scheduled_task_target: results[:scheduled_task_target],
-              confirm: true
+              scheduled_task_target: results[:scheduled_task_target]
             }
 
             params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
-            client.post_confirm_deploy(params)
+            client.ask_confirm_deploy(params, false)
           end
         end
 
@@ -81,7 +85,7 @@ module Genova
           end
 
           def parse(params, validations)
-            params[:account] = ENV.fetch('GITHUB_ACCOUNT', Settings.github.account)
+            params[:account] = ENV.fetch('GITHUB_ACCOUNT')
             params[:branch] = Settings.github.default_branch if params[:branch].nil?
 
             if params.include?(:target)

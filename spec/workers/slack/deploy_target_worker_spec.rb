@@ -3,23 +3,16 @@ require 'rails_helper'
 module Slack
   describe DeployTargetWorker do
     describe 'perform' do
-      let(:id) { Genova::Sidekiq::Queue.add }
-      let(:job_mock) { double(Genova::Sidekiq::Job) }
-      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       before do
-        allow(job_mock).to receive(:account)
-        allow(job_mock).to receive(:repository)
-        allow(job_mock).to receive(:branch)
-        allow(job_mock).to receive(:cluster)
-        allow(job_mock).to receive(:base_path)
+        Redis.current.flushdb
 
-        allow(Genova::Sidekiq::Queue).to receive(:find).and_return(job_mock)
+        allow(bot_mock).to receive(:ask_target)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-        allow(bot_mock).to receive(:post_choose_target)
-        allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
-
-        subject.perform(id)
+        Genova::Slack::SessionStore.new('user').start
+        subject.perform('user')
       end
 
       it 'should be in queeue' do

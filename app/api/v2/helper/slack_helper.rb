@@ -4,11 +4,11 @@ module V2
       extend Grape::API::Helpers
 
       def verify_signature?
-        data = payload_to_json
+        data = payload_to_hash
         data.include?(:token) && data[:token] == ENV.fetch('SLACK_VERIFICATION_TOKEN')
       end
 
-      def payload_to_json
+      def payload_to_hash
         return {} if params[:payload].blank?
 
         Oj.load(params[:payload], symbol_keys: true)

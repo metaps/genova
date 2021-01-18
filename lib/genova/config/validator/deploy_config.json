@@ -119,7 +119,20 @@
                     "required": ["name", "containers", "path"],
                     "properties": {
                       "launch_type": { "type": "string" },
-                      "name": { "type": "string" },
+                      "network_configuration": {
+                        "type": "object",
+                        "required": ["awsvpc_configuration"],
+                        "properties": {
+                          "type": "object",
+                          "required": ["subnets"],
+                          "properties": {
+                            "subnets": { "type": "array" },
+                            "security_groups": { "type": "array" },
+                            "assign_public_ip": { "type": "string" }
+                          }
+                        }
+                      },
+		      "name": { "type": "string" },
                       "task_role": { "type": "string" },
                       "cloudwatch_event_iam_role": { "type": "string" },
                       "depend_service": { "type": "string" },

@@ -3,16 +3,16 @@ module V2
     module GithubHelper
       extend Grape::API::Helpers
 
-      def verify_signature?(payload_body)
+      def verify_signature?(payload)
         return false unless request.env['HTTP_X_HUB_SIGNATURE']
 
         sha1 = OpenSSL::Digest.new('sha1')
-        signature = 'sha1=' + OpenSSL::HMAC.hexdigest(sha1, ENV.fetch('GITHUB_SECRET_KEY'), payload_body)
-        payload_body.present? && Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
+        signature = 'sha1=' + OpenSSL::HMAC.hexdigest(sha1, ENV.fetch('GITHUB_SECRET_KEY'), payload)
+        payload.present? && Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
       end
 
-      def parse(payload_body)
-        data = Oj.load(payload_body, symbol_keys: true)
+      def parse(payload)
+        data = Oj.load(payload, symbol_keys: true)
         return if data[:ref].nil?
 
         matches = data[:ref].match(%r{^refs/([^/]+)/(.+)$})
@@ -24,7 +24,9 @@ module V2
 
         result = {
           account: full_name[0],
-          repository: full_name[1]
+          repository: full_name[1],
+          commit_url: data[:head_commit][:url],
+          author: data[:head_commit][:author][:username]
         }
         result[:branch] = matches[2]
         result

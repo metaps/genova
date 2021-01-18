@@ -110,7 +110,7 @@ module Genova
           end
 
           def wait(service, task_definition_arn)
-            raise Exceptions::ServiceNotFoundError, "'#{service}' service is not found." unless exist?(service)
+            raise Exceptions::NotFoundError, "'#{service}' service is not found." unless exist?(service)
 
             wait_time = 0
 

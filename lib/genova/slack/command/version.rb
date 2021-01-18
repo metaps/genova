@@ -2,14 +2,9 @@ module Genova
   module Slack
     module Command
       class Version
-        VERSION = <<~DOC.freeze
-          ```
-          #{Genova::VERSION::LONG_STRING}
-          ```
-        DOC
-
-        def self.call(client, _statements, _user)
-          client.post_simple_message(text: VERSION)
+        def self.call(_statements, _user, _parent_message_ts)
+          client = Genova::Slack::Interactive::Bot.new
+          client.send_message(Genova::VERSION::LONG_STRING)
         end
       end
     end

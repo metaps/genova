@@ -5,14 +5,13 @@ module API
     logger.formatter = GrapeLogging::Formatters::Default.new
     use GrapeLogging::Middleware::RequestLogger, logger: logger
 
-    logger Logger.new(STDOUT)
+    logger Logger.new(STDOUT, level: Settings.logger.level)
 
     rescue_from :all do |e|
       logger.fatal(e.message)
       logger.fatal(e.full_message)
 
-      bot = Genova::Slack::Bot.new
-      bot.post_error(error: e)
+      Genova::Slack::Interactive::Bot.new.error(error: e)
 
       error! e, 500
     end

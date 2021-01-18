@@ -8,7 +8,13 @@ module V2
           repository: {
             full_name: 'account/repository'
           },
-          ref: 'refs/heads/master'
+          ref: 'refs/heads/master',
+          head_commit: {
+            url: 'url',
+            author: {
+              username: 'username'
+            }
+          }
         }
         Oj.dump(post_data)
       end

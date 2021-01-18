@@ -20,18 +20,9 @@ module V2
       # /api/v2/slack/post
       post :post do
         error! 'Signature do not match.', 403 unless verify_signature?
-        result = Genova::Slack::RequestHandler.handle_request(payload_to_json)
 
-        {
-          response_type: 'in_channel',
-          attachments: [
-            {
-              color: Settings.slack.message.color.confirm,
-              text: result[:text],
-              fields: result[:fields]
-            }
-          ]
-        }
+        id = Genova::Sidekiq::JobStore.create(payload_to_hash)
+        Slack::InteractionWorker.perform_async(id)
       end
 
       post :event do
@@ -41,16 +32,21 @@ module V2
         end
 
         if params[:event].present?
-          text = params[:event][:blocks][0][:elements][0][:elements].find { |k, _v| k[:type] == 'text' }[:text].strip.delete("\u00A0")
-          id = Genova::Sidekiq::Queue.add(
-            text: text,
-            user: params[:event][:user]
-          )
+          element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
+          statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
 
-          Slack::CommandWorker.perform_async(id)
+          id = Genova::Sidekiq::JobStore.create(
+            statement: statement,
+            user: params[:event][:user],
+            parent_message_ts: params[:event][:ts]
+          )
+          Slack::CommandReceiveWorker.perform_async(id)
         end
 
         params[:challenge]
+      rescue => e
+        header 'X-Slack-No-Retry', '1'
+        raise e
       end
     end
   end

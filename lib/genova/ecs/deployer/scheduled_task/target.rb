@@ -9,9 +9,10 @@ module Genova
             def build_hash(cluster, name, options = {})
               ecs = Aws::ECS::Client.new
               clusters = ecs.describe_clusters(clusters: [cluster]).clusters
-              raise Exceptions::ClusterNotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
+              raise Exceptions::NotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
 
               container_overrides = []
+
               if options[:container_overrides].present?
                 options[:container_overrides].each do |container_override|
                   override_environment = container_override[:environment] || []
@@ -25,7 +26,9 @@ module Genova
                 role_arn: options[:cloudwatch_event_iam_role_arn],
                 ecs_parameters: {
                   task_definition_arn: options[:task_definition_arn],
-                  task_count: options[:desired_count].present? ? options[:desired_count] : 1
+                  task_count: options[:desired_count].present? ? options[:desired_count] : 1,
+                  launch_type: options[:launch_type],
+                  network_configuration: options[:network_configuration]
                 },
                 input: {
                   taskRoleArn: options[:task_role_arn],

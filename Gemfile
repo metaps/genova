@@ -5,12 +5,17 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-gem 'aws-sdk', '~> 3.0.1'
+gem 'aws-sdk-cloudwatchevents'
+gem 'aws-sdk-core'
+gem 'aws-sdk-ecr'
+gem 'aws-sdk-ecs'
+gem 'aws-sdk-iam'
+gem 'aws-sdk-kms'
 gem 'bootsnap', require: false
 gem 'config', '~> 2.2.1'
 gem 'docker-api'
 gem 'enumerize'
-gem 'git'
+gem 'git', '~> 1.8.1'
 gem 'grape', '~> 1.4.0'
 gem 'grape_logging'
 gem 'hash_validator'

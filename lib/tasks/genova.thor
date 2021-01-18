@@ -1,6 +1,5 @@
 module GenovaCli
   class Deploy < Thor
-    class_option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account name'
     class_option :branch, aliases: :b, desc: 'Branch to deploy.'
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
     class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Show confirmation message before deploying.'
@@ -14,7 +13,7 @@ module GenovaCli
         return if options[:repository].nil? || options[:target].nil?
 
         code_manager = ::Genova::CodeManager::Git.new(
-          options[:account],
+          ENV.fetch('GITHUB_ACCOUNT'),
           options[:repository],
           branch: options[:branch],
           tag: options[:tag]
@@ -31,7 +30,7 @@ module GenovaCli
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual).to_sym,
           type: options[:type],
-          account: options[:account],
+          account: ENV.fetch('GITHUB_ACCOUNT'),
           branch: options[:branch],
           tag: options[:tag],
           cluster: options[:cluster],
@@ -126,17 +125,16 @@ module GenovaCli
   class Debug < Thor
     desc 'slack-greeting', 'Slack bot says Hello'
     def slack_greeting
-      ::Genova::Slack::Bot.new.post_simple_message(text: 'Hello')
+      Genova::Slack::Interactive::Bot.new.send_message('Hello')
     end
 
     desc 'emulate-github-push', 'Emulate GitHub push'
-    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
     option :repository, required: true, aliases: :r, desc: 'Source repository.'
     option :branch, aliases: :b, desc: 'Source branch.'
     def emulate_github_push
       post_data = {
         repository: {
-          full_name: "#{options[:account]}/#{options[:repository]}"
+          full_name: "#{ENV.fetch('GITHUB_ACCOUNT')}/#{options[:repository]}"
         },
         ref: "refs/heads/#{options[:branch]}"
       }
@@ -150,15 +148,6 @@ module GenovaCli
 
       puts 'Sent deploy notification to Slack.'
       puts result
-    end
-
-    desc 'git-pull', 'Retrieve latest source'
-    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account'
-    option :repository, required: true, aliases: :r, desc: 'Source repository.'
-    option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Source branch.'
-    def git_pull
-      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], branch: options[:branch])
-      puts "Commit ID: #{code_manager.pull}"
     end
   end
 
@@ -180,12 +169,11 @@ module GenovaCli
     end
 
     desc 'register-task', 'Register task definition.'
-    option :account, default: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account), desc: 'GitHub account name'
     option :branch, default: Settings.github.default_branch, aliases: :b, desc: 'Branch name.'
     option :path, required: true, desc: 'Task path.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def register_task
-      code_manager = ::Genova::CodeManager::Git.new(options[:account], options[:repository], branch: options[:branch])
+      code_manager = ::Genova::CodeManager::Git.new(ENV.fetch('GITHUB_ACCOUNT'), options[:repository], branch: options[:branch])
       code_manager.pull
 
       path = code_manager.task_definition_config_path(options[:path])

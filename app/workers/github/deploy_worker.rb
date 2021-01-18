@@ -1,15 +1,13 @@
 module Github
-  class DeployWorker
-    include Sidekiq::Worker
-
+  class DeployWorker < BaseWorker
     sidekiq_options queue: :github_deploy, retry: false
 
     def perform(id)
       logger.info('Started Github::DeployDeployTargetWorker')
 
-      job = Genova::Sidekiq::Queue.find(id)
+      values = Genova::Sidekiq::JobStore.find(id)
 
-      deploy_target = deploy_target(job[:account], job[:repository], job[:branch])
+      deploy_target = deploy_target(values[:account], values[:repository], values[:branch])
       return if deploy_target.nil?
 
       deploy_job = DeployJob.create(
@@ -17,24 +15,23 @@ module Github
         type: DeployJob.type.find_value(:service),
         status: DeployJob.status.find_value(:in_progress),
         mode: DeployJob.mode.find_value(:auto),
-        account: job[:account],
-        repository: job[:repository],
-        branch: job[:branch],
+        account: values[:account],
+        repository: values[:repository],
+        branch: values[:branch],
         cluster: deploy_target[:cluster],
         service: deploy_target[:service]
       )
 
-      bot = Genova::Slack::Bot.new
-      bot.post_detect_auto_deploy(deploy_job)
-      bot.post_started_deploy(deploy_job, jid)
+      bot = Genova::Slack::Interactive::Bot.new
+      bot.detect_github_event(deploy_job: deploy_job, commit_url: values[:commit_url], author: values[:author])
 
-      client = Genova::Client.new(
-        deploy_job,
-        lock_timeout: Settings.github.deploy_lock_timeout
-      )
+      client = Genova::Client.new(deploy_job)
       client.run
 
-      bot.post_finished_deploy(deploy_job)
+      bot.finished_deploy(deploy_job)
+    rescue => e
+      slack_notify(e, jid)
+      raise e
     end
 
     private

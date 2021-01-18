@@ -3,37 +3,37 @@ module Genova
     module Command
       class Help
         HELP = <<~DOC.freeze
-          *Service deploy*
-          ```
-          # Run intractive mode.
-          deploy[:service]
-
-          # Run statement mode.
-          deploy[:service] repository={repository} [branch={branch}] cluster={cluster} service={service}
-
-          # Specify target and run statement mode.
-          deploy[:service] repository={repository} [branch={branch}] target={target}
-          ```
-
           *Execute run task*
           ```
-          # Run statement mode.
-          deploy:run-task reposisoty={repository} [branch={branch}] cluster={cluster} run-task=<run task>
+          # Statement mode.
+          deploy:run-task reposisoty={repository} [branch={branch}] cluster={cluster} run-task={run task}
 
-          # Specify target and run statement mode.
+          # Statement mode with specify target.
           deploy:run-task repository={repository} [branch={branch}] target={target}
+          ```
+
+          *Service deploy*
+          ```
+          # Intractive mode.
+          deploy[:service]
+
+          # Statement mode.
+          deploy[:service] repository={repository} [branch={branch}] cluster={cluster} service={service}
+
+          # Statement mode with specify target.
+          deploy[:service] repository={repository} [branch={branch}] target={target}
           ```
 
           *Scheduled task deploy*
           ```
-          # Run statement mode.
+          # Statement mode.
           deploy:scheduled-task repository={repository} [branch={branch}] cluster={cluster} scheduled-task-rule={scheduled task rule} scheduled-task-target={scheduled task target}
 
-          # Specify target and run statement mode.
+          # Statement mode with specify target.
           deploy:scheduled-task repository={repository} [branch={branch}] target={target}
           ```
 
-          *Util*
+          *Utility*
           ```
           # Get helpful message.
           help
@@ -41,7 +41,7 @@ module Genova
           # Show deployment histories.
           history
 
-          # Run previous deployment again.
+          # Execute previous deployment again.
           redeploy
 
           # Show version.
@@ -49,8 +49,9 @@ module Genova
           ```
         DOC
 
-        def self.call(client, _statements, _user)
-          client.post_simple_message(text: HELP)
+        def self.call(_statements, _user, _parent_message_ts)
+          client = Genova::Slack::Interactive::Bot.new
+          client.send_message(HELP)
         end
       end
     end

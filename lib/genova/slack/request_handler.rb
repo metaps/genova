@@ -2,279 +2,145 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        def handle_request(payload_body)
-          return if payload_body.blank?
+        def handle_request(params)
+          @params = params
+          @session_store = Genova::Slack::SessionStore.new(@params[:container][:thread_ts])
 
-          @payload_body = payload_body
-          @logger = ::Logger.new(STDOUT)
-          @bot = Genova::Slack::Bot.new
-          @callback = Genova::Slack::CallbackIdManager.find(@payload_body[:callback_id])
+          action = @params.dig(:actions, 0)
 
-          raise Exceptions::RoutingError, "No route. [#{@callback[:action]}]" unless RequestHandler.respond_to?(@callback[:action], true)
+          raise Genova::Exceptions::RoutingError, "`#{ation[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
-          send(@callback[:action])
+          result = {
+            update_original: true,
+            blocks: [BlockKit::Helper.section(send(action[:action_id]))],
+            thread_ts: @params[:container][:thread_ts]
+          }
+
+          RestClient.post(@params[:response_url], result.to_json, content_type: :json)
         end
 
         private
 
-        def choose_deploy_branch
-          selected_value = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
-          selected_base_path = nil
-          selected_repository = nil
+        def cancel
+          'Deployment was canceled.'
+        end
 
-          Settings.github.repositories.each do |repository|
-            next unless [repository[:name], repository[:alias]].include?(selected_value)
+        def approve_repository
+          value = @params.dig(:actions, 0, :selected_option, :value)
+          params = {
+            account: ENV.fetch('GITHUB_ACCOUNT')
+          }
 
-            selected_base_path = repository[:base_path]
-            selected_repository = repository[:name]
+          Settings.github.repositories.each.find do |k|
+            next unless k[:name] == value || k[:alias].present? && k[:alias] == value
+
+            params[:base_path] = k[:base_path]
+            params[:repository] = k[:name]
 
             break
           end
 
-          if selected_repository.present?
-            result = {
-              fields: [
-                {
-                  title: 'Repository',
-                  value: selected_repository
-                }
-              ]
-            }
+          raise Genova::Exceptions::UnexpectedError, "#{value} repository does not exist." if params[:repository].nil?
 
-            @logger.info('Invoke Github::RetrieveBranchWorker')
+          @session_store.add(params)
 
-            params = {
-              account: ENV.fetch('GITHUB_ACCOUNT', Settings.github.account),
-              repository: selected_repository,
-              response_url: @payload_body[:response_url],
-              base_path: selected_base_path
-            }
+          jid = ::Github::RetrieveBranchWorker.perform_async(@params[:container][:thread_ts])
 
-            id = Genova::Sidekiq::Queue.add(params)
+          @session_store.add(retrieve_branch_jid: jid)
+          ::Github::RetrieveBranchWatchWorker.perform_async(@params[:container][:thread_ts])
 
-            jid = ::Github::RetrieveBranchWorker.perform_async(id)
-            ::Github::RetrieveBranchWatchWorker.perform_async(jid)
-          else
-            result = cancel_message
-          end
-
-          result
+          BlockKit::Helper.section_field('Repository', params[:repository])
         end
 
-        def choose_deploy_cluster
-          submit_value = @payload_body.dig(:actions, 0, :value)
+        def approve_branch
+          value = @params.dig(:actions, 0, :selected_option, :value)
 
-          if submit_value == 'approve' || submit_value.nil?
-            selected_branch = @payload_body.dig(:actions, 0, :selected_options, 0, :value) || Settings.github.default_branch
-            result = {
-              fields: [
-                {
-                  title: 'Branch',
-                  value: selected_branch
-                }
-              ]
-            }
+          @session_store.add(branch: value)
+          ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
-            params = {
-              account: @callback[:account],
-              repository: @callback[:repository],
-              branch: selected_branch,
-              base_path: @callback[:base_path]
-            }
-
-            id = Genova::Sidekiq::Queue.add(params)
-            ::Slack::DeployClusterWorker.perform_async(id)
-          else
-            result = cancel_message
-          end
-
-          result
+          BlockKit::Helper.section_field('Branch', value)
         end
 
-        def choose_deploy_target
-          submit_value = @payload_body.dig(:actions, 0, :value)
+        def approve_tag
+          value = @params.dig(:actions, 0, :selected_option, :value)
 
-          if submit_value == 'approve' || submit_value.nil?
-            selected_cluster = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
+          @session_store.add(tag: value)
+          ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
-            selected_cluster = @payload_body.dig(:original_message, :attachments, 0, :actions, 0, :selected_options, 0, :value) if selected_cluster.nil?
-
-            result = {
-              fields: [
-                {
-                  title: 'Cluster',
-                  value: selected_cluster
-                }
-              ]
-            }
-
-            params = {
-              account: @callback[:account],
-              repository: @callback[:repository],
-              branch: @callback[:branch],
-              cluster: selected_cluster,
-              base_path: @callback[:base_path]
-            }
-
-            id = Genova::Sidekiq::Queue.add(params)
-            ::Slack::DeployTargetWorker.perform_async(id)
-          else
-            result = cancel_message
-          end
-
-          result
+          BlockKit::Helper.section_field('Tag', value)
         end
 
-        def confirm_deploy
-          submit_value = @payload_body.dig(:actions, 0, :value)
+        def approve_cluster
+          value = @params.dig(:actions, 0, :selected_option, :value)
 
-          if submit_value == 'approve' || submit_value.nil?
-            selected_target = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
+          @session_store.add(cluster: value)
+          ::Slack::DeployTargetWorker.perform_async(@params[:container][:thread_ts])
 
-            selected_target = @payload_body.dig(:original_message, :attachments, 0, :actions, 0, :selected_options, 0, :value) if selected_target.nil?
-
-            result = {
-              fields: [
-                {
-                  title: 'Target',
-                  value: selected_target
-                }
-              ]
-            }
-
-            split = selected_target.split(':')
-            type = split[0].to_sym
-
-            params = {
-              account: @callback[:account],
-              repository: @callback[:repository],
-              branch: @callback[:branch],
-              cluster: @callback[:cluster],
-              base_path: @callback[:base_path],
-              type: DeployJob.type.find_value(type)
-            }
-
-            case type
-            when :run_task
-              params[:run_task] = split[1]
-            when :service
-              params[:service] = split[1]
-            when :scheduled_task
-              params[:scheduled_task_rule] = split[1]
-              params[:scheduled_task_target] = split[2]
-            end
-
-            id = Genova::Sidekiq::Queue.add(params)
-            ::Slack::DeployConfirmWorker.perform_async(id)
-          else
-            result = cancel_message
-          end
-
-          result
+          BlockKit::Helper.section_field('Cluster', value)
         end
 
-        def confirm_deploy_from_history
-          selected_history = @payload_body.dig(:actions, 0, :selected_options, 0, :value)
-          slack_user_id = @payload_body[:user][:id]
+        def approve_target
+          value = @params.dig(:actions, 0, :selected_option, :value)
+          targets = value.split(':')
+          type = targets[0].to_sym
 
-          if selected_history.present?
-            params = Genova::Slack::History.new(slack_user_id).find(selected_history)
-
-            result = {
-              fields: [
-                {
-                  title: 'Repository',
-                  value: "#{params[:account]}/#{params[:repository]}"
-                },
-                {
-                  title: 'Branch',
-                  value: params[:branch]
-                },
-                {
-                  title: 'Cluster',
-                  value: params[:cluster]
-                }
-              ]
-            }
-
-            case params[:type]
-            when DeployJob.type.find_value(:run_task)
-              result[:fields] << {
-                title: 'Run task',
-                value: params[:run_task]
-              }
-            when DeployJob.type.find_value(:service)
-              result[:fields] << {
-                title: 'Service',
-                value: params[:service]
-              }
-            when DeployJob.type.find_value(:scheduled_task)
-              result[:fields] << {
-                title: 'Scheduled task rule',
-                value: params[:scheduled_task_rule]
-              }
-              result[:fields] << {
-                title: 'Scheduled task target',
-                value: params[:scheduled_task_target]
-              }
-            end
-
-            id = Genova::Sidekiq::Queue.add(params)
-            ::Slack::DeployHistoryWorker.perform_async(id)
-
-          else
-            result = cancel_message
-          end
-
-          result
-        end
-
-        def execute_deploy
-          selected_button = @payload_body.dig(:actions, 0, :value)
-
-          if selected_button == 'approve'
-            result = {
-              fields: [
-                {
-                  title: 'Confirm deployment',
-                  value: selected_button
-                }
-              ]
-            }
-
-            @logger.info('Invoke Slack::DeployWorker')
-            @bot.post_deploy_queue
-
-            id = DeployJob.generate_id
-
-            DeployJob.create(id: id,
-                             type: @callback[:type],
-                             status: DeployJob.status.find_value(:in_progress),
-                             mode: DeployJob.mode.find_value(:slack),
-                             slack_user_id: @payload_body[:user][:id],
-                             slack_user_name: @payload_body[:user][:name],
-                             account: @callback[:account],
-                             repository: @callback[:repository],
-                             branch: @callback[:branch],
-                             cluster: @callback[:cluster],
-                             base_path: @callback[:base_path],
-                             run_task: @callback[:run_task],
-                             service: @callback[:service],
-                             scheduled_task_rule: @callback[:scheduled_task_rule],
-                             scheduled_task_target: @callback[:scheduled_task_target])
-
-            ::Slack::DeployWorker.perform_async(id)
-          else
-            result = cancel_message
-          end
-
-          result
-        end
-
-        def cancel_message
-          {
-            text: 'Deployment has been canceled.'
+          params = {
+            type: type
           }
+
+          case type
+          when :run_task
+            params[:run_task] = targets[1]
+          when :service
+            params[:service] = targets[1]
+          when :scheduled_task
+            params[:scheduled_task_rule] = targets[1]
+            params[:scheduled_task_target] = targets[2]
+          end
+
+          @session_store.add(params)
+          ::Slack::DeployConfirmWorker.perform_async(@params[:container][:thread_ts])
+
+          BlockKit::Helper.section_field('Target', value)
+        end
+
+        def approve_deploy_from_history
+          value = @params.dig(:actions, 0, :selected_option, :value)
+
+          params = Genova::Slack::Interactive::History.new(@params[:user][:id]).find!(value)
+
+          @session_store.add(params)
+          ::Slack::DeployHistoryWorker.perform_async(@params[:container][:thread_ts])
+
+          'Checking history...'
+        end
+
+        def approve_deploy
+          params = @session_store.params
+          params[:deploy_job_id] = DeployJob.generate_id
+
+          @session_store.add(params)
+
+          DeployJob.create(id: params[:deploy_job_id],
+                           type: params[:type],
+                           status: DeployJob.status.find_value(:in_progress),
+                           mode: DeployJob.mode.find_value(:slack),
+                           slack_user_id: @params[:user][:id],
+                           slack_user_name: @params[:user][:name],
+                           account: params[:account],
+                           repository: params[:repository],
+                           branch: params[:branch],
+                           tag: params[:tag],
+                           cluster: params[:cluster],
+                           base_path: params[:base_path],
+                           run_task: params[:run_task],
+                           service: params[:service],
+                           scheduled_task_rule: params[:scheduled_task_rule],
+                           scheduled_task_target: params[:scheduled_task_target])
+
+          ::Slack::DeployWorker.perform_async(@params[:container][:thread_ts])
+
+          'Deployment started.'
         end
       end
     end

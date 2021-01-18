@@ -2,15 +2,12 @@ module Genova
   module Slack
     module Command
       class History
-        def self.call(client, _statements, user)
-          options = Genova::Slack::Util.history_options(user)
+        def self.call(_statements, user, parent_message_ts)
+          session_store = Genova::Slack::SessionStore.new(parent_message_ts)
+          session_store.start
 
-          if options.present?
-            client.post_choose_history(options: options)
-          else
-            e = Exceptions::NotFoundError.new('History does not exist.')
-            client.post_error(error: e, slack_user_id: user)
-          end
+          client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
+          client.ask_history(user: user)
         end
       end
     end
