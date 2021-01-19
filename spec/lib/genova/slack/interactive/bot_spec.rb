@@ -5,47 +5,67 @@ module Genova
     module Interactive
       describe Bot do
         let(:bot) { Genova::Slack::Interactive::Bot.new }
-        let(:slack_web_client_mock) { double(::Slack::Web::Client) }
+        let(:client_mock) { double(::Slack::Web::Client) }
 
         before do
-          Redis.current.flushdb
+          allow(::Slack::Web::Client).to receive(:new).and_return(client_mock)
+          allow(client_mock).to receive(:chat_postMessage)
+        end
 
-          allow(::Slack::Web::Client).to receive(:new).and_return(slack_web_client_mock)
-          allow(slack_web_client_mock).to receive(:chat_postMessage)
+        describe 'send_message' do
+          it 'should be not error' do
+            expect { bot.send_message('message') }.not_to raise_error
+          end
         end
 
         describe 'ask_history' do
+          let(:array_mock) { double(Array) }
+
           it 'should be not error' do
-            expect { bot.ask_history({}) }.to raise_error(Genova::Exceptions::NotFoundError)
+            allow(array_mock).to receive(:size).and_return(1)
+            allow(BlockKit::ElementObject).to receive(:history_options).and_return(array_mock)
+
+            expect { bot.ask_history({}) }.not_to raise_error
           end
         end
 
         describe 'ask_repository' do
           it 'should be not error' do
-            expect { bot.ask_repository }.not_to raise_error(Genova::Exceptions::NotFoundError)
+            expect { bot.ask_repository({}) }.not_to raise_error
+          end
+        end
+
+        describe 'ask_branch' do
+          let(:array_mock) { double(Array) }
+
+          it 'should be not error' do
+            allow(array_mock).to receive(:size).and_return(1)
+            allow(BlockKit::ElementObject).to receive(:branch_options)
+            allow(BlockKit::ElementObject).to receive(:tag_options).and_return(array_mock)
+
+
+            expect { bot.ask_branch({}) }.not_to raise_error
           end
         end
 
         describe 'ask_cluster' do
-          include_context 'load code_manager_mock'
+          let(:array_mock) { double(Array) }
 
           it 'should be not error' do
-            expect { bot.ask_cluster({}) }.not_to raise_error(Genova::Exceptions::NotFoundError)
+            allow(array_mock).to receive(:size).and_return(1)
+            allow(BlockKit::ElementObject).to receive(:cluster_options).and_return(array_mock)
+
+            expect { bot.ask_cluster({}) }.not_to raise_error
           end
         end
 
         describe 'ask_target' do
+          let(:array_mock) { double(Array) }
+
           it 'should be not error' do
-            allow(Genova::Slack::BlockKit::ElementObject).to receive(:target_options).and_return(
-              [
-                options: [
-                  {
-                    text: 'text',
-                    value: 'value'
-                  }
-                ]
-              ]
-            )
+            allow(array_mock).to receive(:size).and_return(1)
+            allow(BlockKit::ElementObject).to receive(:target_options).and_return(array_mock)
+
             expect { bot.ask_target({}) }.not_to raise_error
           end
         end
@@ -76,6 +96,58 @@ module Genova
             allow(ecs_client_mock).to receive(:describe_task_definition).and_return(describe_task_definition_response_mock)
 
             expect { bot.ask_confirm_deploy(params, true) }.not_to raise_error
+          end
+        end
+
+        describe 'detect_github_event' do
+          let(:deploy_job_mock) { double(DeployJob) }
+
+          it 'should be not error' do
+            allow(deploy_job_mock).to receive(:repository)
+            allow(deploy_job_mock).to receive(:account)
+            allow(deploy_job_mock).to receive(:branch)
+            allow(deploy_job_mock).to receive(:cluster)
+            allow(deploy_job_mock).to receive(:service)
+
+            expect { bot.detect_github_event(deploy_job: deploy_job_mock) }.not_to raise_error
+          end
+        end
+
+        describe 'detect_slack_deploy' do
+          let(:deploy_job_mock) { double(DeployJob) }
+
+          it 'should be not error' do
+            allow(deploy_job_mock).to receive(:id)
+            allow(deploy_job_mock).to receive(:repository)
+            allow(deploy_job_mock).to receive(:account)
+            allow(deploy_job_mock).to receive(:branch)
+            allow(deploy_job_mock).to receive(:tag)
+            allow(deploy_job_mock).to receive(:cluster)
+            allow(deploy_job_mock).to receive(:service)
+            allow(deploy_job_mock).to receive(:scheduled_task_rule)
+
+            expect { bot.detect_slack_deploy(deploy_job: deploy_job_mock) }.not_to raise_error
+          end
+        end
+
+        describe 'finished_deploy' do
+          let(:deploy_job_mock) { double(DeployJob) }
+
+          it 'should be not error' do
+            allow(deploy_job_mock).to receive(:mode)
+            allow(deploy_job_mock).to receive(:tag)
+            allow(deploy_job_mock).to receive(:account)
+            allow(deploy_job_mock).to receive(:repository)
+            allow(deploy_job_mock).to receive(:slack_user_id)
+            allow(deploy_job_mock).to receive(:task_definition_arns).and_return([])
+
+            expect { bot.finished_deploy(deploy_job: deploy_job_mock) }.not_to raise_error
+          end
+        end
+
+        describe 'error' do
+          it 'should be not error' do
+            expect { bot.error(error: Genova::Exceptions::Error.new) }.not_to raise_error
           end
         end
       end

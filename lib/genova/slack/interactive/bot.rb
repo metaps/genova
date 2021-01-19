@@ -113,31 +113,31 @@ module Genova
                ])
         end
 
-        def detect_slack_deploy(deploy_job)
-          github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
+        def detect_slack_deploy(params)
+          github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
           repository_uri = github_client.build_repository_uri
-          branch_uri = github_client.build_branch_uri(deploy_job.branch)
+          branch_uri = github_client.build_branch_uri(params[:deploy_job].branch)
 
           fields = []
-          fields << BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>")
+          fields << BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{params[:deploy_job].account}/#{params[:deploy_job].repository}>")
 
-          fields << if deploy_job.branch.present?
-                      BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
+          fields << if params[:deploy_job].branch.present?
+                      BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{params[:deploy_job].branch}>")
                     else
-                      BlockKit::Helper.section_short_field('Tag', deploy_job.tag)
+                      BlockKit::Helper.section_short_field('Tag', params[:deploy_job].tag)
                     end
 
-          fields << BlockKit::Helper.section_short_field('Cluster', deploy_job.cluster)
+          fields << BlockKit::Helper.section_short_field('Cluster', params[:deploy_job].cluster)
 
-          if deploy_job.service.present?
-            fields << BlockKit::Helper.section_short_field('Service', deploy_job.service)
-          elsif deploy_job.scheduled_task_rule.present?
-            fields << BlockKit::Helper.section_short_field('Scheduled task rule', deploy_job.scheduled_task_rule)
-            fields << BlockKit::Helper.section_short_field('Scheduled task target', deploy_job.scheduled_task_target)
+          if params[:deploy_job].service.present?
+            fields << BlockKit::Helper.section_short_field('Service', params[:deploy_job].service)
+          elsif params[:deploy_job].scheduled_task_rule.present?
+            fields << BlockKit::Helper.section_short_field('Scheduled task rule', params[:deploy_job].scheduled_task_rule)
+            fields << BlockKit::Helper.section_short_field('Scheduled task target', params[:deploy_job].scheduled_task_target)
           end
 
           console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/home" \
-                        "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
+                        "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{params[:deploy_job].cluster}/services/#{params[:deploy_job].service}/tasks"
 
           send([
                  BlockKit::Helper.header('Start deploy job.'),
@@ -146,24 +146,24 @@ module Genova
                  BlockKit::Helper.section_short_fieldset(
                    [
                      BlockKit::Helper.section_short_field('AWS Console', console_uri),
-                     BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job.id}")
+                     BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{params[:deploy_job].id}")
                    ]
                  )
                ])
         end
 
-        def finished_deploy(deploy_job)
+        def finished_deploy(params)
           fields = []
 
-          task_difinition_arn = BlockKit::Helper.escape_emoji(deploy_job.task_definition_arns.join("\n"))
+          task_difinition_arn = BlockKit::Helper.escape_emoji(params[:deploy_job].task_definition_arns.join("\n"))
           fields << BlockKit::Helper.section_field('New task definition ARN', task_difinition_arn)
 
-          if deploy_job.tag.present?
-            github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
-            fields << BlockKit::Helper.section_field('Tag', "<#{github_client.build_tag_uri(deploy_job.tag)}|#{deploy_job.tag}>")
+          if params[:deploy_job].tag.present?
+            github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
+            fields << BlockKit::Helper.section_field('Tag', "<#{github_client.build_tag_uri(params[:deploy_job].tag)}|#{params[:deploy_job].tag}>")
           end
 
-          to = deploy_job.mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{deploy_job.slack_user_id}"
+          to = params[:deploy_job].mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{params[:deploy_job].slack_user_id}"
           send([
                  BlockKit::Helper.header('Deployment is complete.'),
                  BlockKit::Helper.section("<#{to}>"),
