@@ -21,10 +21,10 @@ module Genova
             options
           end
 
-          def history_options(user)
+          def history_options(params)
             options = []
 
-            histories = Genova::Slack::Interactive::History.new(user).list
+            histories = Genova::Slack::Interactive::History.new(params[:user]).list
             histories.each do |history|
               data = Oj.load(history)
               time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').in_time_zone(Settings.timezone).strftime('%m/%d %H:%M')
@@ -45,8 +45,8 @@ module Genova
             options
           end
 
-          def branch_options(account, repository)
-            code_manager = Genova::CodeManager::Git.new(account, repository)
+          def branch_options(params)
+            code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository])
             options = []
             size = 0
 
@@ -66,8 +66,8 @@ module Genova
             options
           end
 
-          def tag_options(account, repository)
-            code_manager = Genova::CodeManager::Git.new(account, repository)
+          def tag_options(params)
+            code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository])
             options = []
             size = 0
 
@@ -87,14 +87,14 @@ module Genova
             options
           end
 
-          def cluster_options(account, repository, branch, tag, base_path)
+          def cluster_options(params)
             options = []
             code_manager = Genova::CodeManager::Git.new(
-              account,
-              repository,
-              branch: branch,
-              tag: tag,
-              base_path: base_path
+              params[:account],
+              params[:repository],
+              branch: params[:branch],
+              tag: params[:tag],
+              base_path: params[:base_path]
             )
 
             deploy_config = code_manager.load_deploy_config
@@ -111,79 +111,99 @@ module Genova
             options
           end
 
-          def target_options(account, repository, branch, tag, cluster, base_path)
+          def target_options(params)
             target_options = []
-            run_tasks = []
-            services = []
-            scheduled_tasks = []
-
-            code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch, tag: tag, base_path: base_path)
-            cluster_config = code_manager.load_deploy_config.cluster(cluster)
+            code_manager = Genova::CodeManager::Git.new(
+              params[:account],
+              params[:repository],
+              branch: params[:branch],
+              tag: params[:tag],
+              base_path: params[:base_path]
+            )
+            cluster_config = code_manager.load_deploy_config.cluster(params[:cluster])
 
             if cluster_config[:run_tasks].present?
-              cluster_config[:run_tasks].each_key do |run_task|
-                run_tasks.push(
-                  text: {
-                    type: 'plain_text',
-                    text: run_task
-                  },
-                  value: "run_task:#{run_task}"
-                )
-              end
-
               target_options << {
                 label: {
                   type: 'plain_text',
                   text: 'Run task'
                 },
-                options: run_tasks
+                options: parse_run_tasks(cluster_config[:run_tasks])
               }
             end
 
             if cluster_config[:services].present?
-              cluster_config[:services].each_key do |service|
-                services.push(
-                  text: {
-                    type: 'plain_text',
-                    text: service
-                  },
-                  value: "service:#{service}"
-                )
-              end
-
               target_options << {
                 label: {
                   type: 'plain_text',
                   text: 'Service'
                 },
-                options: services
+                options: parse_services(cluster_config[:services])
               }
             end
 
             if cluster_config[:scheduled_tasks].present?
-              cluster_config[:scheduled_tasks].each do |rule|
-                targets = rule[:targets] || {}
-                targets.each do |target|
-                  scheduled_tasks.push(
-                    text: {
-                      type: 'plain_text',
-                      text: "#{rule[:rule]}:#{target[:name]}"
-                    },
-                    value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
-                  )
-                end
-              end
-
               target_options << {
                 label: {
                   type: 'plain_text',
                   text: 'Scheduled task'
                 },
-                options: scheduled_tasks
+                options: parse_scheduled_tasks(cluster_config[:scheduled_tasks])
               }
             end
 
             target_options
+          end
+
+          def parse_run_tasks(run_tasks)
+            options = []
+
+            run_tasks.each_key do |run_task|
+              options.push(
+                text: {
+                  type: 'plain_text',
+                  text: run_task
+                },
+                value: "run_task:#{run_task}"
+              )
+            end
+
+            options
+          end
+
+          def parse_services(services)
+            options = []
+
+            services.each_key do |service|
+              options.push(
+                text: {
+                  type: 'plain_text',
+                  text: service
+                },
+                value: "service:#{service}"
+              )
+            end
+
+            options
+          end
+
+          def parse_scheduled_tasks(scheduled_tasks)
+            options = []
+
+            scheduled_tasks.each do |rule|
+              targets = rule[:targets] || {}
+              targets.each do |target|
+                options.push(
+                  text: {
+                    type: 'plain_text',
+                    text: "#{rule[:rule]}:#{target[:name]}"
+                  },
+                  value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
+                )
+              end
+            end
+
+            options
           end
         end
       end

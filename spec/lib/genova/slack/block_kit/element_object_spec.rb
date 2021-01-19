@@ -29,7 +29,7 @@ module Genova
             )])
             allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
 
-            results = Genova::Slack::BlockKit::ElementObject.history_options('user')
+            results = Genova::Slack::BlockKit::ElementObject.history_options(user: 'user')
             expect(results.count).to eq(1)
           end
         end
@@ -41,7 +41,7 @@ module Genova
             allow(code_manager_mock).to receive(:origin_branches).and_return(['branch'])
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
-            results = Genova::Slack::BlockKit::ElementObject.branch_options('account', 'repository')
+            results = Genova::Slack::BlockKit::ElementObject.branch_options(account: 'account', repository: 'repository')
             expect(results.count).to eq(1)
           end
         end
@@ -53,7 +53,7 @@ module Genova
             allow(code_manager_mock).to receive(:origin_tags).and_return(['tag'])
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
-            results = Genova::Slack::BlockKit::ElementObject.tag_options('account', 'repository')
+            results = Genova::Slack::BlockKit::ElementObject.tag_options(account: 'account', repository: 'repository')
             expect(results.count).to eq(1)
           end
         end
@@ -71,7 +71,13 @@ module Genova
             )
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
-            results = Genova::Slack::BlockKit::ElementObject.cluster_options('account', 'repository', 'branch', 'tag', 'base_path')
+            results = Genova::Slack::BlockKit::ElementObject.cluster_options(
+              acount: 'account',
+              repository: 'repository',
+              branch: 'branch',
+              tag: 'tag',
+              base_path: 'base_path'
+            )
 
             expect(results.count).to eq(1)
           end
@@ -103,7 +109,14 @@ module Genova
             allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
-            results = Genova::Slack::BlockKit::ElementObject.target_options('account', 'repository', 'branch', 'tag', 'cluster', 'base_path')
+            results = Genova::Slack::BlockKit::ElementObject.target_options(
+              account: 'account',
+              repository: 'repository',
+              branch: 'branch',
+              tag: 'tag',
+              cluster: 'cluster',
+              base_path: 'base_path'
+            )
             expect(results.count).to eq(3)
           end
         end

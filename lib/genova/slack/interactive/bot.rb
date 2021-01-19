@@ -13,7 +13,7 @@ module Genova
         end
 
         def ask_history(params)
-          options = BlockKit::ElementObject.history_options(params[:user])
+          options = BlockKit::ElementObject.history_options(user: params[:user])
           raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
 
           send([
@@ -40,8 +40,8 @@ module Genova
         end
 
         def ask_branch(params)
-          branch_options = BlockKit::ElementObject.branch_options(params[:account], params[:repository])
-          tag_options = BlockKit::ElementObject.tag_options(params[:account], params[:repository])
+          branch_options = BlockKit::ElementObject.branch_options(account: params[:account], repository: params[:repository])
+          tag_options = BlockKit::ElementObject.tag_options(account: params[:account], repository: params[:repository])
 
           elements = []
           elements << BlockKit::Helper.static_select('approve_branch', branch_options, 'Pick branch...')
@@ -55,13 +55,7 @@ module Genova
         end
 
         def ask_cluster(params)
-          options = BlockKit::ElementObject.cluster_options(
-            params[:account],
-            params[:repository],
-            params[:branch],
-            params[:tag],
-            params[:base_path]
-          )
+          options = BlockKit::ElementObject.cluster_options(params)
           raise Genova::Exceptions::NotFoundError, 'Clusters is undefined.' if options.size.zero?
 
           send([
@@ -74,14 +68,7 @@ module Genova
         end
 
         def ask_target(params)
-          option_groups = BlockKit::ElementObject.target_options(
-            params[:account],
-            params[:repository],
-            params[:branch],
-            params[:tag],
-            params[:cluster],
-            params[:base_path]
-          )
+          option_groups = BlockKit::ElementObject.target_options(params)
           raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if option_groups.size.zero?
 
           send([
