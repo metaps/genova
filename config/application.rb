@@ -33,11 +33,11 @@ module Genova
     config.eager_load_paths << Rails.root.join('lib')
     config.time_zone = Settings.timezone
     config.after_initialize do
-      Mongoid.logger = ::Logger.new(STDERR).tap do |logger|
+      Mongoid.logger = ::Logger.new($stderr).tap do |logger|
         logger.level = ::Logger::WARN
       end
 
-      Mongo::Logger.logger = ::Logger.new(STDERR).tap do |logger|
+      Mongo::Logger.logger = ::Logger.new($stderr).tap do |logger|
         logger.level = ::Logger::WARN
       end
     end

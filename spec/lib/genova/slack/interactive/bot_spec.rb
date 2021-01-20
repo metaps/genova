@@ -43,7 +43,6 @@ module Genova
             allow(BlockKit::ElementObject).to receive(:branch_options)
             allow(BlockKit::ElementObject).to receive(:tag_options).and_return(array_mock)
 
-
             expect { bot.ask_branch({}) }.not_to raise_error
           end
         end

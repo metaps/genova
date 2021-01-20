@@ -9,6 +9,7 @@ module Genova
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
       @logger.level = @options[:verbose] ? :debug : Settings.logger.level
+      @logger.info('Initiaized deploy client.')
 
       @mutex = Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
