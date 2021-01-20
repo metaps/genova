@@ -23,7 +23,7 @@ When you request deployment, starts deployment as follows.
 6. Request ECS task update
 7. ECS switches to new task
 
-<img src="https://user-images.githubusercontent.com/1632478/105183902-1617f400-5b72-11eb-9c31-97c829cb8052.png" width="50%">
+<img src="https://user-images.githubusercontent.com/1632478/105207836-5c2d8180-5b8b-11eb-8fc9-4c41f47e80c6.png" width="50%">
 
 ## Features
 
