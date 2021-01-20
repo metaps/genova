@@ -105,7 +105,7 @@ module Genova
           end
 
           def escape_emoji(string)
-            string.gsub(/:([\w]+):/, ":\u00AD\\1\u00AD:")
+            string.gsub(/:(\w+):/, ":\u00AD\\1\u00AD:")
           end
         end
       end

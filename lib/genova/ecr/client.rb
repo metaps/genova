@@ -12,7 +12,7 @@ module Genova
 
       def initialize(params = {})
         @ecr = Aws::ECR::Client.new
-        @logger = params[:logger] || ::Logger.new(STDOUT, level: Settings.logger.level)
+        @logger = params[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @base_path = Client.base_path
 
         ::Docker.options[:read_timeout] = Settings.aws.service.ecr.read_timeout

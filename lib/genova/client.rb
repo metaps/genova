@@ -7,11 +7,7 @@ module Genova
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
       raise Exceptions::ValidationError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
 
-      mongo_logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
-
-      @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
-      @logger.extend(ActiveSupport::Logger.broadcast(mongo_logger))
-
+      @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
       @logger.level = @options[:verbose] ? :debug : Settings.logger.level
       @logger.info('Initiaized deploy client.')
 

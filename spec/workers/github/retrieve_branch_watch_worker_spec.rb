@@ -18,7 +18,7 @@ module Github
         allow(workers_mock).to receive(:each).and_yield(
           'process_id',
           'thread_id',
-          'payload' =>  { 'jid': jid }
+          'payload' => { 'jid': jid }
         )
         allow(Sidekiq::Workers).to receive(:new).and_return(workers_mock)
 

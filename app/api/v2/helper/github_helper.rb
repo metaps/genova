@@ -6,8 +6,8 @@ module V2
       def verify_signature?(payload)
         return false unless request.env['HTTP_X_HUB_SIGNATURE']
 
-        sha1 = OpenSSL::Digest.new('sha1')
-        signature = 'sha1=' + OpenSSL::HMAC.hexdigest(sha1, ENV.fetch('GITHUB_SECRET_KEY'), payload)
+        digest = OpenSSL::Digest.new('sha1')
+        signature = "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), payload)}"
         payload.present? && Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
       end
 

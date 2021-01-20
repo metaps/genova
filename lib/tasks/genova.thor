@@ -140,8 +140,8 @@ module GenovaCli
       }
 
       payload_body = Oj.dump(post_data)
-      sha1 = OpenSSL::Digest.new('sha1')
-      signature = 'sha1=' + OpenSSL::HMAC.hexdigest(sha1, ENV.fetch('GITHUB_SECRET_KEY'), payload_body)
+      digest = OpenSSL::Digest.new('sha1')
+      signature = "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), payload_body)}"
 
       headers = { x_hub_signature: signature }
       result = RestClient.post('http://rails:3000/api/v1/github/push', payload_body, headers)
@@ -184,7 +184,7 @@ module GenovaCli
 
     desc 'version', 'Show version'
     def version
-      puts "genova #{Genova::VERSION::LONG_STRING}"
+      puts "genova #{Genova::Version::LONG_STRING}"
     end
   end
 end

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe API do
+describe Api do
   describe 'helpers' do
     describe 'logger' do
     end
