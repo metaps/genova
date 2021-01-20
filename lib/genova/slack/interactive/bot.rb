@@ -83,14 +83,15 @@ module Genova
         def ask_confirm_deploy(params, show_target, mention: false)
           confirm_command(params, mention) if show_target
 
-          send([
-                 BlockKit::Helper.section('Ready to deploy!'),
-                 BlockKit::Helper.section_short_fieldset([git_compare(params)]),
-                 BlockKit::Helper.actions([
-                                            BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
-                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                          ])
-               ])
+          blocks = []
+          blocks << BlockKit::Helper.section('Ready to deploy!')
+          blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:run_task].present?
+          blocks << BlockKit::Helper.actions([
+                                               BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
+                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                             ])
+
+          send(blocks)
         end
 
         def detect_github_event(params)
@@ -231,9 +232,29 @@ module Genova
         end
 
         def git_compare(params)
-          if params[:run_task].present?
-            text = 'Run task diff is not yet supported.'
+          ecs_client = Aws::ECS::Client.new
+
+          if params[:service].present?
+            services = ecs_client.describe_services(cluster: params[:cluster], services: [params[:service]]).services
+            raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
+
+            task_definition_arn = services[0].task_definition
           else
+            cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
+            rules = cloudwatch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
+            raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
+
+            targets = cloudwatch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
+            target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
+            raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
+
+            task_definition_arn = target.ecs_parameters.task_definition_arn
+          end
+
+          task_definition = ecs_client.describe_task_definition(task_definition: task_definition_arn, include: ['TAGS'])
+          build = task_definition[:tags].find { |v| v[:key] == 'genova.build' }
+
+          if build.present?
             code_manager = Genova::CodeManager::Git.new(
               params[:account],
               params[:repository],
@@ -242,41 +263,16 @@ module Genova
             )
 
             last_commit = code_manager.origin_last_commit
-            ecs_client = Aws::ECS::Client.new
+            deployed_commit = code_manager.find_commit(build[:value])
 
-            if params[:service].present?
-              services = ecs_client.describe_services(cluster: params[:cluster], services: [params[:service]]).services
-              raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
-
-              task_definition_arn = services[0].task_definition
+            if last_commit == deployed_commit
+              text = 'Unchanged.'
             else
-              cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
-              rules = cloudwatch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
-              raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
-
-              targets = cloudwatch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
-              target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
-              raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
-
-              task_definition_arn = target.ecs_parameters.task_definition_arn
+              github_client = Genova::Github::Client.new(params[:account], params[:repository])
+              text = github_client.build_compare_uri(deployed_commit, last_commit)
             end
-
-            task_definition = ecs_client.describe_task_definition(task_definition: task_definition_arn, include: ['TAGS'])
-
-            build = task_definition[:tags].find { |v| v[:key] == 'genova.build' }
-
-            if build.present?
-              deployed_commit = code_manager.find_commit(build[:value])
-
-              if last_commit == deployed_commit
-                text = 'Unchanged.'
-              else
-                github_client = Genova::Github::Client.new(params[:account], params[:repository])
-                text = github_client.build_compare_uri(deployed_commit, last_commit)
-              end
-            else
-              text = 'Unknown'
-            end
+          else
+            text = 'Unknown'
           end
 
           BlockKit::Helper.section_short_field('Git compare', text)

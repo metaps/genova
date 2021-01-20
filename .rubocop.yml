@@ -10,7 +10,7 @@ AllCops:
 AsciiComments:
   Enabled: false
 CyclomaticComplexity:
-  Max: 7
+  Max: 8
 Metrics/AbcSize:
   Max: 64
 Metrics/BlockLength:
