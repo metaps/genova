@@ -28,9 +28,9 @@ module Github
       client = Genova::Client.new(deploy_job)
       client.run
 
-      bot.finished_deploy(deploy_job)
+      bot.finished_deploy(deploy_job: deploy_job)
     rescue => e
-      slack_notify(e, jid)
+      slack_notify(e)
       raise e
     end
 

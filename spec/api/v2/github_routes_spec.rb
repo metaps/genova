@@ -23,8 +23,8 @@ module V2
       end
 
       context 'when valid signature' do
-        sha1 = OpenSSL::Digest.new('sha1')
-        let(:signature) { 'sha1=' + OpenSSL::HMAC.hexdigest(sha1, ENV.fetch('GITHUB_SECRET_KEY'), payload_body) }
+        digest = OpenSSL::Digest.new('sha1')
+        let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), payload_body)}" }
 
         it 'should be return success' do
           allow(Github::DeployWorker).to receive(:perform_async)

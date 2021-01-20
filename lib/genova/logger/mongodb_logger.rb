@@ -3,7 +3,7 @@ module Genova
     class MongodbLogger < ::Logger
       def initialize(id)
         @deploy_job = DeployJob.find(id)
-        super(STDOUT)
+        super($stdout)
       end
 
       def format_message(severity, datetime, progname, message)

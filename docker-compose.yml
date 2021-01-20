@@ -15,6 +15,7 @@ services:
     env_file: .env
     volumes:
       - .:/app:cached
+      - /app/tmp/cache
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
       - node_modules:/app/frontend/node_modules:ro
@@ -32,6 +33,7 @@ services:
     env_file: .env
     volumes:
       - .:/app:cached
+      - /app/tmp/cache
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     depends_on:
@@ -45,6 +47,7 @@ services:
     env_file: .env
     volumes:
       - .:/app:cached
+      - /app/tmp/cache
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     depends_on:
@@ -58,6 +61,7 @@ services:
     env_file: .env
     volumes:
       - .:/app:cached
+      - /app/tmp/cache
       - /var/run/docker.sock:/var/run/docker.sock
       - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     restart: ${DOCKER_RESTART}

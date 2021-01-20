@@ -5,7 +5,7 @@ module Genova
     class Executor
       def initialize(options = {})
         @work_dir = options[:work_dir]
-        @logger = options[:logger] || ::Logger.new(STDOUT, level: Settings.logger.level)
+        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
       end
 
       def command(command, chdir = nil)

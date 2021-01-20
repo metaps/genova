@@ -11,7 +11,7 @@ module Github
       start_time = Time.new.utc.to_i
       workers = Sidekiq::Workers.new
 
-      jid =  Genova::Slack::SessionStore.new(id).params[:retrieve_branch_jid]
+      jid = Genova::Slack::SessionStore.new(id).params[:retrieve_branch_jid]
 
       loop do
         sleep(WAIT_INTERVAL)
@@ -31,7 +31,7 @@ module Github
         break
       end
     rescue => e
-      slack_notify(e, jid, id)
+      slack_notify(e, id)
       raise e
     end
   end

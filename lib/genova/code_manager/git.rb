@@ -40,7 +40,7 @@ module Genova
         @account = account
         @branch = options[:branch]
         @tag = options[:tag]
-        @logger = options[:logger] || ::Logger.new(STDOUT, level: Settings.logger.level)
+        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @repository = repository
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
         @base_path = options[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(options[:base_path]).to_s
@@ -73,7 +73,7 @@ module Genova
         path = Pathname(@base_path).join('config/deploy.yml')
         raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
-        params = YAML.load(File.read(path)).deep_symbolize_keys
+        params = YAML.safe_load(File.read(path), [], [], true).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
       end
 
@@ -85,7 +85,7 @@ module Genova
         path = task_definition_config_path(path)
         raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
-        params = YAML.load(File.read(path)).deep_symbolize_keys
+        params = YAML.safe_load(File.read(path), [], [], true).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
       end
 

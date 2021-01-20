@@ -4,7 +4,7 @@ module Genova
       def initialize(cluster, code_manager, options = {})
         @cluster = cluster
         @code_manager = code_manager
-        @logger = options[:logger] || ::Logger.new(STDOUT, level: Settings.logger.level)
+        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @task_definitions = {}
 
         @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
@@ -33,7 +33,7 @@ module Genova
 
         build(run_task_config[:containers], run_task_config[:path], id)
 
-        task_definition_path = @code_manager.task_definition_config_path('config/' + run_task_config[:path])
+        task_definition_path = @code_manager.task_definition_config_path("config/#{run_task_config[:path]}")
         task_definition = create_task(task_definition_path, id)
 
         options = {
@@ -56,7 +56,7 @@ module Genova
 
         build(service_config[:containers], service_config[:path], id)
 
-        service_task_definition_path = @code_manager.task_definition_config_path('config/' + service_config[:path])
+        service_task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
         service_task_definition = create_task(service_task_definition_path, id)
 
         service_client = Deployer::Service::Client.new(@cluster, @logger)

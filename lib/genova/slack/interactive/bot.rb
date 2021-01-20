@@ -5,7 +5,7 @@ module Genova
         def initialize(params = {})
           @client = ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
           @parent_message_ts = params[:parent_message_ts]
-          @logger = ::Logger.new(STDOUT, level: Settings.logger.level)
+          @logger = ::Logger.new($stdout, level: Settings.logger.level)
         end
 
         def send_message(text)
@@ -13,7 +13,7 @@ module Genova
         end
 
         def ask_history(params)
-          options = BlockKit::ElementObject.history_options(params[:user])
+          options = BlockKit::ElementObject.history_options(user: params[:user])
           raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
 
           send([
@@ -40,8 +40,8 @@ module Genova
         end
 
         def ask_branch(params)
-          branch_options = BlockKit::ElementObject.branch_options(params[:account], params[:repository])
-          tag_options = BlockKit::ElementObject.tag_options(params[:account], params[:repository])
+          branch_options = BlockKit::ElementObject.branch_options(account: params[:account], repository: params[:repository])
+          tag_options = BlockKit::ElementObject.tag_options(account: params[:account], repository: params[:repository])
 
           elements = []
           elements << BlockKit::Helper.static_select('approve_branch', branch_options, 'Pick branch...')
@@ -55,13 +55,7 @@ module Genova
         end
 
         def ask_cluster(params)
-          options = BlockKit::ElementObject.cluster_options(
-            params[:account],
-            params[:repository],
-            params[:branch],
-            params[:tag],
-            params[:base_path]
-          )
+          options = BlockKit::ElementObject.cluster_options(params)
           raise Genova::Exceptions::NotFoundError, 'Clusters is undefined.' if options.size.zero?
 
           send([
@@ -74,14 +68,7 @@ module Genova
         end
 
         def ask_target(params)
-          option_groups = BlockKit::ElementObject.target_options(
-            params[:account],
-            params[:repository],
-            params[:branch],
-            params[:tag],
-            params[:cluster],
-            params[:base_path]
-          )
+          option_groups = BlockKit::ElementObject.target_options(params)
           raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if option_groups.size.zero?
 
           send([
@@ -93,17 +80,18 @@ module Genova
                ])
         end
 
-        def ask_confirm_deploy(params, show_target, mention = false)
+        def ask_confirm_deploy(params, show_target, mention: false)
           confirm_command(params, mention) if show_target
 
-          send([
-                 BlockKit::Helper.section('Ready to deploy!'),
-                 BlockKit::Helper.section_short_fieldset([git_compare(params)]),
-                 BlockKit::Helper.actions([
-                                            BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
-                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                          ])
-               ])
+          blocks = []
+          blocks << BlockKit::Helper.section('Ready to deploy!')
+          blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:run_task].present?
+          blocks << BlockKit::Helper.actions([
+                                               BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
+                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                             ])
+
+          send(blocks)
         end
 
         def detect_github_event(params)
@@ -126,31 +114,31 @@ module Genova
                ])
         end
 
-        def detect_slack_deploy(deploy_job)
-          github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
+        def detect_slack_deploy(params)
+          github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
           repository_uri = github_client.build_repository_uri
-          branch_uri = github_client.build_branch_uri(deploy_job.branch)
+          branch_uri = github_client.build_branch_uri(params[:deploy_job].branch)
 
           fields = []
-          fields << BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{deploy_job.account}/#{deploy_job.repository}>")
+          fields << BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{params[:deploy_job].account}/#{params[:deploy_job].repository}>")
 
-          fields << if deploy_job.branch.present?
-                      BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{deploy_job.branch}>")
+          fields << if params[:deploy_job].branch.present?
+                      BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{params[:deploy_job].branch}>")
                     else
-                      BlockKit::Helper.section_short_field('Tag', deploy_job.tag)
+                      BlockKit::Helper.section_short_field('Tag', params[:deploy_job].tag)
                     end
 
-          fields << BlockKit::Helper.section_short_field('Cluster', deploy_job.cluster)
+          fields << BlockKit::Helper.section_short_field('Cluster', params[:deploy_job].cluster)
 
-          if deploy_job.service.present?
-            fields << BlockKit::Helper.section_short_field('Service', deploy_job.service)
-          elsif deploy_job.scheduled_task_rule.present?
-            fields << BlockKit::Helper.section_short_field('Scheduled task rule', deploy_job.scheduled_task_rule)
-            fields << BlockKit::Helper.section_short_field('Scheduled task target', deploy_job.scheduled_task_target)
+          if params[:deploy_job].service.present?
+            fields << BlockKit::Helper.section_short_field('Service', params[:deploy_job].service)
+          elsif params[:deploy_job].scheduled_task_rule.present?
+            fields << BlockKit::Helper.section_short_field('Scheduled task rule', params[:deploy_job].scheduled_task_rule)
+            fields << BlockKit::Helper.section_short_field('Scheduled task target', params[:deploy_job].scheduled_task_target)
           end
 
           console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/home" \
-                        "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{deploy_job.cluster}/services/#{deploy_job.service}/tasks"
+                        "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{params[:deploy_job].cluster}/services/#{params[:deploy_job].service}/tasks"
 
           send([
                  BlockKit::Helper.header('Start deploy job.'),
@@ -159,24 +147,24 @@ module Genova
                  BlockKit::Helper.section_short_fieldset(
                    [
                      BlockKit::Helper.section_short_field('AWS Console', console_uri),
-                     BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{deploy_job.id}")
+                     BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{params[:deploy_job].id}")
                    ]
                  )
                ])
         end
 
-        def finished_deploy(deploy_job)
+        def finished_deploy(params)
           fields = []
 
-          task_difinition_arn = BlockKit::Helper.escape_emoji(deploy_job.task_definition_arns.join("\n"))
+          task_difinition_arn = BlockKit::Helper.escape_emoji(params[:deploy_job].task_definition_arns.join("\n"))
           fields << BlockKit::Helper.section_field('New task definition ARN', task_difinition_arn)
 
-          if deploy_job.tag.present?
-            github_client = Genova::Github::Client.new(deploy_job.account, deploy_job.repository)
-            fields << BlockKit::Helper.section_field('Tag', "<#{github_client.build_tag_uri(deploy_job.tag)}|#{deploy_job.tag}>")
+          if params[:deploy_job].tag.present?
+            github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
+            fields << BlockKit::Helper.section_field('Tag', "<#{github_client.build_tag_uri(params[:deploy_job].tag)}|#{params[:deploy_job].tag}>")
           end
 
-          to = deploy_job.mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{deploy_job.slack_user_id}"
+          to = params[:deploy_job].mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{params[:deploy_job].slack_user_id}"
           send([
                  BlockKit::Helper.header('Deployment is complete.'),
                  BlockKit::Helper.section("<#{to}>"),
@@ -187,7 +175,7 @@ module Genova
         def error(params)
           fields = []
           fields << BlockKit::Helper.section_field('Error', BlockKit::Helper.escape_emoji(params[:error].class.to_s))
-          fields << BlockKit::Helper.section_field('Reason', BlockKit::Helper.escape_emoji(params[:error].message))
+          fields << BlockKit::Helper.section_field('Reason', "```#{BlockKit::Helper.escape_emoji(params[:error].message)}```")
           fields << BlockKit::Helper.section_field('Backtrace', "```#{params[:error].backtrace.join("\n").truncate(512)}```") if params[:error].backtrace.present?
 
           send([
@@ -244,9 +232,29 @@ module Genova
         end
 
         def git_compare(params)
-          if params[:run_task].present?
-            text = 'Run task diff is not yet supported.'
+          ecs_client = Aws::ECS::Client.new
+
+          if params[:service].present?
+            services = ecs_client.describe_services(cluster: params[:cluster], services: [params[:service]]).services
+            raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
+
+            task_definition_arn = services[0].task_definition
           else
+            cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
+            rules = cloudwatch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
+            raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
+
+            targets = cloudwatch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
+            target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
+            raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
+
+            task_definition_arn = target.ecs_parameters.task_definition_arn
+          end
+
+          task_definition = ecs_client.describe_task_definition(task_definition: task_definition_arn, include: ['TAGS'])
+          build = task_definition[:tags].find { |v| v[:key] == 'genova.build' }
+
+          if build.present?
             code_manager = Genova::CodeManager::Git.new(
               params[:account],
               params[:repository],
@@ -255,41 +263,16 @@ module Genova
             )
 
             last_commit = code_manager.origin_last_commit
-            ecs_client = Aws::ECS::Client.new
+            deployed_commit = code_manager.find_commit(build[:value])
 
-            if params[:service].present?
-              services = ecs_client.describe_services(cluster: params[:cluster], services: [params[:service]]).services
-              raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
-
-              task_definition_arn = services[0].task_definition
+            if last_commit == deployed_commit
+              text = 'Unchanged.'
             else
-              cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
-              rules = cloudwatch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
-              raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
-
-              targets = cloudwatch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
-              target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
-              raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
-
-              task_definition_arn = target.ecs_parameters.task_definition_arn
+              github_client = Genova::Github::Client.new(params[:account], params[:repository])
+              text = github_client.build_compare_uri(deployed_commit, last_commit)
             end
-
-            task_definition = ecs_client.describe_task_definition(task_definition: task_definition_arn, include: ['TAGS'])
-
-            build = task_definition[:tags].find { |v| v[:key] == 'genova.build' }
-
-            if build.present?
-              deployed_commit = code_manager.find_commit(build[:value])
-
-              if last_commit == deployed_commit
-                text = 'Unchanged.'
-              else
-                github_client = Genova::Github::Client.new(params[:account], params[:repository])
-                text = github_client.build_compare_uri(deployed_commit, last_commit)
-              end
-            else
-              text = 'Unknown'
-            end
+          else
+            text = 'Unknown'
           end
 
           BlockKit::Helper.section_short_field('Git compare', text)

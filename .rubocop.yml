@@ -9,16 +9,8 @@ AllCops:
 
 AsciiComments:
   Enabled: false
-AlignParameters:
-  Enabled: false
 CyclomaticComplexity:
-  Max: 7
-GlobalVars:
-  Enabled: false
-Layout/ExtraSpacing:
-  Enabled: false
-Layout/SpaceAroundOperators:
-  Enabled: false
+  Max: 8
 Metrics/AbcSize:
   Max: 64
 Metrics/BlockLength:
@@ -32,10 +24,9 @@ Metrics/MethodLength:
   Max: 64
 Metrics/ModuleLength:
   Enabled: false
-Metrics/PerceivedComplexity:
-  Max: 8
-Security/YAMLLoad:
-  Enabled: false
+Naming/VariableNumber:
+  EnforcedStyle: snake_case
+  CheckSymbols: false
 Style/RescueStandardError:
   Enabled: false
 Style/BlockComments:
@@ -43,8 +34,4 @@ Style/BlockComments:
 Style/Documentation:
   Enabled: false
 Style/FrozenStringLiteralComment:
-  Enabled: false
-Style/NumericLiterals:
-  Enabled: false
-Style/SymbolProc:
   Enabled: false

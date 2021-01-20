@@ -9,9 +9,9 @@ module Slack
       Genova::Slack::RequestHandler.handle_request(values)
     rescue => e
       if values.present?
-        slack_notify(e, jid, values[:container][:thread_ts])
+        slack_notify(e, values[:container][:thread_ts])
       else
-        slack_notify(e, jid)
+        slack_notify(e)
       end
 
       raise e
