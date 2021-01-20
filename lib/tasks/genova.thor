@@ -184,7 +184,8 @@ module GenovaCli
 
     desc 'version', 'Show version'
     def version
-      puts "genova #{Genova::VERSION::LONG_STRING}"
+      puts Genova::Slack::BlockKit::ElementObject::branch_options('metaps', 'reshine-legacy')
+      # puts "genova #{Genova::VERSION::LONG_STRING}"
     end
   end
 end
