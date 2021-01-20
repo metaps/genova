@@ -19,7 +19,7 @@ module Slack
 
       bot.finished_deploy(deploy_job: deploy_job)
     rescue => e
-      slack_notify(e, jid, id)
+      slack_notify(e, id)
       raise e
     end
   end

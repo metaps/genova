@@ -30,7 +30,7 @@ module Github
 
       bot.finished_deploy(deploy_job: deploy_job)
     rescue => e
-      slack_notify(e, jid)
+      slack_notify(e)
       raise e
     end
 

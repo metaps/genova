@@ -17,6 +17,8 @@ jobs:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       RAILS_ENV: test
+      SLACK_HOST: slack
+      SLACK_PORT: 9292
       MONGO_DB: test_slackbot
       MONGO_DB_TEST: test_slackbot
       MONGO_HOST: localhost

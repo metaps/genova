@@ -31,7 +31,7 @@ module Github
         break
       end
     rescue => e
-      slack_notify(e, jid, id)
+      slack_notify(e, id)
       raise e
     end
   end
