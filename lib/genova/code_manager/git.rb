@@ -20,7 +20,7 @@ module Git
       arr = []
       count = 0
 
-      command_lines('tag', ['--sort=-authordate']).each do |t|
+      command_lines('tag', ['--sort=-v:refname']).each do |t|
         arr << t
         count += 1
 
@@ -91,9 +91,11 @@ module Genova
 
       def origin_branches
         git = client
+        git.fetch
+
         branches = []
 
-        git.branches.remote.each do |branch|
+        git.branches.each do |branch|
           next if branch.name.include?('->')
 
           branches << branch.name
@@ -103,9 +105,12 @@ module Genova
       end
 
       def origin_tags
+        git = client
+        git.fetch
+
         tags = []
 
-        client.tags.each do |tag|
+        git.tags.each do |tag|
           tags << tag.name
         end
 
