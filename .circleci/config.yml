@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.6.1
+      - image: circleci/ruby:2.7.2
     working_directory: ~/genova
     environment:
       AWS_ACCESS_KEY: ""

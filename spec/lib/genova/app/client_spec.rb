@@ -65,7 +65,7 @@ module Genova
           allow(branch_mock_2).to receive(:name).and_return('->')
 
           branches_mock = double(::Git::Branches)
-          allow(branches_mock).to receive(:remote).and_return([branch_mock_1, branch_mock_2])
+          allow(branches_mock).to receive(:local).and_return([branch_mock_1, branch_mock_2])
 
           allow(git_mock).to receive(:fetch)
           allow(git_mock).to receive(:branches).and_return(branches_mock)

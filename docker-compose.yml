@@ -26,6 +26,7 @@ services:
       - mongo
       - redis
     restart: ${DOCKER_RESTART}
+    command: "sleep 30000"
   slack:
     build:
       context: .
