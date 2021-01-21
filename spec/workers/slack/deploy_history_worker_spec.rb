@@ -3,17 +3,18 @@ require 'rails_helper'
 module Slack
   describe DeployHistoryWorker do
     describe 'perform' do
+      let(:parent_message_ts) { Time.now.utc.to_f }
       let(:session_store_mock) { double(Genova::Slack::SessionStore) }
       let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       before do
-        allow(Genova::Slack::SessionStore).to receive(:new).and_return(session_store_mock)
+        allow(Genova::Slack::SessionStore).to receive(:load).and_return(session_store_mock)
         allow(session_store_mock).to receive(:params)
 
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
         allow(bot_mock).to receive(:ask_confirm_deploy)
 
-        subject.perform('id')
+        subject.perform(parent_message_ts)
       end
 
       it 'should be in queeue' do

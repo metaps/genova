@@ -13,7 +13,7 @@ module Github
         stub_const('Github::RetrieveBranchWatchWorker::NOTIFY_THRESHOLD', 1)
 
         allow(session_store_mock).to receive(:params).and_return(retrieve_branch_jid: 'retrieve_branch_jid')
-        allow(Genova::Slack::SessionStore).to receive(:new).and_return(session_store_mock)
+        allow(Genova::Slack::SessionStore).to receive(:load).and_return(session_store_mock)
 
         allow(workers_mock).to receive(:each).and_yield(
           'process_id',

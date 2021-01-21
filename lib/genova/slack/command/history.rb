@@ -3,8 +3,7 @@ module Genova
     module Command
       class History
         def self.call(_statements, user, parent_message_ts)
-          session_store = Genova::Slack::SessionStore.new(parent_message_ts)
-          session_store.start
+          Genova::Slack::SessionStore.start!(parent_message_ts, user)
 
           client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
           client.ask_history(user: user)

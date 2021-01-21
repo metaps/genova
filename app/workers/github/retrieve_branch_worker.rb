@@ -5,7 +5,7 @@ module Github
     def perform(id)
       logger.info('Started Github::RetrieveBranchWorker')
 
-      session_store = Genova::Slack::SessionStore.new(id)
+      session_store = Genova::Slack::SessionStore.load(id)
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.ask_branch(session_store.params)
