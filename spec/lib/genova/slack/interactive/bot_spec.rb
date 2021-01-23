@@ -94,7 +94,7 @@ module Genova
                                                                                                  }])
             allow(ecs_client_mock).to receive(:describe_task_definition).and_return(describe_task_definition_response_mock)
 
-            expect { bot.ask_confirm_deploy(params, true) }.not_to raise_error
+            expect { bot.ask_confirm_deploy(params, show_target: true) }.not_to raise_error
           end
         end
 

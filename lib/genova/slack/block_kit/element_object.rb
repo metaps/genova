@@ -93,8 +93,7 @@ module Genova
               params[:account],
               params[:repository],
               branch: params[:branch],
-              tag: params[:tag],
-              base_path: params[:base_path]
+              tag: params[:tag]
             )
 
             deploy_config = code_manager.load_deploy_config
@@ -117,8 +116,7 @@ module Genova
               params[:account],
               params[:repository],
               branch: params[:branch],
-              tag: params[:tag],
-              base_path: params[:base_path]
+              tag: params[:tag]
             )
             cluster_config = code_manager.load_deploy_config.cluster(params[:cluster])
 

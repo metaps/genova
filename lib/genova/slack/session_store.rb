@@ -9,7 +9,7 @@ module Genova
 
       def self.start!(parent_message_ts, user)
         instance = new(build_id(parent_message_ts))
-        instance.save({ user: user }, false)
+        instance.save({ user: user }, merge: false)
         instance
       end
 
@@ -20,7 +20,7 @@ module Genova
         new(id)
       end
 
-      def save(values, merge = true)
+      def save(values, merge: true)
         values = params.merge(values) if merge
 
         Redis.current.multi do

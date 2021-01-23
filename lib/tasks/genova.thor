@@ -30,11 +30,11 @@ module GenovaCli
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual).to_sym,
           type: options[:type],
+          alias: options[:alias],
           account: ENV.fetch('GITHUB_ACCOUNT'),
           branch: options[:branch],
           tag: options[:tag],
           cluster: options[:cluster],
-          base_path: repository_settings[:base_path],
           service: options[:service],
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],

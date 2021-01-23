@@ -19,7 +19,6 @@ module Genova
             client.ask_repository(user: user)
           else
             result = send("parse_#{type}", statements[:params])
-
             params = {
               type: type,
               account: result[:account],
@@ -33,7 +32,9 @@ module Genova
             }
 
             session_store.save(params)
-            client.ask_confirm_deploy(params, false)
+
+            params[:user] = user
+            client.ask_confirm_deploy(params, mention: true)
           end
         end
 

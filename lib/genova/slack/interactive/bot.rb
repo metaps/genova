@@ -80,7 +80,7 @@ module Genova
                ])
         end
 
-        def ask_confirm_deploy(params, show_target, mention: false)
+        def ask_confirm_deploy(params, show_target: true, mention: false)
           confirm_command(params, mention) if show_target
 
           blocks = []

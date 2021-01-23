@@ -9,23 +9,11 @@ module Genova
           history = Genova::Slack::Interactive::History.new(user).last
 
           if history.present?
-            session_store.save(history)
-            params = {
-              user: user,
-              type: history[:type],
-              account: history[:account],
-              repository: history[:repository],
-              branch: history[:branch],
-              tag: history[:tag],
-              cluster: history[:cluster],
-              base_path: history[:base_path],
-              run_task: history[:run_task],
-              service: history[:service],
-              scheduled_task_rule: history[:scheduled_task_rule],
-              scheduled_task_target: history[:scheduled_task_target]
-            }
+            params = history.clone
+            params[:user] = user
 
-            client.ask_confirm_deploy(params, true, true)
+            session_store.save(history)
+            client.ask_confirm_deploy(params, mention: true)
           else
             e = Exceptions::NotFoundError.new('History does not exist.')
             client.error(error: e, slack_user_id: user)

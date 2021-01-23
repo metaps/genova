@@ -10,12 +10,12 @@ module Genova
           value = Oj.dump(
             id: deploy_job.id,
             type: deploy_job.type.to_s,
+            alias: deploy_job.alias,
             account: deploy_job.account,
             repository: deploy_job.repository,
             branch: deploy_job.branch,
             tag: deploy_job.tag,
             cluster: deploy_job.cluster,
-            base_path: deploy_job.base_path,
             run_task: deploy_job.run_task,
             service: deploy_job.service,
             scheduled_task_rule: deploy_job.scheduled_task_rule,

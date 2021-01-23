@@ -4,7 +4,8 @@ module Genova
       class << self
         def handle_request(params)
           @params = params
-          @session_store = Genova::Slack::SessionStore.load(@params[:container][:thread_ts])
+          @thread_ts = @params[:container][:thread_ts]
+          @session_store = Genova::Slack::SessionStore.load(@thread_ts)
 
           action = @params.dig(:actions, 0)
 
@@ -13,7 +14,7 @@ module Genova
           result = {
             update_original: true,
             blocks: [BlockKit::Helper.section(send(action[:action_id]))],
-            thread_ts: @params[:container][:thread_ts]
+            thread_ts: @thread_ts
           }
 
           RestClient.post(@params[:response_url], result.to_json, content_type: :json)
@@ -34,19 +35,18 @@ module Genova
           Settings.github.repositories.each.find do |k|
             next unless k[:name] == value || k[:alias].present? && k[:alias] == value
 
-            params[:base_path] = k[:base_path]
             params[:repository] = k[:name]
-
+            params[:alias] = k[:alias]
             break
           end
 
           raise Genova::Exceptions::UnexpectedError, "#{value} repository does not exist." if params[:repository].nil?
 
           @session_store.save(params)
-          jid = ::Github::RetrieveBranchWorker.perform_async(@params[:container][:thread_ts])
+          jid = ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
           @session_store.save(retrieve_branch_jid: jid)
-          ::Github::RetrieveBranchWatchWorker.perform_async(@params[:container][:thread_ts])
+          ::Github::RetrieveBranchWatchWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Repository', params[:repository])
         end
@@ -55,7 +55,7 @@ module Genova
           value = @params.dig(:actions, 0, :selected_option, :value)
 
           @session_store.save(branch: value)
-          ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
+          ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Branch', value)
         end
@@ -64,7 +64,7 @@ module Genova
           value = @params.dig(:actions, 0, :selected_option, :value)
 
           @session_store.save(tag: value)
-          ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
+          ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Tag', value)
         end
@@ -73,7 +73,7 @@ module Genova
           value = @params.dig(:actions, 0, :selected_option, :value)
 
           @session_store.save(cluster: value)
-          ::Slack::DeployTargetWorker.perform_async(@params[:container][:thread_ts])
+          ::Slack::DeployTargetWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Cluster', value)
         end
@@ -98,7 +98,7 @@ module Genova
           end
 
           @session_store.save(params)
-          ::Slack::DeployConfirmWorker.perform_async(@params[:container][:thread_ts])
+          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Target', value)
         end
@@ -109,7 +109,7 @@ module Genova
           params = Genova::Slack::Interactive::History.new(@params[:user][:id]).find!(value)
 
           @session_store.save(params)
-          ::Slack::DeployHistoryWorker.perform_async(@params[:container][:thread_ts])
+          ::Slack::DeployHistoryWorker.perform_async(@thread_ts)
 
           'Checking history...'
         end
@@ -122,6 +122,7 @@ module Genova
 
           DeployJob.create(id: params[:deploy_job_id],
                            type: params[:type],
+                           alias: params[:alias],
                            status: DeployJob.status.find_value(:in_progress),
                            mode: DeployJob.mode.find_value(:slack),
                            slack_user_id: @params[:user][:id],
@@ -131,13 +132,12 @@ module Genova
                            branch: params[:branch],
                            tag: params[:tag],
                            cluster: params[:cluster],
-                           base_path: params[:base_path],
                            run_task: params[:run_task],
                            service: params[:service],
                            scheduled_task_rule: params[:scheduled_task_rule],
                            scheduled_task_target: params[:scheduled_task_target])
 
-          ::Slack::DeployWorker.perform_async(@params[:container][:thread_ts])
+          ::Slack::DeployWorker.perform_async(@thread_ts)
 
           'Deployment started.'
         end
