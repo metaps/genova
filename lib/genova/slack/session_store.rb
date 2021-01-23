@@ -20,7 +20,7 @@ module Genova
         new(id)
       end
 
-      def save(values, merge: true)
+      def save(values, merge = true)
         values = params.merge(values) if merge
 
         Redis.current.multi do
