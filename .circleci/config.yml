@@ -57,6 +57,8 @@ jobs:
           command: |
             wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
             echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+            sudo apt-get autoclean
+            sudo apt-get clean all
             sudo apt-get update
             sudo apt-get install -y mongodb-org
             sudo chmod 777 /var/lib/mongodb
