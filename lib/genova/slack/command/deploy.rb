@@ -4,7 +4,7 @@ module Genova
       class Deploy
         def self.call(statements, user, parent_message_ts)
           client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
-          Genova::Slack::SessionStore.start!(parent_message_ts, user)
+          session_store = Genova::Slack::SessionStore.start!(parent_message_ts, user)
 
           type = case statements[:sub_command]
                  when 'run-task'
@@ -18,21 +18,21 @@ module Genova
           if statements[:params].size.zero?
             client.ask_repository(user: user)
           else
-            results = send("parse_#{type}", statements[:params])
+            result = send("parse_#{type}", statements[:params])
 
             params = {
               type: type,
-              account: results[:account],
-              repository: results[:repository],
-              branch: results[:branch],
-              cluster: results[:cluster],
-              run_task: results[:run_task],
-              service: results[:service],
-              scheduled_task_rule: results[:scheduled_task_rule],
-              scheduled_task_target: results[:scheduled_task_target]
+              account: result[:account],
+              repository: result[:repository],
+              branch: result[:branch],
+              cluster: result[:cluster],
+              run_task: result[:run_task],
+              service: result[:service],
+              scheduled_task_rule: result[:scheduled_task_rule],
+              scheduled_task_target: result[:scheduled_task_target]
             }
 
-            params[:base_path] = Genova::Config::SettingsHelper.find_repository!(results[:repository])
+            session_store.save(params)
             client.ask_confirm_deploy(params, false)
           end
         end
@@ -77,24 +77,21 @@ module Genova
             parse(params, validations)
           end
 
-          def validate!(values, validations)
-            validator = HashValidator.validate(values, validations)
-            raise Genova::Exceptions::InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.values[0]}" unless validator.valid?
-          end
-
           def parse(params, validations)
             params[:account] = ENV.fetch('GITHUB_ACCOUNT')
             params[:branch] = Settings.github.default_branch if params[:branch].nil?
 
             if params.include?(:target)
               code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository], branch: params[:branch])
-              target = code_manager.load_deploy_config.target(params[:target])
+              target_config = code_manager.load_deploy_config.target(params[:target])
+              target_config.delete(:name)
 
-              params.merge!(target)
-              params.delete(params[:target])
+              params.merge!(target_config)
+              params.delete(:target)
             end
 
-            validate!(params, validations)
+            validator = HashValidator.validate(params, validations)
+            raise Genova::Exceptions::InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.params[0]}" unless validator.valid?
 
             params
           end

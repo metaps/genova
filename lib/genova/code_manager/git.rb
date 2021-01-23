@@ -43,7 +43,9 @@ module Genova
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @repository = repository
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
-        @base_path = options[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(options[:base_path]).to_s
+
+        repository_config = Genova::Config::SettingsHelper.find_repository(@repository)
+        @base_path = repository_config.nil? || repository_config[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(repository_config[:base_path]).to_s
       end
 
       def update
