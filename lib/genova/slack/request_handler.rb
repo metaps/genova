@@ -32,7 +32,8 @@ module Genova
             account: ENV.fetch('GITHUB_ACCOUNT')
           }
 
-          Settings.github.repositories.each.find do |k|
+          repositories = Settings.github.repositories || []
+          repositories.each.find do |k|
             next unless k[:name] == value || k[:alias].present? && k[:alias] == value
 
             params[:repository] = k[:name]
@@ -115,6 +116,12 @@ module Genova
         end
 
         def approve_deploy
+          permission = Permission.new(@params[:user][:name])
+
+          unless permission.check_deploy(params[:cluster])
+            raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@params[:user][:name]} does not have execute permission."
+          end
+
           params = @session_store.params
           params[:deploy_job_id] = DeployJob.generate_id
 

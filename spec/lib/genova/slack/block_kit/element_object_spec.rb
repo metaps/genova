@@ -10,9 +10,15 @@ module Genova
         end
 
         describe 'repository_options' do
-          it 'should be return repositories' do
-            results = Genova::Slack::BlockKit::ElementObject.repository_options
+          let(:array_mock) { double(Array) }
 
+          it 'should be return repositories' do
+            Settings.github.stub(:repositories)
+            puts Settings.github.repositories
+            exit
+            allow(Settings.github).to receive(:repositories).and_return([array_mock])
+
+            results = Genova::Slack::BlockKit::ElementObject.repository_options
             expect(results.count).to eq(1)
           end
         end

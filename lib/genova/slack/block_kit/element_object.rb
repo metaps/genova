@@ -98,6 +98,8 @@ module Genova
 
             deploy_config = code_manager.load_deploy_config
             deploy_config[:clusters].each do |cluster_params|
+              next unless params[:allow_clusters].include?(cluster_params[:name])
+
               options.push(
                 text: {
                   type: 'plain_text',
