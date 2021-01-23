@@ -30,6 +30,10 @@ module Genova
 
     class SlackEventsAPIError < Error; end
 
+    class SlackWebAPIError < Error; end
+
+    class SlackPermissionDeniedError < Error; end
+
     class UnexpectedError < Error; end
 
     class MigrationError < Error; end

@@ -56,16 +56,6 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   Aws.config[:stub_responses] = true
-
-  config.before do
-    allow(Settings.github).to receive(:repositories).and_return(
-      [
-        {
-          name: 'repository'
-        }
-      ]
-    )
-  end
 end
 
 shared_context 'load code_manager_mock' do
