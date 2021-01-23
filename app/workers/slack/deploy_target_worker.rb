@@ -6,7 +6,7 @@ module Slack
       logger.info('Started Slack::DeployTargetWorker')
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.ask_target(Genova::Slack::SessionStore.new(id).params)
+      bot.ask_target(Genova::Slack::SessionStore.load(id).params)
     rescue => e
       slack_notify(e, id)
       raise e

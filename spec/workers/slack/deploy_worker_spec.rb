@@ -3,7 +3,7 @@ require 'rails_helper'
 module Slack
   describe DeployWorker do
     describe 'perform' do
-      let(:id) { Time.new.utc.to_f }
+      let(:id) { Time.now.utc.to_f }
 
       let(:deploy_job_id) do
         deploy_job = DeployJob.new(
@@ -24,9 +24,8 @@ module Slack
       before do
         DeployJob.collection.drop
 
-        session_store = Genova::Slack::SessionStore.new(id)
-        session_store.start
-        session_store.add(deploy_job_id: deploy_job_id)
+        session_store = Genova::Slack::SessionStore.start!(id, 'user')
+        session_store.save(deploy_job_id: deploy_job_id)
 
         allow(bot_mock).to receive(:detect_slack_deploy)
         allow(bot_mock).to receive(:finished_deploy)

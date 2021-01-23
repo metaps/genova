@@ -74,7 +74,7 @@ services:
       - node_modules:/app/frontend/node_modules:delegated
       - assets:/app/public/assets:delegated
   mongo:
-    image: mongo:3.4
+    image: mongo:4.4
     restart: ${DOCKER_RESTART}
   redis:
     image: redis:5-alpine

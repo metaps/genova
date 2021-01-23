@@ -3,6 +3,7 @@ require 'rails_helper'
 module Slack
   describe DeployTargetWorker do
     describe 'perform' do
+      let(:parent_message_ts) { Time.now.utc.to_f }
       let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       before do
@@ -11,8 +12,8 @@ module Slack
         allow(bot_mock).to receive(:ask_target)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-        Genova::Slack::SessionStore.new('user').start
-        subject.perform('user')
+        Genova::Slack::SessionStore.start!(parent_message_ts, 'user')
+        subject.perform(parent_message_ts)
       end
 
       it 'should be in queeue' do

@@ -4,9 +4,7 @@ module Genova
       class Deploy
         def self.call(statements, user, parent_message_ts)
           client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
-
-          session_store = Genova::Slack::SessionStore.new(parent_message_ts)
-          session_store.start
+          Genova::Slack::SessionStore.start!(parent_message_ts, user)
 
           type = case statements[:sub_command]
                  when 'run-task'

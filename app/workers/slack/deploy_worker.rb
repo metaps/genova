@@ -5,7 +5,7 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployWorker')
 
-      deploy_job_id = Genova::Slack::SessionStore.new(id).params[:deploy_job_id]
+      deploy_job_id = Genova::Slack::SessionStore.load(id).params[:deploy_job_id]
 
       deploy_job = DeployJob.find(deploy_job_id)
       client = Genova::Client.new(deploy_job)

@@ -4,7 +4,7 @@ module Genova
       class << self
         def handle_request(params)
           @params = params
-          @session_store = Genova::Slack::SessionStore.new(@params[:container][:thread_ts])
+          @session_store = Genova::Slack::SessionStore.load(@params[:container][:thread_ts])
 
           action = @params.dig(:actions, 0)
 
@@ -42,11 +42,10 @@ module Genova
 
           raise Genova::Exceptions::UnexpectedError, "#{value} repository does not exist." if params[:repository].nil?
 
-          @session_store.add(params)
-
+          @session_store.save(params)
           jid = ::Github::RetrieveBranchWorker.perform_async(@params[:container][:thread_ts])
 
-          @session_store.add(retrieve_branch_jid: jid)
+          @session_store.save(retrieve_branch_jid: jid)
           ::Github::RetrieveBranchWatchWorker.perform_async(@params[:container][:thread_ts])
 
           BlockKit::Helper.section_field('Repository', params[:repository])
@@ -55,7 +54,7 @@ module Genova
         def approve_branch
           value = @params.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.add(branch: value)
+          @session_store.save(branch: value)
           ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
           BlockKit::Helper.section_field('Branch', value)
@@ -64,7 +63,7 @@ module Genova
         def approve_tag
           value = @params.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.add(tag: value)
+          @session_store.save(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@params[:container][:thread_ts])
 
           BlockKit::Helper.section_field('Tag', value)
@@ -73,7 +72,7 @@ module Genova
         def approve_cluster
           value = @params.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.add(cluster: value)
+          @session_store.save(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@params[:container][:thread_ts])
 
           BlockKit::Helper.section_field('Cluster', value)
@@ -98,7 +97,7 @@ module Genova
             params[:scheduled_task_target] = targets[2]
           end
 
-          @session_store.add(params)
+          @session_store.save(params)
           ::Slack::DeployConfirmWorker.perform_async(@params[:container][:thread_ts])
 
           BlockKit::Helper.section_field('Target', value)
@@ -109,7 +108,7 @@ module Genova
 
           params = Genova::Slack::Interactive::History.new(@params[:user][:id]).find!(value)
 
-          @session_store.add(params)
+          @session_store.save(params)
           ::Slack::DeployHistoryWorker.perform_async(@params[:container][:thread_ts])
 
           'Checking history...'
@@ -119,7 +118,7 @@ module Genova
           params = @session_store.params
           params[:deploy_job_id] = DeployJob.generate_id
 
-          @session_store.add(params)
+          @session_store.save(params)
 
           DeployJob.create(id: params[:deploy_job_id],
                            type: params[:type],

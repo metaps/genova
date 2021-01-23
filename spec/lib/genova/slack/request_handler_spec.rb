@@ -3,11 +3,11 @@ require 'rails_helper'
 module Genova
   module Slack
     describe RequestHandler do
-      let(:thread_ts) { Time.new.utc.to_f }
+      let(:thread_ts) { Time.now.utc.to_f }
 
       before do
         Redis.current.flushdb
-        Genova::Slack::SessionStore.new(thread_ts).start
+        Genova::Slack::SessionStore.start!(thread_ts, 'user')
 
         allow(RestClient).to receive(:post)
       end

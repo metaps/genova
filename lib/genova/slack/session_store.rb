@@ -1,37 +1,40 @@
 module Genova
   module Slack
     class SessionStore
-      def initialize(parent_message_ts)
-        @parent_message_ts = parent_message_ts
+      private_class_method :new
+
+      def initialize(id)
+        @id = id
       end
 
-      def start
-        id = make_id
-        write(id, parent_message_ts: @parent_message_ts)
+      def self.start!(parent_message_ts, user)
+        instance = new(build_id(parent_message_ts))
+        instance.save({ user: user }, false)
+        instance
       end
 
-      def add(values)
-        write(make_id, params.merge(values))
+      def self.load(parent_message_ts)
+        id = build_id(parent_message_ts)
+        raise Exceptions::NotFoundError, 'Session does not exist. Please re-run command.' unless Redis.current.exists(id)
+
+        new(id)
+      end
+
+      def save(values, merge = true)
+        values = params.merge(values) if merge
+
+        Redis.current.multi do
+          Redis.current.set(@id, values.to_json)
+          Redis.current.expire(@id, Settings.slack.interactive.command_timeout)
+        end
       end
 
       def params
-        id = make_id
-        raise Exceptions::NotFoundError, 'Session does not exist. Please re-run command.' unless Redis.current.exists(id)
-
-        Oj.load(Redis.current.get(id), symbol_keys: true)
+        Oj.load(Redis.current.get(@id), symbol_keys: true)
       end
 
-      private
-
-      def make_id
-        "slack_#{@parent_message_ts}"
-      end
-
-      def write(id, values)
-        Redis.current.multi do
-          Redis.current.set(id, values.to_json)
-          Redis.current.expire(id, Settings.slack.interactive.command_timeout)
-        end
+      def self.build_id(parent_message_ts)
+        "slack_#{parent_message_ts}"
       end
     end
   end

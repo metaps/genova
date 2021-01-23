@@ -477,6 +477,3 @@ DEPENDENCIES
   tzinfo-data
   vcr
   webmock
-
-BUNDLED WITH
-   1.17.2

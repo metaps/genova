@@ -23,7 +23,7 @@ module Genova
                 service: 'service'
               }
             }
-            expect { Genova::Slack::Command::Deploy.call(statements, 'user', Time.new.utc.to_f) }.not_to raise_error
+            expect { Genova::Slack::Command::Deploy.call(statements, 'user', Time.now.utc.to_f) }.not_to raise_error
           end
         end
 
@@ -37,7 +37,7 @@ module Genova
               params: {}
             }
 
-            expect { Genova::Slack::Command::Deploy.call(statements, 'user', Time.new.utc.to_f) }.not_to raise_error
+            expect { Genova::Slack::Command::Deploy.call(statements, 'user', Time.now.utc.to_f) }.not_to raise_error
           end
         end
       end
