@@ -5,14 +5,18 @@ module Genova
     module BlockKit
       describe ElementObject do
         before do
+          Settings.reload!
           Redis.current.flushdb
           DeployJob.delete_all
         end
 
         describe 'repository_options' do
           it 'should be return repositories' do
-            results = Genova::Slack::BlockKit::ElementObject.repository_options
+            Settings.github.repositories = [{
+              name: 'repository'
+            }]
 
+            results = Genova::Slack::BlockKit::ElementObject.repository_options
             expect(results.count).to eq(1)
           end
         end
@@ -76,7 +80,7 @@ module Genova
               repository: 'repository',
               branch: 'branch',
               tag: 'tag',
-              base_path: 'base_path'
+              allow_clusters: ['cluster']
             )
 
             expect(results.count).to eq(1)
@@ -114,8 +118,7 @@ module Genova
               repository: 'repository',
               branch: 'branch',
               tag: 'tag',
-              cluster: 'cluster',
-              base_path: 'base_path'
+              cluster: 'cluster'
             )
             expect(results.count).to eq(3)
           end

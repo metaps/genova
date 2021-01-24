@@ -6,6 +6,7 @@ module Genova
       let(:thread_ts) { Time.now.utc.to_f }
 
       before do
+        Settings.reload!
         Redis.current.flushdb
         Genova::Slack::SessionStore.start!(thread_ts, 'user')
 
@@ -34,6 +35,10 @@ module Genova
 
         context 'when invoke approve_repository' do
           it 'should be execute approve_repository' do
+            Settings.github.repositories = [{
+              name: 'repository'
+            }]
+
             allow(::Github::RetrieveBranchWorker).to receive(:perform_async)
             allow(::Github::RetrieveBranchWatchWorker).to receive(:perform_async)
 

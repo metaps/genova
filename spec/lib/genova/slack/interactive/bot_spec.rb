@@ -30,7 +30,11 @@ module Genova
         end
 
         describe 'ask_repository' do
+          let(:array_mock) { double(Array) }
+
           it 'should be not error' do
+            allow(BlockKit::ElementObject).to receive(:repository_options).and_return([array_mock])
+
             expect { bot.ask_repository({}) }.not_to raise_error
           end
         end

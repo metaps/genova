@@ -4,12 +4,21 @@ module Slack
   describe DeployClusterWorker do
     describe 'perform' do
       let(:parent_message_ts) { Time.now.utc.to_f }
+      let(:permission_mock) { double(Genova::Slack::Interactive::Permission) }
       let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
       before do
         Redis.current.flushdb
         Genova::Slack::SessionStore.start!(parent_message_ts, 'user')
 
+        allow(Genova::Slack::Client).to receive(:get).and_return({
+                                                                   ok: true,
+                                                                   user: {
+                                                                     name: 'user'
+                                                                   }
+                                                                 })
+        allow(permission_mock).to receive(:allow_clusters).and_return(['cluster'])
+        allow(Genova::Slack::Interactive::Permission).to receive(:new).and_return(permission_mock)
         allow(bot_mock).to receive(:ask_cluster)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
