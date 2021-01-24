@@ -30,7 +30,7 @@ module GenovaCli
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual).to_sym,
           type: options[:type],
-          alias: options[:alias],
+          alias: repository_settings[:alias],
           account: ENV.fetch('GITHUB_ACCOUNT'),
           branch: options[:branch],
           tag: options[:tag],

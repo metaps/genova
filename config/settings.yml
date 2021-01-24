@@ -47,11 +47,10 @@ slack:
     branch_limit: 20
     tag_limit: 20
     command_timeout: 1800
-  
+
   # Limits deployment to specified users. (Optional)
-  # permission:
-  #   deploy:
-  #     # Cluster name can also include. For example, `production-*`.
-  #     - cluster:
-  #     # Slack name list you want to allow deployment.
-  #     - allow_users:
+  # permissions:
+  #   # Cluster name can also include. For example, `production-*`.
+  #   - cluster:
+  #   # Slack name list you want to allow deployment.
+  #   - allow_users:

@@ -3,18 +3,12 @@ module Genova
     class SettingsHelper
       class << self
         def find_repository(name_or_alias)
-          result = {}
-
-          Settings.github.repositories.each do |repository|
-            next unless (repository[:name] == name_or_alias && !repository.include?(:alias)) || repository[:alias] == name_or_alias
-
-            result = {
-              name: repository[:name],
-              base_path: repository[:base_path]
-            }
+          repositories = Settings.github.repositories || []
+          result = repositories.find do |repository|
+            repository[:name] == name_or_alias && !repository.include?(:alias) || repository[:alias] == name_or_alias
           end
 
-          result
+          result.present? ? result.to_h : nil
         end
       end
     end

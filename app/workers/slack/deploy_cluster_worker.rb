@@ -9,7 +9,7 @@ module Slack
       response = Genova::Slack::Client.get('users.info', user: params[:user])
       raise Genova::Exceptions::SlackWebAPIError, response[:error] unless response[:ok]
 
-      permission = Genova::Slack::Permission.new(response[:user][:name])
+      permission = Genova::Slack::Interactive::Permission.new(response[:user][:name])
       allow_clusters = permission.allow_clusters(params[:repository], branch: params[:branch], tag: params[:tag], base_path: params[:base_path])
       params[:allow_clusters] = allow_clusters
 

@@ -231,7 +231,7 @@ module Genova
           @client.chat_postMessage(data)
         end
 
-        def git_compare(params)
+        def running_task_definition(params)
           ecs_client = Aws::ECS::Client.new
 
           if params[:service].present?
@@ -251,7 +251,11 @@ module Genova
             task_definition_arn = target.ecs_parameters.task_definition_arn
           end
 
-          task_definition = ecs_client.describe_task_definition(task_definition: task_definition_arn, include: ['TAGS'])
+          ecs_client.describe_task_definition(task_definition: task_definition_arn, include: ['TAGS'])
+        end
+
+        def git_compare(params)
+          task_definition = running_task_definition(params)
           build = task_definition[:tags].find { |v| v[:key] == 'genova.build' }
 
           if build.present?

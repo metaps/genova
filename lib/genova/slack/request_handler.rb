@@ -116,11 +116,9 @@ module Genova
         end
 
         def approve_deploy
-          permission = Permission.new(@params[:user][:name])
+          permission = Interactive::Permission.new(@params[:user][:name])
 
-          unless permission.check_deploy(params[:cluster])
-            raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@params[:user][:name]} does not have execute permission."
-          end
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@params[:user][:name]} does not have execute permission." unless permission.check_cluster(@params[:cluster])
 
           params = @session_store.params
           params[:deploy_job_id] = DeployJob.generate_id

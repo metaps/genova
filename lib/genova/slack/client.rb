@@ -1,12 +1,12 @@
 module Genova
   module Slack
-    BASE ='https://slack.com/api/'
-
     class Client
+      ENDPOINT_BASE = 'https://slack.com/api/'.freeze
+
       def self.get(endpoint, params = {})
         response = RestClient::Request.execute(
           method: 'get',
-          url: "#{BASE}/#{endpoint}",
+          url: "#{ENDPOINT_BASE}/#{endpoint}",
           headers: {
             Authorization: "Bearer #{ENV.fetch('SLACK_API_TOKEN')}",
             params: params
