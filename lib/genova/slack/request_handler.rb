@@ -2,12 +2,12 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        def handle_request(params)
-          @params = params
-          @thread_ts = @params[:container][:thread_ts]
+        def handle_request(payload)
+          @payload = payload
+          @thread_ts = @payload[:container][:thread_ts]
           @session_store = Genova::Slack::SessionStore.load(@thread_ts)
 
-          action = @params.dig(:actions, 0)
+          action = @payload.dig(:actions, 0)
 
           raise Genova::Exceptions::RoutingError, "`#{ation[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
@@ -17,7 +17,7 @@ module Genova
             thread_ts: @thread_ts
           }
 
-          RestClient.post(@params[:response_url], result.to_json, content_type: :json)
+          RestClient.post(@payload[:response_url], result.to_json, content_type: :json)
         end
 
         private
@@ -27,7 +27,7 @@ module Genova
         end
 
         def approve_repository
-          value = @params.dig(:actions, 0, :selected_option, :value)
+          value = @payload.dig(:actions, 0, :selected_option, :value)
           params = {
             account: ENV.fetch('GITHUB_ACCOUNT')
           }
@@ -53,7 +53,7 @@ module Genova
         end
 
         def approve_branch
-          value = @params.dig(:actions, 0, :selected_option, :value)
+          value = @payload.dig(:actions, 0, :selected_option, :value)
 
           @session_store.save(branch: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
@@ -62,7 +62,7 @@ module Genova
         end
 
         def approve_tag
-          value = @params.dig(:actions, 0, :selected_option, :value)
+          value = @payload.dig(:actions, 0, :selected_option, :value)
 
           @session_store.save(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
@@ -71,7 +71,7 @@ module Genova
         end
 
         def approve_cluster
-          value = @params.dig(:actions, 0, :selected_option, :value)
+          value = @payload.dig(:actions, 0, :selected_option, :value)
 
           @session_store.save(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@thread_ts)
@@ -80,7 +80,7 @@ module Genova
         end
 
         def approve_target
-          value = @params.dig(:actions, 0, :selected_option, :value)
+          value = @payload.dig(:actions, 0, :selected_option, :value)
           targets = value.split(':')
           type = targets[0].to_sym
 
@@ -105,9 +105,9 @@ module Genova
         end
 
         def approve_deploy_from_history
-          value = @params.dig(:actions, 0, :selected_option, :value)
+          value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          params = Genova::Slack::Interactive::History.new(@params[:user][:id]).find!(value)
+          params = Genova::Slack::Interactive::History.new(@payload[:user][:id]).find!(value)
 
           @session_store.save(params)
           ::Slack::DeployHistoryWorker.perform_async(@thread_ts)
@@ -116,31 +116,14 @@ module Genova
         end
 
         def approve_deploy
-          permission = Interactive::Permission.new(@params[:user][:name])
-
-          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@params[:user][:name]} does not have execute permission." unless permission.check_cluster(@params[:cluster])
-
           params = @session_store.params
-          params[:deploy_job_id] = DeployJob.generate_id
+          params[:slack_user_id] = @payload[:user][:id]
+          params[:slack_user_name] = @payload[:user][:name]
 
           @session_store.save(params)
 
-          DeployJob.create(id: params[:deploy_job_id],
-                           type: params[:type],
-                           alias: params[:alias],
-                           status: DeployJob.status.find_value(:in_progress),
-                           mode: DeployJob.mode.find_value(:slack),
-                           slack_user_id: @params[:user][:id],
-                           slack_user_name: @params[:user][:name],
-                           account: params[:account],
-                           repository: params[:repository],
-                           branch: params[:branch],
-                           tag: params[:tag],
-                           cluster: params[:cluster],
-                           run_task: params[:run_task],
-                           service: params[:service],
-                           scheduled_task_rule: params[:scheduled_task_rule],
-                           scheduled_task_target: params[:scheduled_task_target])
+          permission = Interactive::Permission.new(@payload[:user][:name])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:name]} does not have execute permission." unless permission.check_cluster(params[:cluster])
 
           ::Slack::DeployWorker.perform_async(@thread_ts)
 
