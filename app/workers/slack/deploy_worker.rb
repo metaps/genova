@@ -5,9 +5,24 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployWorker')
 
-      deploy_job_id = Genova::Slack::SessionStore.load(id).params[:deploy_job_id]
+      params = Genova::Slack::SessionStore.load(id).params
+      deploy_job = DeployJob.create(id: DeployJob.generate_id,
+                       type: params[:type],
+                       alias: params[:alias],
+                       status: DeployJob.status.find_value(:in_progress),
+                       mode: DeployJob.mode.find_value(:slack),
+                       slack_user_id: params[:slack_user_id],
+                       slack_user_name: params[:slack_user_name],
+                       account: params[:account],
+                       repository: params[:repository],
+                       branch: params[:branch],
+                       tag: params[:tag],
+                       cluster: params[:cluster],
+                       run_task: params[:run_task],
+                       service: params[:service],
+                       scheduled_task_rule: params[:scheduled_task_rule],
+                       scheduled_task_target: params[:scheduled_task_target])
 
-      deploy_job = DeployJob.find(deploy_job_id)
       client = Genova::Client.new(deploy_job)
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
 
