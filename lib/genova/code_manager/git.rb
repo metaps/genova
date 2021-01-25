@@ -75,7 +75,7 @@ module Genova
         path = Pathname(@base_path).join('config/deploy.yml')
         raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
-        params = YAML.safe_load(File.read(path), [], [], true).deep_symbolize_keys
+        params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
       end
 
@@ -87,7 +87,7 @@ module Genova
         path = task_definition_config_path(path)
         raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
 
-        params = YAML.safe_load(File.read(path), [], [], true).deep_symbolize_keys
+        params = YAML.load(File.read(path)).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
       end
 
