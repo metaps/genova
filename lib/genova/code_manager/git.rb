@@ -1,7 +1,5 @@
 module Git
   class Lib
-    HARD_LIMIT = 100
-
     def branches_all
       arr = []
       count = 0
@@ -11,7 +9,7 @@ module Git
         arr << [b.gsub('* ', '').strip, current]
         count += 1
 
-        break if count == HARD_LIMIT
+        break if count == Settings.slack.interactive.branch_limit
       end
       arr
     end
@@ -24,7 +22,7 @@ module Git
         arr << t
         count += 1
 
-        break if count == HARD_LIMIT
+        break if count == Settings.slack.interactive.tag_limit
       end
       arr
     end

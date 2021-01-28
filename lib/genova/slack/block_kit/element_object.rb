@@ -51,8 +51,6 @@ module Genova
             size = 0
 
             code_manager.origin_branches.each do |branch|
-              break if size >= Settings.slack.interactive.branch_limit
-
               size += 1
               options.push(
                 text: {
@@ -72,8 +70,6 @@ module Genova
             size = 0
 
             code_manager.origin_tags.each do |tag|
-              break if size >= Settings.slack.interactive.tag_limit
-
               size += 1
               options.push(
                 text: {
