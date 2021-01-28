@@ -56,7 +56,7 @@ module Genova
 
         def ask_cluster(params)
           options = BlockKit::ElementObject.cluster_options(params)
-          raise Genova::Exceptions::NotFoundError, 'Clusters is undefined.' if options.size.zero?
+          raise Genova::Exceptions::NotFoundError, 'No deployable clusters found.' if options.size.zero?
 
           send([
                  BlockKit::Helper.section('Please select cluster to deploy.'),

@@ -6,30 +6,48 @@ module Genova
           @name = name
         end
 
-        def allow_clusters(repository, params)
-          manager = ::Genova::CodeManager::Git.new(ENV.fetch('GITHUB_ACCOUNT'), repository, params)
-          clusters = []
+        def allow_repositories(repository)
+          allows = []
 
-          deploy_config = manager.load_deploy_config
-          deploy_config[:clusters].each do |values|
-            clusters << values[:name] if check_cluster(values[:name])
+          Genova::Config::SettingsHelper.repositories.each do |value|
+            check_repository(repository)
           end
 
-          clusters
+          allows
+        end
+
+        def allow_clusters(repository, params)
+          manager = ::Genova::CodeManager::Git.new(ENV.fetch('GITHUB_ACCOUNT'), repository, params)
+          allows = []
+
+          deploy_config = manager.load_deploy_config
+          deploy_config[:clusters].each do |cluster|
+            allows << cluster[:name] if check_cluster(cluster[:name])
+          end
+
+          allows
         end
 
         def check_cluster(cluster)
-          permissions_config = Settings.slack.permissions
-          return true if permissions_config.nil?
+          permissions = Settings.slack.permissions
+          return true if permissions.nil?
 
-          matched = permissions_config.find do |permission|
-            pos = permission[:cluster].index('*')
+          result = permissions.find do |permission|
+            next if permission[:policy] != 'cluster'
 
-            matched = if pos.nil?
-                        cluster == permission[:cluster]
-                      else
-                        cluster.index(permission[:cluster][0, pos]).present?
-                      end
+            matched = false
+            resources = permission[:resources] || []
+            resources.each do |resource|
+              pos = resource.index('*')
+
+              matched = if pos.nil?
+                          cluster == resource
+                        else
+                          cluster.index(resource[0, pos]).present?
+                        end
+
+              break if matched
+            end
 
             next unless matched
 
@@ -37,7 +55,7 @@ module Genova
             allow_users.find { |allow_user| @name == allow_user }.present?
           end
 
-          matched.present?
+          result.present?
         end
       end
     end
