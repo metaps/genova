@@ -2,38 +2,26 @@ module Genova
   module Slack
     module Interactive
       class Permission
-        def initialize(name)
-          @name = name
+        def initialize(user_name)
+          @user_name = user_name
         end
 
-        def allow_repositories(repository)
-          allows = []
-
-          Genova::Config::SettingsHelper.repositories.each do |value|
-            check_repository(repository)
-          end
-
-          allows
+        def allow_repository?(repository)
+          match?('repository', repository)
         end
 
-        def allow_clusters(repository, params)
-          manager = ::Genova::CodeManager::Git.new(ENV.fetch('GITHUB_ACCOUNT'), repository, params)
-          allows = []
-
-          deploy_config = manager.load_deploy_config
-          deploy_config[:clusters].each do |cluster|
-            allows << cluster[:name] if check_cluster(cluster[:name])
-          end
-
-          allows
+        def allow_cluster?(cluster)
+          match?('cluster', cluster)
         end
 
-        def check_cluster(cluster)
+        private
+
+        def match?(policy, user_name)
           permissions = Settings.slack.permissions
           return true if permissions.nil?
 
           result = permissions.find do |permission|
-            next if permission[:policy] != 'cluster'
+            next if permission[:policy] != policy
 
             matched = false
             resources = permission[:resources] || []
@@ -41,9 +29,9 @@ module Genova
               pos = resource.index('*')
 
               matched = if pos.nil?
-                          cluster == resource
+                          user_name == resource
                         else
-                          cluster.index(resource[0, pos]).present?
+                          user_name.index(resource[0, pos]).present?
                         end
 
               break if matched
@@ -52,7 +40,7 @@ module Genova
             next unless matched
 
             allow_users = permission[:allow_users] || []
-            allow_users.find { |allow_user| @name == allow_user }.present?
+            allow_users.find { |allow_user| @user_name == allow_user }.present?
           end
 
           result.present?

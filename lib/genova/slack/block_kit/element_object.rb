@@ -3,12 +3,15 @@ module Genova
     module BlockKit
       class ElementObject
         class << self
-          def repository_options
+          def repository_options(params)
             options = []
+            permission = Genova::Slack::Interactive::Permission.new(params[:user_name])
 
             repositories = Settings.github.repositories || []
             repositories.each do |repository|
               text = repository[:alias] || repository[:name]
+              next unless permission.allow_repository?(text)
+
               options.push(
                 text: {
                   type: 'plain_text',
@@ -85,6 +88,8 @@ module Genova
 
           def cluster_options(params)
             options = []
+            permission = Genova::Slack::Interactive::Permission.new(params[:user_name])
+
             code_manager = Genova::CodeManager::Git.new(
               params[:account],
               params[:repository],
@@ -94,7 +99,7 @@ module Genova
 
             deploy_config = code_manager.load_deploy_config
             deploy_config[:clusters].each do |cluster_params|
-              next unless params[:allow_clusters].include?(cluster_params[:name])
+              next unless permission.allow_cluster?(cluster_params[:name])
 
               options.push(
                 text: {

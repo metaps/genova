@@ -8,14 +8,17 @@ module Genova
       end
 
       def self.start!(parent_message_ts, user)
+        response = Genova::Slack::Client.get('users.info', user: user)
+        raise Genova::Exceptions::SlackWebAPIError, response[:error] unless response[:ok]
+
         instance = new(build_id(parent_message_ts))
-        instance.save({ user: user }, merge: false)
+        instance.save({ user: user, user_name: response[:user][:name] }, merge: false)
         instance
       end
 
       def self.load(parent_message_ts)
         id = build_id(parent_message_ts)
-        raise Exceptions::NotFoundError, 'Session does not exist. Please re-run command.' unless Redis.current.exists(id)
+        raise Genova::Exceptions::NotFoundError, 'Session does not exist. Please re-run command.' unless Redis.current.exists(id)
 
         new(id)
       end

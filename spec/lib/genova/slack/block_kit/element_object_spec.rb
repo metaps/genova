@@ -79,8 +79,7 @@ module Genova
               acount: 'account',
               repository: 'repository',
               branch: 'branch',
-              tag: 'tag',
-              allow_clusters: ['cluster']
+              tag: 'tag'
             )
 
             expect(results.count).to eq(1)

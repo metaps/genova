@@ -11,8 +11,8 @@ module Slack
                        alias: params[:alias],
                        status: DeployJob.status.find_value(:in_progress),
                        mode: DeployJob.mode.find_value(:slack),
-                       slack_user_id: params[:slack_user_id],
-                       slack_user_name: params[:slack_user_name],
+                       slack_user: params[:user],
+                       slack_user_name: params[:user_name],
                        account: params[:account],
                        repository: params[:repository],
                        branch: params[:branch],
@@ -26,7 +26,7 @@ module Slack
       client = Genova::Client.new(deploy_job)
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
 
-      history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
+      history = Genova::Slack::Interactive::History.new(deploy_job.slack_user)
       history.add(deploy_job)
 
       bot.detect_slack_deploy(deploy_job: deploy_job)

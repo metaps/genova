@@ -26,7 +26,7 @@ module Genova
         end
 
         def ask_repository(params)
-          options = BlockKit::ElementObject.repository_options
+          options = BlockKit::ElementObject.repository_options(params)
 
           raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if options.size.zero?
 
@@ -164,7 +164,7 @@ module Genova
             fields << BlockKit::Helper.section_field('Tag', "<#{github_client.build_tag_uri(params[:deploy_job].tag)}|#{params[:deploy_job].tag}>")
           end
 
-          to = params[:deploy_job].mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{params[:deploy_job].slack_user_id}"
+          to = params[:deploy_job].mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{params[:deploy_job].user}"
           send([
                  BlockKit::Helper.header('Deployment is complete.'),
                  BlockKit::Helper.section("<#{to}>"),
