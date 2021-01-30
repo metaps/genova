@@ -4,19 +4,24 @@ module Genova
   module Slack
     module BlockKit
       describe ElementObject do
-        before do
-          Settings.reload!
+        after do
+          Settings.reload_from_files(Rails.root.join('config', 'settings.yml').to_s)
           Redis.current.flushdb
           DeployJob.delete_all
         end
 
         describe 'repository_options' do
           it 'should be return repositories' do
-            Settings.github.repositories = [{
-              name: 'repository'
-            }]
+            Settings.add_source!(
+              github: {
+                repositories: [{
+                  name: 'repository'
+                }]
+              }
+            )
+            Settings.reload!
 
-            results = Genova::Slack::BlockKit::ElementObject.repository_options
+            results = Genova::Slack::BlockKit::ElementObject.repository_options({})
             expect(results.count).to eq(1)
           end
         end

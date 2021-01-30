@@ -6,6 +6,8 @@ module Genova
       describe Deploy do
         let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
+        include_context :session_start
+
         before do
           Redis.current.flushdb
         end

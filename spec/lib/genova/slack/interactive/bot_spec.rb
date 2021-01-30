@@ -141,7 +141,7 @@ module Genova
             allow(deploy_job_mock).to receive(:tag)
             allow(deploy_job_mock).to receive(:account)
             allow(deploy_job_mock).to receive(:repository)
-            allow(deploy_job_mock).to receive(:slack_user_id)
+            allow(deploy_job_mock).to receive(:slack_user)
             allow(deploy_job_mock).to receive(:task_definition_arns).and_return([])
 
             expect { bot.finished_deploy(deploy_job: deploy_job_mock) }.not_to raise_error

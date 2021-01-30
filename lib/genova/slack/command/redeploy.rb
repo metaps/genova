@@ -8,7 +8,7 @@ module Genova
           client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
           history = Genova::Slack::Interactive::History.new(user).last
 
-          raise Exceptions::NotFoundError.new('History does not exist.') unless history.present?
+          raise Exceptions::NotFoundError, 'History does not exist.' unless history.present?
 
           params = history.clone
           params[:user] = user

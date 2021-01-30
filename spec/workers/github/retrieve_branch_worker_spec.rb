@@ -3,8 +3,9 @@ require 'rails_helper'
 module Github
   describe RetrieveBranchWorker do
     describe 'perform' do
-      let(:parent_message_ts) { Time.now.utc.to_f }
       let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
+
+      include_context :session_start
 
       before do
         Redis.current.flushdb
@@ -12,8 +13,8 @@ module Github
         allow(bot_mock).to receive(:ask_branch)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-        Genova::Slack::SessionStore.start!(parent_message_ts, 'user')
-        subject.perform(parent_message_ts)
+        Genova::Slack::SessionStore.start!(id, 'user')
+        subject.perform(id)
       end
 
       it 'should be in queue' do

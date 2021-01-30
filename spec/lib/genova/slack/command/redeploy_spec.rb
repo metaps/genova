@@ -6,9 +6,7 @@ module Genova
       describe Redeploy do
         let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
-        before do
-          Redis.current.flushdb
-        end
+        include_context :session_start
 
         context 'when exists history' do
           it 'should be return confirm message' do
@@ -39,8 +37,7 @@ module Genova
             allow(bot_mock).to receive(:error)
             allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-            expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.not_to raise_error
-            expect(bot_mock).to have_received(:error).once
+            expect { Genova::Slack::Command::Redeploy.call(bot_mock, {}, 'user') }.to raise_error(Exceptions::NotFoundError)
           end
         end
       end

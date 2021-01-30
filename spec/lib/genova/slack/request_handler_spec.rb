@@ -3,14 +3,14 @@ require 'rails_helper'
 module Genova
   module Slack
     describe RequestHandler do
-      let(:thread_ts) { Time.now.utc.to_f }
+      include_context :session_start
 
       before do
-        Settings.reload!
-        Redis.current.flushdb
-        Genova::Slack::SessionStore.start!(thread_ts, 'user')
-
         allow(RestClient).to receive(:post)
+      end
+
+      after do
+        Settings.reload_from_files(Rails.root.join('config', 'settings.yml').to_s)
       end
 
       describe 'handle_request' do
@@ -18,7 +18,7 @@ module Genova
           it 'should be execute cancel' do
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -35,16 +35,21 @@ module Genova
 
         context 'when invoke approve_repository' do
           it 'should be execute approve_repository' do
-            Settings.github.repositories = [{
-              name: 'repository'
-            }]
+            Settings.add_source!(
+              github: {
+                repositories: [{
+                  name: 'repository'
+                }]
+              }
+            )
+            Settings.reload!
 
             allow(::Github::RetrieveBranchWorker).to receive(:perform_async)
             allow(::Github::RetrieveBranchWatchWorker).to receive(:perform_async)
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -69,7 +74,7 @@ module Genova
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -94,7 +99,7 @@ module Genova
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -128,7 +133,7 @@ module Genova
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -153,7 +158,7 @@ module Genova
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -186,7 +191,7 @@ module Genova
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -215,7 +220,7 @@ module Genova
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'
@@ -238,7 +243,7 @@ module Genova
 
             payload = {
               container: {
-                thread_ts: thread_ts
+                thread_ts: id
               },
               user: {
                 id: 'user'

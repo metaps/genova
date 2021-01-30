@@ -11,14 +11,27 @@ module Github
         branch: 'branch'
       )
     end
+    let(:code_manager_mock) { double(Genova::CodeManager::Git) }
+    let(:deploy_config_mock) do
+      Genova::Config::DeployConfig.new(
+        auto_deploy: [{
+          cluster: 'cluster',
+          service: 'service',
+          branch: 'branch'
+        }],
+        clusters: []
+      )
+    end
     let(:slack_bot_mock) { double(Genova::Slack::Interactive::Bot) }
     let(:client_mock) { double(Genova::Client) }
 
     before(:each) do
       DeployJob.delete_all
 
+      allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
+      allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+
       allow(slack_bot_mock).to receive(:detect_github_event)
-      allow(slack_bot_mock).to receive(:post_started_deploy)
       allow(slack_bot_mock).to receive(:finished_deploy)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
 
@@ -27,8 +40,6 @@ module Github
     end
 
     describe 'perform' do
-      include_context 'load code_manager_mock'
-
       before do
         subject.perform(id)
       end

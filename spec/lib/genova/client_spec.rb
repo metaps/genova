@@ -30,8 +30,6 @@ module Genova
     end
 
     describe 'run' do
-      include_context 'load code_manager_mock'
-
       it 'shuold be not error' do
         expect { client.run }.to_not raise_error
       end
