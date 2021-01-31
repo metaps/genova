@@ -3,16 +3,15 @@ require 'rails_helper'
 module Slack
   describe DeployConfirmWorker do
     describe 'perform' do
-      let(:id) { Time.now.utc.to_f }
-      let(:parent_message_ts) { Time.now.utc.to_f }
       let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
+
+      include_context :session_start
 
       before do
         allow(bot_mock).to receive(:ask_confirm_deploy)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-        Genova::Slack::SessionStore.start!(parent_message_ts, 'user')
-        subject.perform(parent_message_ts)
+        subject.perform(id)
       end
 
       it 'should be in queeue' do

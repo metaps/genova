@@ -2,8 +2,8 @@ module Genova
   module Slack
     module Interactive
       class History
-        def initialize(slack_user_id)
-          @id = "history_#{slack_user_id}"
+        def initialize(user)
+          @id = "history_#{user}"
         end
 
         def add(deploy_job)

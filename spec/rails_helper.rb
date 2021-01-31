@@ -58,47 +58,21 @@ RSpec.configure do |config|
   Aws.config[:stub_responses] = true
 end
 
-shared_context 'load code_manager_mock' do
-  let(:deploy_config) do
-    Genova::Config::DeployConfig.new(
-      clusters: [
-        {
-          name: 'cluster',
-          services: {
-            service: {
-              containers: [{ name: 'rails', 'build': {} }],
-              path: 'path'
-            }
-          }
-        }
-      ]
-    )
-  end
-  let(:task_definition_config) do
-    Genova::Config::TaskDefinitionConfig.new(
-      container_definitions: [
-        {
-          name: 'nginx',
-          image: 'xxx/nginx:revision_tag'
-        }
-      ]
-    )
-  end
-  let(:code_manager_mock) { double(Genova::CodeManager::Git) }
+shared_context :session_start do
+  let(:id) { Time.now.utc.to_f }
+  let(:session_store) { Genova::Slack::SessionStore.load(id) }
 
   before do
-    allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
-    allow(code_manager_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
-    allow(code_manager_mock).to receive(:base_path).and_return('base_path')
-    allow(code_manager_mock).to receive(:repos_path).and_return('repos_path')
-    allow(code_manager_mock).to receive(:task_definition_config_path)
-    allow(code_manager_mock).to receive(:origin_last_commit)
-    allow(code_manager_mock).to receive(:pull)
-    allow(code_manager_mock).to receive(:release)
-    allow(code_manager_mock).to receive(:find_commit)
-    allow(code_manager_mock).to receive(:origin_branches).and_return(['feature/branch'])
+    Redis.current.flushdb
 
-    allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+    allow(Genova::Slack::Client).to receive(:get).and_return(
+      ok: true,
+      user: {
+        name: 'user'
+      }
+    )
+
+    Genova::Slack::SessionStore.start!(id, 'user')
   end
 end
 

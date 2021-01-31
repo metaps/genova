@@ -16,7 +16,7 @@ module Genova
                  end
 
           if statements[:params].size.zero?
-            client.ask_repository(user: user)
+            client.ask_repository(user: user, user_name: session_store.params[:user_name])
           else
             result = send("parse_#{type}", statements[:params])
             params = {

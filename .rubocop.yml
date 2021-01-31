@@ -27,6 +27,9 @@ Metrics/ModuleLength:
 Naming/VariableNumber:
   EnforcedStyle: snake_case
   CheckSymbols: false
+Security/YAMLLoad:
+  # https://github.com/gollum/gollum/issues/1579
+  Enabled: false
 Style/RescueStandardError:
   Enabled: false
 Style/BlockComments:

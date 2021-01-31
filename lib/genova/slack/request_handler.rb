@@ -116,14 +116,11 @@ module Genova
         end
 
         def approve_deploy
-          params = @session_store.params
-          params[:slack_user_id] = @payload[:user][:id]
-          params[:slack_user_name] = @payload[:user][:name]
-
-          @session_store.save(params)
-
           permission = Interactive::Permission.new(@payload[:user][:name])
-          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:name]} does not have execute permission." unless permission.check_cluster(params[:cluster])
+
+          unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
+            raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:name]} does not have execute permission."
+          end
 
           ::Slack::DeployWorker.perform_async(@thread_ts)
 
