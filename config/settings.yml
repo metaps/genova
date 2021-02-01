@@ -50,7 +50,9 @@ slack:
 
   # Limits deployment to specified users. (Optional)
   # permissions:
-  #   # Cluster name can also include. For example, `production-*`.
-  #   - cluster:
-  #   # Slack name list you want to allow deployment.
-  #   - allow_users:
+  #   # Target of restrictions. You can specify `repository` or `cluster`.
+  #   - policy:
+  #     # Target resource. Targets full match, partial match (e.g. `foo*`, `*`).
+  #     resources:
+  #     # Target Slack account. Full match or partial match is possible.
+  #     allow_users:
