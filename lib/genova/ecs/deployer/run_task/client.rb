@@ -37,14 +37,16 @@ module Genova
           def wait(task_arns)
             wait_time = 0
 
-            @logger.info 'Start task.'
+            @logger.info "Start tasks."
+            @logger.info(task_arns)
             @logger.info LOG_SEPARATOR
 
-            loop do
-              pending = false
-              exit_task_arns = []
+            stopped_tasks = []
 
+            loop do
               describe_tasks = @ecs_client.describe_tasks(cluster: @cluster, tasks: task_arns)
+              run_task_size = describe_tasks[:tasks].size
+
               describe_tasks[:tasks].each do |task|
                 sleep(Settings.deploy.polling_interval)
                 wait_time += Settings.deploy.polling_interval
@@ -52,29 +54,14 @@ module Genova
                 @logger.info "Waiting for execution result... (#{wait_time}s elapsed)"
                 @logger.info LOG_SEPARATOR
 
-                if task[:last_status] == 'PENDING'
-                  pending = true
-
-                  raise Exceptions::DeployTimeoutError, "Process is timed out. (Task ARN: #{task[:task_arn]})" if wait_time > Settings.deploy.wait_timeout
-
-                elsif !exit_task_arns.include?(task[:task_arn])
-                  task[:containers].each do |container|
-                    @logger.info 'Container'
-                    @logger.info "  Name: #{container[:name]}"
-                    @logger.info "  Exit code: #{container[:exit_code]}"
-                    @logger.info "  Reason: #{container[:reason]}"
-                    @logger.info LOG_SEPARATOR
-                  end
-
-                  @logger.info "Task ARN: #{task[:task_arn]}"
-                  @logger.info "Stopped reason: #{task[:stopped_reason]}"
-                  @logger.info LOG_SEPARATOR
-
-                  exit_task_arns << task[:task_arn]
+                if task[:last_status] == 'STOPPED' && !stopped_tasks.include?(task[:task_arn])
+                  stopped_tasks << task[:task_arn]
+                  @logger.info(task.to_json)
                 end
               end
 
-              break unless pending
+              break if run_task_size == stopped_tasks.size
+              raise Exceptions::DeployTimeoutError, "Process is timed out. (Task ARN: #{task[:task_arn]})" if wait_time > Settings.deploy.wait_timeout
             end
           end
         end
