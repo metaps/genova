@@ -29,14 +29,14 @@ module Genova
               end
             end
 
-            context 'when repository name partially matches' do
+            context 'when repository or user name partially matches' do
               it 'should be allow access' do
                 Settings.add_source!(
                   slack: {
                     permissions: [{
                       policy: 'repository',
                       resources: ['genova-*'],
-                      allow_users: ['user']
+                      allow_users: ['use*']
                     }]
                   }
                 )
@@ -46,14 +46,14 @@ module Genova
               end
             end
 
-            context 'when all repositories are allowed' do
+            context 'when all repositories and users are allowed' do
               it 'should be allow access' do
                 Settings.add_source!(
                   slack: {
                     permissions: [{
                       policy: 'repository',
                       resources: ['*'],
-                      allow_users: ['user']
+                      allow_users: ['*']
                     }]
                   }
                 )
