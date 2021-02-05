@@ -11,7 +11,7 @@ module Slack
           repository: 'repository',
           cluster: 'cluster',
           service: 'service',
-          slack_user: 'slack_user'
+          slack_user_id: 'slack_user_id'
         )
         deploy_job.save!
         deploy_job.id

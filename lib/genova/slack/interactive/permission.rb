@@ -2,8 +2,8 @@ module Genova
   module Slack
     module Interactive
       class Permission
-        def initialize(user_name)
-          @user_name = user_name
+        def initialize(user)
+          @user = user
         end
 
         def allow_repository?(repository)
@@ -20,10 +20,12 @@ module Genova
           permissions = Settings.slack.permissions
           return true if permissions.nil?
 
-          match = permissions.find do |permission|
-            next if permission[:policy] != policy
-            next unless match?(permission[:resources], value)
-            next unless match?(permission[:allow_users], @user_name)
+          rules = permissions.select { |permission| permission[:policy] == policy }
+          return true if rules.size.zero?
+
+          match = rules.find do |rule|
+            next unless match?(rule[:resources], value)
+            next unless match?(rule[:allow_users], @user)
 
             true
           end

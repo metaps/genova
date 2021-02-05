@@ -5,7 +5,7 @@ module Genova
         class << self
           def repository_options(params)
             options = []
-            permission = Genova::Slack::Interactive::Permission.new(params[:user_name])
+            permission = Genova::Slack::Interactive::Permission.new(params[:user])
 
             repositories = Settings.github.repositories || []
             repositories.each do |repository|
@@ -88,7 +88,7 @@ module Genova
 
           def cluster_options(params)
             options = []
-            permission = Genova::Slack::Interactive::Permission.new(params[:user_name])
+            permission = Genova::Slack::Interactive::Permission.new(params[:user])
 
             code_manager = Genova::CodeManager::Git.new(
               params[:account],
