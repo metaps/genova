@@ -12,7 +12,7 @@ class DeployJob
   field :type, type: String
   field :status, type: String
   field :mode, type: String
-  field :slack_user, type: String
+  field :slack_user_id, type: String
   field :slack_user_name, type: String
   field :repository, type: String
   field :account, type: String

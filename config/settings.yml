@@ -50,9 +50,13 @@ slack:
 
   # Limits deployment to specified users. (Optional)
   # permissions:
-  #   # Target of restrictions. You can specify `repository` or `cluster`.
-  #   - policy:
-  #     # Target resource. Targets full match, partial match (e.g. `foo*`, `*`).
+  #   - 
+  #     # Target of restrictions. You can specify `repository` or `cluster`.
+  #     policy:
+  #
+  #     # You can specify full match or partial match for string (e.g. `foo*`, `*`).
   #     resources:
-  #     # Target Slack account. Full match or partial match is possible.
+  #
+  #     # List of allowed users. User can be specified by user ID.
+  #     # You can specify full match or partial match for string.
   #     allow_users:
