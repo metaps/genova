@@ -20,11 +20,12 @@ module Genova
               service_mock = double(Aws::ECS::Types::Service)
 
               allow(service_mock).to receive(:task_definition)
+              allow(update_service_response_mock).to receive(:to_h)
               allow(update_service_response_mock).to receive(:service).and_return(service_mock)
               allow(ecs_client_mock).to receive(:update_service).and_return(update_service_response_mock)
-              allow(service_client).to receive(:wait)
+              allow(service_client).to receive(:wait).and_return(['task_arn'])
 
-              expect(service_client.update('service', 'task_definition_arn')).to be_a(service_mock.class)
+              expect(service_client.update('service', 'task_definition_arn')).to eq(['task_arn'])
             end
           end
 

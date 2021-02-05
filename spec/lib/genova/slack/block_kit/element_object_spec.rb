@@ -96,7 +96,7 @@ module Genova
           let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
 
           it 'should be return targets' do
-            allow(deploy_config_mock).to receive(:cluster).and_return(
+            allow(deploy_config_mock).to receive(:find_cluster).and_return(
               run_tasks: {
                 run_task: nil
               },

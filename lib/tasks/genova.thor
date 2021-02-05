@@ -18,7 +18,7 @@ module GenovaCli
           branch: options[:branch],
           tag: options[:tag]
         )
-        options.merge!(code_manager.load_deploy_config.target(options[:target]))
+        options.merge!(code_manager.load_deploy_config.find_target(options[:target]))
       end
 
       def deploy(options)

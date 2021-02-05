@@ -4,7 +4,8 @@ module Genova
   module Ecs
     module Deployer
       describe Client do
-        let(:client) { Ecs::Deployer::ScheduledTask::Client.new('cluster') }
+        let(:logger_mock) { double(Genova::Logger::MongodbLogger) }
+        let(:client) { Ecs::Deployer::ScheduledTask::Client.new('cluster', logger_mock) }
         let(:cloud_watch_events_mock) { double(Aws::CloudWatchEvents::Client) }
 
         before do

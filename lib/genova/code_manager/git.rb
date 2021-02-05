@@ -78,7 +78,7 @@ module Genova
       end
 
       def task_definition_config_path(path)
-        Pathname(@base_path).join(path).to_s
+        File.expand_path(Pathname(@base_path).join(path).to_s)
       end
 
       def load_task_definition_config(path)

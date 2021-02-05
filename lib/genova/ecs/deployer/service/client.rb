@@ -27,8 +27,10 @@ module Genova
 
             result = @ecs.update_service(params)
 
+            @logger.info('Service has been updated.')
+            @logger.info(JSON.pretty_generate(result.to_h))
+
             wait(service, result.service.task_definition)
-            result.service
           end
 
           def exist?(service)
@@ -85,12 +87,12 @@ module Genova
             if result[:task_arns].size.positive?
               status_logs << 'Current services:'
 
-              result = @ecs.describe_tasks(
+              tasks = @ecs.describe_tasks(
                 cluster: @cluster,
                 tasks: result[:task_arns]
               )
 
-              result[:tasks].each do |task|
+              tasks[:tasks].each do |task|
                 if task_definition_arn == task[:task_definition_arn]
                   new_registerd_task_count += 1 if task[:last_status] == 'RUNNING'
                 else
@@ -105,7 +107,8 @@ module Genova
             {
               current_task_count: current_task_count,
               new_registerd_task_count: new_registerd_task_count,
-              status_logs: status_logs
+              status_logs: status_logs,
+              task_arns: result[:task_arns]
             }
           end
 
@@ -114,8 +117,8 @@ module Genova
 
             wait_time = 0
 
-            @logger.info 'Start deployment.'
-            @logger.info LOG_SEPARATOR
+            @logger.info('Start deployment.')
+            @logger.info(LOG_SEPARATOR)
 
             result = @ecs.describe_services(
               cluster: @cluster,
@@ -128,31 +131,33 @@ module Genova
               wait_time += Settings.deploy.polling_interval
               result = deploy_status(service, task_definition_arn)
 
-              @logger.info "Deploying service... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)"
-              @logger.info "New task: #{task_definition_arn}"
+              @logger.info("Deploying service... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)")
+              @logger.info("New task: #{task_definition_arn}")
 
               if result[:status_logs].count.positive?
                 result[:status_logs].each do |log|
-                  @logger.info log
+                  @logger.info(log)
                 end
 
-                @logger.info LOG_SEPARATOR
+                @logger.info(LOG_SEPARATOR)
               end
 
               if result[:new_registerd_task_count] == desired_count && result[:current_task_count].zero?
-                @logger.info "Service update succeeded. [#{result[:new_registerd_task_count]}/#{desired_count}]"
-                @logger.info "New task definition: #{task_definition_arn}"
+                @logger.info("Service update succeeded. [#{result[:new_registerd_task_count]}/#{desired_count}]")
+                @logger.info("New task definition: #{task_definition_arn}")
 
                 break
               else
-                @logger.info 'You can stop process with Ctrl+C. Deployment continues in background.'
+                @logger.info('You can stop process with Ctrl+C. Deployment continues in background.')
 
                 if wait_time > Settings.deploy.wait_timeout
-                  @logger.info "New task definition: #{task_definition_arn}"
+                  @logger.info("New task definition: #{task_definition_arn}")
                   raise Exceptions::DeployTimeoutError, 'Service is being updating, but process is timed out.'
                 end
               end
             end
+
+            result[:task_arns]
           end
         end
       end

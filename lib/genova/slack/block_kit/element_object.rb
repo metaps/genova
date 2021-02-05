@@ -121,7 +121,7 @@ module Genova
               branch: params[:branch],
               tag: params[:tag]
             )
-            cluster_config = code_manager.load_deploy_config.cluster(params[:cluster])
+            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
             if cluster_config[:run_tasks].present?
               target_options << {

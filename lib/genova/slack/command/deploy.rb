@@ -84,7 +84,7 @@ module Genova
 
             if params.include?(:target)
               code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository], branch: params[:branch])
-              target_config = code_manager.load_deploy_config.target(params[:target])
+              target_config = code_manager.load_deploy_config.find_target(params[:target])
               target_config.delete(:name)
 
               params.merge!(target_config)

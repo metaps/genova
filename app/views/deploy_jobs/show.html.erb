@@ -91,15 +91,19 @@
           <div class="column is-4"><%= @deploy_job.slack_user_name %></div>
         </div>
       <% end %>
-      <% if @deploy_job.task_definition_arns.present? %>
+      <% if @deploy_job.task_definition_arn.present? %>
         <div class="columns">
           <div class="column is-2">Task definition ARN</div>
+          <div class="column is-10"><%= @deploy_job.task_definition_arn %></div>
+        </div>
+      <% end %>
+      <% if @deploy_job.task_arns.present? %>
+        <div class="columns">
+          <div class="column is-2">Task ARNs</div>
           <div class="column is-10">
             <ul>
-              <% if @deploy_job.task_definition_arns.present? %>
-                <% @deploy_job.task_definition_arns.each do |task_definition_arn| %>
-                  <li><%= task_definition_arn %></li>
-                <% end %>
+              <% @deploy_job.task_arns.each do |task_arn| %>
+                <li><%= task_arn %></li>
               <% end %>
             </ul>
           </div>

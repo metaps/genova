@@ -6,35 +6,41 @@ module Genova
           class << self
             attr_accessor :task_role_arn
 
-            def build_hash(cluster, name, options = {})
+            def build(cluster, task_definition_arn, target_config)
               ecs = Aws::ECS::Client.new
               clusters = ecs.describe_clusters(clusters: [cluster]).clusters
               raise Exceptions::NotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
 
+              @logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
+              @logger.warn('"overrides" parameter is deprecated. Set variable "container_overrides" instead.') if target_config[:overrides].present?
+
+              container_overrides_config = target_config[:overrides] || target_config[:container_overrides]
               container_overrides = []
 
-              if options[:container_overrides].present?
-                options[:container_overrides].each do |container_override|
-                  override_environment = container_override[:environment] || []
-                  container_overrides << override_container(container_override[:name], container_override[:command], override_environment)
+              if container_overrides_config.present?
+                container_overrides_config.each do |container_override_config|
+                  override_environment = container_override_config[:environment] || []
+                  container_overrides << override_container(container_override_config[:name], container_override_config[:command], override_environment)
                 end
               end
 
-              {
-                id: name,
+              result = {
+                id: target_config[:name],
                 arn: clusters[0].cluster_arn,
-                role_arn: options[:cloudwatch_event_iam_role_arn],
+                role_arn: Aws::IAM::Role.new(target_config[:cloudwatch_event_iam_role] || 'ecsEventsRole').arn,
                 ecs_parameters: {
-                  task_definition_arn: options[:task_definition_arn],
-                  task_count: options[:desired_count].present? ? options[:desired_count] : 1,
-                  launch_type: options[:launch_type],
-                  network_configuration: options[:network_configuration]
+                  task_definition_arn: task_definition_arn,
+                  task_count: target_config[:task_count] || target_config[:desired_count] || 1
                 },
                 input: {
-                  taskRoleArn: options[:task_role_arn],
                   containerOverrides: container_overrides
-                }.to_json
+                }
               }
+              result[:ecs_parameters][:launch_type] = target_config[:launch_type] if target_config[:launch_type].present?
+              result[:ecs_parameters][:network_configuration] = target_config[:network_configuration] if target_config[:network_configuration].present?
+              result[:input][:taskRoleArn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
+              result[:input] = result[:input].to_json
+              result
             end
 
             private

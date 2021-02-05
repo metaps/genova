@@ -20,7 +20,7 @@ module Genova
       end
 
       def deploy_run_task(run_task, override_container, override_command, id)
-        run_task_config = @deploy_config.run_task(@cluster, run_task)
+        run_task_config = @deploy_config.find_run_task(@cluster, run_task)
 
         if override_container.present?
           run_task_config[:container_overrides] = [
@@ -31,7 +31,7 @@ module Genova
           ]
         end
 
-        build(run_task_config[:containers], run_task_config[:path], id)
+        push_image(run_task_config[:containers], run_task_config[:path], id)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{run_task_config[:path]}")
         task_definition = create_task(task_definition_path, id)
@@ -46,15 +46,21 @@ module Genova
         options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
+        task_definition_arn = task_definition.task_definition_arn
         run_task_client = Deployer::RunTask::Client.new(@cluster, @logger)
-        run_task_client.execute(task_definition.task_definition_arn, options)
+        task_arns = run_task_client.execute(task_definition_arn, options)
+
+        deploy_response = DeployResponse.new
+        deploy_response.task_definition_arn = task_definition_arn
+        deploy_response.task_arns = task_arns
+        deploy_response
       end
 
       def deploy_service(service, id)
-        service_config = @deploy_config.service(@cluster, service)
-        cluster_config = @deploy_config.cluster(@cluster)
+        service_config = @deploy_config.find_service(@cluster, service)
+        cluster_config = @deploy_config.find_cluster(@cluster)
 
-        build(service_config[:containers], service_config[:path], id)
+        push_image(service_config[:containers], service_config[:path], id)
 
         service_task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
         service_task_definition = create_task(service_task_definition_path, id)
@@ -72,19 +78,54 @@ module Genova
           :maximum_percent
         )
 
-        service_client.update(service, task_definition_arn, params)
-        deploy_scheduled_tasks(id, depend_service: service) if cluster_config.include?(:scheduled_tasks)
+        task_arns = service_client.update(service, task_definition_arn, params)
 
-        task_definition_arn
+        # `depend_service` will be deprecated in future.
+        if cluster_config.include?(:scheduled_tasks)
+          cluster_config[:scheduled_tasks].each do |scheduled_task_config|
+            scheduled_task_config[:targets].each do |target_config|
+              next if target_config[:depend_service] != service
+
+              deploy_scheduled_task(scheduled_task_config[:rule], target_config[:name], id)
+            end
+          end
+        end
+
+        deploy_response = DeployResponse.new
+        deploy_response.task_definition_arn = task_definition_arn
+        deploy_response.task_arns = task_arns
+        deploy_response
       end
 
       def deploy_scheduled_task(rule, target, id)
-        deploy_scheduled_tasks(id, rule: rule, target: target)
+        target_config = @deploy_config.find_scheduled_task_target(@cluster, rule, target)
+
+        push_image(target_config[:containers], target_config[:path], id)
+
+        task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
+        task_definition = create_task(task_definition_path, id)
+        task_definition_arn = task_definition.task_definition_arn
+        rule_config = @deploy_config.find_scheduled_task_rule(@cluster, rule)
+
+        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@cluster, @logger)
+        scheduled_task_client.update(
+          rule_config[:rule],
+          rule_config[:expression],
+          Ecs::Deployer::ScheduledTask::Target.build(@cluster, task_definition_arn, target_config),
+          {
+            enabled: target_config[:enabled],
+            description: target_config[:description]
+          }
+        )
+
+        deploy_response = DeployResponse.new
+        deploy_response.task_definition_arn = task_definition_arn
+        deploy_response
       end
 
       private
 
-      def build(containers_config, path, id)
+      def push_image(containers_config, path, id)
         count = 0
 
         containers_config.each do |container_config|
@@ -95,66 +136,7 @@ module Genova
         raise Exceptions::ValidationError, 'Push image is not found.' if count.zero?
       end
 
-      def deploy_scheduled_tasks(id, params)
-        task_definition_arns = []
-
-        cluster_config = @deploy_config.cluster(@cluster)
-        cluster_config[:scheduled_tasks].each do |scheduled_task_config|
-          scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@cluster)
-          config_base_path = Pathname(@code_manager.base_path).join('config').to_s
-          targets = []
-
-          next if params[:rule].present? && scheduled_task_config[:rule] != params[:rule]
-
-          scheduled_task_config[:targets].each do |target_config|
-            next if params[:depend_service].present? && target_config[:depend_service] != params[:depend_service]
-            next if params[:target].present? && target_config[:name] != params[:target]
-
-            build(target_config[:containers], target_config[:path], id) if params[:target].present?
-
-            task_definition_path = File.expand_path(target_config[:path], config_base_path)
-            task_definition = create_task(task_definition_path, id)
-
-            task_definition_arn = task_definition.task_definition_arn
-
-            values = {
-              task_definition_arn: task_definition_arn,
-              cloudwatch_event_iam_role_arn: Aws::IAM::Role.new(target_config[:cloudwatch_event_iam_role] || 'ecsEventsRole').arn,
-              desired_count: target_config[:task_count] || target_config[:desired_count] || 1,
-              container_overrides: target_config[:overrides] || target_config[:container_overrides]
-            }
-            values[:launch_type] = target_config[:launch_type] if target_config[:launch_type].present?
-            values[:network_configuration] = target_config[:network_configuration] if target_config[:network_configuration].present?
-            values[:task_role_arn] = Aws::IAM::Role.new(target_config[:task_role]).arn if target_config[:task_role].present?
-
-            @logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
-            @logger.warn('"overrides" parameter is deprecated. Set variable "container_overrides" instead.') if target_config[:overrides].present?
-
-            targets << Ecs::Deployer::ScheduledTask::Target.build_hash(@cluster, target_config[:name], values)
-            task_definition_arns << task_definition_arn
-          end
-
-          next if targets.size.zero?
-
-          @logger.info("Update '#{scheduled_task_config[:rule]}' rule.")
-
-          values = {
-            enabled: scheduled_task_config[:enabled],
-            description: scheduled_task_config[:description]
-          }
-
-          scheduled_task_client.update(
-            scheduled_task_config[:rule],
-            scheduled_task_config[:expression],
-            targets,
-            values
-          )
-        end
-
-        raise Exceptions::ValidationError, 'Scheduled task target or rule is undefined.' if params[:rule].present? && task_definition_arns.count.zero?
-
-        task_definition_arns
-      end
+      def deploy_scheduled_tasks(id, params); end
 
       def create_task(task_definition_path, id)
         task_client = Ecs::Task::Client.new

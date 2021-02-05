@@ -3,8 +3,9 @@ module Genova
     module Deployer
       module ScheduledTask
         class Client
-          def initialize(cluster)
+          def initialize(cluster, logger)
             @cluster = cluster
+            @logger = logger
             @cloud_watch_events = Aws::CloudWatchEvents::Client.new
           end
 
@@ -15,19 +16,22 @@ module Genova
             false
           end
 
-          def update(name, schedule_expression, targets = [], options = {})
+          def update(name, schedule_expression, target, options = {})
             response = @cloud_watch_events.put_rule(
               name: name,
               schedule_expression: schedule_expression,
               state: options[:enabled].nil? || options[:enabled] ? 'ENABLED' : 'DISABLED',
               description: options[:description]
             )
-            @cloud_watch_events.put_targets(
-              rule: name,
-              targets: targets
-            )
+            @logger.info('CloudWatch Events rule has been updated.')
+            @logger.info(JSON.pretty_generate(response.to_h))
 
-            response
+            response = @cloud_watch_events.put_targets(
+              rule: name,
+              targets: [target]
+            )
+            @logger.info('CloudWatch Events target has been updated.')
+            @logger.info(JSON.pretty_generate(response.to_h))
           end
         end
       end

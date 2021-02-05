@@ -33,24 +33,26 @@ module Genova
 
       @logger.info("Deploy target commit: #{@deploy_job.commit_id}")
 
-      task_definition_arns = case @deploy_job.type
-                             when DeployJob.type.find_value(:run_task)
-                               @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.override_container, @deploy_job.override_command, @deploy_job.label)
-                             when DeployJob.type.find_value(:service)
-                               [@ecs_client.deploy_service(@deploy_job.service, @deploy_job.label)]
-                             when DeployJob.type.find_value(:scheduled_task)
-                               @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.label)
-                             end
+      deploy_response = case @deploy_job.type
+                        when DeployJob.type.find_value(:run_task)
+                          @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.override_container, @deploy_job.override_command, @deploy_job.label)
+                        when DeployJob.type.find_value(:service)
+                          @ecs_client.deploy_service(@deploy_job.service, @deploy_job.label)
+                        when DeployJob.type.find_value(:scheduled_task)
+                          @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.label)
+                        end
 
       if Settings.github.deployment_tag && @deploy_job.branch.present?
+        @logger.info('Add release tag.')
+
         @deploy_job.deployment_tag = @deploy_job.label
         @code_manager.release(@deploy_job.deployment_tag, @deploy_job.commit_id)
 
-        @logger.info("Pushed Git tag: #{@deploy_job.deployment_tag}")
+        @logger.info("Pushed tag: #{@deploy_job.deployment_tag}")
       end
 
-      @deploy_job.done(task_definition_arns)
-      @logger.info('Deployment succeeded.')
+      @deploy_job.done(deploy_response)
+      @logger.info('Deployment was successful.')
 
       unlock
     rescue Interrupt

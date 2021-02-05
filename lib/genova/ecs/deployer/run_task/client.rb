@@ -29,7 +29,7 @@ module Genova
             task_arns = results[:tasks].map { |key| key[:task_arn] }
 
             wait(task_arns)
-            results[:tasks].map { |key| key[:task_definition_arn] }
+            task_arns
           end
 
           private
@@ -37,9 +37,9 @@ module Genova
           def wait(task_arns)
             wait_time = 0
 
-            @logger.info "Start tasks."
+            @logger.info('Start tasks.')
             @logger.info(task_arns)
-            @logger.info LOG_SEPARATOR
+            @logger.info(LOG_SEPARATOR)
 
             stopped_tasks = []
 
@@ -51,13 +51,15 @@ module Genova
                 sleep(Settings.deploy.polling_interval)
                 wait_time += Settings.deploy.polling_interval
 
-                @logger.info "Waiting for execution result... (#{wait_time}s elapsed)"
-                @logger.info LOG_SEPARATOR
+                @logger.info("Waiting for execution result... (#{wait_time}s elapsed)")
+                @logger.info(LOG_SEPARATOR)
 
-                if task[:last_status] == 'STOPPED' && !stopped_tasks.include?(task[:task_arn])
-                  stopped_tasks << task[:task_arn]
-                  @logger.info(task.to_json)
-                end
+                next unless task[:last_status] == 'STOPPED' && !stopped_tasks.include?(task[:task_arn])
+
+                stopped_tasks << task[:task_arn]
+
+                @logger.info('Run task has finished.')
+                @logger.info(JSON.pretty_generate(task.to_h))
               end
 
               break if run_task_size == stopped_tasks.size
