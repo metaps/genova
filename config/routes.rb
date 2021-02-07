@@ -9,6 +9,8 @@ Rails.application.routes.draw do
   health_check_routes
 
   root to: 'deploy_jobs#index'
-  resources :deploy_jobs, only: %i[index show]
+  resources :deploy_jobs, only: %i[index show] do
+  end
+  get 'latest_deployments', controller: :latest_deployments, action: :index
   get '*path', controller: 'application', action: 'render_404'
 end

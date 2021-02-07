@@ -1,0 +1,43 @@
+<div class="container">
+  <h2 class="title">Latest deploy</h2>
+  <% if @deployments.size > 0 %>
+    <% @deployments.each do |cluster, deployment| %>
+      <h3><%= cluster %></h3>
+      <% deployment.each_with_index do |value, i| %>
+        <% if i == 0 || i % 3 == 0 %>
+          <div class="columns">
+        <% end %>
+        <div class="column is-4">
+          <div class="card">
+            <div class="card-content">
+              <h4><%= readable_type(value[:type]) %></h4>
+              <p class="title">
+                <% if value[:service].present? %>
+                  <%= link_to(value[:service], deploy_job_path(value[:id])) %>
+                <% else %>
+                  <%= link_to("#{value[:scheduled_task_rule]}:#{value[:scheduled_task_target]}", deploy_job_path(value[:id])) %>
+                <% end %>
+              </p>
+              <dl class="subtitle">
+                <% if value[:branch].present? %>
+                  <dt>Branch</dt>
+                  <dd><%= value[:branch] %></dd>
+                <% else %>
+                  <dt>Tag</dt>
+                  <dd><%= value[:tag] %></dd>
+                <% end %>
+                <dt>Created at</dt>
+                <dd><%= value[:created_at] %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+        <% if (i + 1) % 3 == 0 || deployment.size == i + 1 %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <p>No data found.</p>
+  <% end %>
+</div>

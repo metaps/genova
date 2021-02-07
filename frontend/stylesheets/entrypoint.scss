@@ -12,10 +12,19 @@ $size-6: 0.9rem;
 @import "../node_modules/bulma/sass/elements/container.sass";
 @import "../node_modules/bulma/sass/elements/table.sass";
 @import "../node_modules/bulma/sass/elements/title.sass";
+@import "../node_modules/bulma/sass/components/card.sass";
 @import "../node_modules/bulma/sass/components/navbar.sass";
 @import "../node_modules/bulma/sass/components/pagination.sass";
 @import "../node_modules/bulma/sass/grid/columns.sass";
 @import "../node_modules/bulma/sass/layout/section.sass";
+
+h3 {
+  font-size: $size-5;
+}
+
+dt {
+  font-weight: bold;
+}
 
 .navbar {
   background-color: #333;
@@ -39,7 +48,6 @@ $size-6: 0.9rem;
   font-size: $size-6;
 
   .is-2 {
-    font-weight: bold;
     text-align: right;
   }
 }
@@ -53,4 +61,8 @@ $size-6: 0.9rem;
     padding: 0;
     overflow: visible;
   }
+}
+
+.subtitle {
+  font-size: $size-6;
 }
