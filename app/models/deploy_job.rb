@@ -82,6 +82,7 @@ class DeployJob
 
   def self.latest_deployments
     deploy_job = DeployJob.collection.aggregate([
+      {'$sort' => { 'created_at': -1 }},
       {'$match' => {'status': 'success'}},
       {'$group' => {
           '_id' => {

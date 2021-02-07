@@ -157,7 +157,7 @@ module Genova
           fields = []
 
           fields << BlockKit::Helper.section_field('New task definition ARN', BlockKit::Helper.escape_emoji(params[:deploy_job].task_definition_arn))
-          fields << BlockKit::Helper.section_field('Task ARNs', BlockKit::Helper.escape_emoji(params[:deploy_job].task_arns.join("\n")))
+          fields << BlockKit::Helper.section_field('Task ARNs', BlockKit::Helper.escape_emoji(params[:deploy_job].task_arns.join("\n"))) if params[:deploy_job].task_arns.present?
 
           if params[:deploy_job].tag.present?
             github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
