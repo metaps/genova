@@ -40,10 +40,6 @@ class DeployJob
   validate :check_type
   validate :check_ssh_secret_key_path
 
-  def self.generate_id
-    Time.now.utc.strftime('%Y%m%d-%H%M%S')
-  end
-
   def initialize(params = {})
     super
 
@@ -78,6 +74,59 @@ class DeployJob
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
 
     save
+  end
+
+  def self.generate_id
+    Time.now.utc.strftime('%Y%m%d-%H%M%S')
+  end
+
+  def self.latest_deployment
+    deploy_job = DeployJob.collection.aggregate([
+      {'$match' => {'status': 'success'}},
+      {'$group' => {
+          '_id' => {
+            'cluster': '$cluster',
+            'type': '$type',
+            'service': '$service',
+            'scheduled_task_rule': '$scheduled_task_rule',
+            'scheduled_task_target': '$scheduled_task_target',
+         },
+         'id': { '$first' => '$_id' },
+         'cluster': { '$first' => '$cluster' },
+         'type': { '$first' => '$type' },
+         'service': { '$first' => '$service' },
+         'scheduled_task_rule': { '$first' => '$scheduled_task_rule' },
+         'scheduled_task_target': { '$first' => '$scheduled_task_target' },
+         'branch': { '$first' => '$branch' },
+         'tag': { '$first' => '$tag' },
+         'created_at': { '$first' => '$created_at' },
+      }},
+      {'$project' => { '_id': 0 }},
+      {'$sort' => {
+        'cluster' => 1,
+        'type' => -1,
+        'service' => 1,
+        'scheduled_task_rule' => 1,
+        'scheduled_task_target' => 1
+      }},
+    ])
+
+    results = {}
+    deploy_job.each do |value|
+      results[value[:cluster]] = [] if results[value[:cluster]].nil?
+      results[value[:cluster]] << {
+        id: value[:id],
+        type: value[:type],
+        service: value[:service],
+        scheduled_task_rule: value[:scheduled_task_rule],
+        scheduled_task_target: value[:scheduled_task_target],
+        branch: value[:branch],
+        tag: value[:tag],
+        created_at: value[:created_at].in_time_zone
+      }
+    end
+
+    results
   end
 
   private
