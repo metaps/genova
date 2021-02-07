@@ -19,7 +19,11 @@ $size-6: 0.9rem;
 @import "../node_modules/bulma/sass/layout/section.sass";
 
 h3 {
-  font-size: 1.2em;
+  font-size: $size-5;
+}
+
+dt {
+  font-weight: bold;
 }
 
 .navbar {
@@ -44,7 +48,6 @@ h3 {
   font-size: $size-6;
 
   .is-2 {
-    font-weight: bold;
     text-align: right;
   }
 }
@@ -61,9 +64,5 @@ h3 {
 }
 
 .subtitle {
-  font-size: 1em;
-
-  dt {
-    font-weight: bold;
-  }
+  font-size: $size-6;
 }

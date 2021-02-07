@@ -11,6 +11,6 @@ Rails.application.routes.draw do
   root to: 'deploy_jobs#index'
   resources :deploy_jobs, only: %i[index show] do
   end
-  resource :latest, controller: :deploy_jobs, action: :latest, only: %i[show]
+  get 'latest_deployment', controller: :latest_deployment, action: :index
   get '*path', controller: 'application', action: 'render_404'
 end

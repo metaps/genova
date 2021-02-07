@@ -3,10 +3,10 @@
 
   <% if @deploy_job.present? %>
     <% github_client = Genova::Github::Client.new(@deploy_job.account, @deploy_job.repository) %>
-    <div class="meta">
+    <dl class="meta">
       <div class="columns">
-        <div class="column is-2">Status</div>
-        <div class="column is-4">
+        <dt class="column is-2">Status</dt>
+        <dd class="column is-4">
           <% if @deploy_job.status == 'success' %>
             <i class="fa fa-check-circle"></i>
           <% elsif @deploy_job.status == 'in_progress' %>
@@ -15,119 +15,119 @@
             <i class="fa fa-exclamation-triangle"></i>
           <% end %>
           <%= @deploy_job.status %>
-        </div>
-        <div class="column is-2">Account</div>
-        <div class="column is-4"><%= @deploy_job.account %></div>
+        </dd>
+        <dt class="column is-2">Account</dt>
+        <dd class="column is-4"><%= @deploy_job.account %></dd>
       </div>
       <div class="columns">
-        <div class="column is-2">Repository</div>
-        <div class="column is-4">
+        <dt class="column is-2">Repository</dt>
+        <dd class="column is-4">
           <i class="fab fa-github"></i>
           <%= link_to(@deploy_job.repository, github_client.build_repository_uri) %>
-        </div>
+        </dd>
         <% if @deploy_job.branch.present? %>
-          <div class="column is-2">Branch</div>
-          <div class="column is-4">
+          <dt class="column is-2">Branch</dt>
+          <dd class="column is-4">
             <i class="fab fa-github"></i>
             <%= link_to(@deploy_job.branch, github_client.build_branch_uri(@deploy_job.branch)) %>
-          </div>
+          </dd>
         <% else %>
-          <div class="column is-2">Tag</div>
-          <div class="column is-4">
+            <dt class="column is-2">Tag</dt>
+            <dd class="column is-4">
             <i class="fab fa-github"></i>
             <%= link_to(@deploy_job.tag, github_client.build_branch_uri(@deploy_job.tag)) %>
-          </div>
+          </dd>
         <% end %>
       </div>
       <div class="columns">
-        <div class="column is-2">Commit</div>
-        <div class="column is-4">
+        <dt class="column is-2">Commit</dt>
+        <dd class="column is-4">
           <% if @deploy_job.commit_id.present? %>
             <i class="fab fa-github"></i>
             <%= link_to(@deploy_job.commit_id[0, 7], github_client.build_commit_uri(@deploy_job.commit_id)) %>
           <% end %>
-        </div>
-        <div class="column is-2">Deployment Tag</div>
-        <div class="column is-4">
+        </dd>
+        <dt class="column is-2">Deployment Tag</dt>
+        <dd class="column is-4">
           <% if @deploy_job.deployment_tag.present? %>
             <i class="fab fa-github"></i>
             <%= link_to(@deploy_job.deployment_tag, github_client.build_tag_uri(@deploy_job.deployment_tag)) %>
           <% else %>
             (Deployed with tag)
           <% end %>
-        </div>
+        </dd>
       </div>
       <div class="columns">
-        <div class="column is-2">Mode</div>
-        <div class="column is-4"><%= @deploy_job.mode %></div>
-        <div class="column is-2">Type</div>
-        <div class="column is-4"><%= @deploy_job.type %></div>
+        <dt class="column is-2">Mode</dt>
+        <dd class="column is-4"><%= @deploy_job.mode %></dd>
+        <dt class="column is-2">Type</dt>
+        <dd class="column is-4"><%= @deploy_job.type %></dd>
       </div>
       <div class="columns">
-        <div class="column is-2">Cluster</div>
-        <div class="column is-4"><%= @deploy_job.cluster %></div>
+        <dt class="column is-2">Cluster</dt>
+        <dd class="column is-4"><%= @deploy_job.cluster %></dd`>
         <% if @deploy_job.service.present? %>
-          <div class="column is-2">Service</div>
-          <div class="column is-4"><%= @deploy_job.service %></div>
+          <dt class="column is-2">Service</dt>
+          <dd class="column is-4"><%= @deploy_job.service %></dd>
         <% end %>
       </div>
       <% if @deploy_job.type == DeployJob.type.find_value(:run_task) %>
         <div class="columns">
-          <div class="column is-2">Run task</div>
-          <div class="column is-4"><%= @deploy_job.run_task %></div>
+          <dt class="column is-2">Run task</dt>
+          <dd class="column is-4"><%= @deploy_job.run_task %></dd>
         </div>
       <% end %>
       <% if @deploy_job.type == DeployJob.type.find_value(:scheduled_task) %>
         <div class="columns">
-          <div class="column is-2">Scheduled task rule</div>
-          <div class="column is-4"><%= @deploy_job.scheduled_task_rule %></div>
-          <div class="column is-2">Scheduled task target</div>
-          <div class="column is-4"><%= @deploy_job.scheduled_task_target %></div>
+          <dt class="column is-2">Scheduled task rule</dt>
+          <dd class="column is-4"><%= @deploy_job.scheduled_task_rule %></dd>
+          <dt class="column is-2">Scheduled task target</dt>
+          <dd class="column is-4"><%= @deploy_job.scheduled_task_target %></dd>
         </div>
       <% end %>
       <% if @deploy_job.mode == DeployJob.mode.find_value(:slack) %>
         <div class="columns">
-          <div class="column is-2">Slack user</div>
-          <div class="column is-4"><%= @deploy_job.slack_user_name %></div>
+          <dt class="column is-2">Slack user</dt>
+          <dd class="column is-4"><%= @deploy_job.slack_user_name %></dd>
         </div>
       <% end %>
       <% if @deploy_job.task_definition_arn.present? %>
         <div class="columns">
-          <div class="column is-2">Task definition ARN</div>
-          <div class="column is-10"><%= @deploy_job.task_definition_arn %></div>
+          <dt class="column is-2">Task definition ARN</dt>
+          <dd class="column is-10"><%= @deploy_job.task_definition_arn %></dd>
         </div>
       <% end %>
       <% if @deploy_job.task_arns.present? %>
         <div class="columns">
-          <div class="column is-2">Task ARNs</div>
-          <div class="column is-10">
+          <dt class="column is-2">Task ARNs</dt>
+          <dd class="column is-10">
             <ul>
               <% @deploy_job.task_arns.each do |task_arn| %>
                 <li><%= task_arn %></li>
               <% end %>
             </ul>
-          </div>
+          </dd>
         </div>
       <% end %>
       <div class="columns">
-        <div class="column is-2">Created at</div>
-        <div class="column is-4"><%= @deploy_job.created_at %></div>
+        <dt class="column is-2">Created at</dt>
+        <dd class="column is-4"><%= @deploy_job.created_at %></dd>
       </div>
       <div class="columns">
-        <div class="column is-2">Started at</div>
-        <div class="column is-4"><%= @deploy_job.started_at %></div>
-        <div class="column is-2">Finished at</div>
-        <div class="column is-4"><%= @deploy_job.finished_at %></div>
+        <dt class="column is-2">Started at</dt>
+        <dd class="column is-4"><%= @deploy_job.started_at %></dd>
+        <dt class="column is-2">Finished at</dt>
+        <dd class="column is-4"><%= @deploy_job.finished_at %></dd>
       </div>
       <div class="columns">
-        <div class="column is-2">Execution time</div>
-        <div class="column is-10">
+        <dt class="column is-2">Execution time</dt>
+        <dd class="column is-10">
           <% if @deploy_job.execution_time.present? %>
             <%= BigDecimal(@deploy_job.execution_time.to_s).floor(2).to_f %> sec
           <% end %>
-        </div>
+        </dd>
       </div>
-    </div>
+    </dl>
 
     <h3 class="title">Logs</h3>
     <% if @deploy_job.logs.present? %>
@@ -140,6 +140,6 @@
       <p>Log does not exist.</p>
     <% end %>
   <% else %>
-   <p>Data not found.</p>
+   <p>No data found.</p>
   <% end %>
 </div>

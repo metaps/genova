@@ -182,38 +182,9 @@ module GenovaCli
       puts("Registered task. [#{task.task_definition_arn}]")
     end
 
-    desc 'version2', 'Show version'
-    def version2
-DeployJob.create({
-  id: Time.now.utc.strftime('%Y%m%d-%H%M%S'),
-  type: 'scheduled_task',
-  status: 'success',
-  mode: 'manual',
-  account: 'naomichi-y',
-  repository: 'reshine-api',
-  tag: 'test',
-  cluster: 'staging-api',
-  scheduled_task_rule: 'rule1',
-  scheduled_task_target: 'target1'
-})
-
-    end
-
     desc 'version', 'Show version'
     def version
-DeployJob.create({
-  id: Time.now.utc.strftime('%Y%m%d-%H%M%S'),
-  type: 'service',
-  status: 'success',
-  mode: 'manual',
-  account: 'naomichi-y',
-  repository: 'reshine-api',
-  tag: 'test',
-  cluster: 'staging-api',
-  service: 'backend5'
-})
-
-#      puts "genova #{Genova::Version::LONG_STRING}"
+      puts "genova #{Genova::Version::LONG_STRING}"
     end
   end
 end
