@@ -1,5 +1,5 @@
 <div class="container">
-  <h2 class="title">Latest deploy</h2>
+  <h2 class="title">Latest deployment</h2>
   <% if @deployments.size > 0 %>
     <% @deployments.each do |cluster, deployment| %>
       <h3><%= cluster %></h3>
@@ -19,6 +19,8 @@
                 <% end %>
               </p>
               <dl class="subtitle">
+                <dt>Repository</dt>
+                <dd><%= value[:repository] %></dd>
                 <% if value[:branch].present? %>
                   <dt>Branch</dt>
                   <dd><%= value[:branch] %></dd>
