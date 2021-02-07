@@ -80,7 +80,7 @@ class DeployJob
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
 
-  def self.latest_deployment
+  def self.latest_deployments
     deploy_job = DeployJob.collection.aggregate([
       {'$match' => {'status': 'success'}},
       {'$group' => {
