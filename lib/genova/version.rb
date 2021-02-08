@@ -1,9 +1,10 @@
 module Genova
-  module VERSION
-    MAJOR = 2
-    MINOR = 5
-    TINY = 1
+  module Version
+    MAJOR = 3
+    MINOR = 0
+    TINY = 0
 
-    STRING = [MAJOR, MINOR, TINY].compact.join('.')
+    STRING = [MAJOR, MINOR, TINY].join('.')
+    LONG_STRING = "genova v#{[MAJOR, MINOR, TINY].join('.')}".freeze
   end
 end

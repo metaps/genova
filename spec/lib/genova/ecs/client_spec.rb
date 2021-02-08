@@ -29,13 +29,17 @@ module Genova
       end
 
       describe 'deploy_service' do
-        include_context 'load code_manager_mock'
+        let(:code_manager_mock) { double(CodeManager::Git) }
+        let(:client) { Ecs::Client.new('cluster', code_manager_mock) }
+        let(:deploy_config_mock) { double(Genova::Config::TaskDefinitionConfig) }
 
-        let(:code_manager) { CodeManager::Git.new('account', 'repository', branch: 'master') }
-        let(:client)  { Ecs::Client.new('cluster', code_manager) }
+        it 'should be return DeployResponse' do
+          allow(deploy_config_mock).to receive(:find_service).and_return(containers: ['container'], path: 'path')
+          allow(deploy_config_mock).to receive(:find_cluster).and_return([])
+          allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
+          allow(code_manager_mock).to receive(:task_definition_config_path).and_return('task_definition_path')
 
-        it 'should be return Aws::ECS::Types::TaskDefinition' do
-          expect(client.deploy_service('service', 'tag_revision')).to eq('task_definition_arn')
+          expect(client.deploy_service('service', 'tag_revision')).to be_a(DeployResponse)
         end
       end
     end

@@ -1,7 +1,6 @@
 :verbose: false
 :pidfile: ./tmp/pids/sidekiq.pid
-:logfile: ./log/sidekiq.log
-:concurrency: 10
+:concurrency: 20
 :queues:
   - github_deploy
   - github_retrieve_branch
@@ -11,3 +10,5 @@
   - slack_deploy_confirm
   - slack_deploy
   - slack_deploy_history
+  - slack_command_receive
+  - slack_interaction

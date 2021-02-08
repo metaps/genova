@@ -3,21 +3,18 @@ require 'rails_helper'
 module Github
   describe RetrieveBranchWorker do
     describe 'perform' do
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
+
+      include_context :session_start
+
       before do
         Redis.current.flushdb
 
-        allow(Genova::Slack::Util).to receive(:branch_options)
-        allow(RestClient).to receive(:post)
+        allow(bot_mock).to receive(:ask_branch)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-        job = Genova::Sidekiq::Job.new(
-          'id',
-          account: 'account',
-          repository: 'repository',
-          response_url: 'response_url',
-          base_path: 'base_path'
-        )
-        allow(Genova::Sidekiq::Queue).to receive(:find).and_return(job)
-        subject.perform(job.id)
+        Genova::Slack::SessionStore.start!(id, 'user')
+        subject.perform(id)
       end
 
       it 'should be in queue' do

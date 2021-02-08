@@ -56,62 +56,23 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   Aws.config[:stub_responses] = true
-
-  config.before do
-    allow(Settings.github).to receive(:repositories).and_return(
-      [
-        {
-          name: 'repository'
-        }
-      ]
-    )
-  end
 end
 
-shared_context 'load code_manager_mock' do
-  let(:deploy_config) do
-    Genova::Config::DeployConfig.new(
-      clusters: [
-        {
-          name: 'cluster',
-          services: {
-            service: {
-              containers: [{ name: 'rails', 'build': {} }],
-              path: 'path'
-            }
-          }
-        }
-      ]
-    )
-  end
-  let(:task_definition_config) do
-    Genova::Config::TaskDefinitionConfig.new(
-      container_definitions: [
-        {
-          name: 'nginx',
-          image: 'xxx/nginx:revision_tag'
-        }
-      ]
-    )
-  end
-  let(:code_manager_mock) { double(Genova::CodeManager::Git) }
-  let(:branch_mock) { double(Git::Branch) }
+shared_context :session_start do
+  let(:id) { Time.now.utc.to_f }
+  let(:session_store) { Genova::Slack::SessionStore.load(id) }
 
   before do
-    allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config)
-    allow(code_manager_mock).to receive(:load_task_definition_config).and_return(task_definition_config)
-    allow(code_manager_mock).to receive(:base_path).and_return('base_path')
-    allow(code_manager_mock).to receive(:repos_path).and_return('repos_path')
-    allow(code_manager_mock).to receive(:task_definition_config_path)
-    allow(code_manager_mock).to receive(:origin_last_commit_id)
-    allow(code_manager_mock).to receive(:pull)
-    allow(code_manager_mock).to receive(:release)
-    allow(code_manager_mock).to receive(:find_commit_id)
+    Redis.current.flushdb
 
-    allow(branch_mock).to receive(:name).and_return('feature/branch')
-    allow(code_manager_mock).to receive(:origin_branches).and_return([branch_mock])
+    allow(Genova::Slack::Client).to receive(:get).and_return(
+      ok: true,
+      user: {
+        name: 'user'
+      }
+    )
 
-    allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+    Genova::Slack::SessionStore.start!(id, 'user')
   end
 end
 

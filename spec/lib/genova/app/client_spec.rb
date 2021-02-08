@@ -6,16 +6,6 @@ module Genova
       let(:code_manager) { CodeManager::Git.new('account', 'repository', branch: 'master') }
       let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
 
-      describe 'clone' do
-        it 'should be execute git clone' do
-          allow(Dir).to receive(:exist?).and_return(false)
-          allow(FileUtils).to receive(:mkdir_p)
-          allow(::Git).to receive(:clone)
-
-          expect { code_manager.clone }.to_not raise_error
-        end
-      end
-
       describe 'pull' do
         let(:git_mock) { double(::Git) }
 
@@ -29,13 +19,13 @@ module Genova
           allow(git_mock).to receive(:log)
           allow(code_manager).to receive(:client).and_return(git_mock)
 
-          expect { code_manager.pull }.to_not raise_error
+          expect { code_manager.update }.to_not raise_error
         end
       end
 
       describe 'load_deploy_config' do
         it 'should be return config' do
-          allow(code_manager).to receive(:pull)
+          allow(code_manager).to receive(:update)
           allow(File).to receive(:exist?).and_return(true)
           allow(File).to receive(:read).and_return('{}')
 
@@ -48,7 +38,7 @@ module Genova
 
       describe 'task_definition_config_path' do
         it 'should be return task definition path' do
-          expect(code_manager.task_definition_config_path('./config/deploy/path.yml')).to eq(code_manager.base_path + '/config/deploy/path.yml')
+          expect(code_manager.task_definition_config_path('./config/deploy/path.yml')).to eq("#{code_manager.base_path}/config/deploy/path.yml")
         end
       end
 
@@ -68,14 +58,14 @@ module Genova
         it 'should be return origin branches' do
           allow(code_manager).to receive(:clone)
 
-          branch_mock1 = double(::Git::Branch)
-          allow(branch_mock1).to receive(:name).and_return('master')
+          branch_mock_1 = double(::Git::Branch)
+          allow(branch_mock_1).to receive(:name).and_return('master')
 
-          branch_mock2 = double(::Git::Branch)
-          allow(branch_mock2).to receive(:name).and_return('->')
+          branch_mock_2 = double(::Git::Branch)
+          allow(branch_mock_2).to receive(:name).and_return('->')
 
           branches_mock = double(::Git::Branches)
-          allow(branches_mock).to receive(:remote).and_return([branch_mock1, branch_mock2])
+          allow(branches_mock).to receive(:remote).and_return([branch_mock_1, branch_mock_2])
 
           allow(git_mock).to receive(:fetch)
           allow(git_mock).to receive(:branches).and_return(branches_mock)
@@ -85,16 +75,18 @@ module Genova
         end
       end
 
-      describe 'find_commit_id' do
+      describe 'find_commit' do
         let(:git_mock) { double(::Git) }
+        let(:tag_mock) { double(::Git::Object::Tag) }
 
         it 'should be return commit id' do
           allow(code_manager).to receive(:clone)
           allow(git_mock).to receive(:fetch)
-          allow(git_mock).to receive(:tag).and_return('id')
+          allow(tag_mock).to receive(:sha).and_return('id')
+          allow(git_mock).to receive(:tag).and_return(tag_mock)
           allow(code_manager).to receive(:client).and_return(git_mock)
 
-          expect(code_manager.find_commit_id('tag')).to eq('id')
+          expect(code_manager.find_commit('tag')).to eq('id')
         end
       end
     end

@@ -5,13 +5,18 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-gem 'aws-sdk', '~> 3.0.1'
+gem 'aws-sdk-cloudwatchevents'
+gem 'aws-sdk-core'
+gem 'aws-sdk-ecr'
+gem 'aws-sdk-ecs'
+gem 'aws-sdk-iam'
+gem 'aws-sdk-kms'
 gem 'bootsnap', require: false
-gem 'config', '~> 2.2.1'
+gem 'config'
 gem 'docker-api'
 gem 'enumerize'
 gem 'git'
-gem 'grape', '~> 1.4.0'
+gem 'grape'
 gem 'grape_logging'
 gem 'hash_validator'
 gem 'health_check'
@@ -23,20 +28,19 @@ gem 'mongoid'
 gem 'mongoid-scroll'
 gem 'octokit'
 gem 'oj'
-gem 'puma', '~> 3.12.6'
-gem 'puma_worker_killer'
-gem 'rails', '~> 5.2.3'
+gem 'puma'
+gem 'rails', '6.0.3.4'
 gem 'redis'
 gem 'rest-client'
 gem 'sidekiq'
-gem 'slack-ruby-bot-server', '~> 0.11.1'
+gem 'slack-ruby-bot-server-events'
 gem 'tzinfo-data'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platform: :mri
   gem 'rspec-rails'
-  gem 'simplecov'
+  gem 'simplecov', '0.17.1'
 end
 
 group :test do

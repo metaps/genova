@@ -1,21 +1,15 @@
 module Slack
-  class DeployClusterWorker
-    include Sidekiq::Worker
-
+  class DeployClusterWorker < BaseWorker
     sidekiq_options queue: :slack_deploy_cluster, retry: false
 
     def perform(id)
       logger.info('Started Slack::DeployClusterWorker')
 
-      job = Genova::Sidekiq::Queue.find(id)
-
-      bot = Genova::Slack::Bot.new
-      bot.post_choose_cluster(
-        account: job.account,
-        repository: job.repository,
-        branch: job.branch,
-        base_path: job.base_path
-      )
+      bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
+      bot.ask_cluster(Genova::Slack::SessionStore.load(id).params)
+    rescue => e
+      slack_notify(e, id)
+      raise e
     end
   end
 end

@@ -1,34 +1,57 @@
 module Genova
   module Slack
     module Command
-      class Help < SlackRubyBot::Commands::Base
+      class Help
         HELP = <<~DOC.freeze
-          Hello, I'm ECS deploy Bot.
+          *Execute run task*
+          ```
+          # Statement mode.
+          deploy:run-task reposisoty={repository} [branch={branch}] cluster={cluster} run-task={run task}
+
+          # Statement mode with specify target.
+          deploy:run-task repository={repository} [branch={branch}] target={target}
+          ```
 
           *Service deploy*
-          - `deploy[:service]` Run intractive mode.
-          - `deploy[:service] <repository>[:<branch>] cluster=<cluster> service=<service>` Run statement mode.
-          - `deploy[:service] <repository>[:<branch>] target=<target>` Specify target and run statement mode.
+          ```
+          # Intractive mode.
+          deploy[:service]
 
-          *Execute run task*
-          - `deploy:run-task <repository>[:<branch>] cluster=<cluster> run-task=<run task>` Run statement mode.
-          - `deploy:run-task <repository>[:<branch>] target=<target>` Specify target and run statement mode.
+          # Statement mode.
+          deploy[:service] repository={repository} [branch={branch}] cluster={cluster} service={service}
+
+          # Statement mode with specify target.
+          deploy[:service] repository={repository} [branch={branch}] target={target}
+          ```
 
           *Scheduled task deploy*
-          - `deploy:scheduled-task <repository>[:<branch>] cluster=<cluster> scheduled-task-rule=<scheduled task rule> scheduled-task-target=<scheduled task target>` Run statement mode.
-          - `deploy:scheduled-task <repository>[:<branch>] target=<target>` Specify target and run statement mode.
+          ```
+          # Statement mode.
+          deploy:scheduled-task repository={repository} [branch={branch}] cluster={cluster} scheduled-task-rule={scheduled task rule} scheduled-task-target={scheduled task target}
 
-          *Util*
-          - `help` Get helpful message.
-          - `history` Show deployment histories.
-          - `redeploy` Run previous deployment again.
+          # Statement mode with specify target.
+          deploy:scheduled-task repository={repository} [branch={branch}] target={target}
+          ```
+
+          *Utility*
+          ```
+          # Get helpful message.
+          help
+
+          # Show deployment histories.
+          history
+
+          # Execute previous deployment again.
+          redeploy
+
+          # Show version.
+          version
+          ```
         DOC
 
-        def self.call(client, data, match)
-          logger.info("Execute help command: (UNAME: #{client.owner}, user=#{data.user})")
-          logger.info("Input command: #{match['command']} #{match['expression']}")
-
-          client.say(channel: data.channel, text: HELP)
+        def self.call(_statements, _user, _parent_message_ts)
+          client = Genova::Slack::Interactive::Bot.new
+          client.send_message(HELP)
         end
       end
     end

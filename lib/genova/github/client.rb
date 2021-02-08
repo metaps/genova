@@ -22,8 +22,8 @@ module Genova
         build_uri("#{@account}/#{@repository}/releases/tag/#{tag}")
       end
 
-      def build_compare_uri(target1, target2)
-        build_uri("#{@account}/#{@repository}/compare/#{target1}...#{target2}")
+      def build_compare_uri(target_1, target_2)
+        build_uri("#{@account}/#{@repository}/compare/#{target_1}..#{target_2}")
       end
 
       def build_branch_uri(branch)

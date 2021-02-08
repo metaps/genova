@@ -18,7 +18,7 @@ class DeployJob
   field :account, type: String
   field :branch, type: String
   field :tag, type: String
-  field :base_path, type: String
+  field :alias, type: String
   field :commit_id, type: String
   field :cluster, type: String
   field :run_task, type: String
@@ -29,7 +29,8 @@ class DeployJob
   field :scheduled_task_target, type: String
   field :ssh_secret_key_path, type: String
   field :logs, type: Array
-  field :task_definition_arns, type: Array
+  field :task_definition_arn, type: String
+  field :task_arns, type: Array
   field :started_at, type: Time
   field :finished_at, type: Time
   field :execution_time, type: Float
@@ -39,15 +40,11 @@ class DeployJob
   validate :check_type
   validate :check_ssh_secret_key_path
 
-  def self.generate_id
-    Time.now.utc.strftime('%Y%m%d-%H%M%S')
-  end
-
   def initialize(params = {})
     super
 
     self.id = DeployJob.generate_id
-    self.account = params[:account] ||= ENV.fetch('GITHUB_ACCOUNT', Settings.github.account)
+    self.account = params[:account]
     self.branch = params[:branch]
     self.tag = params[:tag]
     self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
@@ -62,9 +59,10 @@ class DeployJob
     save
   end
 
-  def done(task_definition_arns)
+  def done(deploy_response)
     self.status = DeployJob.status.find_value(:success).to_s
-    self.task_definition_arns = task_definition_arns
+    self.task_definition_arn = deploy_response.task_definition_arn
+    self.task_arns = deploy_response.task_arns
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f
     save
@@ -76,6 +74,66 @@ class DeployJob
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
 
     save
+  end
+
+  def self.generate_id
+    Time.now.utc.strftime('%Y%m%d-%H%M%S')
+  end
+
+  def self.latest_deployments
+    deploy_job = DeployJob.collection.aggregate([
+                                                  { '$sort' => { 'created_at': -1 } },
+                                                  { '$match' => { '$or': [
+                                                    { 'type': DeployJob.type.find_value(:service) },
+                                                    { 'type': DeployJob.type.find_value(:scheduled_task) }
+                                                  ] } },
+                                                  { '$match' => { 'status': 'success' } },
+                                                  { '$group' => {
+                                                    '_id' => {
+                                                      'cluster': '$cluster',
+                                                      'type': '$type',
+                                                      'service': '$service',
+                                                      'scheduled_task_rule': '$scheduled_task_rule',
+                                                      'scheduled_task_target': '$scheduled_task_target'
+                                                    },
+                                                    'id': { '$first' => '$_id' },
+                                                    'cluster': { '$first' => '$cluster' },
+                                                    'type': { '$first' => '$type' },
+                                                    'service': { '$first' => '$service' },
+                                                    'scheduled_task_rule': { '$first' => '$scheduled_task_rule' },
+                                                    'scheduled_task_target': { '$first' => '$scheduled_task_target' },
+                                                    'repository': { '$first' => '$repository' },
+                                                    'branch': { '$first' => '$branch' },
+                                                    'tag': { '$first' => '$tag' },
+                                                    'created_at': { '$first' => '$created_at' }
+                                                  } },
+                                                  { '$project' => { '_id': 0 } },
+                                                  { '$sort' => {
+                                                    'cluster' => 1,
+                                                    'type' => -1,
+                                                    'service' => 1,
+                                                    'scheduled_task_rule' => 1,
+                                                    'scheduled_task_target' => 1
+                                                  } }
+                                                ])
+
+    results = {}
+    deploy_job.each do |value|
+      results[value[:cluster]] = [] if results[value[:cluster]].nil?
+      results[value[:cluster]] << {
+        id: value[:id],
+        type: value[:type],
+        service: value[:service],
+        scheduled_task_rule: value[:scheduled_task_rule],
+        scheduled_task_target: value[:scheduled_task_target],
+        repository: value[:repository],
+        branch: value[:branch],
+        tag: value[:tag],
+        created_at: value[:created_at].in_time_zone
+      }
+    end
+
+    results
   end
 
   private

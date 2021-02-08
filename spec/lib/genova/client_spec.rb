@@ -8,6 +8,7 @@ module Genova
       DeployJob.new(
         mode: DeployJob.mode.find_value(:manual),
         type: DeployJob.type.find_value(:service),
+        account: ENV.fetch('GITHUB_ACCOUNT'),
         repository: 'repository',
         cluster: 'cluster',
         service: 'service'
@@ -29,8 +30,6 @@ module Genova
     end
 
     describe 'run' do
-      include_context 'load code_manager_mock'
-
       it 'shuold be not error' do
         expect { client.run }.to_not raise_error
       end

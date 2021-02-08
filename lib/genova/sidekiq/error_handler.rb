@@ -2,11 +2,8 @@ module Genova
   module Sidekiq
     class ErrorHandler
       class << self
-        def notify(error, context_hash)
-          Genova::Slack::Bot.new.post_error(
-            error: error,
-            deploy_job_id: context_hash[:job]['jid']
-          )
+        def notify(error, _context_hash)
+          ::Sidekiq.logger.error(error)
         end
       end
     end

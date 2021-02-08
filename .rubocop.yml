@@ -5,20 +5,12 @@ AllCops:
   - 'etc/**/*'
   - 'frontend/node_modules/**/*'
   - 'tmp/**/*'
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 2.7
 
 AsciiComments:
   Enabled: false
-AlignParameters:
-  Enabled: false
 CyclomaticComplexity:
-  Max: 7
-GlobalVars:
-  Enabled: false
-Layout/ExtraSpacing:
-  Enabled: false
-Layout/SpaceAroundOperators:
-  Enabled: false
+  Max: 8
 Metrics/AbcSize:
   Max: 64
 Metrics/BlockLength:
@@ -32,9 +24,11 @@ Metrics/MethodLength:
   Max: 64
 Metrics/ModuleLength:
   Enabled: false
-Metrics/PerceivedComplexity:
-  Max: 8
+Naming/VariableNumber:
+  EnforcedStyle: snake_case
+  CheckSymbols: false
 Security/YAMLLoad:
+  # https://github.com/gollum/gollum/issues/1579
   Enabled: false
 Style/RescueStandardError:
   Enabled: false
@@ -43,8 +37,4 @@ Style/BlockComments:
 Style/Documentation:
   Enabled: false
 Style/FrozenStringLiteralComment:
-  Enabled: false
-Style/NumericLiterals:
-  Enabled: false
-Style/SymbolProc:
   Enabled: false

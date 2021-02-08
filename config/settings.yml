@@ -1,8 +1,14 @@
+logger:
+  level: info
+
+timezone: UTC
+
 docker:
   retention_days: 20
-  build:
-    # Allocate memory. For example, `1024m`
-    memory: ''
+  # build:
+  #   # Memory usage allowed at build time. For example `1024m`.
+  #   # This option maps to `docker build --memory`.
+  #   # memory:
 
 deploy:
   wait_timeout: 900
@@ -10,25 +16,23 @@ deploy:
 
 github:
   # Create tag after deployment.
-  # If you enable it, please specify GITHUB_OAUTH_TOKEN environment.
+  # If you enable it, please specify `GITHUB_OAUTH_TOKEN`.
   deployment_tag: false
 
-  default_branch: 'master'
+  default_branch: master
   deploy_lock_timeout: 1800
 
-  # List of repositories.
-  # This is used in repository list when deploying from Slack.
-  # Also, it must be specified even if `base_path` of different.
-  repositories:
-    # Repository name.
-    - name: ''
-      # Application root directory. Default is `./`.
-      # You need to put `config/deploy.yml` file under root directory. (Optional)
-      base_path: './'
-
-      # Alias parameter is deployment target by name and base_path
-      # Parameter must be specified uniquely. (Optional)
-      alias: ''
+  # Used in repository list when deploying from Slack. (Optional)
+  # Also, if `config/deploy.yml` is located in location other than root directory,
+  # you need to specify` base_path`.
+  # repositories:
+  #   # Repository name.
+  #   - name:
+  #     # For example, if you put `config/deploy.yml` under `api` directory, specify `api` for `base_path`. (Optional)
+  #     base_path:
+  #
+  #     # If you changed `base_path`, specify unique alias name to identify `deploy.yml`. (Optional)
+  #     alias:
 
 aws:
   service:
@@ -36,14 +40,23 @@ aws:
       read_timeout: 900
 
 slack:
-  deploy_lock_timeout: 1800
+  thread_conversion: true
   command:
-    max_history: 5
+    max_history: 10
   interactive:
     branch_limit: 20
-  message:
-    color:
-      interactive: '#3aa3e3'
-      info: '#3cb371'
-      error: '#cd5c5c'
-      confirm: '#d8d8d8'
+    tag_limit: 20
+    command_timeout: 1800
+
+  # Limits deployment to specified users. (Optional)
+  # permissions:
+  #   - 
+  #     # Target of restrictions. You can specify `repository` or `cluster`.
+  #     policy:
+  #
+  #     # You can specify full match or partial match for string (e.g. `foo*`, `*`).
+  #     resources:
+  #
+  #     # List of allowed users. User can be specified by user ID.
+  #     # You can specify full match or partial match for string.
+  #     allow_users:

@@ -3,20 +3,13 @@ require 'rails_helper'
 module Slack
   describe DeployClusterWorker do
     describe 'perform' do
-      let(:id) { Genova::Sidekiq::Queue.add }
-      let(:job_mock) { double(Genova::Sidekiq::Job) }
-      let(:bot_mock) { double(Genova::Slack::Bot) }
+      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
+
+      include_context :session_start
 
       before do
-        allow(job_mock).to receive(:account)
-        allow(job_mock).to receive(:repository)
-        allow(job_mock).to receive(:branch)
-        allow(job_mock).to receive(:base_path)
-
-        allow(Genova::Sidekiq::Queue).to receive(:find).and_return(job_mock)
-
-        allow(bot_mock).to receive(:post_choose_cluster)
-        allow(Genova::Slack::Bot).to receive(:new).and_return(bot_mock)
+        allow(bot_mock).to receive(:ask_cluster)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
         subject.perform(id)
       end

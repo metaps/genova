@@ -4,7 +4,9 @@ module Genova
   module Ecs
     module Deployer
       module RunTask
-        describe Client do
+        describe 'execute' do
+          it 'shuold be return true' do
+          end
         end
       end
     end

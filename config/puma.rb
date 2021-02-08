@@ -4,24 +4,28 @@
 # the maximum value specified for Puma. Default is set to 5 threads for minimum
 # and maximum; this matches the default thread size of Active Record.
 #
-threads_count = ENV.fetch('RAILS_MAX_THREADS') { 5 }
-threads threads_count, threads_count
+max_threads_count = ENV.fetch('RAILS_MAX_THREADS', 5)
+min_threads_count = ENV.fetch('RAILS_MIN_THREADS') { max_threads_count }
+threads min_threads_count, max_threads_count
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
-port        ENV.fetch('PORT') { 3000 }
+port        ENV.fetch('PORT', 3000)
 
 # Specifies the `environment` that Puma will run in.
 #
 environment ENV.fetch('RAILS_ENV') { 'development' }
 
+# Specifies the `pidfile` that Puma will use.
+pidfile ENV.fetch('PIDFILE') { 'tmp/pids/server.pid' }
+
 # Specifies the number of `workers` to boot in clustered mode.
-# Workers are forked webserver processes. If using threads and workers together
+# Workers are forked web server processes. If using threads and workers together
 # the concurrency of the application would be max `threads` * `workers`.
 # Workers do not work on JRuby or Windows (both of which do not support
 # processes).
 #
-workers ENV.fetch('WEB_CONCURRENCY') { 2 }
+# workers ENV.fetch("WEB_CONCURRENCY") { 2 }
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code
@@ -32,21 +36,3 @@ workers ENV.fetch('WEB_CONCURRENCY') { 2 }
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
-
-app_root = File.expand_path('..', __dir__)
-pidfile "#{app_root}/tmp/pids/puma.pid"
-bind "unix://#{app_root}/tmp/sockets/puma.sock"
-
-before_fork do
-  require 'puma_worker_killer'
-
-  PumaWorkerKiller.config do |config|
-    config.ram = (ENV['PUMA_WORKER_KILLER_RAM'] || 1024).to_i
-    config.frequency = (ENV['PUMA_WORKER_KILLER_FREQUENCY'] || 5).to_i
-    config.percent_usage = (ENV['PUMA_WORKER_KILLER_PERCENT_USAGE'] || 0.98).to_f
-    config.rolling_restart_frequency = (ENV['PUMA_WORKER_KILLER_ROLLING_RESTART_FREQUENCY'] || 12 * 3600).to_i
-    config.reaper_status_logs = false
-  end
-
-  PumaWorkerKiller.start
-end

@@ -2,17 +2,14 @@ module Genova
   class Client
     def initialize(deploy_job, options = {})
       @options = options
-      @options[:lock_wait_interval] = options[:lock_wait_interval] || 60
 
       @deploy_job = deploy_job
       @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
       raise Exceptions::ValidationError, @deploy_job.errors.full_messages[0] unless @deploy_job.save
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job.id)
-      @logger.level = @options[:verbose] ? :debug : :info
+      @logger.level = @options[:verbose] ? :debug : Settings.logger.level
       @logger.info('Initiaized deploy client.')
-
-      @logger.warn('"github.account" parameter is deprecated. Set variable "GITHUB_ACCOUNT" instead.') if ENV['GITHUB_ACCOUNT'].nil?
 
       @mutex = Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
 
@@ -21,7 +18,6 @@ module Genova
         @deploy_job.repository,
         branch: @deploy_job.branch,
         tag: @deploy_job.tag,
-        base_path: @deploy_job.base_path,
         logger: @logger
       )
       @ecs_client = Ecs::Client.new(@deploy_job.cluster, @code_manager, logger: @logger)
@@ -30,31 +26,33 @@ module Genova
     def run
       @logger.info('Start deploy.')
 
-      lock(@options[:lock_timeout])
+      lock
 
       @deploy_job.start
       @deploy_job.commit_id = @ecs_client.ready
 
       @logger.info("Deploy target commit: #{@deploy_job.commit_id}")
 
-      task_definition_arns = case @deploy_job.type
-                             when DeployJob.type.find_value(:run_task)
-                               @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.override_container, @deploy_job.override_command, @deploy_job.label)
-                             when DeployJob.type.find_value(:service)
-                               [@ecs_client.deploy_service(@deploy_job.service, @deploy_job.label)]
-                             when DeployJob.type.find_value(:scheduled_task)
-                               @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.label)
-                             end
+      deploy_response = case @deploy_job.type
+                        when DeployJob.type.find_value(:run_task)
+                          @ecs_client.deploy_run_task(@deploy_job.run_task, @deploy_job.override_container, @deploy_job.override_command, @deploy_job.label)
+                        when DeployJob.type.find_value(:service)
+                          @ecs_client.deploy_service(@deploy_job.service, @deploy_job.label)
+                        when DeployJob.type.find_value(:scheduled_task)
+                          @ecs_client.deploy_scheduled_task(@deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target, @deploy_job.label)
+                        end
 
       if Settings.github.deployment_tag && @deploy_job.branch.present?
+        @logger.info('Add release tag.')
+
         @deploy_job.deployment_tag = @deploy_job.label
         @code_manager.release(@deploy_job.deployment_tag, @deploy_job.commit_id)
 
-        @logger.info("Pushed Git tag: #{@deploy_job.deployment_tag}")
+        @logger.info("Pushed tag: #{@deploy_job.deployment_tag}")
       end
 
-      @deploy_job.done(task_definition_arns)
-      @logger.info('Deployment succeeded.')
+      @deploy_job.done(deploy_response)
+      @logger.info('Deployment was successful.')
 
       unlock
     rescue Interrupt
@@ -71,21 +69,22 @@ module Genova
 
     private
 
-    def lock(lock_timeout = nil)
+    def lock
       return if @options[:force]
 
+      lock_wait_interval = 60
       waiting_time = 0
 
       while @mutex.locked? || !@mutex.lock
-        if lock_timeout.nil? || waiting_time >= lock_timeout
+        if waiting_time >= Settings.github.deploy_lock_timeout
           cancel
           raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
         end
 
-        @logger.warn("Deploy locked. Retry in #{@options[:lock_wait_interval]} seconds.")
+        @logger.warn("Deploy locked. Retry in #{lock_wait_interval} seconds.")
 
-        sleep(@options[:lock_wait_interval])
-        waiting_time += @options[:lock_wait_interval]
+        sleep(lock_wait_interval)
+        waiting_time += lock_wait_interval
       end
     end
 

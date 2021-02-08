@@ -1,22 +1,12 @@
 module Genova
   module Slack
     module Command
-      class History < SlackRubyBot::Commands::Base
-        class << self
-          def call(client, data, match)
-            logger.info("Execute history command: (UNAME: #{client.owner}, user=#{data.user})")
-            logger.info("Input command: #{match['command']} #{match['expression']}")
+      class History
+        def self.call(_statements, user, parent_message_ts)
+          Genova::Slack::SessionStore.start!(parent_message_ts, user)
 
-            options = Genova::Slack::Util.history_options(data.user)
-            bot = Genova::Slack::Bot.new(client.web_client)
-
-            if options.present?
-              bot.post_choose_history(options: options)
-            else
-              e = Exceptions::NotFoundError.new('History does not exist.')
-              bot.post_error(error: e, slack_user_id: data.user)
-            end
-          end
+          client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
+          client.ask_history(user: user)
         end
       end
     end
