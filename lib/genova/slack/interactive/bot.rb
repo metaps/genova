@@ -257,6 +257,7 @@ module Genova
         def git_compare(params)
           task_definition = running_task_definition(params)
           build = task_definition[:tags].find { |v| v[:key] == 'genova.build' }
+          text = 'Could not get diff due to some problem.'
 
           if build.present?
             code_manager = Genova::CodeManager::Git.new(
@@ -269,14 +270,14 @@ module Genova
             last_commit = code_manager.origin_last_commit
             deployed_commit = code_manager.find_commit(build[:value])
 
-            if last_commit == deployed_commit
-              text = 'Unchanged.'
-            else
-              github_client = Genova::Github::Client.new(params[:account], params[:repository])
-              text = github_client.build_compare_uri(deployed_commit, last_commit)
+            if deployed_commit.present?
+              if last_commit == deployed_commit
+                text = 'Unchanged.'
+              else
+                github_client = Genova::Github::Client.new(params[:account], params[:repository])
+                text = github_client.build_compare_uri(deployed_commit, last_commit)
+              end
             end
-          else
-            text = 'Unknown'
           end
 
           BlockKit::Helper.section_short_field('Git compare', text)
