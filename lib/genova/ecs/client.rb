@@ -111,7 +111,7 @@ module Genova
         scheduled_task_client.update(
           rule_config[:rule],
           rule_config[:expression],
-          Ecs::Deployer::ScheduledTask::Target.build(@cluster, task_definition_arn, target_config),
+          Ecs::Deployer::ScheduledTask::Target.build(@cluster, task_definition_arn, target_config, @logger),
           {
             enabled: target_config[:enabled],
             description: target_config[:description]
