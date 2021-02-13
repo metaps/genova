@@ -31,12 +31,7 @@ module Github
         break
       end
     rescue => e
-      if params.present?
-        slack_notify(e, id, params[:user])
-      else
-        slack_notify(e, id)
-      end
-
+      params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id) 
       raise e
     end
   end

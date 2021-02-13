@@ -10,12 +10,7 @@ module Slack
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.ask_target(params)
     rescue => e
-      if params.present?
-        slack_notify(e, id, params[:user])
-      else
-        slack_notify(e, id)
-      end
-
+      params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
       raise e
     end
   end
