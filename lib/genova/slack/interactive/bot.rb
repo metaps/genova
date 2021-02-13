@@ -166,8 +166,8 @@ module Genova
 
           to = params[:deploy_job].mode == DeployJob.mode.find_value(:auto) ? '!channel' : "@#{params[:deploy_job].slack_user_id}"
           send([
-                 BlockKit::Helper.header('Deployment is complete.'),
                  BlockKit::Helper.section("<#{to}>"),
+                 BlockKit::Helper.header('Deployment is complete.'),
                  BlockKit::Helper.section_fieldset(fields)
                ])
         end
@@ -178,10 +178,13 @@ module Genova
           fields << BlockKit::Helper.section_field('Reason', "```#{BlockKit::Helper.escape_emoji(params[:error].message)}```")
           fields << BlockKit::Helper.section_field('Backtrace', "```#{params[:error].backtrace.join("\n").truncate(512)}```") if params[:error].backtrace.present?
 
-          send([
-                 BlockKit::Helper.header('Oops! Runtime error has occurred.'),
-                 BlockKit::Helper.section_fieldset(fields)
-               ])
+
+          blocks = []
+          blocks << BlockKit::Helper.section("<@#{params[:user]}>") if params[:user].present?
+          blocks << BlockKit::Helper.header('Oops! Runtime error has occurred.')
+          blocks << BlockKit::Helper.section_fieldset(fields)
+
+          send(blocks)
         end
 
         private

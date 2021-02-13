@@ -6,7 +6,7 @@ module Slack
       let(:id) { Genova::Sidekiq::JobStore.create(foo: 'bar') }
 
       before do
-        allow(Genova::Slack::RequestHandler).to receive(:handle_request)
+        allow(Genova::Slack::RequestHandler).to receive(:call)
 
         subject.perform(id)
       end

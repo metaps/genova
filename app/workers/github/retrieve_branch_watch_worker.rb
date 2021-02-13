@@ -11,7 +11,7 @@ module Github
       start_time = Time.new.utc.to_i
       workers = Sidekiq::Workers.new
 
-      jid = Genova::Slack::SessionStore.load(id).params[:retrieve_branch_jid]
+      params = Genova::Slack::SessionStore.load(id).params
 
       loop do
         sleep(WAIT_INTERVAL)
@@ -22,7 +22,7 @@ module Github
         next if elapsed_time < NOTIFY_THRESHOLD
 
         workers.each do |_process_id, _thread_id, worker|
-          next unless worker['payload']['jid'] == jid
+          next unless worker['payload']['jid'] == params[:retrieve_branch_jid]
 
           bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
           bot.send_message('Getting branches...')
@@ -31,7 +31,7 @@ module Github
         break
       end
     rescue => e
-      slack_notify(e, id)
+      params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id) 
       raise e
     end
   end

@@ -5,10 +5,12 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployConfirmWorker')
 
+      params = Genova::Slack::SessionStore.load(id).params
+
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.ask_confirm_deploy(Genova::Slack::SessionStore.load(id).params, show_target: false)
+      bot.ask_confirm_deploy(params, show_target: false)
     rescue => e
-      slack_notify(e, id)
+      params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
       raise e
     end
   end
