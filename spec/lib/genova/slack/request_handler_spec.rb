@@ -13,7 +13,7 @@ module Genova
         Settings.reload_from_files(Rails.root.join('config', 'settings.yml').to_s)
       end
 
-      describe 'handle_request' do
+      describe 'call' do
         context 'when invoke cancel' do
           it 'should be execute cancel' do
             payload = {
@@ -29,7 +29,7 @@ module Genova
                 }
               ]
             }
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -64,7 +64,7 @@ module Genova
               ]
             }
 
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -89,7 +89,7 @@ module Genova
               ]
             }
 
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -123,7 +123,7 @@ module Genova
               ]
             }
 
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -148,7 +148,7 @@ module Genova
               ]
             }
 
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -181,7 +181,7 @@ module Genova
                 }
               ]
             }
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -206,7 +206,7 @@ module Genova
               ]
             }
 
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -232,7 +232,7 @@ module Genova
               ]
             }
 
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
 
@@ -255,7 +255,7 @@ module Genova
               ]
             }
 
-            expect { Genova::Slack::RequestHandler.handle_request(payload) }.to_not raise_error
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
         end
       end

@@ -31,7 +31,12 @@ module Slack
 
       klass.call(statements, values[:user], values[:parent_message_ts])
     rescue => e
-      slack_notify(e, values[:parent_message_ts])
+      if values.present?
+        slack_notify(e, values[:parent_message_ts], values[:user])
+      else
+        slack_notify(e)
+      end
+
       raise e
     end
   end

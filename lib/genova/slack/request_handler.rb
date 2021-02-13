@@ -2,7 +2,7 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        def handle_request(payload)
+        def call(payload)
           @payload = payload
           @thread_ts = @payload[:container][:thread_ts]
           @session_store = Genova::Slack::SessionStore.load(@thread_ts)

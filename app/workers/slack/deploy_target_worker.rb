@@ -5,10 +5,17 @@ module Slack
     def perform(id)
       logger.info('Started Slack::DeployTargetWorker')
 
+      params = Genova::Slack::SessionStore.load(id).params
+
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.ask_target(Genova::Slack::SessionStore.load(id).params)
+      bot.ask_target(params)
     rescue => e
-      slack_notify(e, id)
+      if params.present?
+        slack_notify(e, id, params[:user])
+      else
+        slack_notify(e, id)
+      end
+
       raise e
     end
   end

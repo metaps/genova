@@ -34,7 +34,7 @@ module Slack
 
       bot.finished_deploy(deploy_job: deploy_job)
     rescue => e
-      slack_notify(e, id)
+      slack_notify(e, id, params[:user])
       raise e
     end
   end
