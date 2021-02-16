@@ -25,7 +25,12 @@ module Github
           next unless worker['payload']['jid'] == params[:retrieve_branch_jid]
 
           bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-          bot.send_message('Getting branches...')
+
+          if Genova::Utils::DeployTransaction.new(params[:repository], logger).exist?
+            bot.send_message('Please wait as other deployments are in progress...')
+          else
+            bot.send_message('Getting branches...')
+          end
         end
 
         break

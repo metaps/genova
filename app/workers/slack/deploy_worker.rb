@@ -23,18 +23,20 @@ module Slack
                                     scheduled_task_rule: params[:scheduled_task_rule],
                                     scheduled_task_target: params[:scheduled_task_target])
 
-      client = Genova::Client.new(deploy_job)
-      bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-
       history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)
 
+      bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.detect_slack_deploy(deploy_job: deploy_job)
-      client.run
+
+      Genova::Client.new(deploy_job).run
+      transaction = Genova::Utils::DeployTransaction.new(params[:repository], logger)
+      transaction.commit
 
       bot.finished_deploy(deploy_job: deploy_job)
     rescue => e
       params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
+      transaction.cancel if transaction.present?
       raise e
     end
   end

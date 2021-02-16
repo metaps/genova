@@ -11,8 +11,6 @@ module Genova
       @logger.level = @options[:verbose] ? :debug : Settings.logger.level
       @logger.info('Initiaized deploy client.')
 
-      @mutex = Utils::Mutex.new("deploy-lock_#{@deploy_job.account}:#{@deploy_job.repository}")
-
       @code_manager = CodeManager::Git.new(
         @deploy_job.account,
         @deploy_job.repository,
@@ -25,8 +23,6 @@ module Genova
 
     def run
       @logger.info('Start deploy.')
-
-      lock
 
       @deploy_job.start
       @deploy_job.commit_id = @ecs_client.ready
@@ -54,50 +50,21 @@ module Genova
       @deploy_job.done(deploy_response)
       @logger.info('Deployment was successful.')
 
-      unlock
     rescue Interrupt
-      @logger.error("Interrupt was detected. {\"deploy id\": #{@deploy_job.id}}")
-      cancel
+      @logger.error("Detected forced termination of program. {\"deploy id\": #{@deploy_job.id}}")
+
+      Genova::Utils::DeployTransaction.new(@deploy_job.repository, @logger).cancel
+      @deploy_job.cancel
+
     rescue => e
+      @logger.error("Deployment has stopped because an error has occurred. {\"deploy id\": #{@deploy_job.id}}")
       @logger.error(e.message)
       @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
-      @logger.error("Interrupt was error. {\"deploy id\": #{@deploy_job.id}}")
 
-      cancel
-      raise e unless @deploy_job.mode == DeployJob.mode.find_value(:manual)
-    end
-
-    private
-
-    def lock
-      return if @options[:force]
-
-      lock_wait_interval = 60
-      waiting_time = 0
-
-      while @mutex.locked? || !@mutex.lock
-        if waiting_time >= Settings.github.deploy_lock_timeout
-          cancel
-          raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
-        end
-
-        @logger.warn("Deploy locked. Retry in #{lock_wait_interval} seconds.")
-
-        sleep(lock_wait_interval)
-        waiting_time += lock_wait_interval
-      end
-    end
-
-    def unlock
-      return if @options[:force]
-
-      @mutex.unlock
-    end
-
-    def cancel
-      @mutex.unlock
+      Genova::Utils::DeployTransaction.new(@deploy_job.repository, @logger).cancel
       @deploy_job.cancel
-      @logger.info('Deployment has been canceled.')
+
+      raise e unless @deploy_job.mode == DeployJob.mode.find_value(:manual)
     end
   end
 end

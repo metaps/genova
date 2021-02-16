@@ -2,10 +2,11 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        def call(payload)
+        def call(payload, logger)
           @payload = payload
           @thread_ts = @payload[:container][:thread_ts]
           @session_store = Genova::Slack::SessionStore.load(@thread_ts)
+          @logger = logger
 
           action = @payload.dig(:actions, 0)
 
@@ -23,6 +24,9 @@ module Genova
         private
 
         def cancel
+          params = @session_store.params
+          Genova::Utils::DeployTransaction.new(params[:repository], @logger).cancel if params[:repository].present?
+
           'Deployment was canceled.'
         end
 

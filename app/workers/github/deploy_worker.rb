@@ -25,9 +25,13 @@ module Github
       bot = Genova::Slack::Interactive::Bot.new
       bot.detect_github_event(deploy_job: deploy_job, commit_url: values[:commit_url], author: values[:author])
 
+      transaction = Genova::Utils::DeployTransaction.new(values[:repository], logger)
+      transaction.begin
+
       client = Genova::Client.new(deploy_job)
       client.run
 
+      transaction.commit
       bot.finished_deploy(deploy_job: deploy_job)
     rescue => e
       slack_notify(e)

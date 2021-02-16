@@ -47,11 +47,16 @@ module GenovaCli
 
         extra = {
           interactive: options[:interactive],
-          verbose: options[:verbose],
-          force: options[:force]
+          verbose: options[:verbose]
         }
 
+        transaction = Genova::Utils::DeployTransaction.new(deploy_job.repository, Logger.new(STDOUT))
+        transaction.cancel if options[:force]
+        transaction.begin
+
         ::Genova::Client.new(deploy_job, extra).run
+        
+        transaction.commit
       end
     end
 
