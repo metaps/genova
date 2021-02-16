@@ -174,7 +174,7 @@ module GenovaCli
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def register_task
       code_manager = ::Genova::CodeManager::Git.new(ENV.fetch('GITHUB_ACCOUNT'), options[:repository], branch: options[:branch])
-      code_manager.pull
+      code_manager.update
 
       path = code_manager.task_definition_config_path(options[:path])
       task = Genova::Ecs::Task::Client.new.register(path, tag: 'latest')
