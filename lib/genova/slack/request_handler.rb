@@ -48,10 +48,7 @@ module Genova
           raise Genova::Exceptions::UnexpectedError, "#{value} repository does not exist." if params[:repository].nil?
 
           @session_store.save(params)
-          jid = ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
-
-          @session_store.save(retrieve_branch_jid: jid)
-          ::Github::RetrieveBranchWatchWorker.perform_async(@thread_ts)
+          ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Repository', params[:repository])
         end

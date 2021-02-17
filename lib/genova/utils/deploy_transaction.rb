@@ -1,6 +1,8 @@
 module Genova
   module Utils
     class DeployTransaction
+      LOCK_WAIT_INTERVAL = 10
+
       def initialize(repository, logger)
         @key = "deploy-lock_#{ENV.fetch('GITHUB_ACCOUNT')}:#{repository}"
         @logger = logger
@@ -10,7 +12,6 @@ module Genova
       def begin
         @logger.info("Begin transaction: #{@repository}")
 
-        lock_wait_interval = 60
         waiting_time = 0
 
         while exist?
@@ -18,10 +19,10 @@ module Genova
             raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
           end
 
-          @logger.warn("Deploy locked. Retry in #{lock_wait_interval} seconds.")
+          @logger.warn("Deploy locked. Retry in #{LOCK_WAIT_INTERVAL} seconds.")
 
-          sleep(lock_wait_interval)
-          waiting_time += lock_wait_interval
+          sleep(LOCK_WAIT_INTERVAL)
+          waiting_time += LOCK_WAIT_INTERVAL
         end
 
         Redis.current.multi do
