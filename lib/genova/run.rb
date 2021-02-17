@@ -1,6 +1,9 @@
 module Genova
   class Run
     def self.call(deploy_job, options = {})
+      transaction_manager = Genova::TransactionManager::new(deploy_job.repository)
+      transaction_manager.begin unless transaction_manager.running? || options[:force]
+
       logger = Genova::Logger::MongodbLogger.new(deploy_job.id)
       logger.level = options[:verbose] ? :debug : Settings.logger.level
       logger.info('Start deploy.')
@@ -36,20 +39,32 @@ module Genova
 
       deploy_job.done(deploy_response)
       logger.info('Deployment was successful.')
+
+      transaction_manager.commit
     rescue Interrupt
       logger.error("Detected forced termination of program. {\"deploy id\": #{deploy_job.id}}")
 
-      Genova::Utils::DeployTransaction.new(deploy_job.repository).cancel
+      transaction_manager.cancel
       deploy_job.cancel
     rescue => e
       logger.error("Deployment has stopped because an error has occurred. {\"deploy id\": #{deploy_job.id}}")
       logger.error(e.message)
       logger.error(e.backtrace.join("\n")) if e.backtrace.present?
 
-      Genova::Utils::DeployTransaction.new(deploy_job.repository).cancel
+      transaction_manager.cancel
       deploy_job.cancel
 
       raise e unless deploy_job.mode == DeployJob.mode.find_value(:manual)
+    end
+
+    class << self
+      def transaction(repository)
+      end
+
+      def cancel
+        @logger.info("Cancel transaction: #{@repository}")
+        Redis.current.del(@key)
+      end
     end
   end
 end

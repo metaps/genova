@@ -46,18 +46,7 @@ module GenovaCli
         )
         raise Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
 
-        extra = {
-          interactive: options[:interactive],
-          verbose: options[:verbose]
-        }
-
-        transaction = Genova::Utils::DeployTransaction.new(deploy_job.repository)
-        transaction.cancel if options[:force]
-        transaction.begin
-
-        ::Genova::Run.call(deploy_job, extra)
-
-        transaction.commit
+        ::Genova::Run.call(deploy_job, verbose: options[:verbose], force: options[:force])
       end
     end
 

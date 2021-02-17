@@ -25,7 +25,7 @@ module Genova
 
         def cancel
           params = @session_store.params
-          Genova::Utils::DeployTransaction.new(params[:repository], @logger).cancel if params[:repository].present?
+          Genova::TransactionManager.new(params[:repository], @logger).cancel if params[:repository].present?
 
           'Deployment was canceled.'
         end

@@ -31,8 +31,6 @@ module Slack
       bot.detect_slack_deploy(deploy_job: deploy_job)
 
       Genova::Run.call(deploy_job)
-      transaction = Genova::Utils::DeployTransaction.new(params[:repository])
-      transaction.commit
 
       bot.finished_deploy(deploy_job: deploy_job)
     rescue => e
