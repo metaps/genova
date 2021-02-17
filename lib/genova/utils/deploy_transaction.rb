@@ -3,9 +3,9 @@ module Genova
     class DeployTransaction
       LOCK_WAIT_INTERVAL = 10
 
-      def initialize(repository, logger)
+      def initialize(repository)
         @key = "deploy-lock_#{ENV.fetch('GITHUB_ACCOUNT')}:#{repository}"
-        @logger = logger
+        @logger = ::Logger.new($stdout, level: Settings.logger.level)
         @repository = repository
       end
 
@@ -15,9 +15,7 @@ module Genova
         waiting_time = 0
 
         while exist?
-          if waiting_time >= Settings.github.deploy_lock_timeout
-            raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]"
-          end
+          raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]" if waiting_time >= Settings.github.deploy_lock_timeout
 
           @logger.warn("Deploy locked. Retry in #{LOCK_WAIT_INTERVAL} seconds.")
 

@@ -2,11 +2,11 @@ module Genova
   module Slack
     class RequestHandler
       class << self
-        def call(payload, logger)
+        def call(payload)
           @payload = payload
           @thread_ts = @payload[:container][:thread_ts]
           @session_store = Genova::Slack::SessionStore.load(@thread_ts)
-          @logger = logger
+          @logger = ::Logger.new($stdout, level: Settings.logger.level)
 
           action = @payload.dig(:actions, 0)
 

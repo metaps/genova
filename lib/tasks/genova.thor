@@ -44,18 +44,19 @@ module GenovaCli
           override_container: options[:override_container],
           override_command: options[:override_command]
         )
+        raise Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
 
         extra = {
           interactive: options[:interactive],
           verbose: options[:verbose]
         }
 
-        transaction = Genova::Utils::DeployTransaction.new(deploy_job.repository, Logger.new(STDOUT))
+        transaction = Genova::Utils::DeployTransaction.new(deploy_job.repository)
         transaction.cancel if options[:force]
         transaction.begin
 
-        ::Genova::Client.new(deploy_job, extra).run
-        
+        ::Genova::Run.call(deploy_job, extra)
+
         transaction.commit
       end
     end

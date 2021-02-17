@@ -9,7 +9,7 @@ module Slack
 
       before do
         allow(Genova::Slack::SessionStore).to receive(:load).and_return(session_store_mock)
-        allow(session_store_mock).to receive(:params)
+        allow(session_store_mock).to receive(:params).and_return(repository: 'repository')
 
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
         allow(bot_mock).to receive(:ask_confirm_deploy)

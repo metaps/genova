@@ -6,7 +6,7 @@ module Slack
       logger.info('Started Slack::InteractionWorker')
 
       payload = Genova::Sidekiq::JobStore.find(id)
-      Genova::Slack::RequestHandler.call(payload, logger)
+      Genova::Slack::RequestHandler.call(payload)
     rescue => e
       payload.present? ? slack_notify(e, payload[:container][:thread_ts], payload[:user][:id]) : slack_notify(e)
       raise e
