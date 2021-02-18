@@ -1,7 +1,7 @@
 module Genova
   class Run
     def self.call(deploy_job, options = {})
-      transaction_manager = Genova::TransactionManager::new(deploy_job.repository)
+      transaction_manager = Genova::TransactionManager.new(deploy_job.repository)
       transaction_manager.begin unless transaction_manager.running? || options[:force]
 
       logger = Genova::Logger::MongodbLogger.new(deploy_job.id)
@@ -9,6 +9,8 @@ module Genova
       logger.info('Start deploy.')
 
       deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
+      deploy_job.save
+
       code_manager = CodeManager::Git.new(
         deploy_job.account,
         deploy_job.repository,
@@ -18,8 +20,9 @@ module Genova
       )
       ecs_client = Ecs::Client.new(deploy_job.cluster, code_manager, logger: logger)
 
-      deploy_job.start
+      deploy_job.started_at = Time.now.utc
       deploy_job.commit_id = ecs_client.ready
+      deploy_job.save
 
       deploy_response = case deploy_job.type
                         when DeployJob.type.find_value(:run_task)
@@ -37,33 +40,37 @@ module Genova
         code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
       end
 
-      deploy_job.done(deploy_response)
+      deploy_job.status = DeployJob.status.find_value(:success).to_s
+      deploy_job.task_definition_arn = deploy_response.task_definition_arn
+      deploy_job.task_arns = deploy_response.task_arns
+      deploy_job.finished_at = Time.now.utc
+      deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f
+      deploy_job.save
+
       logger.info('Deployment was successful.')
 
       transaction_manager.commit
     rescue Interrupt
       logger.error("Detected forced termination of program. {\"deploy id\": #{deploy_job.id}}")
 
-      transaction_manager.cancel
-      deploy_job.cancel
+      cancel(transaction_manager, deploy_job)
     rescue => e
       logger.error("Deployment has stopped because an error has occurred. {\"deploy id\": #{deploy_job.id}}")
       logger.error(e.message)
       logger.error(e.backtrace.join("\n")) if e.backtrace.present?
 
-      transaction_manager.cancel
-      deploy_job.cancel
-
+      cancel(transaction_manager, deploy_job)
       raise e unless deploy_job.mode == DeployJob.mode.find_value(:manual)
     end
 
     class << self
-      def transaction(repository)
-      end
+      def cancel(transaction_manager, deploy_job)
+        transaction_manager.cancel
 
-      def cancel
-        @logger.info("Cancel transaction: #{@repository}")
-        Redis.current.del(@key)
+        deploy_job.status = DeployJob.status.find_value(:failure).to_s
+        deploy_job.finished_at = Time.now.utc
+        deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f if deploy_job.started_at.present?
+        deploy_job.save
       end
     end
   end

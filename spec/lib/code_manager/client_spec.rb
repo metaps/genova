@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 module Genova
-  module App
-    describe Client do
+  module CodeManager
+    describe Git do
       let(:code_manager) { CodeManager::Git.new('account', 'repository', branch: 'master') }
       let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
 

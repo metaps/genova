@@ -23,7 +23,6 @@ module Github
       )
     end
     let(:slack_bot_mock) { double(Genova::Slack::Interactive::Bot) }
-    let(:client_mock) { double(Genova::Client) }
 
     before(:each) do
       DeployJob.delete_all
@@ -35,8 +34,7 @@ module Github
       allow(slack_bot_mock).to receive(:finished_deploy)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
 
-      allow(client_mock).to receive(:run)
-      allow(Genova::Client).to receive(:new).and_return(client_mock)
+      allow(Genova::Run).to receive(:call)
     end
 
     describe 'perform' do

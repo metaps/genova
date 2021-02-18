@@ -11,7 +11,7 @@ module Github
       return if deploy_target.nil?
 
       deploy_job = DeployJob.new(
-        id: id,
+        id: DeployJob.generate_id,
         type: DeployJob.type.find_value(:service),
         status: DeployJob.status.find_value(:in_progress),
         mode: DeployJob.mode.find_value(:auto),
