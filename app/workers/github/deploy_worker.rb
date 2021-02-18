@@ -10,7 +10,7 @@ module Github
       deploy_target = deploy_target(values[:account], values[:repository], values[:branch])
       return if deploy_target.nil?
 
-      deploy_job = DeployJob.new(
+      deploy_job = DeployJob.create(
         id: DeployJob.generate_id,
         type: DeployJob.type.find_value(:service),
         status: DeployJob.status.find_value(:in_progress),
@@ -21,7 +21,6 @@ module Github
         cluster: deploy_target[:cluster],
         service: deploy_target[:service]
       )
-      deploy_job.save
 
       bot = Genova::Slack::Interactive::Bot.new
       bot.detect_github_event(deploy_job: deploy_job, commit_url: values[:commit_url], author: values[:author])

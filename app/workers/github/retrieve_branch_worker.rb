@@ -7,7 +7,7 @@ module Github
 
       session_store = Genova::Slack::SessionStore.load(id)
       params = session_store.params
-      transaction = Genova::TransactionManager.new(params[:repository])
+      transaction = Genova::Transaction.new(params[:repository])
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.send_message('Please wait as other deployments are in progress.') if transaction.running?

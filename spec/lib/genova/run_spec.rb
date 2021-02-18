@@ -5,7 +5,8 @@ module Genova
     let(:ecs_client_mock) { double(Ecs::Client) }
     let(:docker_client_mock) { double(Genova::Docker::Client) }
     let(:deploy_job) do
-      deploy_job = DeployJob.new(
+      DeployJob.create(
+        id: DeployJob.generate_id,
         mode: DeployJob.mode.find_value(:manual),
         type: DeployJob.type.find_value(:service),
         account: ENV.fetch('GITHUB_ACCOUNT'),
@@ -13,8 +14,6 @@ module Genova
         cluster: 'cluster',
         service: 'service'
       )
-      deploy_job.save
-      deploy_job
     end
     let(:deploy_response) do
       deploy_response = Ecs::DeployResponse.new

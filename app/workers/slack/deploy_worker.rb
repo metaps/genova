@@ -6,7 +6,7 @@ module Slack
       logger.info('Started Slack::DeployWorker')
 
       params = Genova::Slack::SessionStore.load(id).params
-      deploy_job = DeployJob.new(id: DeployJob.generate_id,
+      deploy_job = DeployJob.create(id: DeployJob.generate_id,
                                  type: params[:type],
                                  alias: params[:alias],
                                  status: DeployJob.status.find_value(:in_progress),
@@ -22,7 +22,6 @@ module Slack
                                  service: params[:service],
                                  scheduled_task_rule: params[:scheduled_task_rule],
                                  scheduled_task_target: params[:scheduled_task_target])
-      deploy_job.save
 
       history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)

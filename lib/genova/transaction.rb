@@ -1,5 +1,5 @@
 module Genova
-  class TransactionManager
+  class Transaction
     LOCK_WAIT_INTERVAL = 10
 
     def initialize(repository)

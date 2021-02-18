@@ -1,8 +1,8 @@
 module Genova
   class Run
     def self.call(deploy_job, options = {})
-      transaction_manager = Genova::TransactionManager.new(deploy_job.repository)
-      transaction_manager.begin unless transaction_manager.running? || options[:force]
+      transaction = Genova::Transaction.new(deploy_job.repository)
+      transaction.begin unless transaction.running? || options[:force]
 
       logger = Genova::Logger::MongodbLogger.new(deploy_job.id)
       logger.level = options[:verbose] ? :debug : Settings.logger.level
@@ -49,23 +49,23 @@ module Genova
 
       logger.info('Deployment was successful.')
 
-      transaction_manager.commit
+      transaction.commit
     rescue Interrupt
       logger.error("Detected forced termination of program. {\"deploy id\": #{deploy_job.id}}")
 
-      cancel(transaction_manager, deploy_job)
+      cancel(transaction, deploy_job)
     rescue => e
       logger.error("Deployment has stopped because an error has occurred. {\"deploy id\": #{deploy_job.id}}")
       logger.error(e.message)
       logger.error(e.backtrace.join("\n")) if e.backtrace.present?
 
-      cancel(transaction_manager, deploy_job)
+      cancel(transaction, deploy_job)
       raise e unless deploy_job.mode == DeployJob.mode.find_value(:manual)
     end
 
     class << self
-      def cancel(transaction_manager, deploy_job)
-        transaction_manager.cancel
+      def cancel(transaction, deploy_job)
+        transaction.cancel
 
         deploy_job.status = DeployJob.status.find_value(:failure).to_s
         deploy_job.finished_at = Time.now.utc

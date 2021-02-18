@@ -179,7 +179,7 @@ module GenovaCli
     desc 'clear-transaction', 'Cancel deploy transactions.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def clear_transaction
-      ::Genova::TransactionManager.new(options[:repository]).cancel
+      ::Genova::Transaction.new(options[:repository]).cancel
 
       puts("Transaction has been cancelled.")
     end

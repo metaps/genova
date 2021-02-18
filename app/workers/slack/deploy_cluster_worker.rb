@@ -6,7 +6,7 @@ module Slack
       logger.info('Started Slack::DeployClusterWorker')
 
       params = Genova::Slack::SessionStore.load(id).params
-      transaction = Genova::TransactionManager.new(params[:repository])
+      transaction = Genova::Transaction.new(params[:repository])
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.ask_cluster(params)
