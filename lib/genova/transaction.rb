@@ -3,9 +3,9 @@ module Genova
     LOCK_WAIT_INTERVAL = 10
 
     def initialize(repository)
-      @key = "deploy-lock_#{ENV.fetch('GITHUB_ACCOUNT')}:#{repository}"
-      @logger = ::Logger.new($stdout, level: Settings.logger.level)
+      @key = "trans_#{ENV.fetch('GITHUB_ACCOUNT')}:#{repository}"
       @repository = repository
+      @logger = ::Logger.new($stdout, level: Settings.logger.level)
     end
 
     def begin

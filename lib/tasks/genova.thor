@@ -181,7 +181,7 @@ module GenovaCli
     def clear_transaction
       ::Genova::Transaction.new(options[:repository]).cancel
 
-      puts("Transaction has been cancelled.")
+      puts('Transaction has been cancelled.')
     end
 
     desc 'version', 'Show version'

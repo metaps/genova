@@ -6,7 +6,6 @@ module Genova
           @payload = payload
           @thread_ts = @payload[:container][:thread_ts]
           @session_store = Genova::Slack::SessionStore.load(@thread_ts)
-          @logger = ::Logger.new($stdout, level: Settings.logger.level)
 
           action = @payload.dig(:actions, 0)
 
@@ -25,7 +24,7 @@ module Genova
 
         def cancel
           params = @session_store.params
-          Genova::TransactionManager.new(params[:repository], @logger).cancel if params[:repository].present?
+          Genova::Transaction.new(params[:repository]).cancel if params[:repository].present?
 
           'Deployment was canceled.'
         end
