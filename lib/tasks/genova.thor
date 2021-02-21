@@ -3,7 +3,6 @@ module GenovaCli
     class_option :branch, aliases: :b, desc: 'Branch to deploy.'
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
     class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Show confirmation message before deploying.'
-    class_option :ssh_secret_key_path, desc: 'SSH key to use when retrieving repository.'
     class_option :tag, desc: 'Tag to deploy.'
     class_option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Outputting detailed logs.'
 
@@ -28,6 +27,7 @@ module GenovaCli
         repository_settings = Genova::Config::SettingsHelper.find_repository(options[:repository])
 
         deploy_job = DeployJob.new(
+          id: DeployJob.generate_id,
           mode: DeployJob.mode.find_value(:manual).to_sym,
           type: options[:type],
           alias: repository_settings[:alias],
@@ -39,19 +39,13 @@ module GenovaCli
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],
           repository: repository_settings[:name] || options[:repository],
-          ssh_secret_key_path: options[:ssh_secret_key_path],
           run_task: options[:run_task],
           override_container: options[:override_container],
           override_command: options[:override_command]
         )
+        raise Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
 
-        extra = {
-          interactive: options[:interactive],
-          verbose: options[:verbose],
-          force: options[:force]
-        }
-
-        ::Genova::Client.new(deploy_job, extra).run
+        ::Genova::Run.call(deploy_job, verbose: options[:verbose], force: options[:force])
       end
     end
 
@@ -180,6 +174,14 @@ module GenovaCli
       task = Genova::Ecs::Task::Client.new.register(path, tag: 'latest')
 
       puts("Registered task. [#{task.task_definition_arn}]")
+    end
+
+    desc 'clear-transaction', 'Cancel deploy transactions.'
+    option :repository, required: true, aliases: :r, desc: 'Repository name.'
+    def clear_transaction
+      ::Genova::Transaction.new(options[:repository]).cancel
+
+      puts('Transaction has been cancelled.')
     end
 
     desc 'version', 'Show version'

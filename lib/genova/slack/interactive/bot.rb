@@ -178,7 +178,6 @@ module Genova
           fields << BlockKit::Helper.section_field('Reason', "```#{BlockKit::Helper.escape_emoji(params[:error].message)}```")
           fields << BlockKit::Helper.section_field('Backtrace', "```#{params[:error].backtrace.join("\n").truncate(512)}```") if params[:error].backtrace.present?
 
-
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:user]}>") if params[:user].present?
           blocks << BlockKit::Helper.header('Oops! Runtime error has occurred.')

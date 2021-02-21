@@ -11,7 +11,7 @@ module Github
       return if deploy_target.nil?
 
       deploy_job = DeployJob.create(
-        id: id,
+        id: DeployJob.generate_id,
         type: DeployJob.type.find_value(:service),
         status: DeployJob.status.find_value(:in_progress),
         mode: DeployJob.mode.find_value(:auto),
@@ -25,8 +25,7 @@ module Github
       bot = Genova::Slack::Interactive::Bot.new
       bot.detect_github_event(deploy_job: deploy_job, commit_url: values[:commit_url], author: values[:author])
 
-      client = Genova::Client.new(deploy_job)
-      client.run
+      Genova::Run.call(deploy_job)
 
       bot.finished_deploy(deploy_job: deploy_job)
     rescue => e

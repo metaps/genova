@@ -27,7 +27,6 @@ class DeployJob
   field :service, type: String
   field :scheduled_task_rule, type: String
   field :scheduled_task_target, type: String
-  field :ssh_secret_key_path, type: String
   field :logs, type: Array
   field :task_definition_arn, type: String
   field :task_arns, type: Array
@@ -36,48 +35,15 @@ class DeployJob
   field :execution_time, type: Float
   field :deployment_tag, type: String
 
-  validates :mode, :account, :repository, :cluster, :ssh_secret_key_path, presence: true
+  validates :mode, :account, :repository, :cluster, presence: true
   validate :check_type
-  validate :check_ssh_secret_key_path
 
-  def initialize(params = {})
-    super
-
-    self.id = DeployJob.generate_id
-    self.account = params[:account]
-    self.branch = params[:branch]
-    self.tag = params[:tag]
-    self.ssh_secret_key_path = params[:ssh_secret_key_path] || "#{ENV.fetch('HOME')}/.ssh/id_rsa"
+  def self.generate_id
+    Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
 
   def label
     "build-#{id}"
-  end
-
-  def start
-    self.started_at = Time.now.utc
-    save
-  end
-
-  def done(deploy_response)
-    self.status = DeployJob.status.find_value(:success).to_s
-    self.task_definition_arn = deploy_response.task_definition_arn
-    self.task_arns = deploy_response.task_arns
-    self.finished_at = Time.now.utc
-    self.execution_time = finished_at.to_f - started_at.to_f
-    save
-  end
-
-  def cancel
-    self.status = DeployJob.status.find_value(:failure).to_s
-    self.finished_at = Time.now.utc
-    self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
-
-    save
-  end
-
-  def self.generate_id
-    Time.now.utc.strftime('%Y%m%d-%H%M%S')
   end
 
   def self.latest_deployments
@@ -140,9 +106,5 @@ class DeployJob
 
   def check_type
     errors[:base] << 'Please specify deploy type.' unless type.present?
-  end
-
-  def check_ssh_secret_key_path
-    errors.add(:ssh_secret_key_path, "Private key does not exist. [#{ssh_secret_key_path}]") unless File.exist?(ssh_secret_key_path)
   end
 end

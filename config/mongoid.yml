@@ -12,6 +12,11 @@ development:
 
 test:
   <<: *default
+  clients:
+    default:
+      database: <%= ENV['MONGO_DB_TEST'] %>
+      hosts:
+        - <%= ENV['MONGO_HOST'] %>:<%= ENV['MONGO_PORT'] %>
 
 production:
   <<: *default
