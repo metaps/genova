@@ -3,36 +3,86 @@ require 'rails_helper'
 module V2
   describe GithubRoutes do
     describe 'POST /api/v2/github/push' do
-      let(:payload_body) do
-        post_data = {
+      let(:commit_payload) do
+        Oj.dump(
           repository: {
             full_name: 'account/repository'
           },
-          ref: 'refs/heads/master',
+          ref: 'refs/heads/xxx',
           head_commit: {
             url: 'url',
             author: {
               username: 'username'
             }
           }
-        }
-        Oj.dump(post_data)
+        )
       end
-      let(:headers) do
-        { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' }
+
+      let(:not_belong_commit_payload) do
+        Oj.dump(
+          repository: {
+            full_name: 'account/repository'
+          },
+          ref: 'refs/heads/xxx',
+          head_commit: nil
+        )
+      end
+
+      let(:tag_payload) do
+        Oj.dump(
+          repository: {
+            full_name: 'account/repository'
+          },
+          ref: 'refs/tags/xxx',
+          head_commit: {
+            url: 'url',
+            author: {
+              username: 'username'
+            }
+          }
+        )
       end
 
       context 'when valid signature' do
         digest = OpenSSL::Digest.new('sha1')
-        let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), payload_body)}" }
 
-        it 'should be return success' do
-          allow(Github::DeployWorker).to receive(:perform_async)
+        context 'when branch is pushed' do
+          let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), commit_payload)}" }
+          let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
 
-          post '/api/v2/github/push', params: payload_body, headers: headers
+          it 'should be return success' do
+            allow(Github::DeployWorker).to receive(:perform_async)
 
-          expect(response).to have_http_status :created
-          expect(response.body).to be_json_eql('Deploy request was executed.'.to_json).at_path('result')
+            post '/api/v2/github/push', params: commit_payload, headers: headers
+
+            expect(response).to have_http_status :created
+          end
+        end
+
+        context 'when not belong commit is pushed' do
+          let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), not_belong_commit_payload)}" }
+          let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
+
+          it 'should be return error' do
+            allow(Github::DeployWorker).to receive(:perform_async)
+
+            post '/api/v2/github/push', params: not_belong_commit_payload, headers: headers
+
+            expect(response).to have_http_status :forbidden
+          end
+        end
+
+        context 'when tag is pushed' do
+          let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), tag_payload)}" }
+          let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
+
+          it 'should be return error' do
+            allow(Github::DeployWorker).to receive(:perform_async)
+
+            post '/api/v2/github/push', params: tag_payload, headers: headers
+
+            expect(response).to have_http_status :forbidden
+          end
         end
       end
 
@@ -40,10 +90,9 @@ module V2
         let(:signature) { 'sha1=invalid_signature' }
 
         it 'should be return error' do
-          post '/api/v2/github/push', params: payload_body, headers: headers
+          post '/api/v2/github/push', params: commit_payload, headers: headers
 
           expect(response).to have_http_status :forbidden
-          expect(response.body).to be_json_eql('Signature is invalid.'.to_json).at_path('error')
         end
       end
     end
