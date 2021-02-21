@@ -25,14 +25,13 @@ module V2
 
         account, repository = data[:repository][:full_name].split('/')
 
-        result = {
+        {
           account: account,
           repository: repository,
+          branch: matches[2],
           commit_url: data[:head_commit][:url],
           author: data[:head_commit][:author][:username]
         }
-        result[:branch] = matches[2]
-        result
       end
     end
   end
