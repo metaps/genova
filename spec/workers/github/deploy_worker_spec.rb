@@ -25,7 +25,6 @@ module Github
     let(:slack_bot_mock) { double(Genova::Slack::Interactive::Bot) }
 
     before(:each) do
-      Redis.current.flushdb
       DeployJob.delete_all
 
       allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
