@@ -13,23 +13,25 @@ module V2
 
       def parse(payload)
         data = Oj.load(payload, symbol_keys: true)
-        return if data[:ref].nil?
+        raise Genova::Exceptions::InvalidRequestError, 'Request does not contain "ref" attribute.' if data[:ref].nil?
 
         matches = data[:ref].match(%r{^refs/([^/]+)/(.+)$})
 
-        # タグのプッシュは検知対象外
-        return raise Genova::Exceptions::InvalidRequestError, "#{data[:ref]} is not a valid request." if matches.nil? || matches[1] != 'heads'
+        # Excludes tag push
+        raise Genova::Exceptions::InvalidRequestError, "#{data[:ref]} is not a valid request." if matches.nil? || matches[1] != 'heads'
 
-        full_name = data[:repository][:full_name].split('/')
+        # Exclude commits that don't belong to any branch
+        raise Genova::Exceptions::InvalidRequestError, 'Commit does not belong to any branch' if data[:head_commit].nil?
 
-        result = {
-          account: full_name[0],
-          repository: full_name[1],
+        account, repository = data[:repository][:full_name].split('/')
+
+        {
+          account: account,
+          repository: repository,
+          branch: matches[2],
           commit_url: data[:head_commit][:url],
           author: data[:head_commit][:author][:username]
         }
-        result[:branch] = matches[2]
-        result
       end
     end
   end

@@ -45,7 +45,6 @@ module Genova
             Settings.reload!
 
             allow(::Github::RetrieveBranchWorker).to receive(:perform_async)
-            allow(::Github::RetrieveBranchWatchWorker).to receive(:perform_async)
 
             payload = {
               container: {

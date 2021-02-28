@@ -40,11 +40,12 @@
     "auto_deploy": {
       "type": "array",
       "items": {
-        "required": ["branch", "cluster", "service"],
+        "required": ["branch", "cluster"],
         "properties": {
           "branch": { "type": "string" },
           "cluster": { "type": "string" },
-          "service": { "type": "string" }
+          "service": { "type": "string" },
+          "services": { "type": "array" }
         }
       }
     },
