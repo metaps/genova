@@ -13,11 +13,9 @@ module Slack
           service: 'service',
           slack_user_id: 'slack_user_id'
         )
-        deploy_job.save!
-        deploy_job.id
+        deploy_job.save
       end
       let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
-      let(:genova_client_mock) { double(Genova::Client) }
 
       include_context :session_start
 
@@ -30,8 +28,7 @@ module Slack
         allow(bot_mock).to receive(:finished_deploy)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-        allow(genova_client_mock).to receive(:run)
-        allow(Genova::Client).to receive(:new).and_return(genova_client_mock)
+        allow(Genova::Run).to receive(:call)
 
         subject.perform(id)
       end

@@ -16,7 +16,7 @@ module V2
 
         { result: 'Deploy request was executed.' }
       rescue Genova::Exceptions::InvalidRequestError => e
-        { result: e.message }
+        error! e.message, 403
       end
     end
   end

@@ -15,6 +15,7 @@ module Genova
           context 'when adding key for first' do
             let(:deploy_job) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'master',
@@ -31,6 +32,7 @@ module Genova
           context 'when adding key for second (new key)' do
             let(:deploy_job_1) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'master',
@@ -40,6 +42,7 @@ module Genova
             end
             let(:deploy_job_2) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'master',
@@ -58,6 +61,7 @@ module Genova
           context 'when adding key for second (exist key)' do
             let(:deploy_job) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'master',
@@ -77,6 +81,7 @@ module Genova
           context 'when history holdings is exceeded' do
             let(:deploy_job_1) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'feature/3',
@@ -86,6 +91,7 @@ module Genova
             end
             let(:deploy_job_2) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'feature/2',
@@ -95,6 +101,7 @@ module Genova
             end
             let(:deploy_job_3) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'feature/1',
@@ -116,6 +123,7 @@ module Genova
           context 'when adding key for first' do
             let(:deploy_job) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'master',
@@ -138,6 +146,7 @@ module Genova
           context 'when adding key for second (first key)' do
             let(:deploy_job_1) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'master',
@@ -147,6 +156,7 @@ module Genova
             end
             let(:deploy_job_2) do
               DeployJob.new(
+                id: DeployJob.generate_id,
                 account: 'metaps',
                 repository: 'genova',
                 branch: 'master',

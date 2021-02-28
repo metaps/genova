@@ -102,17 +102,21 @@ module Genova
           end
         end
 
-        describe 'detect_github_event' do
-          let(:deploy_job_mock) { double(DeployJob) }
+        describe 'detect_auto_deploy' do
+          let(:params) do
+            {
+              account: 'account',
+              repository: 'repository',
+              branch: 'branch',
+              commit_url: 'commit_url',
+              author: 'author',
+              cluster: 'cluster',
+              services: ['service']
+            }
+          end
 
           it 'should be not error' do
-            allow(deploy_job_mock).to receive(:repository)
-            allow(deploy_job_mock).to receive(:account)
-            allow(deploy_job_mock).to receive(:branch)
-            allow(deploy_job_mock).to receive(:cluster)
-            allow(deploy_job_mock).to receive(:service)
-
-            expect { bot.detect_github_event(deploy_job: deploy_job_mock) }.not_to raise_error
+            expect { bot.detect_auto_deploy(params) }.not_to raise_error
           end
         end
 
