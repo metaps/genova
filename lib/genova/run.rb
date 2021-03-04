@@ -16,6 +16,7 @@ module Genova
         deploy_job.repository,
         branch: deploy_job.branch,
         tag: deploy_job.tag,
+        alias: deploy_job.alias,
         logger: logger
       )
       ecs_client = Ecs::Client.new(deploy_job.cluster, code_manager, logger: logger)
