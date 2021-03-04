@@ -70,7 +70,9 @@ module Genova
       end
 
       def load_deploy_config
+        client.fetch
         config = client.show("origin/#{@branch}", 'config/deploy.yml')
+
         params = YAML.load(config).deep_symbolize_keys
         Genova::Config::DeployConfig.new(params)
       end
@@ -80,7 +82,9 @@ module Genova
       end
 
       def load_task_definition_config(path)
+        client.fetch
         config = client.show("origin/#{@branch}", path)
+
         params = YAML.load(config).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
       end

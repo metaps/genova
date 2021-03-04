@@ -191,11 +191,7 @@ module GenovaCli
 
     desc 'version', 'Show version'
     def version
-      code_manager = ::Genova::CodeManager::Git.new(ENV.fetch('GITHUB_ACCOUNT'), 'reshine-log', branch: 'develop')
-
-      puts code_manager.load_deploy_config
-
-      # puts "genova #{Genova::Version::LONG_STRING}"
+      puts "genova #{Genova::Version::LONG_STRING}"
     end
   end
 end

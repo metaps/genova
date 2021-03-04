@@ -27,6 +27,7 @@ module Genova
         let(:git_mock) { double(::Git) }
 
         it 'should be return config' do
+          allow(git_mock).to receive(:fetch)
           allow(git_mock).to receive(:show).and_return('{ clusters: [] }')
           allow(code_manager).to receive(:client).and_return(git_mock)
 
@@ -44,6 +45,7 @@ module Genova
         let(:git_mock) { double(::Git) }
 
         it 'should be return config' do
+          allow(git_mock).to receive(:fetch)
           allow(git_mock).to receive(:show).and_return('{}')
           allow(code_manager).to receive(:client).and_return(git_mock)
 
