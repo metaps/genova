@@ -11,7 +11,7 @@ module Github
       transaction.begin
 
       result = find(values[:account], values[:repository], values[:branch])
-      return transacton.cancel if result.nil?
+      return transaction.cancel if result.nil?
 
       bot = Genova::Slack::Interactive::Bot.new
       response = bot.detect_auto_deploy(
