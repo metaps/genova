@@ -2,10 +2,10 @@ module Genova
   class Transaction
     LOCK_WAIT_INTERVAL = 10
 
-    def initialize(repository)
+    def initialize(repository, options = {})
       @key = "trans_#{ENV.fetch('GITHUB_ACCOUNT')}:#{repository}"
       @repository = repository
-      @logger = ::Logger.new($stdout, level: Settings.logger.level)
+      @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
     end
 
     def begin

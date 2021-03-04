@@ -24,15 +24,13 @@ module Genova
       end
 
       describe 'load_deploy_config' do
+        let(:git_mock) { double(::Git) }
+
         it 'should be return config' do
-          allow(code_manager).to receive(:update)
-          allow(File).to receive(:exist?).and_return(true)
-          allow(File).to receive(:read).and_return('{}')
+          allow(git_mock).to receive(:show).and_return('{ clusters: [] }')
+          allow(code_manager).to receive(:client).and_return(git_mock)
 
-          deploy_config_mock = double(Genova::Config::DeployConfig)
-          allow(Genova::Config::DeployConfig).to receive(:new).and_return(deploy_config_mock)
-
-          expect(code_manager.load_deploy_config).to be_a(deploy_config_mock.class)
+          expect(code_manager.load_deploy_config).to be_a(Genova::Config::DeployConfig)
         end
       end
 
@@ -43,10 +41,11 @@ module Genova
       end
 
       describe 'load_task_definition_config' do
+        let(:git_mock) { double(::Git) }
+
         it 'should be return config' do
-          allow(code_manager).to receive(:task_definition_config_path)
-          allow(File).to receive(:exist?).and_return(true)
-          allow(File).to receive(:read).and_return('{}')
+          allow(git_mock).to receive(:show).and_return('{}')
+          allow(code_manager).to receive(:client).and_return(git_mock)
 
           expect(code_manager.load_task_definition_config('path')).to be_a(Genova::Config::TaskDefinitionConfig)
         end

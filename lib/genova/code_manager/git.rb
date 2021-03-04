@@ -80,13 +80,8 @@ module Genova
       end
 
       def load_task_definition_config(path)
-
-        puts path
-        exit
-        path = task_definition_config_path(path)
-        raise Exceptions::ValidationError, "File does not exist. [#{path}]" unless File.exist?(path)
-
-        params = YAML.load(File.read(path)).deep_symbolize_keys
+        config = client.show("origin/#{@branch}", path)
+        params = YAML.load(config).deep_symbolize_keys
         Genova::Config::TaskDefinitionConfig.new(params)
       end
 
