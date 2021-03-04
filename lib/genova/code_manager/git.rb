@@ -42,7 +42,9 @@ module Genova
         @repository = repository
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
 
-        repository_config = Genova::Config::SettingsHelper.find_repository(@repository)
+        name_or_alias = options[:alias].present? ? options[:alias] : @repository
+        repository_config = Genova::Config::SettingsHelper.find_repository(name_or_alias)
+
         @base_path = repository_config.nil? || repository_config[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(repository_config[:base_path]).to_s
       end
 

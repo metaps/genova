@@ -118,6 +118,7 @@ module Genova
             code_manager = Genova::CodeManager::Git.new(
               params[:account],
               params[:repository],
+              alias: params[:alias],
               branch: params[:branch],
               tag: params[:tag]
             )
