@@ -3,9 +3,9 @@ module Genova
     module Deployer
       module ScheduledTask
         class Client
-          def initialize(cluster, logger)
+          def initialize(cluster, options = {})
             @cluster = cluster
-            @logger = logger
+            @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
             @cloud_watch_events = Aws::CloudWatchEvents::Client.new
           end
 
@@ -18,6 +18,8 @@ module Genova
             target = targets.targets.find { |v| v.id == target }
             target.present?
           end
+
+          def create(params); end
 
           def update(name, schedule_expression, target, options = {})
             raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{name}]" unless exist_rule?(name)

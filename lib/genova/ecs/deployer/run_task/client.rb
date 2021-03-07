@@ -5,9 +5,9 @@ module Genova
         class Client
           LOG_SEPARATOR = '-' * 96
 
-          def initialize(cluster, logger)
+          def initialize(cluster, options = {})
             @cluster = cluster
-            @logger = logger
+            @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
             @ecs_client = Aws::ECS::Client.new
           end
 

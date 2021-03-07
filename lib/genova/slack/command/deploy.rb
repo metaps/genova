@@ -21,7 +21,6 @@ module Genova
             result = send("parse_#{type}", statements[:params])
             params = {
               type: type,
-              account: result[:account],
               repository: result[:repository],
               branch: result[:branch],
               cluster: result[:cluster],
@@ -43,7 +42,6 @@ module Genova
 
           def parse_run_task(params)
             validations = {
-              account: String,
               repository: String,
               branch: String,
               cluster: String,
@@ -55,7 +53,6 @@ module Genova
 
           def parse_service(params)
             validations = {
-              account: String,
               repository: String,
               branch: String,
               cluster: String,
@@ -67,7 +64,6 @@ module Genova
 
           def parse_scheduled_task(params)
             validations = {
-              account: String,
               repository: String,
               branch: String,
               cluster: String,
@@ -79,11 +75,10 @@ module Genova
           end
 
           def parse(params, validations)
-            params[:account] = ENV.fetch('GITHUB_ACCOUNT')
             params[:branch] = Settings.github.default_branch if params[:branch].nil?
 
             if params.include?(:target)
-              code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository], branch: params[:branch])
+              code_manager = Genova::CodeManager::Git.new(params[:repository], branch: params[:branch])
               target_config = code_manager.load_deploy_config.find_target(params[:target])
               target_config.delete(:name)
 

@@ -31,9 +31,7 @@ module Genova
 
         def approve_repository
           value = @payload.dig(:actions, 0, :selected_option, :value)
-          params = {
-            account: ENV.fetch('GITHUB_ACCOUNT')
-          }
+          params = {}
 
           repositories = Settings.github.repositories || []
           repositories.each.find do |k|

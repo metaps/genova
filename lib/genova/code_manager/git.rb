@@ -34,8 +34,8 @@ module Genova
     class Git
       attr_reader :repos_path, :base_path
 
-      def initialize(account, repository, options = {})
-        @account = account
+      def initialize(repository, options = {})
+        @account = ENV.fetch('GITHUB_ACCOUNT')
         @branch = options[:branch]
         @tag = options[:tag]
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)

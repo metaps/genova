@@ -47,7 +47,7 @@ module Genova
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
         task_definition_arn = task_definition.task_definition_arn
-        run_task_client = Deployer::RunTask::Client.new(@cluster, @logger)
+        run_task_client = Deployer::RunTask::Client.new(@cluster, options: @logger)
         task_arns = run_task_client.execute(task_definition_arn, options)
 
         deploy_response = DeployResponse.new
@@ -65,7 +65,7 @@ module Genova
         service_task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
         service_task_definition = create_task(service_task_definition_path, id)
 
-        service_client = Deployer::Service::Client.new(@cluster, @logger)
+        service_client = Deployer::Service::Client.new(@cluster, logger: @logger)
 
         raise Exceptions::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
 
@@ -107,11 +107,11 @@ module Genova
         task_definition_arn = task_definition.task_definition_arn
         rule_config = @deploy_config.find_scheduled_task_rule(@cluster, rule)
 
-        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@cluster, @logger)
+        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@cluster, logger: @logger)
         scheduled_task_client.update(
           rule_config[:rule],
           rule_config[:expression],
-          Ecs::Deployer::ScheduledTask::Target.build(@cluster, task_definition_arn, target_config, @logger),
+          Ecs::Deployer::ScheduledTask::Target.build(@cluster, task_definition_arn, target_config, logger: @logger),
           {
             enabled: target_config[:enabled],
             description: target_config[:description]
