@@ -6,12 +6,7 @@ module Github
       logger.info('Started Github::DeployWorker')
 
       values = Genova::Sidekiq::JobStore.find(id)
-
-      transaction = Genova::Transaction.new(values[:repository])
-      transaction.begin
-
       result = find(values[:account], values[:repository], values[:branch])
-      return transaction.cancel if result.nil?
 
       bot = Genova::Slack::Interactive::Bot.new
       response = bot.detect_auto_deploy(
@@ -45,9 +40,7 @@ module Github
       end
 
       deploy_bot.finished_auto_deploy_all
-      transaction.commit
     rescue => e
-      transaction.cancel if transaction.present?
       slack_notify(e)
       raise e
     end

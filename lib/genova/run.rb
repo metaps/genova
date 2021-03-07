@@ -1,12 +1,13 @@
 module Genova
   class Run
     def self.call(deploy_job, options = {})
-      transaction = Genova::Transaction.new(deploy_job.repository)
-      transaction.begin unless transaction.running? || options[:force]
-
       logger = Genova::Logger::MongodbLogger.new(deploy_job.id)
       logger.level = options[:verbose] ? :debug : Settings.logger.level
       logger.info('Start deploy.')
+
+      transaction = Genova::Transaction.new(deploy_job.repository, logger: logger)
+      transaction.cancel if options[:force]
+      transaction.begin
 
       deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
       deploy_job.save
@@ -16,6 +17,7 @@ module Genova
         deploy_job.repository,
         branch: deploy_job.branch,
         tag: deploy_job.tag,
+        alias: deploy_job.alias,
         logger: logger
       )
       ecs_client = Ecs::Client.new(deploy_job.cluster, code_manager, logger: logger)
