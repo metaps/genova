@@ -10,13 +10,19 @@ module Genova
           end
 
           def exist_rule?(rule)
-            @cloud_watch_events.describe_rule(name: rule)
-            true
-          rescue Aws::CloudWatchEvents::Errors::ResourceNotFoundException
-            false
+            @cloud_watch_events.list_rules(name_prefix: rule)[:rules].size.positive?
+          end
+
+          def exist_target?(rule, target)
+            targets = @cloud_watch_events.list_targets_by_rule(rule: rule)
+            target = targets.targets.find { |v| v.id == target }
+            target.present?
           end
 
           def update(name, schedule_expression, target, options = {})
+            raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{name}]" unless exist_rule?(name)
+            raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{target[:id]}]" unless exist_target?(name, target[:id])
+
             response = @cloud_watch_events.put_rule(
               name: name,
               schedule_expression: schedule_expression,
