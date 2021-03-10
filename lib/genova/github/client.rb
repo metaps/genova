@@ -1,8 +1,8 @@
 module Genova
   module Github
     class Client
-      def initialize(account, repository)
-        @account = account
+      def initialize(repository)
+        @account = ENV.fetch('GITHUB_ACCOUNT')
         @repository = repository
       end
 

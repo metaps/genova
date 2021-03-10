@@ -12,7 +12,6 @@ module GenovaCli
         return if options[:repository].nil? || options[:target].nil?
 
         code_manager = ::Genova::CodeManager::Git.new(
-          ENV.fetch('GITHUB_ACCOUNT'),
           options[:repository],
           branch: options[:branch],
           tag: options[:tag]
@@ -30,7 +29,7 @@ module GenovaCli
           id: DeployJob.generate_id,
           mode: DeployJob.mode.find_value(:manual).to_sym,
           type: options[:type],
-          alias: repository_settings[:alias],
+          alias: repository_settings.present? ? repository_settings[:alias] : nil,
           account: ENV.fetch('GITHUB_ACCOUNT'),
           branch: options[:branch],
           tag: options[:tag],
@@ -38,7 +37,7 @@ module GenovaCli
           service: options[:service],
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],
-          repository: repository_settings[:name] || options[:repository],
+          repository: repository_settings.present? ? repository_settings[:repository] : options[:repository],
           run_task: options[:run_task],
           override_container: options[:override_container],
           override_command: options[:override_command]
@@ -167,7 +166,7 @@ module GenovaCli
     option :path, required: true, desc: 'Task path.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def register_task
-      code_manager = ::Genova::CodeManager::Git.new(ENV.fetch('GITHUB_ACCOUNT'), options[:repository], branch: options[:branch])
+      code_manager = ::Genova::CodeManager::Git.new(options[:repository], branch: options[:branch])
       code_manager.update
 
       path = code_manager.task_definition_config_path(options[:path])

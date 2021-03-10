@@ -2,7 +2,7 @@
   <h2 class="title">Deploy jobs: <%= params[:id] %></h2>
 
   <% if @deploy_job.present? %>
-    <% github_client = Genova::Github::Client.new(@deploy_job.account, @deploy_job.repository) %>
+    <% github_client = Genova::Github::Client.new(@deploy_job.repository) %>
     <dl class="meta">
       <div class="columns">
         <dt class="column is-2">Status</dt>

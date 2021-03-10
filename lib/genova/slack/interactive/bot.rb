@@ -40,8 +40,8 @@ module Genova
         end
 
         def ask_branch(params)
-          branch_options = BlockKit::ElementObject.branch_options(account: params[:account], repository: params[:repository])
-          tag_options = BlockKit::ElementObject.tag_options(account: params[:account], repository: params[:repository])
+          branch_options = BlockKit::ElementObject.branch_options(repository: params[:repository])
+          tag_options = BlockKit::ElementObject.tag_options(repository: params[:repository])
 
           elements = []
           elements << BlockKit::Helper.static_select('approve_branch', branch_options, 'Pick branch...')
@@ -101,7 +101,7 @@ module Genova
           fields << BlockKit::Helper.section_field('Task ARNs', BlockKit::Helper.escape_emoji(params[:deploy_job].task_arns.join("\n"))) if params[:deploy_job].task_arns.present?
 
           if params[:deploy_job].tag.present?
-            github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
+            github_client = Genova::Github::Client.new(params[:deploy_job].repository)
             fields << BlockKit::Helper.section_field('Tag', "<#{github_client.build_tag_uri(params[:deploy_job].tag)}|#{params[:deploy_job].tag}>")
           end
 
@@ -114,7 +114,7 @@ module Genova
         end
 
         def detect_auto_deploy(params)
-          github_client = Genova::Github::Client.new(params[:account], params[:repository])
+          github_client = Genova::Github::Client.new(params[:repository])
           repository_uri = github_client.build_repository_uri
           branch_uri = github_client.build_branch_uri(params[:branch])
 
@@ -134,7 +134,7 @@ module Genova
         end
 
         def detect_slack_deploy(params)
-          github_client = Genova::Github::Client.new(params[:deploy_job].account, params[:deploy_job].repository)
+          github_client = Genova::Github::Client.new(params[:deploy_job].repository)
           repository_uri = github_client.build_repository_uri
           branch_uri = github_client.build_branch_uri(params[:deploy_job].branch)
 
@@ -208,10 +208,10 @@ module Genova
         private
 
         def confirm_command(params, mention)
-          github_client = Genova::Github::Client.new(params[:account], params[:repository])
+          github_client = Genova::Github::Client.new(params[:repository])
 
           fields = []
-          fields << BlockKit::Helper.section_short_field('Repository', "<#{github_client.build_repository_uri}|#{params[:account]}/#{params[:repository]}>")
+          fields << BlockKit::Helper.section_short_field('Repository', "<#{github_client.build_repository_uri}|#{ENV.fetch('GITHUB_ACCOUNT')}/#{params[:repository]}>")
 
           fields << if params[:branch].present?
                       BlockKit::Helper.section_short_field('Branch', "<#{github_client.build_branch_uri(params[:branch])}|#{params[:branch]}>")
@@ -261,11 +261,11 @@ module Genova
 
             task_definition_arn = services[0].task_definition
           else
-            cloudwatch_events_client = Aws::CloudWatchEvents::Client.new
-            rules = cloudwatch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
+            cloud_watch_events_client = Aws::CloudWatchEvents::Client.new
+            rules = cloud_watch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
             raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
 
-            targets = cloudwatch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
+            targets = cloud_watch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
             target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
             raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
 
@@ -282,7 +282,6 @@ module Genova
 
           if build.present?
             code_manager = Genova::CodeManager::Git.new(
-              params[:account],
               params[:repository],
               branch: params[:branch],
               tag: params[:tag]
@@ -295,7 +294,7 @@ module Genova
               if last_commit == deployed_commit
                 text = 'Unchanged.'
               else
-                github_client = Genova::Github::Client.new(params[:account], params[:repository])
+                github_client = Genova::Github::Client.new(params[:repository])
                 text = github_client.build_compare_uri(deployed_commit, last_commit)
               end
             end

@@ -34,8 +34,8 @@ module Genova
     class Git
       attr_reader :repos_path, :base_path
 
-      def initialize(account, repository, options = {})
-        @account = account
+      def initialize(repository, options = {})
+        @account = ENV.fetch('GITHUB_ACCOUNT')
         @branch = options[:branch]
         @tag = options[:tag]
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
@@ -150,7 +150,7 @@ module Genova
         return if File.exist?("#{@repos_path}/.git/config")
 
         FileUtils.rm_rf(@repos_path)
-        uri = Genova::Github::Client.new(@account, @repository).build_clone_uri
+        uri = Genova::Github::Client.new(@repository).build_clone_uri
         @logger.info("Git clone: #{uri}")
 
         ::Git.clone(uri, '', path: @repos_path)

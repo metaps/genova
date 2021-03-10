@@ -49,7 +49,7 @@ module Genova
           end
 
           def branch_options(params)
-            code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository])
+            code_manager = Genova::CodeManager::Git.new(params[:repository])
             options = []
             size = 0
 
@@ -68,7 +68,7 @@ module Genova
           end
 
           def tag_options(params)
-            code_manager = Genova::CodeManager::Git.new(params[:account], params[:repository])
+            code_manager = Genova::CodeManager::Git.new(params[:repository])
             options = []
             size = 0
 
@@ -91,7 +91,6 @@ module Genova
             permission = Genova::Slack::Interactive::Permission.new(params[:user])
 
             code_manager = Genova::CodeManager::Git.new(
-              params[:account],
               params[:repository],
               branch: params[:branch],
               tag: params[:tag]
@@ -116,7 +115,6 @@ module Genova
           def target_options(params)
             target_options = []
             code_manager = Genova::CodeManager::Git.new(
-              params[:account],
               params[:repository],
               alias: params[:alias],
               branch: params[:branch],

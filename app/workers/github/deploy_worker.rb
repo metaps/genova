@@ -6,7 +6,7 @@ module Github
       logger.info('Started Github::DeployWorker')
 
       values = Genova::Sidekiq::JobStore.find(id)
-      result = find(values[:account], values[:repository], values[:branch])
+      result = find(values[:repository], values[:branch])
 
       bot = Genova::Slack::Interactive::Bot.new
       response = bot.detect_auto_deploy(
@@ -47,8 +47,8 @@ module Github
 
     private
 
-    def find(account, repository, branch)
-      code_manager = Genova::CodeManager::Git.new(account, repository, branch: branch)
+    def find(repository, branch)
+      code_manager = Genova::CodeManager::Git.new(repository, branch: branch)
       auto_deploy_config = code_manager.load_deploy_config[:auto_deploy]
 
       return nil if auto_deploy_config.nil?

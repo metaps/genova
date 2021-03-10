@@ -3,7 +3,7 @@ require 'rails_helper'
 module Genova
   module CodeManager
     describe Git do
-      let(:code_manager) { CodeManager::Git.new('account', 'repository', branch: 'master') }
+      let(:code_manager) { CodeManager::Git.new('repository', branch: 'master') }
       let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
 
       describe 'pull' do

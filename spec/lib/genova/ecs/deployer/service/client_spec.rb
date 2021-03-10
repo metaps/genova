@@ -5,9 +5,8 @@ module Genova
     module Deployer
       module Service
         describe Client do
-          let(:logger) { ::Logger.new(nil) }
           let(:ecs_client_mock) { double(Aws::ECS::Client) }
-          let(:service_client) { Ecs::Deployer::Service::Client.new('cluster', logger) }
+          let(:service_client) { Ecs::Deployer::Service::Client.new('cluster') }
 
           before do
             allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client_mock)

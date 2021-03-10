@@ -13,7 +13,6 @@ module Genova
       deploy_job.save
 
       code_manager = CodeManager::Git.new(
-        deploy_job.account,
         deploy_job.repository,
         branch: deploy_job.branch,
         tag: deploy_job.tag,
