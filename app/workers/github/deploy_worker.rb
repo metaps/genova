@@ -7,6 +7,7 @@ module Github
 
       values = Genova::Sidekiq::JobStore.find(id)
       result = find(values[:repository], values[:branch])
+      return if values.nil?
 
       bot = Genova::Slack::Interactive::Bot.new
       response = bot.detect_auto_deploy(
