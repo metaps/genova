@@ -158,7 +158,7 @@ module GenovaCli
 
     desc 'docker-cleanup', 'Deletes unused containers, images, networks, and volumes built with genova.'
     def docker_cleanup
-      ::Genova::Docker::Cleaner.execute
+      ::Genova::Docker::ImageCleaner.call
     end
 
     desc 'register-task', 'Register task definition.'
