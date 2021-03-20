@@ -3,17 +3,10 @@ module Genova
     class Client
       IMAGE_TAG_LATEST = 'latest'.freeze
 
-      def self.base_path
-        account = ENV.fetch('AWS_ACCOUNT_ID', '')
-        account = Aws::STS::Client.new.get_caller_identity[:account] if account.blank?
-
-        "#{account}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
-      end
-
       def initialize(params = {})
         @ecr = Aws::ECR::Client.new
         @logger = params[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
-        @base_path = Client.base_path
+        @base_path = base_path
 
         ::Docker.options[:read_timeout] = Settings.aws.service.ecr.read_timeout
         ::Docker.logger = @logger
@@ -55,6 +48,15 @@ module Genova
 
         image.push(nil, repo_tag: repo_tag_version)
         @logger.info("Pushed image. {\"tag\": #{repo_tag_version}}")
+      end
+
+      private
+
+      def base_path
+        account = ENV.fetch('AWS_ACCOUNT_ID', '')
+        account = Aws::STS::Client.new.get_caller_identity[:account] if account.blank?
+
+        "#{account}.dkr.ecr.#{ENV.fetch('AWS_REGION')}.amazonaws.com"
       end
     end
   end
