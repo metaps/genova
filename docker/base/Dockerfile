@@ -1,6 +1,6 @@
 FROM ruby:2.7-alpine
 
-RUN apk --update add build-base openssh docker nodejs git tzdata vim --no-cache
+RUN apk --update add build-base openssh docker nodejs git tzdata shared-mime-info vim --no-cache
 ENV APP_HOME=/app
 
 WORKDIR $APP_HOME
