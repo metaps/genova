@@ -37,12 +37,13 @@ module GenovaCli
           service: options[:service],
           scheduled_task_rule: options[:scheduled_task_rule],
           scheduled_task_target: options[:scheduled_task_target],
-          repository: repository_settings.present? ? repository_settings[:repository] : options[:repository],
+          repository: repository_settings.present? ? repository_settings[:name] : options[:repository],
           run_task: options[:run_task],
           override_container: options[:override_container],
           override_command: options[:override_command]
         )
-        raise Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
+
+        raise Genova::Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
 
         ::Genova::Run.call(deploy_job, verbose: options[:verbose], force: options[:force])
       end
