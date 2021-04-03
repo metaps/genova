@@ -3,6 +3,8 @@ module Genova
     module BlockKit
       class ElementObject
         class << self
+          TEXT_LENGTH = 75
+
           def repository_options(params)
             options = []
             permission = Genova::Slack::Interactive::Permission.new(params[:user])
@@ -15,7 +17,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: text
+                  text: text[0...TEXT_LENGTH]
                 },
                 value: text
               )
@@ -35,7 +37,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: time
+                  text: time[0...TEXT_LENGTH]
                 },
                 value: data[:id],
                 description: {
@@ -58,7 +60,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: branch
+                  text: branch[0...TEXT_LENGTH]
                 },
                 value: branch
               )
@@ -77,7 +79,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: tag
+                  text: tag[0...TEXT_LENGTH]
                 },
                 value: tag
               )
@@ -103,7 +105,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: cluster_params[:name]
+                  text: cluster_params[:name][0...TEXT_LENGTH]
                 },
                 value: cluster_params[:name]
               )
@@ -162,7 +164,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: run_task
+                  text: run_task[0...TEXT_LENGTH]
                 },
                 value: "run_task:#{run_task}"
               )
@@ -178,7 +180,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: service
+                  text: service[0...TEXT_LENGTH]
                 },
                 value: "service:#{service}"
               )
@@ -196,7 +198,7 @@ module Genova
                 options.push(
                   text: {
                     type: 'plain_text',
-                    text: "#{rule[:rule]}:#{target[:name]}"
+                    text: "#{rule[:rule]}:#{target[:name]}"[0...TEXT_LENGTH]
                   },
                   value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
                 )
