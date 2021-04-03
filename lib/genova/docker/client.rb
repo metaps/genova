@@ -38,8 +38,7 @@ module Genova
         command = "docker build #{build_option_string} ."
         @logger.info("Docker build path: #{docker_base_path}")
 
-        executor = Genova::Command::Executor.new(work_dir: docker_base_path, logger: @logger)
-        executor.command(command)
+        Genova::Command::Executor.call(command, work_dir: docker_base_path, logger: @logger)
 
         result = ::Docker::Image.all(all: true, filters: { label: ["#{BUILD_KEY}=#{build_value}"] }.to_json)
         raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." if result.empty?

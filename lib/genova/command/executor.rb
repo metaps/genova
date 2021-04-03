@@ -3,44 +3,33 @@ require 'open3'
 module Genova
   module Command
     class Executor
-      def initialize(options = {})
-        @work_dir = options[:work_dir]
-        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
-      end
-
-      def command(command, chdir = nil)
-        outputs = []
+      def self.call(command, options = {})
+        logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
 
         begin
-          @logger.info("$ #{command}")
+          logger.info("$ #{command}")
 
-          work_dir = chdir.present? ? chdir : @work_dir
-          Dir.chdir(work_dir) if work_dir.present?
+          Dir.chdir(options[:work_dir]) if options[:work_dir].present?
+          Open3.popen3(command) do |stdin, stdout, stderr|
+            stdin.close_write
 
-          Open3.popen3(command) do |i, o, e|
-            i.write
-            i.close
+            loop do
+              IO.select([stdout, stderr]).flatten.compact.each do |io|
+                io.each do |line|
+                  next if line.nil? || line.empty?
 
-            o.each do |line|
-              line.chomp!
-              @logger.info(line)
-              outputs << line
-            end
+                  logger.info(line.chomp)
+                end
+              end
 
-            e.each do |line|
-              line.chomp!
-              @logger.error(line)
-              outputs << line
+              break if stdout.eof? && stderr.eof?
             end
           end
-
-          outputs.join("\n")
         rescue Interrupt
-          message = 'command was forcibly terminated.'
-          @logger.error(message)
-          raise Interrupt, message
+          logger.error('Detected forced termination of program.')
+          raise Interrupt
         rescue => e
-          @logger.error(e.to_s)
+          logger.error(e.message)
           raise e
         end
       end
