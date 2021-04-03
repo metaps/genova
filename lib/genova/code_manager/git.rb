@@ -43,9 +43,9 @@ module Genova
         @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
 
         name_or_alias = options[:alias].present? ? options[:alias] : @repository
-        repository_config = Genova::Config::SettingsHelper.find_repository(name_or_alias)
+        @repository_config = Genova::Config::SettingsHelper.find_repository(name_or_alias)
 
-        @base_path = repository_config.nil? || repository_config[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(repository_config[:base_path]).to_s
+        @base_path = @repository_config.nil? || @repository_config[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(@repository_config[:base_path]).to_s
       end
 
       def update
@@ -70,11 +70,7 @@ module Genova
       end
 
       def load_deploy_config
-        client.fetch
-        config = client.show("origin/#{@branch}", 'config/deploy.yml')
-
-        params = YAML.load(config).deep_symbolize_keys
-        Genova::Config::DeployConfig.new(params)
+        Genova::Config::DeployConfig.new(fetch_config('config/deploy.yml'))
       end
 
       def task_definition_config_path(path)
@@ -82,11 +78,7 @@ module Genova
       end
 
       def load_task_definition_config(path)
-        client.fetch
-        config = client.show("origin/#{@branch}", path)
-
-        params = YAML.load(config).deep_symbolize_keys
-        Genova::Config::TaskDefinitionConfig.new(params)
+        Genova::Config::TaskDefinitionConfig.new(fetch_config(path))
       end
 
       def origin_branches
@@ -145,6 +137,15 @@ module Genova
       end
 
       private
+
+      def fetch_config(path)
+        path = Pathname(@repository_config[:base_path]).join(path).cleanpath.to_s if @repository_config.present? && @repository_config[:base_path].present?
+
+        client.fetch
+        config = client.show("origin/#{@branch}", path)
+
+        YAML.load(config).deep_symbolize_keys
+      end
 
       def clone
         return if File.exist?("#{@repos_path}/.git/config")
