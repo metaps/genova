@@ -16,10 +16,10 @@ module Genova
       while running?
         raise Exceptions::DeployLockError, "Other deployment is in progress. [#{@deploy_job.repository}]" if waiting_time >= Settings.github.deploy_lock_timeout
 
-        @logger.warn("Deploy locked. Retry in #{LOCK_WAIT_INTERVAL} seconds.")
-
         sleep(LOCK_WAIT_INTERVAL)
         waiting_time += LOCK_WAIT_INTERVAL
+
+        @logger.warn("Deploy locked. Retry in #{LOCK_WAIT_INTERVAL} seconds. (Elapsed time: #{waiting_time}s)")
       end
 
       Redis.current.multi do
