@@ -142,7 +142,12 @@ module Genova
         path = Pathname(@repository_config[:base_path]).join(path).cleanpath.to_s if @repository_config.present? && @repository_config[:base_path].present?
 
         client.fetch
-        config = client.show("origin/#{@branch}", path)
+
+        if @branch.present?
+          config = client.show("origin/#{@branch}", path)
+        else
+          config = client.show("tags/#{@tag}", path)
+        end
 
         YAML.load(config).deep_symbolize_keys
       end
