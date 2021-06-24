@@ -113,8 +113,8 @@ module Genova
           rule_config[:expression],
           Ecs::Deployer::ScheduledTask::Target.build(@cluster, task_definition_arn, target_config, logger: @logger),
           {
-            enabled: target_config[:enabled],
-            description: target_config[:description]
+            enabled: rule_config[:enabled],
+            description: rule_config[:description]
           }
         )
 
