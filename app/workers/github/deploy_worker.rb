@@ -31,7 +31,9 @@ module Github
           repository: values[:repository],
           branch: values[:branch],
           cluster: result[:cluster],
-          service: service
+          service: service,
+          scheduled_task_rule: nil,
+          scheduled_task_target: nil
         )
 
         response = deploy_bot.start_auto_deploy(deploy_job: deploy_job, index: i, total: result[:services].size)
