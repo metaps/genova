@@ -328,7 +328,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rexml (3.2.4)
+    rexml (3.2.5)
     roar (1.1.0)
       representable (~> 3.0.0)
     rspec (3.10.0)
