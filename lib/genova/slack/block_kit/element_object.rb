@@ -3,8 +3,6 @@ module Genova
     module BlockKit
       class ElementObject
         class << self
-          TEXT_LENGTH = 75
-
           def repository_options(params)
             options = []
             permission = Genova::Slack::Interactive::Permission.new(params[:user])
@@ -17,7 +15,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: truncate(text)
+                  text: middle_truncate(text)
                 },
                 value: text
               )
@@ -37,7 +35,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: truncate(time)
+                  text: middle_truncate(time)
                 },
                 value: data[:id],
                 description: {
@@ -60,7 +58,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: truncate(branch)
+                  text: middle_truncate(branch)
                 },
                 value: branch
               )
@@ -79,7 +77,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: truncate(tag)
+                  text: middle_truncate(tag)
                 },
                 value: tag
               )
@@ -105,7 +103,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: truncate(cluster_params[:name])
+                  text: middle_truncate(cluster_params[:name])
                 },
                 value: cluster_params[:name]
               )
@@ -157,6 +155,8 @@ module Genova
             target_options
           end
 
+          private
+
           def parse_run_tasks(run_tasks)
             options = []
 
@@ -164,7 +164,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: truncate(run_task)
+                  text: middle_truncate(run_task.to_s)
                 },
                 value: "run_task:#{run_task}"
               )
@@ -180,7 +180,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: truncate(service)
+                  text: middle_truncate(service.to_s)
                 },
                 value: "service:#{service}"
               )
@@ -198,7 +198,7 @@ module Genova
                 options.push(
                   text: {
                     type: 'plain_text',
-                    text: truncate("#{rule[:rule]}:#{target[:name]}")
+                    text: "#{middle_truncate(rule[:rule], 30)}:#{middle_truncate(target[:name], 30)}"
                   },
                   value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
                 )
@@ -208,10 +208,8 @@ module Genova
             options
           end
 
-          private
-
-          def truncate(string)
-            Strings::Truncation.truncate(string, position: :middle, omission: '...', length: TEXT_LENGTH)
+          def middle_truncate(string, length = 75)
+            Strings::Truncation.truncate(string, position: :middle, omission: '...', length: length)
           end
         end
       end
