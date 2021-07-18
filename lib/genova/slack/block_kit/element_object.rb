@@ -17,7 +17,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: text[0...TEXT_LENGTH]
+                  text: truncate(text)
                 },
                 value: text
               )
@@ -37,7 +37,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: time[0...TEXT_LENGTH]
+                  text: truncate(time)
                 },
                 value: data[:id],
                 description: {
@@ -60,7 +60,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: branch[0...TEXT_LENGTH]
+                  text: truncate(branch)
                 },
                 value: branch
               )
@@ -79,7 +79,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: tag[0...TEXT_LENGTH]
+                  text: truncate(tag)
                 },
                 value: tag
               )
@@ -105,7 +105,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: cluster_params[:name][0...TEXT_LENGTH]
+                  text: truncate(cluster_params[:name])
                 },
                 value: cluster_params[:name]
               )
@@ -164,7 +164,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: run_task[0...TEXT_LENGTH]
+                  text: truncate(run_task)
                 },
                 value: "run_task:#{run_task}"
               )
@@ -180,7 +180,7 @@ module Genova
               options.push(
                 text: {
                   type: 'plain_text',
-                  text: service[0...TEXT_LENGTH]
+                  text: truncate(service)
                 },
                 value: "service:#{service}"
               )
@@ -198,7 +198,7 @@ module Genova
                 options.push(
                   text: {
                     type: 'plain_text',
-                    text: "#{rule[:rule]}:#{target[:name]}"[0...TEXT_LENGTH]
+                    text: truncate("#{rule[:rule]}:#{target[:name]}")
                   },
                   value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
                 )
@@ -206,6 +206,12 @@ module Genova
             end
 
             options
+          end
+
+          private
+
+          def truncate(string)
+            Strings::Truncation.truncate(string, position: :middle, omission: '...', length: TEXT_LENGTH)
           end
         end
       end
