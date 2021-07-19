@@ -410,6 +410,10 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
+    strings-ansi (0.2.0)
+    strings-truncation (0.1.0)
+      strings-ansi (~> 0.2.0)
+      unicode-display_width (>= 1.6, < 3.0)
     thor (1.1.0)
     timers (4.3.2)
     tzinfo (2.0.4)
@@ -475,6 +479,7 @@ DEPENDENCIES
   slack-ruby-bot-server-events
   spring
   spring-watcher-listen
+  strings-truncation
   tzinfo-data
   vcr
   webmock
