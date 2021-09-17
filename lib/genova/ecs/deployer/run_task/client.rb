@@ -26,6 +26,16 @@ module Genova
             }
 
             results = @ecs_client.run_task(options)
+
+            if results[:failures].present?
+              message = ''
+              results[:failures].each do |failure|
+                message += "#{failure[:reason]} occurred and execution failed. (#{failure[:arn]})"
+              end
+
+              raise Exceptions::RunTaskError, message
+            end
+
             task_arns = results[:tasks].map { |key| key[:task_arn] }
 
             wait(task_arns)
@@ -48,6 +58,8 @@ module Genova
               run_task_size = describe_tasks[:tasks].size
 
               describe_tasks[:tasks].each do |task|
+                raise Exceptions::DeployTimeoutError, "Process is timed out. (Task ARN: #{task[:task_arn]})" if wait_time > Settings.deploy.wait_timeout
+
                 sleep(Settings.deploy.polling_interval)
                 wait_time += Settings.deploy.polling_interval
 
@@ -63,7 +75,6 @@ module Genova
               end
 
               break if run_task_size == stopped_tasks.size
-              raise Exceptions::DeployTimeoutError, "Process is timed out. (Task ARN: #{task[:task_arn]})" if wait_time > Settings.deploy.wait_timeout
             end
           end
         end
