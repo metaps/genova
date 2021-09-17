@@ -14,7 +14,7 @@ module Genova
 
     class InvalidArgumentError < Error; end
 
-    class TaskRunningError < Error; end
+    class RunTaskError < Error; end
 
     class TaskDefinitionValidationError < Error; end
 
