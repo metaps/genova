@@ -4,9 +4,6 @@ module V2
       extend Grape::API::Helpers
 
       def verify_webhook_signature?(payload)
-puts '>>>>'
-puts request.env['HTTP_X_HUB_SIGNATURE']
-
         return false unless request.env['HTTP_X_HUB_SIGNATURE']
 
         digest = OpenSSL::Digest.new('sha1')
