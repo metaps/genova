@@ -84,9 +84,9 @@ The web console allows you to check the status and history of the deployment.
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
 
-**If you allow access to the web console via the Internet, be sure to restrict the accessible members via ALB (Cognito or IP authentication) or proxy.
+_If you allow access to the web console via the Internet, be sure to restrict the accessible members via ALB (Cognito or IP authentication) or proxy.
 However, if you are deploying Slack/GitHub integration, do not restrict the `/api/*` path as it accepts callbacks.
-the API uses its own authentication logic to restrict the requestor.**
+the API uses its own authentication logic to restrict the requestor._
 
 ## More detailed documentation
 
