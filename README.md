@@ -78,12 +78,15 @@ $ docker-compose up
 
 Once the container has started, go to `http://localhost:3000/`, which should bring up the genova web console.
 
-
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
 
 The web console allows you to check the status and history of the deployment.
 
 <img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
+
+**If you allow access to the web console via the Internet, be sure to restrict the accessible members via ALB (Cognito or IP authentication) or proxy.
+However, if you are deploying Slack/GitHub integration, do not restrict the `/api/*` path as it accepts callbacks.
+the API uses its own authentication logic to restrict the requestor.**
 
 ## More detailed documentation
 
