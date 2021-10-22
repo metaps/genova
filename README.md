@@ -78,6 +78,13 @@ $ docker-compose up
 
 Once the container has started, go to `http://localhost:3000/`, which should bring up the genova web console.
 
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
+
+The web console allows you to check the status and history of the deployment.
+
+<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
+
 ## More detailed documentation
 
 See the [Wiki](https://github.com/metaps/genova/wiki).
