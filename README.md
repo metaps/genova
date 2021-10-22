@@ -74,7 +74,7 @@ $ docker-compose build
 $ docker-compose up
 ```
 
-* [env configuration](https://github.com/metaps/genova/wiki/env-configuration)
+* [env configuration](https://github.com/metaps/genova/wiki/Environment-configuration)
 
 Once the container has started, go to `http://localhost:3000/`, which should bring up the genova web console.
 
