@@ -19,6 +19,8 @@ deploy:
 
 github:
   account: metaps
+
+  # Secret key to authenticate push events from GitHub.
   secret_key: ''
 
   # Create tag after deployment.
@@ -49,7 +51,12 @@ slack:
   api_token: ''
   signing_secret: ''
   vertification_token: ''
+  client_id: ''
+  client_secret: ''
+
+  # Specify `true` to display the deployment log in thread format.
   thread_conversion: true
+
   command:
     max_history: 10
   interactive:
