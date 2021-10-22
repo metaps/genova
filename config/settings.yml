@@ -1,3 +1,6 @@
+console:
+ url: http://localhost:3000/
+
 logger:
   level: info
 
@@ -15,6 +18,8 @@ deploy:
   polling_interval: 10
 
 github:
+  account: metaps
+
   # Create tag after deployment.
   # If you enable it, please specify `GITHUB_OAUTH_TOKEN`.
   deployment_tag: false
@@ -40,6 +45,8 @@ aws:
       read_timeout: 900
 
 slack:
+  api_token:
+  signing_secret:
   thread_conversion: true
   command:
     max_history: 10
@@ -50,7 +57,7 @@ slack:
 
   # Limits deployment to specified users. (Optional)
   # permissions:
-  #   - 
+  #   -
   #     # Target of restrictions. You can specify `repository` or `cluster`.
   #     policy:
   #

@@ -9,10 +9,7 @@ jobs:
       AWS_ACCOUNT_ID: ""
       AWS_REGION: ""
       AWS_SECRET_KEY: ""
-      GENOVA_URL: http://localhost:3000
       GITHUB_ACCOUNT: metaps
-      GITHUB_PEM: ~/.ssh/id_rsa
-      GITHUB_SECRET_KEY: ""
       REDIS_DB: 0
       REDIS_HOST: localhost
       REDIS_PORT: 6379
@@ -24,11 +21,6 @@ jobs:
       MONGO_HOST: localhost
       MONGO_PORT: 27017
       SECRET_KEY_BASE: ""
-      SLACK_API_TOKEN: ""
-      SLACK_CHANNEL: ""
-      SLACK_CLIENT_ID: ""
-      SLACK_CLIENT_SECRET: ""
-      SLACK_VERIFICATION_TOKEN: slack_verification_token
     steps:
       - checkout
       - run:

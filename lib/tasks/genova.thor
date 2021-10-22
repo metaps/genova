@@ -30,7 +30,7 @@ module GenovaCli
           mode: DeployJob.mode.find_value(:manual).to_sym,
           type: options[:type],
           alias: repository_settings.present? ? repository_settings[:alias] : nil,
-          account: ENV.fetch('GITHUB_ACCOUNT'),
+          account: Settings.github.account,
           branch: options[:branch],
           tag: options[:tag],
           cluster: options[:cluster],
@@ -128,14 +128,14 @@ module GenovaCli
     def emulate_github_push
       post_data = {
         repository: {
-          full_name: "#{ENV.fetch('GITHUB_ACCOUNT')}/#{options[:repository]}"
+          full_name: "#{Settings.github.account}/#{options[:repository]}"
         },
         ref: "refs/heads/#{options[:branch]}"
       }
 
       payload_body = Oj.dump(post_data)
       digest = OpenSSL::Digest.new('sha1')
-      signature = "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), payload_body)}"
+      signature = "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, payload_body)}"
 
       headers = { x_hub_signature: signature }
       result = RestClient.post('http://rails:3000/api/v1/github/push', payload_body, headers)

@@ -35,7 +35,7 @@ module Genova
       attr_reader :repos_path, :base_path
 
       def initialize(repository, options = {})
-        @account = ENV.fetch('GITHUB_ACCOUNT')
+        @account = Settings.github.account
         @branch = options[:branch]
         @tag = options[:tag]
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
@@ -46,6 +46,10 @@ module Genova
         @repository_config = Genova::Config::SettingsHelper.find_repository(name_or_alias)
 
         @base_path = @repository_config.nil? || @repository_config[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(@repository_config[:base_path]).to_s
+
+        ::Git.configure do |config|
+          config.git_ssh = Rails.root.join('.ssh/git-ssh.sh').to_s
+        end
       end
 
       def update

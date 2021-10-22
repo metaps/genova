@@ -7,7 +7,7 @@ module V2
         return false unless request.env['HTTP_X_HUB_SIGNATURE']
 
         digest = OpenSSL::Digest.new('sha1')
-        signature = "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), payload)}"
+        signature = "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, payload)}"
         payload.present? && Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
       end
 
@@ -23,7 +23,7 @@ module V2
       end
 
       def verify_actions_secret_key?
-        ENV.fetch('GITHUB_SECRET_KEY') == request.env['HTTP_X_GITHUB_SECRET_KEY']
+        Settings.github.secret_key == request.env['HTTP_X_GITHUB_SECRET_KEY']
       end
 
       def parse_actions_data(data)
