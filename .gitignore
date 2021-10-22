@@ -20,7 +20,7 @@
 /config/master.key
 /coverage
 /public/assets/*
-#/.ssh
+/.ssh
 /frontend/node_modules
 
 # Application files
