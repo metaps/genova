@@ -1,5 +1,5 @@
 console:
- url: http://localhost:3000/
+  url: http://localhost:3000/
 
 logger:
   level: info
@@ -48,6 +48,7 @@ aws:
 slack:
   api_token: ''
   signing_secret: ''
+  vertification_token: ''
   thread_conversion: true
   command:
     max_history: 10
