@@ -27,7 +27,7 @@ module V2
         post :push do
           error! 'Secret key is invalid.', 403 unless verify_actions_secret_key?
 
-          id = Genova::Sidekiq::JobStore.create(parse_actions_payload(@data))
+          id = Genova::Sidekiq::JobStore.create(parse_actions_data(@data))
           Github::DeployWorker.perform_async(id)
 
           { result: 'Deploy request was executed.' }

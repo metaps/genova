@@ -4,6 +4,9 @@ module V2
       extend Grape::API::Helpers
 
       def verify_webhook_signature?(payload)
+puts '>>>>'
+puts request.env['HTTP_X_HUB_SIGNATURE']
+
         return false unless request.env['HTTP_X_HUB_SIGNATURE']
 
         digest = OpenSSL::Digest.new('sha1')
@@ -36,7 +39,7 @@ module V2
         }
       end
 
-      private 
+      private
 
       def parse_branch(ref)
         raise Genova::Exceptions::InvalidRequestError, 'Request does not contain "ref" attribute.' if ref.nil?
@@ -44,9 +47,6 @@ module V2
 
         # Excludes tag push
         raise Genova::Exceptions::InvalidRequestError, "#{ref} is not a valid request." if matches.nil? || matches[1] != 'heads'
-
-        # Exclude commits that don't belong to any branch
-        # raise Genova::Exceptions::InvalidRequestError, 'Commit does not belong to any branch' if head_commit.nil?
 
         matches[2]
       end
