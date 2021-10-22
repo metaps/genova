@@ -47,7 +47,7 @@ _The AWS resources (services and scheduled tasks) to be deployed must be created
 genova will clone your repository to build and deploy your application.
 Your repository should have the following files in it.
 
-```
+```yaml
 config
   # Deploy configuration file.
   deploy.yml
@@ -63,7 +63,7 @@ config
 
 ## Setup genova
 
-```
+```shell
 # In settings.local.yml, you can customize the behavior settings of genova.
 $ cp config/settings.yml config/settings.local.yml
 
