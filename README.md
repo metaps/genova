@@ -7,52 +7,55 @@
 
 ## Description
 
-genova provides feature to deploy and manage applications on [AWS ECS](https://aws.amazon.com/ecs/).
+genova provides the ability to deploy and manage applications to [AWS ECS](https://aws.amazon.com/ecs/).
 
 ## Overview
 
-genova is integrated package for deploying applications to ECS. You can deploy services, execute tasks, and execute scheduled tasks.
-As deployment method, interactive deployment using Slack, CLI, and continuous delivery with GitHub is supported.
-When you request deployment, starts deployment as follows.
-
-1. Get target repository code
-2. Find Dockerfile from deploy configuration (`config/deploy.yml`)
-3. Build Docker and create image
-4. Create new task based on task definition (`config/deploy/*.yml`)
-5. Send image to ECR based on new task definition
-6. Request ECS task update
-7. ECS switches to new task
+By using genova, you can deploy services, execute arbitrary tasks, and execute scheduled tasks.
+In addition to command line deployment, genova supports interactive deployment via Slack, deployment triggered by push using GitHub Webhook, and CI/CD integration using GitHub Actions.
 
 <img src="https://user-images.githubusercontent.com/1632478/105207836-5c2d8180-5b8b-11eb-8fc9-4c41f47e80c6.png" width="50%">
 
 ## Features
 
-genova supports following features.
+genova has the following features.
 
-* YAML-based task definition
-  * Compatible with ECS and Fargate
-  * Encrypt environment variables using [KMS](https://aws.amazon.com/kms/)
-* Various deployment methods
-  * CLI Deploy
-  * Slack interactive deploy
-  * GitHub push detect deploy
-* Web console
-* Tagging after deployment
+* YAML-based task definitions
+* Some deployment flows
+  * Deploying from the command line
+  * Interactive deployment using Slack
+  * Deploying using GitHub Actions/Webhooks
+* Provides a web console to manage deployment status
 
-## Application directory structure
+## How Deployment Works
 
-Please place following files in your application.
+genova requires you to build and run a server in your local environment or in an AWS environment.
+When a deployment is requested, the following steps will be taken to deploy the application.
+
+1. Acquire the repository to be deployed.
+2. Obtain the Dockerfile and the deployment configuration file (`config/deploy.yml`) in the repository.
+3. Build the Dockerfile based on the deployment configuration file.
+4. Push the created image to AWS ECR.
+5. Define tasks based on the task definition file (`config/deploy/xxx.yml`).
+6. Register the created task definitions to AWS ECS.
+7. Update the service or scheduled task. if it is a Run task, execute the task.
+
+_The AWS resources (services and scheduled tasks) to be deployed must be created in advance._
+
+## Files to be placed in the application repository
+
+genova will clone your repository to build and deploy your application.
+Your repository should have the following files in it.
 
 ```
-- config
-  # Deploy configuration
-  - deploy.yml
+config
+  # Deploy configuration file.
+  deploy.yml
 
-  - deploy
-    # Task configurations
-    - development.yml
-    - staging.yml
-    - production.yml
+  deploy
+    # Creates a task definition file based on the deployment configuration file.
+    # Give it any name you like (e.g. production.yml).
+    - xxx.yml
 ```
 
 * [Deploy configuration](https://github.com/metaps/genova/wiki/Deploy-configuration)
@@ -61,8 +64,10 @@ Please place following files in your application.
 ## Setup genova
 
 ```
-# Please specify GitHub repository account in github.account.
+# In settings.local.yml, you can customize the behavior settings of genova.
 $ cp config/settings.yml config/settings.local.yml
+
+# The .env file defines the configuration for starting genova.
 $ cp .env.default .env
 
 $ docker-compose build
@@ -71,23 +76,8 @@ $ docker-compose up
 
 * [env configuration](https://github.com/metaps/genova/wiki/env-configuration)
 
-You can access web console by launching `http://localhost:3000/`.
+Once the container has started, go to `http://localhost:3000/`, which should bring up the genova web console.
 
-## CLI Deploy
+## More detailed documentation
 
-### Service deploy
-
-```
-# help
-$ docker-compose run --rm rails thor genova:deploy help service
-
-# command
-$ docker-compose run --rm rails thor genova:deploy service -r {repository} -c {cluster} -s {service}
-
-# e.g.
-$ docker-compose run --rm rails thor genova:deploy service -r api -c production-app -s backend
-```
-
-## More usage and documentation
-
-Please refer to [Wiki](https://github.com/metaps/genova/wiki).
+See the [Wiki](https://github.com/metaps/genova/wiki).
