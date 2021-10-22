@@ -64,6 +64,10 @@ config
 ## Setup genova
 
 ```shell
+# Register the private key you need to clone the repository from GitHub.
+$ vi .ssh/id_rsa
+$ chmod 400 .ssh/id_rsa
+
 # In settings.local.yml, you can customize the behavior settings of genova.
 $ cp config/settings.yml config/settings.local.yml
 
