@@ -4,7 +4,7 @@ module Genova
   module CodeManager
     describe Git do
       before do
-        allow(File).to receive(:file?).with('/app/.ssh/id_rsa').and_return(true)
+        allow(File).to receive(:file?).with(Rails.root.join('.ssh/id_rsa').to_s).and_return(true)
       end
 
       let(:code_manager) { CodeManager::Git.new('repository', branch: 'master') }
