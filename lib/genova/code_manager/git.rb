@@ -48,6 +48,9 @@ module Genova
         @base_path = @repository_config.nil? || @repository_config[:base_path].nil? ? @repos_path : Pathname(@repos_path).join(@repository_config[:base_path]).to_s
 
         ::Git.configure do |config|
+          path = Rails.root.join('.ssh/id_rsa').to_s
+          raise IOError, "File does not exist. [#{path}]" unless File.exist?(path)
+
           config.git_ssh = Rails.root.join('.ssh/git-ssh.sh').to_s
         end
       end
