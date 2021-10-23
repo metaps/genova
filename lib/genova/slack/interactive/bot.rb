@@ -3,7 +3,7 @@ module Genova
     module Interactive
       class Bot
         def initialize(params = {})
-          @client = ::Slack::Web::Client.new(token: ENV.fetch('SLACK_API_TOKEN'))
+          @client = ::Slack::Web::Client.new(token: Settings.slack.api_token)
           @parent_message_ts = params[:parent_message_ts]
           @logger = ::Logger.new($stdout, level: Settings.logger.level)
         end
@@ -166,7 +166,7 @@ module Genova
                  BlockKit::Helper.section_short_fieldset(
                    [
                      BlockKit::Helper.section_short_field('AWS Console', console_uri),
-                     BlockKit::Helper.section_short_field('Deploy log', "#{ENV.fetch('GENOVA_URL')}/deploy_jobs/#{params[:deploy_job].id}")
+                     BlockKit::Helper.section_short_field('Deploy log', "#{Settings.console.url}/deploy_jobs/#{params[:deploy_job].id}")
                    ]
                  )
                ])
@@ -211,7 +211,7 @@ module Genova
           github_client = Genova::Github::Client.new(params[:repository])
 
           fields = []
-          fields << BlockKit::Helper.section_short_field('Repository', "<#{github_client.build_repository_uri}|#{ENV.fetch('GITHUB_ACCOUNT')}/#{params[:repository]}>")
+          fields << BlockKit::Helper.section_short_field('Repository', "<#{github_client.build_repository_uri}|#{Settings.github.account}/#{params[:repository]}>")
 
           fields << if params[:branch].present?
                       BlockKit::Helper.section_short_field('Branch', "<#{github_client.build_branch_uri(params[:branch])}|#{params[:branch]}>")
@@ -243,7 +243,7 @@ module Genova
 
         def send(blocks)
           data = {
-            channel: ENV.fetch('SLACK_CHANNEL'),
+            channel: Settings.slack.channel,
             blocks: blocks
           }
           data[:thread_ts] = @parent_message_ts if Settings.slack.thread_conversion

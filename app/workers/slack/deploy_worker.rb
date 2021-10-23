@@ -13,7 +13,7 @@ module Slack
                                     mode: DeployJob.mode.find_value(:slack),
                                     slack_user_id: params[:user],
                                     slack_user_name: params[:user_name],
-                                    account: ENV.fetch('GITHUB_ACCOUNT'),
+                                    account: Settings.github.account,
                                     repository: params[:repository],
                                     branch: params[:branch],
                                     tag: params[:tag],

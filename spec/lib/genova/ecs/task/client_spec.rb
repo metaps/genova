@@ -17,7 +17,7 @@ module Genova
 
         describe 'register' do
           it 'should be return new task' do
-            allow(File).to receive(:exist?).and_return(true)
+            allow(File).to receive(:file?).and_return(true)
             allow(File).to receive(:read).and_return('{container_definitions: {}}')
 
             allow(task_definition_mock).to receive(:[]).with(:task_definition).and_return(double(Aws::ECS::Types::TaskDefinition))

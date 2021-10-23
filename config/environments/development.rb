@@ -55,7 +55,7 @@ Rails.application.configure do
   logger.formatter = config.log_formatter
   config.logger    = ActiveSupport::TaggedLogging.new(logger)
 
-  config.hosts << URI.parse(ENV.fetch('GENOVA_URL')).host
+  config.hosts << URI.parse(Settings.console.url).host
 
   BetterErrors::Middleware.allow_ip! '0.0.0.0/0'
 end

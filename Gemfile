@@ -34,6 +34,7 @@ gem 'redis'
 gem 'rest-client'
 gem 'sidekiq'
 gem 'slack-ruby-bot-server-events'
+gem 'strings-truncation'
 gem 'tzinfo-data'
 
 group :development, :test do

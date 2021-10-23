@@ -7,7 +7,7 @@ module Slack
         deploy_job = DeployJob.new(
           mode: DeployJob.mode.find_value(:manual),
           type: DeployJob.type.find_value(:service),
-          account: ENV.fetch('GITHUB_ACCOUNT'),
+          account: Settings.github.account,
           repository: 'repository',
           cluster: 'cluster',
           service: 'service',

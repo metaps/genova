@@ -43,7 +43,7 @@ module V2
       end
 
       context 'when valid signature' do
-        let(:token) { ENV['SLACK_VERIFICATION_TOKEN'] }
+        let(:token) { Settings.slack.vertification_token }
 
         it 'should be return success' do
           post '/api/v2/slack/post', params: payload_body
