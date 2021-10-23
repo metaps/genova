@@ -5,7 +5,7 @@ module V2
 
       def verify_signature?
         data = payload_to_hash
-        data.include?(:token) && data[:token] == ENV.fetch('SLACK_VERIFICATION_TOKEN')
+        data.include?(:token) && data[:token] == Settings.slack.vertification_token
       end
 
       def payload_to_hash

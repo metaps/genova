@@ -1,3 +1,14 @@
-raise Genova::Exceptions::MigrationError, "Add 'GITHUB_ACCOUNT' to your .env file." if ENV.fetch('GITHUB_ACCOUNT', '').blank?
-raise Genova::Exceptions::MigrationError, "Add 'SLACK_HOST' to your .env file." if ENV.fetch('SLACK_HOST', '').blank?
-raise Genova::Exceptions::MigrationError, "Add 'SLACK_PORT' to your .env file." if ENV.fetch('SLACK_PORT', '').blank?
+deprecated_envs = [
+  'GENOVA_URL',
+  'GITHUB_PEM',
+  'GITHUB_SECRET_KEY',
+  'SLACK_API_TOKEN',
+  'SLACK_CHANNEL',
+  'SLACK_CLIENT_ID',
+  'SLACK_CLIENT_SECRET',
+  'SLACK_VERIFICATION_TOKEN'
+]
+
+deprecated_envs.each do |key|
+  raise Genova::Exceptions::MigrationError, "The #{key} environment variable has been removed. Please move the variable to the configuration file. (https://github.com/metaps/genova/issues/260)" if ENV[key].present? 
+end
