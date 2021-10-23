@@ -26,7 +26,7 @@ module Genova
             build: '.'
           }
 
-          allow(File).to receive(:exist?).and_return(true)
+          allow(File).to receive(:file?).and_return(true)
 
           executor_mock = double(Command::Executor)
           allow(executor_mock).to receive(:command)

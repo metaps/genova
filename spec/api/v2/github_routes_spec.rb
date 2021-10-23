@@ -43,7 +43,7 @@ module V2
         digest = OpenSSL::Digest.new('sha1')
 
         context 'when branch is pushed' do
-          let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), webhook_pushed_commit)}" }
+          let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, webhook_pushed_commit)}" }
           let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
 
           it 'should be return success' do
@@ -54,7 +54,7 @@ module V2
         end
 
         context 'when tag is pushed' do
-          let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, ENV.fetch('GITHUB_SECRET_KEY'), webhook_pushed_tag)}" }
+          let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, webhook_pushed_tag)}" }
           let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
 
           it 'should be return error' do
@@ -98,7 +98,7 @@ module V2
       end
 
       context 'when valid secret key' do
-        let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => ENV.fetch('GITHUB_SECRET_KEY') } }
+        let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => Settings.github.secret_key } }
 
         context 'when branch is pushed' do
           it 'should be return success' do

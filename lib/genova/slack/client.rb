@@ -8,7 +8,7 @@ module Genova
           method: 'get',
           url: "#{ENDPOINT_BASE}/#{endpoint}",
           headers: {
-            Authorization: "Bearer #{ENV.fetch('SLACK_API_TOKEN')}",
+            Authorization: "Bearer #{Settings.slack.api_token}",
             params: params
           }
         )

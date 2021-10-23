@@ -17,7 +17,7 @@ module Genova
         docker_base_path = File.expand_path(build[:context], config_base_path)
         docker_file_path = Pathname(docker_base_path).join(build[:docker_filename]).to_s
 
-        raise Exceptions::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.exist?(docker_file_path)
+        raise Exceptions::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.file?(docker_file_path)
 
         task_definition_config = @code_manager.load_task_definition_config(Pathname('config').join(task_definition_path))
         container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }

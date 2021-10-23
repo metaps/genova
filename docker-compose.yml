@@ -20,7 +20,6 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     ports:
       - 3000:3000
     depends_on:
@@ -36,7 +35,6 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     depends_on:
       - mongo
       - redis
@@ -51,7 +49,6 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     depends_on:
       - mongo
       - redis
@@ -65,7 +62,6 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${GITHUB_PEM}:/root/.ssh/id_rsa:ro
     restart: ${DOCKER_RESTART}
   node:
     build:
