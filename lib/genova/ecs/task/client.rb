@@ -8,7 +8,7 @@ module Genova
         end
 
         def register(path, params = {})
-          raise IOError, "File does not exist. [#{path}]" unless File.exist?(path)
+          raise IOError, "File does not exist. [#{path}]" unless File.file?(path)
 
           yaml = YAML.load(File.read(path))
           task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)

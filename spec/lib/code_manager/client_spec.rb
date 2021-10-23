@@ -3,6 +3,10 @@ require 'rails_helper'
 module Genova
   module CodeManager
     describe Git do
+      before do
+        allow(File).to receive(:file?).with('/app/.ssh/id_rsa').and_return(true)
+      end
+
       let(:code_manager) { CodeManager::Git.new('repository', branch: 'master') }
       let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
 

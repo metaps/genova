@@ -49,7 +49,7 @@ module Genova
 
         ::Git.configure do |config|
           path = Rails.root.join('.ssh/id_rsa').to_s
-          raise IOError, "File does not exist. [#{path}]" unless File.exist?(path)
+          raise IOError, "File does not exist. [#{path}]" unless File.file?(path)
 
           config.git_ssh = Rails.root.join('.ssh/git-ssh.sh').to_s
         end
@@ -160,7 +160,7 @@ module Genova
       end
 
       def clone
-        return if File.exist?("#{@repos_path}/.git/config")
+        return if File.file?("#{@repos_path}/.git/config")
 
         FileUtils.rm_rf(@repos_path)
         uri = Genova::Github::Client.new(@repository).build_clone_uri
