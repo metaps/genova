@@ -39,14 +39,7 @@ module Genova
           matched = false
 
           values.each do |value|
-            pos = value.index('*')
-
-            matched = if pos.nil?
-                        search == value
-                      else
-                        search.index(value[0, pos]).present?
-                      end
-
+            matched = Utils::String.pattern_match?(value, search)
             break if matched
           end
 
