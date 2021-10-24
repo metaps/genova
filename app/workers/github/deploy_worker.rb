@@ -56,7 +56,7 @@ module Github
 
       return nil if auto_deploy_config.nil?
 
-      result = auto_deploy_config.find { |k, _v| Genova::Utils::String.pattern_match?(branch, k[:branch]) }
+      result = auto_deploy_config.find { |k, _v| Genova::Utils::String.pattern_match?(k[:branch], branch) }
       return nil if result.nil?
 
       if result[:service].present?
