@@ -48,14 +48,13 @@ genova will clone your repository to build and deploy your application.
 Your repository should have the following files in it.
 
 ```yaml
-config
-  # Deploy configuration file.
-  deploy.yml
-
-  deploy
-    # Creates a task definition file based on the deployment configuration file.
-    # Give it any name you like (e.g. production.yml).
-    - xxx.yml
+|- config/
+  │ # Deploy configuration file.
+  ├ deploy.yml
+  └ deploy/
+     │ # Creates a task definition file based on the deployment configuration file.
+     │ # Give it any name you like (e.g. production.yml).
+     └ xxx.yml
 ```
 
 * [Deploy configuration](https://github.com/metaps/genova/wiki/Deploy-configuration)
