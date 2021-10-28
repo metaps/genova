@@ -97,8 +97,8 @@ module Genova
         def finished_deploy(params)
           fields = []
 
-          fields << BlockKit::Helper.section_field('Task definition ARN', BlockKit::Helper.escape_emoji(params[:deploy_job].task_definition_arn))
-          fields << BlockKit::Helper.section_field('Task ARNs', BlockKit::Helper.escape_emoji(params[:deploy_job].task_arns.join("\n"))) if params[:deploy_job].task_arns.present?
+          fields << BlockKit::Helper.section_field('Task definition ARN', code(BlockKit::Helper.escape_emoji(params[:deploy_job].task_definition_arn)))
+          fields << BlockKit::Helper.section_field('Task ARNs', code(BlockKit::Helper.escape_emoji(params[:deploy_job].task_arns.join("\n")))) if params[:deploy_job].task_arns.present?
 
           if params[:deploy_job].tag.present?
             github_client = Genova::Github::Client.new(params[:deploy_job].repository)
@@ -107,7 +107,7 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:deploy_job].slack_user_id}>") if params[:deploy_job].mode == DeployJob.mode.find_value(:slack)
-          blocks << BlockKit::Helper.header('Deployment is complete.')
+          blocks << BlockKit::Helper.header('Deployment was successful.')
           blocks << BlockKit::Helper.section_fieldset(fields)
 
           send(blocks)
@@ -125,9 +125,7 @@ module Genova
                      BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{params[:account]}/#{params[:repository]}>"),
                      BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{params[:branch]}>"),
                      BlockKit::Helper.section_short_field('Commit URL', params[:commit_url]),
-                     BlockKit::Helper.section_short_field('Author', params[:author]),
-                     BlockKit::Helper.section_short_field('Cluster', params[:cluster]),
-                     BlockKit::Helper.section_short_field('Service', params[:services].join(', '))
+                     BlockKit::Helper.section_short_field('Author', params[:author])
                    ]
                  )
                ])
@@ -172,15 +170,22 @@ module Genova
                ])
         end
 
-        def start_auto_deploy(params)
+        def start_auto_deploy_step(params)
           send([
-                 BlockKit::Helper.header("Start auto deploy. (#{params[:index]}/#{params[:total]})"),
-                 BlockKit::Helper.section_short_fieldset(
-                   [
-                     BlockKit::Helper.section_short_field('Cluster', params[:deploy_job].cluster),
-                     BlockKit::Helper.section_short_field('Service', params[:deploy_job].service)
-                   ]
-                 )
+                 BlockKit::Helper.header("Start step ##{params[:index]}.")
+               ])
+        end
+
+        def start_auto_deploy_run(params)
+          fields = []
+          fields << BlockKit::Helper.section_short_field('Cluster', params[:deploy_job].cluster)
+          fields << BlockKit::Helper.section_short_field('Service', params[:deploy_job].service) if params[:deploy_job].type == DeployJob.type.find_value(:service)
+          fields << BlockKit::Helper.section_short_field('Run task', params[:deploy_job].run_task) if params[:deploy_job].type == DeployJob.type.find_value(:run_task)
+          fields << BlockKit::Helper.section_short_field('Deploy log', "#{Settings.console.url}/deploy_jobs/#{params[:deploy_job].id}")
+
+          send([
+                 BlockKit::Helper.section('Start deployment.'),
+                 BlockKit::Helper.section_short_fieldset(fields)
                ])
         end
 
@@ -194,8 +199,8 @@ module Genova
         def error(params)
           fields = []
           fields << BlockKit::Helper.section_field('Error', BlockKit::Helper.escape_emoji(params[:error].class.to_s))
-          fields << BlockKit::Helper.section_field('Reason', "```#{BlockKit::Helper.escape_emoji(params[:error].message)}```")
-          fields << BlockKit::Helper.section_field('Backtrace', "```#{params[:error].backtrace.join("\n").truncate(512)}```") if params[:error].backtrace.present?
+          fields << BlockKit::Helper.section_field('Reason', code(BlockKit::Helper.escape_emoji(params[:error].message)))
+          fields << BlockKit::Helper.section_field('Backtrace', code(params[:error].backtrace.join("\n").truncate(512))) if params[:error].backtrace.present?
 
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:user]}>") if params[:user].present?
@@ -206,6 +211,10 @@ module Genova
         end
 
         private
+
+        def code(string)
+          "```#{string}```"
+        end
 
         def confirm_command(params, mention)
           github_client = Genova::Github::Client.new(params[:repository])

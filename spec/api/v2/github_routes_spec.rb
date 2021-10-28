@@ -126,7 +126,6 @@ module V2
           expect(response).to have_http_status :forbidden
         end
       end
-
     end
   end
 end

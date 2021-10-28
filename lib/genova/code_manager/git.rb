@@ -150,11 +150,11 @@ module Genova
 
         client.fetch
 
-        if @branch.present?
-          config = client.show("origin/#{@branch}", path)
-        else
-          config = client.show("tags/#{@tag}", path)
-        end
+        config = if @branch.present?
+                   client.show("origin/#{@branch}", path)
+                 else
+                   client.show("tags/#{@tag}", path)
+                 end
 
         YAML.load(config).deep_symbolize_keys
       end

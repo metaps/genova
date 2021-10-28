@@ -12,7 +12,6 @@ module V2
       end
 
       def parse_webhook_data(data)
-
         {
           account: data[:repository][:owner][:name],
           repository: data[:repository][:name],
@@ -40,6 +39,7 @@ module V2
 
       def parse_branch(ref)
         raise Genova::Exceptions::InvalidRequestError, 'Request does not contain "ref" attribute.' if ref.nil?
+
         matches = ref.match(%r{^refs/([^/]+)/(.+)$})
 
         # Excludes tag push

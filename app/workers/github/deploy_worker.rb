@@ -7,6 +7,7 @@ module Github
 
       values = Genova::Sidekiq::JobStore.find(id)
       result = find(values[:repository], values[:branch])
+
       return if result.nil?
 
       bot = Genova::Slack::Interactive::Bot.new
@@ -15,31 +16,37 @@ module Github
         repository: values[:repository],
         branch: values[:branch],
         commit_url: values[:commit_url],
-        author: values[:author],
-        cluster: result[:cluster],
-        services: result[:services]
+        author: values[:author]
       )
       deploy_bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: response[:ts])
 
-      result[:services].each.with_index(1) do |service, i|
-        deploy_job = DeployJob.create(
-          id: DeployJob.generate_id,
-          type: DeployJob.type.find_value(:service),
-          status: DeployJob.status.find_value(:in_progress),
-          mode: DeployJob.mode.find_value(:auto),
-          account: values[:account],
-          repository: values[:repository],
-          branch: values[:branch],
-          cluster: result[:cluster],
-          service: service,
-          scheduled_task_rule: nil,
-          scheduled_task_target: nil
-        )
+      result[:steps].each.with_index(1) do |step, i|
+        deploy_bot.start_auto_deploy_step(index: i)
 
-        response = deploy_bot.start_auto_deploy(deploy_job: deploy_job, index: i, total: result[:services].size)
-        Genova::Run.call(deploy_job)
+        step[:resources].each do |resource|
+          service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
+          run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
 
-        deploy_bot.finished_deploy(deploy_job: deploy_job)
+          deploy_job = DeployJob.create(
+            id: DeployJob.generate_id,
+            type: DeployJob.type.find_value(step[:type]),
+            status: DeployJob.status.find_value(:in_progress),
+            mode: DeployJob.mode.find_value(:auto),
+            account: values[:account],
+            repository: values[:repository],
+            branch: values[:branch],
+            cluster: step[:cluster],
+            service: service,
+            scheduled_task_rule: nil,
+            scheduled_task_target: nil,
+            run_task: run_task
+          )
+
+          deploy_bot.start_auto_deploy_run(deploy_job: deploy_job)
+          Genova::Run.call(deploy_job)
+
+          deploy_bot.finished_deploy(deploy_job: deploy_job)
+        end
       end
 
       deploy_bot.finished_auto_deploy_all
@@ -59,17 +66,7 @@ module Github
       result = auto_deploy_config.find { |k, _v| Genova::Utils::String.pattern_match?(k[:branch], branch) }
       return nil if result.nil?
 
-      if result[:service].present?
-        logger.warn('"service" parameter is deprecated. Set variable "services" instead.')
-
-        result[:services] = [result[:service]]
-        result.delete(:service)
-      end
-
-      {
-        cluster: result[:cluster],
-        services: result[:services]
-      }
+      result
     end
   end
 end

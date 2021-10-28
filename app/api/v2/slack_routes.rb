@@ -5,7 +5,7 @@ module V2
     # /api/v2/slack
     resource :slack do
       get :auth do
-        result = RestClient.post("http://slack:9292/api/teams", code: params[:code], state: params[:state])
+        result = RestClient.post('http://slack:9292/api/teams', code: params[:code], state: params[:state])
         Oj.load(result.body)
       rescue RestClient::ExceptionWithResponse => e
         error!(Oj.load(e.response.body, symbol_keys: true).slice(:type, :message))

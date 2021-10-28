@@ -40,12 +40,21 @@
     "auto_deploy": {
       "type": "array",
       "items": {
-        "required": ["branch", "cluster"],
+        "required": ["branch", "steps"],
         "properties": {
           "branch": { "type": "string" },
-          "cluster": { "type": "string" },
-          "service": { "type": "string" },
-          "services": { "type": "array" }
+          "steps": {
+	    "type": "array",
+	    "items": {
+              "type": "object",
+              "required": ["type", "cluster", "resources"],
+	      "properties": {
+                "type": { "type": "string" },
+                "cluster": { "type": "string" },
+		"resources": { "type" :"array" }
+	      }
+	    }
+	  }
         }
       }
     },

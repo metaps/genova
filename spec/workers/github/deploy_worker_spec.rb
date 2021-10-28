@@ -15,9 +15,12 @@ module Github
     let(:deploy_config_mock) do
       Genova::Config::DeployConfig.new(
         auto_deploy: [{
-          cluster: 'cluster',
-          services: ['service'],
-          branch: 'branch'
+          branch: 'branch',
+          steps: [{
+            type: 'service',
+            cluster: 'cluster',
+            resources: ['service']
+          }]
         }],
         clusters: []
       )
@@ -31,7 +34,8 @@ module Github
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
       allow(slack_bot_mock).to receive(:detect_auto_deploy).and_return(parent_message_ts: Time.now.utc.to_f)
-      allow(slack_bot_mock).to receive(:start_auto_deploy)
+      allow(slack_bot_mock).to receive(:start_auto_deploy_step)
+      allow(slack_bot_mock).to receive(:start_auto_deploy_run)
       allow(slack_bot_mock).to receive(:finished_deploy)
       allow(slack_bot_mock).to receive(:finished_auto_deploy_all)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
