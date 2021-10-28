@@ -63,6 +63,9 @@ Your repository should have the following files in it.
 ## Setup genova
 
 ```shell
+$ git clone https://github.com/metaps/genova.git
+$ cd genova
+
 # Register the private key you need to clone the repository from GitHub.
 $ vi .ssh/id_rsa
 $ chmod 400 .ssh/id_rsa
