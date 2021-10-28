@@ -107,7 +107,7 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:deploy_job].slack_user_id}>") if params[:deploy_job].mode == DeployJob.mode.find_value(:slack)
-          blocks << BlockKit::Helper.header('Deployment was successful.')
+          blocks << BlockKit::Helper.section('Deployment was successful.')
           blocks << BlockKit::Helper.section_fieldset(fields)
 
           send(blocks)
@@ -172,7 +172,7 @@ module Genova
 
         def start_auto_deploy_step(params)
           send([
-                 BlockKit::Helper.header("Start step ##{params[:index]}.")
+                 BlockKit::Helper.header("Deploy step ##{params[:index]}.")
                ])
         end
 
