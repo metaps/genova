@@ -451,6 +451,7 @@ DEPENDENCIES
   brakeman
   byebug
   config
+  deep_merge
   docker-api
   enumerize
   git

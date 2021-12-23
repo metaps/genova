@@ -34,7 +34,7 @@ module Genova
         push_image(run_task_config[:containers], run_task_config[:path], id)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{run_task_config[:path]}")
-        task_definition = create_task(task_definition_path, id)
+        task_definition = create_task(task_definition_path, run_task_config[:task_overrides], id)
 
         options = {
           desired_count: run_task_config[:desired_count],
@@ -63,7 +63,7 @@ module Genova
         push_image(service_config[:containers], service_config[:path], id)
 
         service_task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
-        service_task_definition = create_task(service_task_definition_path, id)
+        service_task_definition = create_task(service_task_definition_path, service_config[:task_overrides], id)
 
         service_client = Deployer::Service::Client.new(@cluster, logger: @logger)
 
@@ -103,7 +103,7 @@ module Genova
         push_image(target_config[:containers], target_config[:path], id)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
-        task_definition = create_task(task_definition_path, id)
+        task_definition = create_task(task_definition_path, target_config[:task_overrides], id)
         task_definition_arn = task_definition.task_definition_arn
         rule_config = @deploy_config.find_scheduled_task_rule(@cluster, rule)
 
@@ -138,11 +138,10 @@ module Genova
 
       def deploy_scheduled_tasks(id, params); end
 
-      def create_task(task_definition_path, id)
+      def create_task(task_definition_path, task_overrides, id)
         task_client = Ecs::Task::Client.new
 
-        @task_definitions[task_definition_path] = task_client.register(task_definition_path, tag: id) unless @task_definitions.include?(task_definition_path)
-
+        @task_definitions[task_definition_path] = task_client.register(task_definition_path, task_overrides, tag: id) unless @task_definitions.include?(task_definition_path)
         @task_definitions[task_definition_path]
       end
     end
