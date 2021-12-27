@@ -171,7 +171,7 @@ module GenovaCli
       code_manager.update
 
       path = code_manager.task_definition_config_path(options[:path])
-      task = Genova::Ecs::Task::Client.new.register(path, tag: 'latest')
+      task = Genova::Ecs::Task::Client.new.register(path, nil, tag: 'latest')
 
       puts("Registered task. [#{task.task_definition_arn}]")
     end
