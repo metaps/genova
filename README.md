@@ -7,7 +7,7 @@
 
 ## Description
 
-genova provides the ability to deploy and manage applications to [AWS ECS](https://aws.amazon.com/ecs/).
+genova provides the ability to deploy and manage applications to [Amazon ECS](https://aws.amazon.com/ecs/).
 
 ## Overview
 
@@ -37,7 +37,7 @@ When a deployment is requested, the following steps will be taken to deploy the 
 3. Build the Dockerfile based on the deployment configuration file.
 4. Push the created image to AWS ECR.
 5. Define tasks based on the task definition file (`config/deploy/xxx.yml`).
-6. Register the created task definitions to AWS ECS.
+6. Register the created task definitions to Amazon ECS.
 7. Update the service or scheduled task. if it is a Run task, execute the task.
 
 _The AWS resources (services and scheduled tasks) to be deployed must be created in advance._

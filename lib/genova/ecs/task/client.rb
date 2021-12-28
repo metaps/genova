@@ -1,3 +1,5 @@
+require 'deep_merge/rails_compat'
+
 module Genova
   module Ecs
     module Task
@@ -7,11 +9,12 @@ module Genova
           @cipher = Genova::Utils::Cipher.new
         end
 
-        def register(path, params = {})
+        def register(path, task_overrides = {}, params = {})
           raise IOError, "File does not exist. [#{path}]" unless File.file?(path)
 
           yaml = YAML.load(File.read(path))
           task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)
+          task_definition.deeper_merge!(task_overrides, merge_hash_arrays: true)
 
           replace_parameter_variables!(task_definition, params)
           decrypt_environment_variables!(task_definition)

@@ -13,6 +13,7 @@ gem 'aws-sdk-iam'
 gem 'aws-sdk-kms'
 gem 'bootsnap', require: false
 gem 'config'
+gem 'deep_merge', require: 'deep_merge/rails_compat'
 gem 'docker-api'
 gem 'enumerize'
 gem 'git'
