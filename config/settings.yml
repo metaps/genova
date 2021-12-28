@@ -1,4 +1,6 @@
 console:
+  # Specify the URL of the web console.
+  # If you want to access it from the Internet, specify the public domain.
   url: http://localhost:3000/
 
 logger:
