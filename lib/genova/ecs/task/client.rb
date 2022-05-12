@@ -14,7 +14,7 @@ module Genova
 
           yaml = YAML.load(File.read(path))
           task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)
-          merge_task_parameters!(task_definition, task_overrides)
+          merge_task_parameters!(task_definition, task_overrides) if task_overrides.present?
 
           replace_parameter_variables!(task_definition, params)
           decrypt_environment_variables!(task_definition)
