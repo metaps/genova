@@ -32,35 +32,36 @@ module Genova
         def merge_task_parameters!(task_definition, task_overrides)
           # Parameters consisting of arrays initialize the parent side of the merge.
           # https://github.com/metaps/genova/issues/283
-          reset_array!(task_definition, :requires_compatibilities)
+          reset_array!(task_definition, task_overrides, :requires_compatibilities)
 
-          (task_overrides[:container_definitions] || []).each do |override_container_definition|
+          (task_overrides[:container_definitions] || []).each_with_index do |override_container_definition, index|
             container_definition = task_definition[:container_definitions].find { |k, _v| k[:name] == override_container_definition[:name] }
 
             next unless container_definition.present?
 
-            reset_array!(container_definition, :command)
-            reset_array!(container_definition, :entry_point)
-            reset_array!(container_definition, :links)
-            reset_array!(container_definition, :dns_servers)
-            reset_array!(container_definition, :dns_search_domains)
-            reset_array!(container_definition, :default_security_options)
-            reset_array!(container_definition, :health_check, :command)
-            reset_array!(container_definition, :linux_parameters, :capabilities, :add)
-            reset_array!(container_definition, :linux_parameters, :capabilities, :drop)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :command)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :entry_point)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :links)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :dns_servers)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :dns_search_domains)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :default_security_options)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :health_check, :command)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
+            reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
           end
 
           task_definition.deeper_merge!(task_overrides, merge_hash_arrays: true)
         end
 
-        def reset_array!(base, *params)
-          return unless base.dig(*params).present?
+        def reset_array!(task_definition, task_overrides, *params)
+          return unless task_definition.dig(*params).present?
+          return unless task_overrides.dig(*params).present?
 
           if params.size > 1
-            value = base.dig(*params[0..params.size - 2])
+            value = task_definition.dig(*params[0..params.size - 2])
             value[params[params.size - 1]] = []
           else
-            base[params[0]] = []
+            task_definition[params[0]] = []
           end
         end
 
