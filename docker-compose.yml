@@ -25,6 +25,7 @@ services:
     depends_on:
       - mongo
       - redis
+      - base
     restart: ${DOCKER_RESTART}
   slack:
     build:
@@ -38,6 +39,7 @@ services:
     depends_on:
       - mongo
       - redis
+      - base
     restart: on-failure
   sidekiq:
     build:
@@ -52,6 +54,7 @@ services:
     depends_on:
       - mongo
       - redis
+      - base
     restart: ${DOCKER_RESTART}
   cron:
     build:
@@ -63,6 +66,8 @@ services:
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
     restart: ${DOCKER_RESTART}
+    depends_on:
+      - base
   node:
     build:
       context: .

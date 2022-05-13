@@ -8,9 +8,7 @@ module Genova
           def initialize(cluster, options = {})
             @cluster = cluster
             @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
-
             @ecs = Aws::ECS::Client.new
-            @task = Genova::Ecs::Task::Client.new
           end
 
           def update(service, task_definition_arn, options = {})
