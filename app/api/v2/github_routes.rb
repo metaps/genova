@@ -13,6 +13,10 @@ module V2
       post :push do
         error! 'Signature is invalid.', 403 unless verify_webhook_signature?(@payload)
 
+        # Even if the webhook trigger is limited to Push, the deletion of a branch will be notified.
+        # https://github.com/metaps/genova/issues/272
+        error! 'Detect branch deletion.', 403 if @data[:deleted]
+
         id = Genova::Sidekiq::JobStore.create(parse_webhook_data(@data))
         Github::DeployWorker.perform_async(id)
 
