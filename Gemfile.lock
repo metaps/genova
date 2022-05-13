@@ -175,7 +175,7 @@ GEM
     ffi (1.14.2)
     fiber-local (1.0.0)
     foreman (0.87.2)
-    git (1.8.1)
+    git (1.11.0)
       rchardet (~> 1.8)
     gli (2.19.2)
     globalid (0.4.2)
