@@ -61,7 +61,7 @@ module Genova
       logger.error(e.backtrace.join("\n")) if e.backtrace.present?
 
       cancel(transaction, deploy_job)
-      raise e unless deploy_job.mode == DeployJob.mode.find_value(:manual)
+      raise e
     end
 
     class << self
