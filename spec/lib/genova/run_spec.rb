@@ -26,7 +26,7 @@ module Genova
       allow(ecs_client_mock).to receive(:ready)
       allow(ecs_client_mock).to receive(:deploy_service).and_return(deploy_response)
 
-      allow(File).to receive(:file?).and_call_original
+      allow(File).to receive(:file?).and_return(true)
       allow(File).to receive(:file?).with("#{ENV.fetch('HOME')}/.ssh/id_rsa").and_return(true)
       allow(Ecs::Client).to receive(:new).and_return(ecs_client_mock)
 
