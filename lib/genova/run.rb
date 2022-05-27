@@ -64,15 +64,13 @@ module Genova
       raise e
     end
 
-    class << self
-      def cancel(transaction, deploy_job)
-        transaction.cancel
+    def self.cancel(transaction, deploy_job)
+      transaction.cancel
 
-        deploy_job.status = DeployJob.status.find_value(:failure).to_s
-        deploy_job.finished_at = Time.now.utc
-        deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f if deploy_job.started_at.present?
-        deploy_job.save
-      end
+      deploy_job.status = DeployJob.status.find_value(:failure).to_s
+      deploy_job.finished_at = Time.now.utc
+      deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f if deploy_job.started_at.present?
+      deploy_job.save
     end
   end
 end

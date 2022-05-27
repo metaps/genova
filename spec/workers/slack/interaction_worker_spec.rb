@@ -3,12 +3,15 @@ require 'rails_helper'
 module Slack
   describe InteractionWorker do
     describe 'perform' do
-      let(:id) { Genova::Sidekiq::JobStore.create(foo: 'bar') }
+      let(:key) { Genova::Sidekiq::JobStore.create('id', foo: 'bar') }
 
       before do
+        digest = Genova::Sidekiq::JobStore.send(:generate_key, 'id')
+        Redis.current.del(digest)
+
         allow(Genova::Slack::RequestHandler).to receive(:call)
 
-        subject.perform(id)
+        subject.perform(key)
       end
 
       it 'should be in queeue' do

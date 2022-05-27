@@ -8,7 +8,10 @@ module Github
       values = Genova::Sidekiq::JobStore.find(id)
       result = find(values[:repository], values[:branch])
 
-      return if result.nil?
+      if result.nil?
+        logger.info('The pushed branch does not match the conditions of "auto_deploy", so the process is terminated.')
+        return
+      end
 
       bot = Genova::Slack::Interactive::Bot.new
       response = bot.detect_auto_deploy(

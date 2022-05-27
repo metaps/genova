@@ -15,8 +15,11 @@ module V2
       post :post do
         error! 'Signature do not match.', 403 unless verify_signature?
 
-        id = Genova::Sidekiq::JobStore.create(payload_to_hash)
-        Slack::InteractionWorker.perform_async(id)
+        payload = payload_to_hash
+        id = "thread_ts:#{payload[:container][:thread_ts]}"
+
+        key = Genova::Sidekiq::JobStore.create(id, payload)
+        Slack::InteractionWorker.perform_async(key)
       end
 
       post :event do
@@ -29,11 +32,11 @@ module V2
           element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
           statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
 
-          id = Genova::Sidekiq::JobStore.create(
-            statement: statement,
-            user: params[:event][:user],
-            parent_message_ts: params[:event][:ts]
-          )
+          id = Genova::Sidekiq::JobStore.create(params[:event][:event_ts], {
+                                                  statement: statement,
+                                                  user: params[:event][:user],
+                                                  parent_message_ts: params[:event][:ts]
+                                                })
           Slack::CommandReceiveWorker.perform_async(id)
         end
 

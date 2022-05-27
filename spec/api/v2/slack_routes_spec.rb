@@ -2,6 +2,11 @@ require 'rails_helper'
 
 module V2
   describe SlackRoutes do
+    before do
+      digest = Genova::Sidekiq::JobStore.send(:generate_key, 'id')
+      Redis.current.del(digest)
+    end
+
     describe 'GET /auth' do
       context 'when you can add team' do
         let(:response_mock) { double(RestClient::Response) }
@@ -37,7 +42,10 @@ module V2
       let(:payload_body) do
         {
           payload: Oj.dump(
-            token: token
+            token: token,
+            container: {
+              thread_ts: 'thread_ts'
+            }
           )
         }
       end
