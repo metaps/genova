@@ -2,24 +2,32 @@ module Genova
   module Sidekiq
     class JobStore
       class << self
-        TTL = 1800
+        TTL = 1200
 
-        def create(params)
-          id = "job_store_#{SecureRandom.alphanumeric(4)}"
+        def create(id, params)
+          key = generate_key(id)
+          raise Exceptions::DupplicateJobError, 'Duplicate job execution was canceled.' if Redis.current.exists?(key)
 
           Redis.current.multi do
-            Redis.current.set(id, params.to_json) if params.present?
-            Redis.current.expire(id, TTL)
+            Redis.current.set(key, params.to_json)
+            Redis.current.expire(key, TTL)
           end
 
-          id
+          key
         end
 
-        def find(id)
-          values = Redis.current.get(id)
-          raise Exceptions::NotFoundError, "Job #{id} not found." if values.nil?
+        def find(key)
+          values = Redis.current.get(key)
+          raise Exceptions::NotFoundError, "Job #{key} not found." if values.nil?
 
           Oj.load(values, symbol_keys: true)
+        end
+
+        private
+
+        def generate_key(id)
+          digest = Digest::SHA256.hexdigest(id)
+          "job_store_#{digest}"
         end
       end
     end

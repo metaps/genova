@@ -9,7 +9,8 @@ module V2
             name: 'repository',
             owner: {
               name: 'owner'
-            }
+            },
+            pushed_at: 'pushed_at'
           },
           ref: 'refs/heads/xxx',
           head_commit: {
@@ -27,7 +28,8 @@ module V2
             name: 'repository',
             owner: {
               name: 'owner'
-            }
+            },
+            pushed_at: 'pushed_at'
           },
           ref: 'refs/tags/xxx',
           head_commit: {
@@ -37,6 +39,11 @@ module V2
             }
           }
         )
+      end
+
+      before do
+        remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
+        Redis.current.del(remove_key)
       end
 
       context 'when valid signature' do
@@ -83,7 +90,8 @@ module V2
           repository: 'repository',
           ref: 'refs/heads/xxx',
           commit_url: 'url',
-          author: 'author'
+          author: 'author',
+          pushed_at: 'pushed_at'
         )
       end
 
@@ -93,7 +101,8 @@ module V2
           repository: 'repository',
           ref: 'refs/tags/xxx',
           commit_url: 'url',
-          author: 'author'
+          author: 'author',
+          pushed_at: 'pushed_at'
         )
       end
 

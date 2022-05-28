@@ -4,11 +4,13 @@ module Github
   describe DeployWorker do
     include ::V2::Helper::GithubHelper
 
-    let(:id) do
+    let(:key) do
       Genova::Sidekiq::JobStore.create(
-        account: 'account',
-        repository: 'repository',
-        branch: 'branch'
+        'pushed_at:pushed_at', {
+          account: 'account',
+          repository: 'repository',
+          branch: 'branch'
+        }
       )
     end
     let(:code_manager_mock) { double(Genova::CodeManager::Git) }
@@ -30,6 +32,9 @@ module Github
     before(:each) do
       DeployJob.delete_all
 
+      remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
+      Redis.current.del(remove_key)
+
       allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
@@ -45,7 +50,7 @@ module Github
 
     describe 'perform' do
       before do
-        subject.perform(id)
+        subject.perform(key)
       end
 
       it 'should be in queue' do
