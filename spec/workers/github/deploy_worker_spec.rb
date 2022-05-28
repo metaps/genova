@@ -6,7 +6,7 @@ module Github
 
     let(:key) do
       Genova::Sidekiq::JobStore.create(
-        'pushed_at', {
+        'pushed_at:pushed_at', {
           account: 'account',
           repository: 'repository',
           branch: 'branch'
@@ -32,8 +32,8 @@ module Github
     before(:each) do
       DeployJob.delete_all
 
-      key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at')
-      Redis.current.del(key)
+      remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
+      Redis.current.del(remove_key)
 
       allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)

@@ -3,14 +3,13 @@ require 'rails_helper'
 module Slack
   describe InteractionWorker do
     describe 'perform' do
-      let(:key) { Genova::Sidekiq::JobStore.create('message_ts', foo: 'bar') }
+      let(:key) { Genova::Sidekiq::JobStore.create('message_ts:message_ts', foo: 'bar') }
 
       before do
-        digest = Genova::Sidekiq::JobStore.send(:generate_key, 'message_ts')
-        Redis.current.del(digest)
+        remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'message_ts:message_ts')
+        Redis.current.del(remove_key)
 
         allow(Genova::Slack::RequestHandler).to receive(:call)
-
         subject.perform(key)
       end
 

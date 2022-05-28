@@ -6,8 +6,8 @@ module Genova
       let(:params) { { key: 'value' } }
 
       before do
-        digest = Genova::Sidekiq::JobStore.send(:generate_key, 'id')
-        Redis.current.del(digest)
+        key = Genova::Sidekiq::JobStore.send(:generate_key, 'id')
+        Redis.current.del(key)
       end
 
       describe 'create' do

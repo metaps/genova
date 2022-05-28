@@ -42,8 +42,8 @@ module V2
       end
 
       before do
-        digest = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
-        Redis.current.del(digest)
+        remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
+        Redis.current.del(remove_key)
       end
 
       context 'when valid signature' do
