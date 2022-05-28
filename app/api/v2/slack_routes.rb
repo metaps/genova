@@ -16,7 +16,7 @@ module V2
         error! 'Signature do not match.', 403 unless verify_signature?
 
         payload = payload_to_hash
-        id = "thread_ts:#{payload[:container][:thread_ts]}"
+        id = "message_ts:#{payload[:message][:ts]}"
 
         key = Genova::Sidekiq::JobStore.create(id, payload)
         Slack::InteractionWorker.perform_async(key)
@@ -32,7 +32,8 @@ module V2
           element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
           statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
 
-          id = Genova::Sidekiq::JobStore.create(params[:event][:event_ts], {
+          key = "event_ts:#{params[:event][:event_ts]}"
+          id = Genova::Sidekiq::JobStore.create(key, {
                                                   statement: statement,
                                                   user: params[:event][:user],
                                                   parent_message_ts: params[:event][:ts]

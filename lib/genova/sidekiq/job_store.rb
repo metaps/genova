@@ -2,7 +2,7 @@ module Genova
   module Sidekiq
     class JobStore
       class << self
-        TTL = 1800
+        TTL = 1200
 
         def create(id, params)
           key = generate_key(id)
@@ -26,7 +26,7 @@ module Genova
         private
 
         def generate_key(id)
-          digest = Digest::SHA256.hexdigest(id.to_s)
+          digest = Digest::SHA256.hexdigest(id)
           "job_store_#{digest}"
         end
       end

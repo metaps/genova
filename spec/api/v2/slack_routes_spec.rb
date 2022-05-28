@@ -3,7 +3,7 @@ require 'rails_helper'
 module V2
   describe SlackRoutes do
     before do
-      digest = Genova::Sidekiq::JobStore.send(:generate_key, 'id')
+      digest = Genova::Sidekiq::JobStore.send(:generate_key, 'message_ts')
       Redis.current.del(digest)
     end
 
@@ -43,8 +43,8 @@ module V2
         {
           payload: Oj.dump(
             token: token,
-            container: {
-              thread_ts: 'thread_ts'
+            message: {
+              ts: 'message_ts'
             }
           )
         }

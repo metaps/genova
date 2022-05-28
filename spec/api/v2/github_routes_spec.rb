@@ -42,7 +42,7 @@ module V2
       end
 
       before do
-        digest = Genova::Sidekiq::JobStore.send(:generate_key, 'id')
+        digest = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
         Redis.current.del(digest)
       end
 
@@ -91,7 +91,7 @@ module V2
           ref: 'refs/heads/xxx',
           commit_url: 'url',
           author: 'author',
-          pushed_at: 'id'
+          pushed_at: 'pushed_at'
         )
       end
 
@@ -102,7 +102,7 @@ module V2
           ref: 'refs/tags/xxx',
           commit_url: 'url',
           author: 'author',
-          pushed_at: 'id'
+          pushed_at: 'pushed_at'
         )
       end
 
