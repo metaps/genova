@@ -30,6 +30,9 @@ module Genova
         private
 
         def merge_task_parameters!(task_definition, task_overrides)
+          # https://github.com/metaps/genova/issues/291
+          task_definition.deep_merge!(task_overrides.except(:container_definitions))
+
           # Parameters consisting of arrays initialize the parent side of the merge.
           # https://github.com/metaps/genova/issues/283
           reset_array!(task_definition, task_overrides, :requires_compatibilities)
@@ -48,9 +51,11 @@ module Genova
             reset_array!(task_definition, task_overrides, :container_definitions, index, :health_check, :command)
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
+
+            container_definition.deeper_merge!(override_container_definition)
           end
 
-          task_definition.deeper_merge!(task_overrides, merge_hash_arrays: true)
+          task_definition
         end
 
         def reset_array!(task_definition, task_overrides, *params)

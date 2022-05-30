@@ -18,12 +18,61 @@ module Genova
         describe 'register' do
           it 'should be return new task' do
             allow(File).to receive(:file?).and_return(true)
-            allow(File).to receive(:read).and_return('{container_definitions: {}}')
+            allow(File).to receive(:read).and_return(
+              {
+                container_definitions: []
+              }.to_yaml
+            )
 
             allow(task_definition_mock).to receive(:[]).with(:task_definition).and_return(double(Aws::ECS::Types::TaskDefinition))
             allow(ecs_client_mock).to receive(:register_task_definition).and_return(task_definition_mock)
 
             expect(task_client.register(any_args)).to be_a(task_definition_mock.class)
+          end
+        end
+
+        describe 'merge_task_parameters!' do
+          let(:task_definition) do
+            {
+              container_definitions: [
+                {
+                  name: 'app',
+                  memory: 256,
+                  command: [
+                    'ls'
+                  ]
+                }
+              ]
+            }
+          end
+          let(:task_overrides) do
+            {
+              container_definitions: [
+                {
+                  name: 'app',
+                  memory: 512,
+                  command: [
+                    'date'
+                  ]
+                }
+              ]
+            }
+          end
+
+          it 'should be return merge parameters' do
+            expect(task_client.send(:merge_task_parameters!, task_definition, task_overrides)).to eq(
+              {
+                container_definitions: [
+                  {
+                    name: 'app',
+                    memory: 512,
+                    command: [
+                      'date'
+                    ]
+                  }
+                ]
+              }
+            )
           end
         end
 
