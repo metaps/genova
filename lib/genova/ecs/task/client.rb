@@ -55,7 +55,6 @@ module Genova
             else
               task_definition[:container_definitions] << override_container_definition
             end
-
           end
 
           task_definition

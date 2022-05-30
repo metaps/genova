@@ -32,7 +32,7 @@ module Genova
         end
 
         describe 'merge_task_parameters!' do
-          let(:task_definition) {
+          let(:task_definition) do
             {
               container_definitions: [
                 {
@@ -44,8 +44,8 @@ module Genova
                 }
               ]
             }
-          }
-          let(:task_overrides) {
+          end
+          let(:task_overrides) do
             {
               container_definitions: [
                 {
@@ -61,7 +61,7 @@ module Genova
                 }
               ]
             }
-          }
+          end
 
           it 'should be return merge parameters' do
             expect(task_client.send(:merge_task_parameters!, task_definition, task_overrides)).to eq(
@@ -72,7 +72,7 @@ module Genova
                     memory: 512,
                     command: [
                       'date'
-                    ]            
+                    ]
                   },
                   {
                     name: 'web',
