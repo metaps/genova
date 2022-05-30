@@ -40,19 +40,22 @@ module Genova
           (task_overrides[:container_definitions] || []).each_with_index do |override_container_definition, index|
             container_definition = task_definition[:container_definitions].find { |k, _v| k[:name] == override_container_definition[:name] }
 
-            next unless container_definition.present?
+            if container_definition.present?
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :command)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :entry_point)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :links)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :dns_servers)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :dns_search_domains)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :default_security_options)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :health_check, :command)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
+              reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
 
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :command)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :entry_point)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :links)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :dns_servers)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :dns_search_domains)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :default_security_options)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :health_check, :command)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
-            reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
+              container_definition.deeper_merge!(override_container_definition)
+            else
+              task_definition[:container_definitions] << override_container_definition
+            end
 
-            container_definition.deeper_merge!(override_container_definition)
           end
 
           task_definition
