@@ -1,3 +1,5 @@
+require 'deep_merge/rails_compat'
+
 module Genova
   module Ecs
     module Task
@@ -50,7 +52,7 @@ module Genova
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
 
-            container_definition.merge!(override_container_definition)
+            container_definition.deeper_merge!(override_container_definition)
           end
 
           task_definition
