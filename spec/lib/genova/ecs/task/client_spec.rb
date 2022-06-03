@@ -41,10 +41,16 @@ module Genova
                   command: [
                     'ls'
                   ],
-                  environment: [{
-                    name: 'DEBUG',
-                    value: 'false'
-                  }]
+                  environment: [
+                    {
+                      name: 'KEY1',
+                      value: 'value1'
+                    },
+                    {
+                      name: 'KEY2',
+                      value: 'value2'
+                    }
+                  ]
                 }
               ]
             }
@@ -58,10 +64,17 @@ module Genova
                   command: [
                     'date'
                   ],
-                  environment: [{
-                    name: 'DEBUG',
-                    value: 'true'
-                  }]
+                  essential: true,
+                  environment: [
+                    {
+                      name: 'KEY2',
+                      value: 'value2_override'
+                    },
+                    {
+                      name: 'KEY3',
+                      value: 'value3'
+                    }
+                  ]
                 }
               ]
             }
@@ -77,9 +90,20 @@ module Genova
                     command: [
                       'date'
                     ],
+                    essential: true,
                     environment: [
-                      name: 'DEBUG',
-                      value: 'true'
+                      {
+                        name: 'KEY1',
+                        value: 'value1'
+                      },
+                      {
+                        name: 'KEY2',
+                        value: 'value2_override'
+                      },
+                      {
+                        name: 'KEY3',
+                        value: 'value3'
+                      }
                     ]
                   }
                 ]
