@@ -52,7 +52,7 @@ module Genova
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
 
-            container_definition.deeper_merge!(override_container_definition)
+            container_definition.deeper_merge!(override_container_definition, merge_hash_arrays: true)
           end
 
           task_definition

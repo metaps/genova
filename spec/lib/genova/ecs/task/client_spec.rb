@@ -40,7 +40,11 @@ module Genova
                   memory: 256,
                   command: [
                     'ls'
-                  ]
+                  ],
+                  environment: [{
+                    name: 'DEBUG',
+                    value: 'false'
+                  }]
                 }
               ]
             }
@@ -53,7 +57,11 @@ module Genova
                   memory: 512,
                   command: [
                     'date'
-                  ]
+                  ],
+                  environment: [{
+                    name: 'DEBUG',
+                    value: 'true'
+                  }]
                 }
               ]
             }
@@ -68,6 +76,10 @@ module Genova
                     memory: 512,
                     command: [
                       'date'
+                    ],
+                    environment: [
+                      name: 'DEBUG',
+                      value: 'true'
                     ]
                   }
                 ]
