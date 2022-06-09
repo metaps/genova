@@ -40,6 +40,16 @@ module Genova
                   memory: 256,
                   command: [
                     'ls'
+                  ],
+                  environment: [
+                    {
+                      name: 'KEY1',
+                      value: 'value1'
+                    },
+                    {
+                      name: 'KEY2',
+                      value: 'value2'
+                    }
                   ]
                 }
               ]
@@ -53,6 +63,17 @@ module Genova
                   memory: 512,
                   command: [
                     'date'
+                  ],
+                  essential: true,
+                  environment: [
+                    {
+                      name: 'KEY2',
+                      value: 'value2_override'
+                    },
+                    {
+                      name: 'KEY3',
+                      value: 'value3'
+                    }
                   ]
                 }
               ]
@@ -68,6 +89,21 @@ module Genova
                     memory: 512,
                     command: [
                       'date'
+                    ],
+                    essential: true,
+                    environment: [
+                      {
+                        name: 'KEY1',
+                        value: 'value1'
+                      },
+                      {
+                        name: 'KEY2',
+                        value: 'value2_override'
+                      },
+                      {
+                        name: 'KEY3',
+                        value: 'value3'
+                      }
                     ]
                   }
                 ]
