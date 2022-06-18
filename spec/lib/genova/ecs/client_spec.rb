@@ -5,7 +5,7 @@ module Genova
     describe Client do
       describe 'deploy_service' do
         let(:client) { Ecs::Client.new('cluster', code_manager_mock) }
-        let(:deploy_config_mock) { double(Genova::Config::TaskDefinitionConfig) }
+        let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
         let(:task_definition_mock) { double(Aws::ECS::Types::TaskDefinition) }
         let(:code_manager_mock) { double(CodeManager::Git) }
         let(:ecr_client_mock) { double(Ecr::Client) }

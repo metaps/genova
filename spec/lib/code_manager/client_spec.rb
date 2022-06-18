@@ -45,18 +45,6 @@ module Genova
         end
       end
 
-      describe 'load_task_definition_config' do
-        let(:git_mock) { double(::Git) }
-
-        it 'should be return config' do
-          allow(git_mock).to receive(:fetch)
-          allow(git_mock).to receive(:show).and_return('{}')
-          allow(code_manager).to receive(:client).and_return(git_mock)
-
-          expect(code_manager.load_task_definition_config('path')).to be_a(Genova::Config::TaskDefinitionConfig)
-        end
-      end
-
       describe 'origin_branches' do
         let(:git_mock) { double(::Git) }
 

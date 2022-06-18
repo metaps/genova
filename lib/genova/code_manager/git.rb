@@ -84,10 +84,6 @@ module Genova
         File.expand_path(Pathname(@base_path).join(path).to_s)
       end
 
-      def load_task_definition_config(path)
-        Genova::Config::TaskDefinitionConfig.new(fetch_config(path))
-      end
-
       def origin_branches
         git = client
         git.fetch
