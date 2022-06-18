@@ -10,7 +10,6 @@ module Genova
       end
 
       def build_image(container_config, image_name)
-        container = container_config[:name]
         build = parse_docker_build(container_config[:build], @cipher)
 
         config_base_path = Pathname(@code_manager.base_path).join('config').to_s

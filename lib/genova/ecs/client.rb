@@ -127,9 +127,6 @@ module Genova
         count = 0
 
         containers_config.each do |container_config|
-
-          puts container_config
-          exit
           container_definition = task_definition[:container_definitions].find { |container| container[:name] == container_config[:name] }
           raise Exceptions::ValidationError, "#{container_config[:name]} does not exist in task definition." if container_definition.nil?
 
