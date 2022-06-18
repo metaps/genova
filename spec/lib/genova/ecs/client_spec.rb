@@ -34,10 +34,25 @@ module Genova
         let(:deploy_config_mock) { double(Genova::Config::TaskDefinitionConfig) }
 
         it 'should be return DeployResponse' do
-          allow(deploy_config_mock).to receive(:find_service).and_return(containers: ['container'], path: 'path')
+          allow(deploy_config_mock).to receive(:find_service).and_return(
+            containers: [
+              name: 'web'
+            ],
+          )
           allow(deploy_config_mock).to receive(:find_cluster).and_return([])
           allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
           allow(code_manager_mock).to receive(:task_definition_config_path).and_return('task_definition_path')
+
+          task_client_mock = double(Ecs::Task::Client)
+          allow(task_client_mock).to receive(:register).and_return(
+            container_definitions: [
+              {
+                name: 'web'
+              }
+            ]
+          )
+          allow(task_client_mock).to receive(:task_definition_arn)
+          allow(Ecs::Task::Client).to receive(:new).and_return(task_client_mock)
 
           expect(client.deploy_service('service', 'tag_revision')).to be_a(DeployResponse)
         end

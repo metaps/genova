@@ -9,8 +9,8 @@ module Genova
         let(:task_definition_config_mock) do
           Genova::Config::TaskDefinitionConfig.new(
             container_definitions: [{
-              name: 'nginx',
-              image: 'xxx/nginx:revision_tag'
+              name: 'web',
+              image: 'xxx/web:revision_tag'
             }]
           )
         end
@@ -22,7 +22,7 @@ module Genova
           allow(Utils::Cipher).to receive(:new).and_return(cipher_mock)
 
           container_config = {
-            name: 'nginx',
+            name: 'web',
             build: '.'
           }
 
@@ -34,7 +34,7 @@ module Genova
 
           allow(::Docker::Image).to receive(:all).and_return(foo: 'bar')
 
-          expect(docker_client.build_image(container_config, 'test.yml')).to eq('nginx')
+          expect(docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')).to eq('web')
         end
       end
     end

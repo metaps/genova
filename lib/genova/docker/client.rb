@@ -9,7 +9,7 @@ module Genova
         @cipher = Genova::Utils::Cipher.new
       end
 
-      def build_image(container_config, task_definition_path)
+      def build_image(container_config, image_name)
         container = container_config[:name]
         build = parse_docker_build(container_config[:build], @cipher)
 
@@ -19,12 +19,7 @@ module Genova
 
         raise Exceptions::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.file?(docker_file_path)
 
-        task_definition_config = @code_manager.load_task_definition_config(Pathname('config').join(task_definition_path))
-        container_definition = task_definition_config[:container_definitions].find { |i| i[:name] == container.to_s }
-
-        raise Exceptions::ValidationError, "'#{container}' container does not exist in task definition." if container_definition.nil?
-
-        repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
+        repository_name = image_name.match(%r{/([^:]+)})[1]
         build_value = SecureRandom.alphanumeric(8)
 
         build_options = {
