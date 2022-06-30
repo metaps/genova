@@ -110,7 +110,7 @@ Rails.application.configure do
 
   config.hosts = [
     URI.parse(Settings.console.url).host,
-    IPAddr.new("0.0.0.0/0"),
+    IPAddr.new('0.0.0.0/0'),
     'localhost'
   ]
 end
