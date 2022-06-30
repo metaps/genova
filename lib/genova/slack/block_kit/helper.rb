@@ -8,7 +8,7 @@ module Genova
               type: 'header',
               text: {
                 type: 'plain_text',
-                text: truncate(header)
+                text: header
               }
             }
           end
@@ -18,13 +18,13 @@ module Genova
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: truncate(text)
+                text: text
               }
             }
           end
 
           def section_field(header, text)
-            "*#{header}:*\n#{truncate(text)}\n"
+            "*#{header}:*\n#{text}\n"
           end
 
           def section_fieldset(fields)
@@ -40,7 +40,7 @@ module Genova
           def section_short_field(header, text)
             {
               type: 'mrkdwn',
-              text: "*#{header}:*\n#{truncate(text)}\n"
+              text: "*#{header}:*\n#{text}\n"
             }
           end
 
@@ -71,7 +71,7 @@ module Genova
               type: 'button',
               text: {
                 type: 'plain_text',
-                text: truncate(text)
+                text: text
               },
               value: value,
               style: 'primary',
@@ -84,7 +84,7 @@ module Genova
               type: 'button',
               text: {
                 type: 'plain_text',
-                text: truncate(text)
+                text: text
               },
               value: value,
               action_id: action_id
@@ -102,10 +102,6 @@ module Genova
             {
               type: 'divider'
             }
-          end
-
-          def truncate(string)
-            string.truncate(256)
           end
 
           def escape_emoji(string)
