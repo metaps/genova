@@ -213,7 +213,7 @@ module Genova
         private
 
         def code(string)
-          "```#{string}```"
+          "```#{string.truncate(512)}```"
         end
 
         def confirm_command(params, mention)
