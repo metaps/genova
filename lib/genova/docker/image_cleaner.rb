@@ -32,6 +32,8 @@ module Genova
               end
             end
           end
+
+          ::Docker::Image.prune
         end
       end
     end
