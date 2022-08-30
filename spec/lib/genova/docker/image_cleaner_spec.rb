@@ -21,6 +21,7 @@ module Genova
           allow(image_mock).to receive(:id).and_return('id')
           allow(image_mock).to receive(:remove)
           allow(::Docker::Image).to receive(:all).and_return([image_mock])
+          allow(::Docker::Image).to receive(:prune).and_return([])
 
           expect { Genova::Docker::ImageCleaner.call }.not_to raise_error
         end
