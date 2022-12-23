@@ -24,6 +24,23 @@ module Genova
             options
           end
 
+          def workflow_options
+            options = []
+
+            workflows = Settings.workflows || []
+            workflows.each do |workflow|
+              options.push(
+                text: {
+                  type: 'plain_text',
+                  text: workflow[:name]
+                },
+                value: workflow[:name]
+              )
+            end
+
+            options
+          end
+
           def history_options(params)
             options = []
 

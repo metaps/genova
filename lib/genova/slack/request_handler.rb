@@ -9,7 +9,7 @@ module Genova
 
           action = @payload.dig(:actions, 0)
 
-          raise Genova::Exceptions::RoutingError, "`#{ation[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
+          raise Genova::Exceptions::RoutingError, "`#{action[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
           result = {
             update_original: true,
@@ -48,6 +48,16 @@ module Genova
           ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Repository', params[:repository])
+        end
+
+        def approve_workflow
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          @session_store.save(name: value)
+
+          bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
+          bot.ask_confirm_workflow_deploy(value)
+
+          BlockKit::Helper.section_field('Workflow', value)
         end
 
         def approve_branch
@@ -121,6 +131,12 @@ module Genova
           ::Slack::DeployWorker.perform_async(@thread_ts)
 
           'Deployment started.'
+        end
+
+        def approve_workflow_deploy
+          ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
+
+          'Workflow deployment started.'
         end
       end
     end

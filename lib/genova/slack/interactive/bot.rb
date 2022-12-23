@@ -26,14 +26,16 @@ module Genova
         end
 
         def ask_repository(params)
-          options = BlockKit::ElementObject.repository_options(params)
+          repositoriy_options = BlockKit::ElementObject.repository_options(params)
+          workflow_options = BlockKit::ElementObject.workflow_options
 
-          raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if options.size.zero?
+          raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if repositoriy_options.size.zero?
 
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select repository to deploy."),
                  BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_repository', options, 'Pick repository...'),
+                                            BlockKit::Helper.static_select('approve_repository', repositoriy_options, 'Pick repository...'),
+                                            BlockKit::Helper.static_select('approve_workflow', workflow_options, 'Pick workflow...'),
                                             BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
                                           ])
                ])
@@ -88,6 +90,17 @@ module Genova
           blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:run_task].present?
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
+                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                             ])
+
+          send(blocks)
+        end
+
+        def ask_confirm_workflow_deploy(params)
+          blocks = []
+          blocks << BlockKit::Helper.section('Ready to deploy!')
+          blocks << BlockKit::Helper.actions([
+                                               BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_workflow_deploy'),
                                                BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
                                              ])
 
@@ -172,7 +185,7 @@ module Genova
 
         def start_auto_deploy_step(params)
           send([
-                 BlockKit::Helper.header("Deploy step ##{params[:index]}.")
+                 BlockKit::Helper.header("Start Deployment Step ##{params[:index]}.")
                ])
         end
 

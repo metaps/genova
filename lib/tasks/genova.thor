@@ -97,7 +97,7 @@ module GenovaCli
     desc 'workflow', 'Step Deployment with workflow'
     option :name, requred: true, aliases: :n, desc: 'Workflow name to deploy.'
     def workflow
-      Genova::Deploy::Workflow.call(options[:name])
+      Genova::Deploy::Workflow::Runner.call(options[:name], Genova::Deploy::Workflow::StdoutLogger.new)
     end
   end
 
