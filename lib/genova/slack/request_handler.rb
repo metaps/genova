@@ -55,7 +55,7 @@ module Genova
           @session_store.save(name: value)
 
           bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
-          bot.ask_confirm_workflow_deploy(value)
+          bot.ask_confirm_workflow_deploy(name: value)
 
           BlockKit::Helper.section_field('Workflow', value)
         end

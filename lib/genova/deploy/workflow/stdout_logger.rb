@@ -10,8 +10,8 @@ module Genova
           @logger.info("Start deployment step ##{id}.")
         end
 
-        def step_finished(id, _step)
-          @logger.info("Finished deployment step ##{id}.")
+        def step_finished(_deploy_job)
+          @logger.info("Finished deployment step.")
         end
 
         def step_all_finished

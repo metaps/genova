@@ -99,6 +99,21 @@ module Genova
         def ask_confirm_workflow_deploy(params)
           blocks = []
           blocks << BlockKit::Helper.section('Ready to deploy!')
+
+          steps = Settings.workflows.find { |k| k[:name] == params[:name] }[:steps]
+          steps.each.with_index(1) do |step, i|
+            blocks << BlockKit::Helper.header("Step ##{i}")
+            blocks << BlockKit::Helper.section_short_fieldset(
+              [
+                BlockKit::Helper.section_short_field('Repository', step[:repository]),
+                BlockKit::Helper.section_short_field('Branch', step[:branch]),
+                BlockKit::Helper.section_short_field('Cluster', step[:cluster]),
+                BlockKit::Helper.section_short_field('Type', step[:type]),
+                BlockKit::Helper.section_short_field('Resources', step[:resources].join(', ')),
+              ]
+            )
+          end
+
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_workflow_deploy'),
                                                BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
@@ -207,6 +222,26 @@ module Genova
                  BlockKit::Helper.section('<!channel>'),
                  BlockKit::Helper.header('All deployments are complete.')
                ])
+        end
+
+        def start_step_deploy(id, step)
+          blocks = []
+          blocks << BlockKit::Helper.header("Start Deployment Step ##{id}.")
+          blocks << BlockKit::Helper.section_short_fieldset(
+            [
+              BlockKit::Helper.section_short_field('Repository', step[:repository]),
+              BlockKit::Helper.section_short_field('Branch', step[:branch]),
+              BlockKit::Helper.section_short_field('Cluster', step[:cluster]),
+              BlockKit::Helper.section_short_field('Type', step[:type]),
+              BlockKit::Helper.section_short_field('Resources', step[:resources].join(', ')),
+            ]
+          )
+
+          send(blocks)
+        end
+
+        def finished_step_deploy_all
+          finished_auto_deploy_all
         end
 
         def error(params)

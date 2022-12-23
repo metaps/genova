@@ -30,12 +30,11 @@ module Genova
                 )
       
                 Genova::Deploy::Runner.call(deploy_job)
+                callback.step_finished(deploy_job)
               end
-
-              callback.step_finished(i, step)
             end
 
-            callback.step_finished
+            callback.step_all_finished
           end
         end
       end

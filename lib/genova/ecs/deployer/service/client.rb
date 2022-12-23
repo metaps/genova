@@ -26,7 +26,6 @@ module Genova
             result = @ecs.update_service(params)
 
             @logger.info('Service has been updated.')
-            @logger.info(JSON.pretty_generate(result.to_h))
 
             wait(service, result.service.task_definition)
           end

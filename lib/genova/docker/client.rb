@@ -33,7 +33,7 @@ module Genova
           return Genova::Docker.cache(cache_key)
         end
 
-        @logger.info("Build image. [#{cache_key}]")
+        @logger.info("Building image... [#{cache_key}]")
         build = parse_docker_build(container_config[:build], @cipher)
 
         config_base_path = Pathname(@code_manager.base_path).join('config').to_s
