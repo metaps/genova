@@ -109,7 +109,7 @@ module Genova
                 BlockKit::Helper.section_short_field('Branch', step[:branch]),
                 BlockKit::Helper.section_short_field('Cluster', step[:cluster]),
                 BlockKit::Helper.section_short_field('Type', step[:type]),
-                BlockKit::Helper.section_short_field('Resources', step[:resources].join(', ')),
+                BlockKit::Helper.section_short_field('Resources', step[:resources].join(', '))
               ]
             )
           end
@@ -222,26 +222,6 @@ module Genova
                  BlockKit::Helper.section('<!channel>'),
                  BlockKit::Helper.header('All deployments are complete.')
                ])
-        end
-
-        def start_step_deploy(id, step)
-          blocks = []
-          blocks << BlockKit::Helper.header("Start Deployment Step ##{id}.")
-          blocks << BlockKit::Helper.section_short_fieldset(
-            [
-              BlockKit::Helper.section_short_field('Repository', step[:repository]),
-              BlockKit::Helper.section_short_field('Branch', step[:branch]),
-              BlockKit::Helper.section_short_field('Cluster', step[:cluster]),
-              BlockKit::Helper.section_short_field('Type', step[:type]),
-              BlockKit::Helper.section_short_field('Resources', step[:resources].join(', ')),
-            ]
-          )
-
-          send(blocks)
-        end
-
-        def finished_step_deploy_all
-          finished_auto_deploy_all
         end
 
         def error(params)

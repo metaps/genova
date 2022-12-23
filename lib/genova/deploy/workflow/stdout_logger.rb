@@ -3,18 +3,21 @@ module Genova
     module Workflow
       class StdoutLogger
         def initialize
-          @logger = ::Logger.new(STDOUT)
+          @logger = ::Logger.new($stdout)
         end
 
-        def step_start(id, _step)
-          @logger.info("Start deployment step ##{id}.")
+        def start_step(params)
+          @logger.info("Start Deployment Step ##{params[:index]}.")
         end
 
-        def step_finished(_deploy_job)
-          @logger.info("Finished deployment step.")
+        def start_deploy(params)
         end
 
-        def step_all_finished
+        def finished_deploy(_params)
+          @logger.info('Finished deployment step.')
+        end
+
+        def finished_all_deploy
           @logger.info('All deployments are complete.')
         end
       end

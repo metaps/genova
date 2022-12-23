@@ -9,7 +9,8 @@ module Genova
             raise Exceptions::ValidationError, "Workflow '#{name}' is undefined." if workflow.nil?
 
             workflow[:steps].each.with_index(1) do |step, i|
-              callback.step_start(i, step)
+              callback.start_step(index: i)
+
               step[:resources].each do |resource|
                 service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
                 run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
@@ -28,13 +29,18 @@ module Genova
                   scheduled_task_target: nil,
                   run_task: run_task
                 )
-      
+
+                params = {
+                  deploy_job: deploy_job
+                }
+
+                callback.start_deploy(params)
                 Genova::Deploy::Runner.call(deploy_job)
-                callback.step_finished(deploy_job)
+                callback.finished_deploy(params)
               end
             end
 
-            callback.step_all_finished
+            callback.finished_all_deploy
           end
         end
       end

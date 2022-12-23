@@ -6,10 +6,7 @@ module Slack
       logger.info('Started Slack::WorkflowDeployWorker')
 
       params = Genova::Slack::SessionStore.load(id).params
-      workflow = Settings.workflows.find { |k| k[:name] == params[:name] }
-
       Genova::Deploy::Workflow::Runner.call(params[:name], Genova::Deploy::Workflow::SlackLogger.new(id))
-
     rescue => e
       params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
       raise e
