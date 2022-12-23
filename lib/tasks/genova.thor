@@ -93,6 +93,12 @@ module GenovaCli
 
       deploy(hash_options)
     end
+
+    desc 'workflow', 'Step Deployment with workflow'
+    option :name, requred: true, aliases: :n, desc: 'Workflow name to deploy.'
+    def workflow
+      Genova::Deploy::Workflow.call(options[:name])
+    end
   end
 
   class Env < Thor
