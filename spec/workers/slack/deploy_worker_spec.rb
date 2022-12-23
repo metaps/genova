@@ -28,7 +28,7 @@ module Slack
         allow(bot_mock).to receive(:finished_deploy)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
 
-        allow(Genova::Run).to receive(:call)
+        allow(Genova::Deploy::Runner).to receive(:call)
 
         subject.perform(id)
       end

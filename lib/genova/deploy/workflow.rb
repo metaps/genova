@@ -1,5 +1,7 @@
 module Genova
   module Deploy
+    module_function
+
     class Workflow
       class << self
         def call(name)
@@ -26,7 +28,7 @@ module Genova
                 run_task: run_task
               )
     
-              Genova::Run.call(deploy_job)
+              Genova::Deploy::Runner.call(deploy_job)
             end
           end
         end

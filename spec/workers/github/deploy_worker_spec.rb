@@ -45,7 +45,7 @@ module Github
       allow(slack_bot_mock).to receive(:finished_auto_deploy_all)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
 
-      allow(Genova::Run).to receive(:call)
+      allow(Genova::Deploy::Runner).to receive(:call)
     end
 
     describe 'perform' do

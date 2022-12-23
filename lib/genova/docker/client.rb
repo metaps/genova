@@ -1,5 +1,21 @@
 module Genova
   module Docker
+    module_function
+
+    @image_names = {}
+
+    def cache(cache_key)
+      @image_names[cache_key]
+    end
+
+    def cache?(cache_key)
+      @image_names.include?(cache_key)
+    end
+
+    def add_cache(cache_key, repository_name)
+      @image_names[cache_key] = repository_name
+    end
+
     class Client
       BUILD_KEY = 'com.metaps.genova.build_key'.freeze
 
@@ -10,7 +26,14 @@ module Genova
       end
 
       def build_image(container_config, image_name)
-        puts '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>BUILD!!!'
+        cache_key = image_name[0...image_name.index(':')]
+
+        if Genova::Docker.cache?(cache_key)
+          @logger.info("Use cached images. [#{cache_key}]")
+          return Genova::Docker.cache(cache_key)
+        end
+
+        @logger.info("Build image. [#{cache_key}]")
         build = parse_docker_build(container_config[:build], @cipher)
 
         config_base_path = Pathname(@code_manager.base_path).join('config').to_s
@@ -37,6 +60,8 @@ module Genova
 
         result = ::Docker::Image.all(all: true, filters: { label: ["#{BUILD_KEY}=#{build_value}"] }.to_json)
         raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." if result.empty?
+
+        Genova::Docker.add_cache(cache_key, repository_name)
 
         repository_name
       end
