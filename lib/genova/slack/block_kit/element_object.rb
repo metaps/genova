@@ -142,9 +142,7 @@ module Genova
             )
             cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
-            if cluster_config[:run_tasks].present?
-              options = parse_run_tasks(cluster_config[:run_tasks])
-            end
+            options = parse_run_tasks(cluster_config[:run_tasks]) if cluster_config[:run_tasks].present?
 
             options
           end
@@ -159,9 +157,7 @@ module Genova
             )
             cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
-            if cluster_config[:services].present?
-              options = parse_services(cluster_config[:services])
-            end
+            options = parse_services(cluster_config[:services]) if cluster_config[:services].present?
 
             options
           end
@@ -176,9 +172,7 @@ module Genova
             )
             cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
-            if cluster_config[:scheduled_tasks].present?
-              options = parse_scheduled_tasks(cluster_config[:scheduled_tasks])
-            end
+            options = parse_scheduled_tasks(cluster_config[:scheduled_tasks]) if cluster_config[:scheduled_tasks].present?
 
             options
           end

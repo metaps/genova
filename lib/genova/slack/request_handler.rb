@@ -87,29 +87,16 @@ module Genova
           BlockKit::Helper.section_field('Cluster', value)
         end
 
-        def approve_target
-          value = @payload.dig(:actions, 0, :selected_option, :value)
-          targets = value.split(':')
-          type = targets[0].to_sym
+        def approve_run_task
+          approve_target
+        end
 
-          params = {
-            type: type
-          }
+        def approve_service
+          approve_target
+        end
 
-          case type
-          when :run_task
-            params[:run_task] = targets[1]
-          when :service
-            params[:service] = targets[1]
-          when :scheduled_task
-            params[:scheduled_task_rule] = targets[1]
-            params[:scheduled_task_target] = targets[2]
-          end
-
-          @session_store.save(params)
-          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
-
-          BlockKit::Helper.section_field('Target', value)
+        def approve_scheduled_task
+          approve_target
         end
 
         def approve_deploy_from_history
@@ -139,6 +126,33 @@ module Genova
           ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
 
           'Workflow deployment started.'
+        end
+
+        private
+
+        def approve_target
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          targets = value.split(':')
+          type = targets[0].to_sym
+
+          params = {
+            type: type
+          }
+
+          case type
+          when :run_task
+            params[:run_task] = targets[1]
+          when :service
+            params[:service] = targets[1]
+          when :scheduled_task
+            params[:scheduled_task_rule] = targets[1]
+            params[:scheduled_task_target] = targets[2]
+          end
+
+          @session_store.save(params)
+          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
+
+          BlockKit::Helper.section_field('Target', value)
         end
       end
     end

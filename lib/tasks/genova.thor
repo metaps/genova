@@ -102,7 +102,7 @@ module GenovaCli
         {
           mode: DeployJob.mode.find_value(:manual)
         },
-        Genova::Deploy::Workflow::StdoutLogger.new
+        Genova::Deploy::Step::StdoutLogger.new
       )
     end
   end

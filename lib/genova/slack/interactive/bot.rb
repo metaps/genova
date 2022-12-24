@@ -31,13 +31,14 @@ module Genova
 
           raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if repositoriy_options.size.zero?
 
+          actions = []
+          actions << BlockKit::Helper.static_select('approve_repository', 'Repository', repositoriy_options)
+          actions << BlockKit::Helper.static_select('approve_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
+          actions << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:user]}> Specify the repository or workflow to deploy.")
-          blocks << BlockKit::Helper.static_select_with_label('approve_repository', 'Repository', repositoriy_options)
-          blocks << BlockKit::Helper.static_select_with_label('approve_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
-          blocks << BlockKit::Helper.section(' ')
-          blocks << BlockKit::Helper.divider
-          blocks << BlockKit::Helper.actions([BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')])
+          blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
         end
@@ -46,13 +47,14 @@ module Genova
           branch_options = BlockKit::ElementObject.branch_options(repository: params[:repository])
           tag_options = BlockKit::ElementObject.tag_options(repository: params[:repository])
 
+          actions = []
+          actions << BlockKit::Helper.static_select('approve_branch', 'Branch', branch_options)
+          actions << BlockKit::Helper.static_select('approve_tag', 'Tag', tag_options) if tag_options.size.positive?
+          actions << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+
           blocks = []
           blocks << BlockKit::Helper.section('Specify a branch or tag.')
-          blocks << BlockKit::Helper.static_select_with_label('approve_branch', 'Branch', branch_options)
-          blocks << BlockKit::Helper.static_select_with_label('approve_tag', 'Tag', tag_options) if tag_options.size.positive?
-          blocks << BlockKit::Helper.section(' ')
-          blocks << BlockKit::Helper.divider
-          blocks << BlockKit::Helper.actions([BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')])
+          blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
         end
@@ -64,7 +66,7 @@ module Genova
           send([
                  BlockKit::Helper.section('Specify cluster.'),
                  BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_cluster', options),
+                                            BlockKit::Helper.static_select('approve_cluster', 'Cluster', options),
                                             BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
                                           ])
                ])
@@ -75,16 +77,17 @@ module Genova
           service_options = BlockKit::ElementObject.service_options(params)
           scheduled_task_options = BlockKit::ElementObject.scheduled_task_options(params)
 
-          raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if run_task_options.size.zero? && service_options.options.zero? && scheduled_task_options.options.zero?
+          raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if run_task_options.size.zero? && service_options.size.zero? && scheduled_task_options.size.zero?
+
+          actions = []
+          actions << BlockKit::Helper.static_select('approve_run_task', 'Run task', run_task_options) if run_task_options.size.positive?
+          actions << BlockKit::Helper.static_select('approve_service', 'Service', service_options) if service_options.size.positive?
+          actions << BlockKit::Helper.static_select('approve_scheduled_task', 'Scheduled task', scheduled_task_options) if scheduled_task_options.size.positive?
+          actions << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
 
           blocks = []
           blocks << BlockKit::Helper.section('Select the branch or tag to be deployed.')
-          blocks << BlockKit::Helper.static_select_with_label('approve_target', 'Run task', run_task_options) if run_task_options.size.positive?
-          blocks << BlockKit::Helper.static_select_with_label('approve_target', 'Service', service_options) if service_options.size.positive?
-          blocks << BlockKit::Helper.static_select_with_label('approve_target', 'Scheduled task', scheduled_task_options) if scheduled_task_options.size.positive?
-          blocks << BlockKit::Helper.section(' ')
-          blocks << BlockKit::Helper.divider
-          blocks << BlockKit::Helper.actions([BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')])
+          blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
         end
@@ -156,7 +159,7 @@ module Genova
                  BlockKit::Helper.header('Detect auto deploy.'),
                  BlockKit::Helper.section_short_fieldset(
                    [
-                     BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{params[:account]}/#{params[:repository]}>"),
+                     BlockKit::Helper.section_short_field('Repository', "<#{repository_uri}|#{Settings.github.account}/#{params[:repository]}>"),
                      BlockKit::Helper.section_short_field('Branch', "<#{branch_uri}|#{params[:branch]}>"),
                      BlockKit::Helper.section_short_field('Commit URL', params[:commit_url]),
                      BlockKit::Helper.section_short_field('Author', params[:author])
@@ -223,7 +226,7 @@ module Genova
                ])
         end
 
-        def finished_steps
+        def complete_steps
           send([
                  BlockKit::Helper.section('<!channel>'),
                  BlockKit::Helper.section('All deployments are complete.')
@@ -287,9 +290,9 @@ module Genova
         def send(blocks)
           data = {
             channel: Settings.slack.channel,
-            blocks: blocks
+            blocks: blocks,
+            thread_ts: @parent_message_ts
           }
-          data[:thread_ts] = @parent_message_ts if Settings.slack.thread_conversion
 
           @logger.info(data.to_json)
           @client.chat_postMessage(data)

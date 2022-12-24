@@ -67,7 +67,9 @@ module Genova
 
           it 'should be not error' do
             allow(array_mock).to receive(:size).and_return(1)
-            allow(BlockKit::ElementObject).to receive(:target_options).and_return(array_mock)
+            allow(BlockKit::ElementObject).to receive(:run_task_options).and_return(array_mock)
+            allow(BlockKit::ElementObject).to receive(:service_options).and_return(array_mock)
+            allow(BlockKit::ElementObject).to receive(:scheduled_task_options).and_return(array_mock)
 
             expect { bot.ask_target({}) }.not_to raise_error
           end

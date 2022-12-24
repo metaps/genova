@@ -1,6 +1,6 @@
 module Genova
   module Deploy
-    module Workflow
+    module Step
       class StdoutLogger
         def initialize
           @logger = ::Logger.new($stdout)
@@ -10,7 +10,7 @@ module Genova
           @logger.info("Start Deployment Step ##{params[:index]}.")
         end
 
-        def start_deploy(params)
+        def start_deploy(_params)
           @logger.info('Start deployment.')
         end
 

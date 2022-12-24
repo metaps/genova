@@ -55,10 +55,6 @@ slack:
   vertification_token: ''
   client_id: ''
   client_secret: ''
-
-  # Specify `true` to display the deployment log in thread format.
-  thread_conversion: true
-
   command:
     max_history: 10
   interactive:

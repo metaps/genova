@@ -1,6 +1,6 @@
 module Genova
   module Deploy
-    module Workflow
+    module Step
       class SlackLogger
         def initialize(id)
           @bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
@@ -19,7 +19,7 @@ module Genova
         end
 
         def complete_steps
-          @bot.finished_steps
+          @bot.complete_steps
         end
       end
     end

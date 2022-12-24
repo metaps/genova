@@ -22,7 +22,12 @@ module Slack
       before do
         DeployJob.collection.drop
 
-        session_store.save(deploy_job_id: deploy_job_id)
+        session_store.save(
+          deploy_job_id: deploy_job_id,
+          repository: 'repository',
+          cluster: 'cluster',
+          type: DeployJob.type.find_value(:service)
+        )
 
         allow(bot_mock).to receive(:detect_slack_deploy)
         allow(bot_mock).to receive(:complete_deploy)

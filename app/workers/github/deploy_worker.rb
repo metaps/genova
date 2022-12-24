@@ -15,43 +15,19 @@ module Github
 
       bot = Genova::Slack::Interactive::Bot.new
       response = bot.detect_auto_deploy(
-        account: values[:account],
         repository: values[:repository],
         branch: values[:branch],
         commit_url: values[:commit_url],
         author: values[:author]
       )
-      deploy_bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: response[:ts])
 
-      result[:steps].each.with_index(1) do |step, i|
-        deploy_bot.start_step(index: i)
+      params = {
+        mode: DeployJob.mode.find_value(:auto),
+        repository: values[:repository],
+        branch: values[:branch]
+      }
 
-        step[:resources].each do |resource|
-          service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
-          run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
-
-          deploy_job = DeployJob.create!(
-            id: DeployJob.generate_id,
-            type: DeployJob.type.find_value(step[:type]),
-            status: DeployJob.status.find_value(:in_progress),
-            mode: DeployJob.mode.find_value(:auto),
-            account: values[:account],
-            repository: values[:repository],
-            branch: values[:branch],
-            cluster: step[:cluster],
-            service: service,
-            scheduled_task_rule: nil,
-            scheduled_task_target: nil,
-            run_task: run_task
-          )
-
-          deploy_bot.start_deploy(deploy_job: deploy_job)
-          Genova::Deploy::Runner.call(deploy_job)
-          deploy_bot.complete_deploy(deploy_job: deploy_job)
-        end
-      end
-
-      deploy_bot.finished_steps
+      Genova::Deploy::Step::Runner.call(result[:steps], params, Genova::Deploy::Step::SlackLogger.new(response[:ts]))
     rescue => e
       slack_notify(e)
       raise e

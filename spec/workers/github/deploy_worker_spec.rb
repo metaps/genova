@@ -42,7 +42,7 @@ module Github
       allow(slack_bot_mock).to receive(:start_step)
       allow(slack_bot_mock).to receive(:start_deploy)
       allow(slack_bot_mock).to receive(:complete_deploy)
-      allow(slack_bot_mock).to receive(:finished_steps)
+      allow(slack_bot_mock).to receive(:complete_steps)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
 
       allow(Genova::Deploy::Runner).to receive(:call)

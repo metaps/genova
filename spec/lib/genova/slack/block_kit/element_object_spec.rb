@@ -94,6 +94,15 @@ module Genova
         describe 'target_options' do
           let(:code_manager_mock) { double(Genova::CodeManager::Git) }
           let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
+          let(:params) do
+            {
+              account: 'account',
+              repository: 'repository',
+              branch: 'branch',
+              tag: 'tag',
+              cluster: 'cluster'
+            }
+          end
 
           it 'should be return targets' do
             allow(deploy_config_mock).to receive(:find_cluster).and_return(
@@ -117,14 +126,11 @@ module Genova
             allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
-            results = Genova::Slack::BlockKit::ElementObject.target_options(
-              account: 'account',
-              repository: 'repository',
-              branch: 'branch',
-              tag: 'tag',
-              cluster: 'cluster'
-            )
-            expect(results.count).to eq(3)
+            service_options = Genova::Slack::BlockKit::ElementObject.service_options(params)
+            run_task_options = Genova::Slack::BlockKit::ElementObject.run_task_options(params)
+            scheduled_task_options = Genova::Slack::BlockKit::ElementObject.scheduled_task_options(params)
+
+            expect(service_options.count + run_task_options.size + scheduled_task_options.size).to eq(3)
           end
         end
       end
