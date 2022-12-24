@@ -19,7 +19,7 @@ module Genova
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select history to deploy."),
                  BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_deploy_from_history', options, 'Pick history...'),
+                                            BlockKit::Helper.static_select('approve_deploy_from_history', options),
                                             BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
                                           ])
                ])
@@ -31,30 +31,30 @@ module Genova
 
           raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if repositoriy_options.size.zero?
 
-          elements = []
-          elements << BlockKit::Helper.static_select('approve_repository', repositoriy_options, 'Pick repository...')
-          elements << BlockKit::Helper.static_select('approve_workflow', workflow_options, 'Pick workflow...') if workflow_options.size.positive?
-          elements << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+          blocks = []
+          blocks << BlockKit::Helper.section("<@#{params[:user]}> Specify the repository or workflow to deploy.")
+          blocks << BlockKit::Helper.static_select_with_label('approve_repository', 'Repository', repositoriy_options)
+          blocks << BlockKit::Helper.static_select_with_label('approve_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
+          blocks << BlockKit::Helper.section(' ')
+          blocks << BlockKit::Helper.divider
+          blocks << BlockKit::Helper.actions([BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')])
 
-          send([
-                 BlockKit::Helper.section("<@#{params[:user]}> Please select repository to deploy."),
-                 BlockKit::Helper.actions(elements)
-               ])
+          send(blocks)
         end
 
         def ask_branch(params)
           branch_options = BlockKit::ElementObject.branch_options(repository: params[:repository])
           tag_options = BlockKit::ElementObject.tag_options(repository: params[:repository])
 
-          elements = []
-          elements << BlockKit::Helper.static_select('approve_branch', branch_options, 'Pick branch...')
-          elements << BlockKit::Helper.static_select('approve_tag', tag_options, 'Pick tag...') if tag_options.size.positive?
-          elements << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+          blocks = []
+          blocks << BlockKit::Helper.section('Specify a branch or tag.')
+          blocks << BlockKit::Helper.static_select_with_label('approve_branch', 'Branch', branch_options)
+          blocks << BlockKit::Helper.static_select_with_label('approve_tag', 'Tag', tag_options) if tag_options.size.positive?
+          blocks << BlockKit::Helper.section(' ')
+          blocks << BlockKit::Helper.divider
+          blocks << BlockKit::Helper.actions([BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')])
 
-          send([
-                 BlockKit::Helper.section('Please select branch to deploy.'),
-                 BlockKit::Helper.actions(elements)
-               ])
+          send(blocks)
         end
 
         def ask_cluster(params)
@@ -62,25 +62,31 @@ module Genova
           raise Genova::Exceptions::NotFoundError, 'No deployable clusters found.' if options.size.zero?
 
           send([
-                 BlockKit::Helper.section('Please select cluster to deploy.'),
+                 BlockKit::Helper.section('Specify cluster.'),
                  BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_cluster', options, 'Pick cluster...'),
+                                            BlockKit::Helper.static_select('approve_cluster', options),
                                             BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
                                           ])
                ])
         end
 
         def ask_target(params)
-          option_groups = BlockKit::ElementObject.target_options(params)
-          raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if option_groups.size.zero?
+          run_task_options = BlockKit::ElementObject.run_task_options(params)
+          service_options = BlockKit::ElementObject.service_options(params)
+          scheduled_task_options = BlockKit::ElementObject.scheduled_task_options(params)
 
-          send([
-                 BlockKit::Helper.section('Please select target to deploy.'),
-                 BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_target', option_groups, 'Pick target...', group: true),
-                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                          ])
-               ])
+          raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if run_task_options.size.zero? && service_options.options.zero? && scheduled_task_options.options.zero?
+
+          blocks = []
+          blocks << BlockKit::Helper.section('Select the branch or tag to be deployed.')
+          blocks << BlockKit::Helper.static_select_with_label('approve_target', 'Run task', run_task_options) if run_task_options.size.positive?
+          blocks << BlockKit::Helper.static_select_with_label('approve_target', 'Service', service_options) if service_options.size.positive?
+          blocks << BlockKit::Helper.static_select_with_label('approve_target', 'Scheduled task', scheduled_task_options) if scheduled_task_options.size.positive?
+          blocks << BlockKit::Helper.section(' ')
+          blocks << BlockKit::Helper.divider
+          blocks << BlockKit::Helper.actions([BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')])
+
+          send(blocks)
         end
 
         def ask_confirm_deploy(params, show_target: true, mention: false)
@@ -125,7 +131,6 @@ module Genova
 
         def complete_deploy(params)
           fields = []
-
           fields << BlockKit::Helper.section_field('Task definition ARN', code(BlockKit::Helper.escape_emoji(params[:deploy_job].task_definition_arn)))
           fields << BlockKit::Helper.section_field('Task ARNs', code(BlockKit::Helper.escape_emoji(params[:deploy_job].task_arns.join("\n")))) if params[:deploy_job].task_arns.present?
 
@@ -221,7 +226,7 @@ module Genova
         def finished_steps
           send([
                  BlockKit::Helper.section('<!channel>'),
-                 BlockKit::Helper.header('All deployments are complete.')
+                 BlockKit::Helper.section('All deployments are complete.')
                ])
         end
 

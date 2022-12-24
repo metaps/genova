@@ -47,7 +47,6 @@ module Github
 
           deploy_bot.start_deploy(deploy_job: deploy_job)
           Genova::Deploy::Runner.call(deploy_job)
-
           deploy_bot.complete_deploy(deploy_job: deploy_job)
         end
       end

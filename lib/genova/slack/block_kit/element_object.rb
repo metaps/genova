@@ -132,8 +132,8 @@ module Genova
             options
           end
 
-          def target_options(params)
-            target_options = []
+          def run_task_options(params)
+            options = []
             code_manager = Genova::CodeManager::Git.new(
               params[:repository],
               alias: params[:alias],
@@ -143,36 +143,44 @@ module Genova
             cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
             if cluster_config[:run_tasks].present?
-              target_options << {
-                label: {
-                  type: 'plain_text',
-                  text: 'Run task'
-                },
-                options: parse_run_tasks(cluster_config[:run_tasks])
-              }
+              options = parse_run_tasks(cluster_config[:run_tasks])
             end
+
+            options
+          end
+
+          def service_options(params)
+            options = []
+            code_manager = Genova::CodeManager::Git.new(
+              params[:repository],
+              alias: params[:alias],
+              branch: params[:branch],
+              tag: params[:tag]
+            )
+            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
             if cluster_config[:services].present?
-              target_options << {
-                label: {
-                  type: 'plain_text',
-                  text: 'Service'
-                },
-                options: parse_services(cluster_config[:services])
-              }
+              options = parse_services(cluster_config[:services])
             end
+
+            options
+          end
+
+          def scheduled_task_options(params)
+            options = []
+            code_manager = Genova::CodeManager::Git.new(
+              params[:repository],
+              alias: params[:alias],
+              branch: params[:branch],
+              tag: params[:tag]
+            )
+            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
             if cluster_config[:scheduled_tasks].present?
-              target_options << {
-                label: {
-                  type: 'plain_text',
-                  text: 'Scheduled task'
-                },
-                options: parse_scheduled_tasks(cluster_config[:scheduled_tasks])
-              }
+              options = parse_scheduled_tasks(cluster_config[:scheduled_tasks])
             end
 
-            target_options
+            options
           end
 
           private

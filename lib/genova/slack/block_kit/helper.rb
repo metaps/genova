@@ -51,12 +51,12 @@ module Genova
             }
           end
 
-          def static_select(action_id, options, placeholder, params = {})
+          def static_select(action_id, options, params = {})
             element = {
               type: 'static_select',
               placeholder: {
                 type: 'plain_text',
-                text: placeholder
+                text: 'Select an item'
               },
               action_id: action_id
             }
@@ -64,6 +64,25 @@ module Genova
             option_key = params[:group] ? 'option_groups' : 'options'
             element[option_key.to_sym] = options
             element
+          end
+
+          def static_select_with_label(action_id, label, options)
+            {
+              type: 'input',
+              element: {
+                type: 'static_select',
+                placeholder: {
+                  type: 'plain_text',
+                  text: 'Select an item',
+                },
+                options: options,
+                action_id: action_id
+              },
+              label: {
+                type: 'plain_text',
+                text: label,
+              }
+            }
           end
 
           def primary_button(text, value, action_id)

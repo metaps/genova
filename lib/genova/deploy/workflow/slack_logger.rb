@@ -15,7 +15,7 @@ module Genova
         end
 
         def complete_deploy(params)
-          @bot.complete_deploy(deploy_job: params[:deploy_job])
+          @bot.complete_deploy(params)
         end
 
         def complete_steps
