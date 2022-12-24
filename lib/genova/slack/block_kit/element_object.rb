@@ -24,11 +24,14 @@ module Genova
             options
           end
 
-          def workflow_options
+          def workflow_options(params)
             options = []
+            permission = Genova::Slack::Interactive::Permission.new(params[:user])
 
             workflows = Settings.workflows || []
             workflows.each do |workflow|
+              next unless permission.allow_workflow?(workflow[:name])
+
               options.push(
                 text: {
                   type: 'plain_text',

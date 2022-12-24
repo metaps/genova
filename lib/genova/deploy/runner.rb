@@ -40,14 +40,14 @@ module Genova
             logger.info("Pushed tag: #{deploy_job.deployment_tag}")
 
             deploy_job.deployment_tag = deploy_job.label
-            code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
+#            code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
           end
 
-          deploy_job.status = DeployJob.status.find_value(:success).to_s
-          deploy_job.task_definition_arn = deploy_response.task_definition_arn
-          deploy_job.task_arns = deploy_response.task_arns
-          deploy_job.finished_at = Time.now.utc
-          deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f
+#          deploy_job.status = DeployJob.status.find_value(:success).to_s
+#          deploy_job.task_definition_arn = deploy_response.task_definition_arn
+#          deploy_job.task_arns = deploy_response.task_arns
+#          deploy_job.finished_at = Time.now.utc
+#          deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f
           deploy_job.save
 
           logger.info('Deployment was successful.')

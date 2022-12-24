@@ -27,17 +27,18 @@ module Genova
 
         def ask_repository(params)
           repositoriy_options = BlockKit::ElementObject.repository_options(params)
-          workflow_options = BlockKit::ElementObject.workflow_options
+          workflow_options = BlockKit::ElementObject.workflow_options(params)
 
           raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if repositoriy_options.size.zero?
 
+          elements = []
+          elements << BlockKit::Helper.static_select('approve_repository', repositoriy_options, 'Pick repository...')
+          elements << BlockKit::Helper.static_select('approve_workflow', workflow_options, 'Pick workflow...') if workflow_options.size.positive?
+          elements << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select repository to deploy."),
-                 BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_repository', repositoriy_options, 'Pick repository...'),
-                                            BlockKit::Helper.static_select('approve_workflow', workflow_options, 'Pick workflow...'),
-                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                          ])
+                 BlockKit::Helper.actions(elements)
                ])
         end
 
@@ -122,7 +123,7 @@ module Genova
           send(blocks)
         end
 
-        def finished_deploy(params)
+        def complete_deploy(params)
           fields = []
 
           fields << BlockKit::Helper.section_field('Task definition ARN', code(BlockKit::Helper.escape_emoji(params[:deploy_job].task_definition_arn)))
@@ -198,13 +199,13 @@ module Genova
                ])
         end
 
-        def start_auto_deploy_step(params)
+        def start_step(params)
           send([
                  BlockKit::Helper.header("Start Deployment Step ##{params[:index]}.")
                ])
         end
 
-        def start_auto_deploy_run(params)
+        def start_deploy(params)
           fields = []
           fields << BlockKit::Helper.section_short_field('Cluster', params[:deploy_job].cluster)
           fields << BlockKit::Helper.section_short_field('Service', params[:deploy_job].service) if params[:deploy_job].type == DeployJob.type.find_value(:service)
@@ -217,7 +218,7 @@ module Genova
                ])
         end
 
-        def finished_auto_deploy_all
+        def finished_steps
           send([
                  BlockKit::Helper.section('<!channel>'),
                  BlockKit::Helper.header('All deployments are complete.')

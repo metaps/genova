@@ -24,13 +24,13 @@ module Github
       deploy_bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: response[:ts])
 
       result[:steps].each.with_index(1) do |step, i|
-        deploy_bot.start_auto_deploy_step(index: i)
+        deploy_bot.start_step(index: i)
 
         step[:resources].each do |resource|
           service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
           run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
 
-          deploy_job = DeployJob.create(
+          deploy_job = DeployJob.create!(
             id: DeployJob.generate_id,
             type: DeployJob.type.find_value(step[:type]),
             status: DeployJob.status.find_value(:in_progress),
@@ -45,14 +45,14 @@ module Github
             run_task: run_task
           )
 
-          deploy_bot.start_auto_deploy_run(deploy_job: deploy_job)
+          deploy_bot.start_deploy(deploy_job: deploy_job)
           Genova::Deploy::Runner.call(deploy_job)
 
-          deploy_bot.finished_deploy(deploy_job: deploy_job)
+          deploy_bot.complete_deploy(deploy_job: deploy_job)
         end
       end
 
-      deploy_bot.finished_auto_deploy_all
+      deploy_bot.finished_steps
     rescue => e
       slack_notify(e)
       raise e

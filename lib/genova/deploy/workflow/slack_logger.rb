@@ -7,19 +7,19 @@ module Genova
         end
 
         def start_step(params)
-          @bot.start_auto_deploy_step(params)
+          @bot.start_step(params)
         end
 
         def start_deploy(params)
-          @bot.start_auto_deploy_run(params)
+          @bot.start_deploy(params)
         end
 
-        def finished_deploy(params)
-          @bot.finished_deploy(deploy_job: params[:deploy_job])
+        def complete_deploy(params)
+          @bot.complete_deploy(deploy_job: params[:deploy_job])
         end
 
-        def finished_all_deploy
-          @bot.finished_auto_deploy_all
+        def complete_steps
+          @bot.finished_steps
         end
       end
     end

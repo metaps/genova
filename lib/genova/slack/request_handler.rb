@@ -125,7 +125,6 @@ module Genova
 
         def approve_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
-
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
 
           ::Slack::DeployWorker.perform_async(@thread_ts)
@@ -134,6 +133,9 @@ module Genova
         end
 
         def approve_workflow_deploy
+          permission = Interactive::Permission.new(@payload[:user][:id])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
+
           ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
 
           'Workflow deployment started.'

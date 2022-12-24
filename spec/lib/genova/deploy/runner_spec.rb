@@ -6,7 +6,7 @@ module Genova
       let(:ecs_client_mock) { double(Ecs::Client) }
       let(:docker_client_mock) { double(Genova::Docker::Client) }
       let(:deploy_job) do
-        DeployJob.create(
+        DeployJob.create!(
           id: DeployJob.generate_id,
           mode: DeployJob.mode.find_value(:manual),
           type: DeployJob.type.find_value(:service),

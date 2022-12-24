@@ -3,7 +3,7 @@ module Genova
     module Workflow
       class Runner
         class << self
-          def call(name, callback)
+          def call(name, params, callback)
             workflows = Settings.workflows || []
             workflow = workflows.find { |k| k[:name].include?(name) }
             raise Exceptions::ValidationError, "Workflow '#{name}' is undefined." if workflow.nil?
@@ -15,11 +15,13 @@ module Genova
                 service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
                 run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
 
-                deploy_job = DeployJob.create(
+                deploy_job = DeployJob.create!(
                   id: DeployJob.generate_id,
                   type: DeployJob.type.find_value(step[:type]),
                   status: DeployJob.status.find_value(:in_progress),
-                  mode: DeployJob.mode.find_value(:manual),
+                  mode: params[:mode],
+                  slack_user_id: params[:slack_user_id],
+                  slack_user_name: params[:slack_user_name],
                   account: Settings.github.account,
                   repository: step[:repository],
                   branch: step[:branch],
@@ -30,17 +32,13 @@ module Genova
                   run_task: run_task
                 )
 
-                params = {
-                  deploy_job: deploy_job
-                }
-
-                callback.start_deploy(params)
+                callback.start_deploy(deploy_job: deploy_job)
                 Genova::Deploy::Runner.call(deploy_job)
-                callback.finished_deploy(params)
+                callback.complete_deploy(deploy_job: deploy_job)
               end
             end
 
-            callback.finished_all_deploy
+            callback.complete_steps
           end
         end
       end

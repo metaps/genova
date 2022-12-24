@@ -137,7 +137,7 @@ module Genova
           end
         end
 
-        describe 'finished_deploy' do
+        describe 'complete_deploy' do
           let(:deploy_job_mock) { double(DeployJob) }
 
           it 'should be not error' do
@@ -149,7 +149,7 @@ module Genova
             allow(deploy_job_mock).to receive(:task_definition_arn).and_return('task_definition_arn')
             allow(deploy_job_mock).to receive(:task_arns).and_return(['task_arn'])
 
-            expect { bot.finished_deploy(deploy_job: deploy_job_mock) }.not_to raise_error
+            expect { bot.complete_deploy(deploy_job: deploy_job_mock) }.not_to raise_error
           end
         end
 

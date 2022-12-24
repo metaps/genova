@@ -6,7 +6,7 @@ module Slack
       logger.info('Started Slack::DeployWorker')
 
       params = Genova::Slack::SessionStore.load(id).params
-      deploy_job = DeployJob.create(id: DeployJob.generate_id,
+      deploy_job = DeployJob.create!(id: DeployJob.generate_id,
                                     type: params[:type],
                                     alias: params[:alias],
                                     status: DeployJob.status.find_value(:in_progress),
@@ -34,7 +34,7 @@ module Slack
 
       Genova::Deploy::Runner.call(deploy_job)
 
-      bot.finished_deploy(deploy_job: deploy_job)
+      bot.complete_deploy(deploy_job: deploy_job)
     rescue => e
       params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
       raise e

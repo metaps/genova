@@ -39,10 +39,10 @@ module Github
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
 
       allow(slack_bot_mock).to receive(:detect_auto_deploy).and_return(parent_message_ts: Time.now.utc.to_f)
-      allow(slack_bot_mock).to receive(:start_auto_deploy_step)
-      allow(slack_bot_mock).to receive(:start_auto_deploy_run)
-      allow(slack_bot_mock).to receive(:finished_deploy)
-      allow(slack_bot_mock).to receive(:finished_auto_deploy_all)
+      allow(slack_bot_mock).to receive(:start_step)
+      allow(slack_bot_mock).to receive(:start_deploy)
+      allow(slack_bot_mock).to receive(:complete_deploy)
+      allow(slack_bot_mock).to receive(:finished_steps)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
 
       allow(Genova::Deploy::Runner).to receive(:call)
