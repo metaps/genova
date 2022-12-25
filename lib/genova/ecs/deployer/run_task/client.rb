@@ -71,7 +71,6 @@ module Genova
                 stopped_tasks << task[:task_arn]
 
                 @logger.info('Run task has finished.')
-                @logger.info(JSON.pretty_generate(task.to_h))
               end
 
               break if run_task_size == stopped_tasks.size

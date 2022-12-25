@@ -2,6 +2,7 @@
 :pidfile: ./tmp/pids/sidekiq.pid
 :concurrency: 20
 :queues:
+  - ecs_service_provisioning
   - github_deploy
   - github_retrieve_branch
   - github_retrieve_branch_watch

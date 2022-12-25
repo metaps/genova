@@ -3,12 +3,12 @@ module Genova
     module Workflow
       class Runner
         class << self
-          def call(name, params, callback)
+          def call(name, options, callback)
             workflows = Settings.workflows || []
             workflow = workflows.find { |k| k[:name].include?(name) }
             raise Exceptions::ValidationError, "Workflow '#{name}' is undefined." if workflow.nil?
 
-            Genova::Deploy::Step::Runner.call(workflow[:steps], params, callback)
+            Genova::Deploy::Step::Runner.call(workflow[:steps], options, callback)
           end
         end
       end

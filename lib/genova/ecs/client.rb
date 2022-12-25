@@ -1,12 +1,11 @@
 module Genova
   module Ecs
     class Client
-      def initialize(cluster, code_manager, options = {})
-        @cluster = cluster
+      def initialize(deploy_job, code_manager, options = {})
+        @deploy_job = deploy_job
         @code_manager = code_manager
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @task_definitions = {}
-
         @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
         @ecr_client = Genova::Ecr::Client.new(logger: @logger)
         @deploy_config = @code_manager.load_deploy_config
@@ -19,22 +18,22 @@ module Genova
         @code_manager.update
       end
 
-      def deploy_run_task(run_task, override_container, override_command, tag)
-        run_task_config = @deploy_config.find_run_task(@cluster, run_task)
+      def deploy_run_task
+        run_task_config = @deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
 
-        if override_container.present?
+        if @deploy_job.override_container.present?
           run_task_config[:container_overrides] = [
             {
-              name: override_container,
-              command: override_command.split(' ')
+              name: @deploy_job.override_container,
+              command: @deploy_job.override_command.split(' ')
             }
           ]
         end
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{run_task_config[:path]}")
-        task_definition = create_task(task_definition_path, run_task_config[:task_overrides], tag)
+        task_definition = create_task(task_definition_path, run_task_config[:task_overrides], @deploy_job.label)
 
-        push_image(run_task_config[:containers], task_definition, tag)
+        push_image(run_task_config[:containers], task_definition, @deploy_job.label)
 
         options = {
           desired_count: run_task_config[:desired_count],
@@ -46,27 +45,24 @@ module Genova
         options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
-        run_task_client = Deployer::RunTask::Client.new(@cluster, logger: @logger)
+        run_task_client = Deployer::RunTask::Client.new(@deploy_job.cluster, logger: @logger)
         task_arns = run_task_client.execute(task_definition.task_definition_arn, options)
 
-        deploy_response = DeployResponse.new
-        deploy_response.task_definition_arn = task_definition.task_definition_arn
-        deploy_response.task_arns = task_arns
-        deploy_response
+        @deploy_job.task_definition_arn = task_definition.task_definition_arn
+        @deploy_job.task_arns = task_arns
+        @deploy_job.save
       end
 
-      def deploy_service(service, tag)
-        service_config = @deploy_config.find_service(@cluster, service)
-        cluster_config = @deploy_config.find_cluster(@cluster)
-
+      def deploy_service(options)
+        service_config = @deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
-        task_definition = create_task(task_definition_path, service_config[:task_overrides], tag)
+        task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
-        push_image(service_config[:containers], task_definition, tag)
+        push_image(service_config[:containers], task_definition, @deploy_job.label)
 
-        service_client = Deployer::Service::Client.new(@cluster, logger: @logger)
+        service_client = Deployer::Service::Client.new(@deploy_job, logger: @logger, async_wait: options[:async_wait])
 
-        raise Exceptions::ValidationError, "Service is not registered. [#{service}]" unless service_client.exist?(service)
+        raise Exceptions::ValidationError, "Service is not registered. [#{@deploy_job.service}]" unless service_client.exist?
 
         params = service_config.slice(
           :desired_count,
@@ -76,49 +72,32 @@ module Genova
           :maximum_percent
         )
 
-        task_arns = service_client.update(service, task_definition.task_definition_arn, params)
-
-        # `depend_service` will be deprecated in future.
-        if cluster_config.include?(:scheduled_tasks)
-          cluster_config[:scheduled_tasks].each do |scheduled_task_config|
-            scheduled_task_config[:targets].each do |target_config|
-              next if target_config[:depend_service] != service
-
-              deploy_scheduled_task(scheduled_task_config[:rule], target_config[:name], tag)
-            end
-          end
-        end
-
-        deploy_response = DeployResponse.new
-        deploy_response.task_definition_arn = task_definition.task_definition_arn
-        deploy_response.task_arns = task_arns
-        deploy_response
+        service_client.update(task_definition.task_definition_arn, params)
       end
 
-      def deploy_scheduled_task(rule, target, tag)
-        target_config = @deploy_config.find_scheduled_task_target(@cluster, rule, target)
+      def deploy_scheduled_task
+        target_config = @deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
-        task_definition = create_task(task_definition_path, target_config[:task_overrides], tag)
+        task_definition = create_task(task_definition_path, target_config[:task_overrides], @deploy_job.label)
 
-        push_image(target_config[:containers], task_definition, tag)
+        push_image(target_config[:containers], task_definition, @deploy_job.label)
 
-        rule_config = @deploy_config.find_scheduled_task_rule(@cluster, rule)
+        rule_config = @deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)
 
-        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@cluster, logger: @logger)
+        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@deploy_job.cluster, logger: @logger)
         scheduled_task_client.update(
           rule_config[:rule],
           rule_config[:expression],
-          Ecs::Deployer::ScheduledTask::Target.build(@cluster, task_definition.task_definition_arn, target_config, logger: @logger),
+          Ecs::Deployer::ScheduledTask::Target.build(@deploy_job.cluster, task_definition.task_definition_arn, target_config, logger: @logger),
           {
             enabled: rule_config[:enabled],
             description: rule_config[:description]
           }
         )
 
-        deploy_response = DeployResponse.new
-        deploy_response.task_definition_arn = task_definition.task_definition_arn
-        deploy_response
+        @deploy_job.task_definition_arn = task_definition.task_definition_arn
+        @deploy_job.save
       end
 
       private

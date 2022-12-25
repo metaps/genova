@@ -100,7 +100,8 @@ module GenovaCli
       Genova::Deploy::Workflow::Runner.call(
         options[:name],
         {
-          mode: DeployJob.mode.find_value(:manual)
+          mode: DeployJob.mode.find_value(:manual),
+          force: options[:force]
         },
         Genova::Deploy::Step::StdoutLogger.new
       )

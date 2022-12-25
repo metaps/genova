@@ -1,8 +1,8 @@
 module Genova
   module Logger
     class MongodbLogger < ::Logger
-      def initialize(id)
-        @deploy_job = DeployJob.find(id)
+      def initialize(deploy_job)
+        @deploy_job = deploy_job
         super($stdout)
       end
 

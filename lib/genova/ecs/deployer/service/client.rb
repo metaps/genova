@@ -3,18 +3,17 @@ module Genova
     module Deployer
       module Service
         class Client
-          LOG_SEPARATOR = '-' * 96
-
-          def initialize(cluster, options = {})
-            @cluster = cluster
+          def initialize(deploy_job, options = {})
+            @deploy_job = deploy_job
             @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+            @async_wait = options[:async_wait]
             @ecs = Aws::ECS::Client.new
           end
 
-          def update(service, task_definition_arn, options = {})
+          def update(task_definition_arn, options = {})
             params = {
-              cluster: @cluster,
-              service: service,
+              cluster: @deploy_job.cluster,
+              service: @deploy_job.service,
               task_definition: task_definition_arn
             }
 
@@ -25,136 +24,32 @@ module Genova
 
             result = @ecs.update_service(params)
 
-            @logger.info('Service has been updated.')
+            @deploy_job.task_definition_arn = result.service.task_definition
+            @deploy_job.save
 
-            wait(service, result.service.task_definition)
+            if @async_wait
+              @logger.info('Monitor service updating in asynchronous mode.')
+              ::Ecs::ServiceProvisioningWorker.perform_async(@deploy_job.id)
+            else
+              @logger.info('Monitor service updating in synchronous mode.')
+              ::Ecs::ServiceProvisioningWorker.new.perform(@deploy_job.id)
+            end
           end
 
-          def exist?(service)
+          def exist?
             status = nil
             result = @ecs.describe_services(
-              cluster: @cluster,
-              services: [service]
+              cluster: @deploy_job.cluster,
+              services: [@deploy_job.service]
             )
             result[:services].each do |svc|
-              next unless svc[:service_name] == service && svc[:status] == 'ACTIVE'
-
+              next unless svc[:service_name] == @deploy_job.service && svc[:status] == 'ACTIVE'
+      
               status = svc
               break
             end
-
+      
             status.nil? ? false : true
-          end
-
-          private
-
-          def detect_stopped_task(service, task_definition_arn)
-            stopped_tasks = @ecs.list_tasks(
-              cluster: @cluster,
-              service_name: service,
-              desired_status: 'STOPPED'
-            ).task_arns
-
-            return if stopped_tasks.size.zero?
-
-            description_tasks = @ecs.describe_tasks(
-              cluster: @cluster,
-              tasks: stopped_tasks
-            ).tasks
-
-            description_tasks.each do |task|
-              raise Exceptions::TaskStoppedError, task.stopped_reason if task.task_definition_arn == task_definition_arn
-            end
-          end
-
-          def deploy_status(service, task_definition_arn)
-            detect_stopped_task(service, task_definition_arn)
-
-            # Get current tasks
-            result = @ecs.list_tasks(
-              cluster: @cluster,
-              service_name: service,
-              desired_status: 'RUNNING'
-            )
-
-            new_registerd_task_count = 0
-            current_task_count = 0
-            status_logs = []
-
-            if result[:task_arns].size.positive?
-              status_logs << 'Current services:'
-
-              tasks = @ecs.describe_tasks(
-                cluster: @cluster,
-                tasks: result[:task_arns]
-              )
-
-              tasks[:tasks].each do |task|
-                if task_definition_arn == task[:task_definition_arn]
-                  new_registerd_task_count += 1 if task[:last_status] == 'RUNNING'
-                else
-                  current_task_count += 1
-                end
-
-                status_logs << "- Task ARN: #{task[:task_arn]}"
-                status_logs << "  Task definition ARN: #{task[:task_definition_arn]} [#{task[:last_status]}]"
-              end
-            end
-
-            {
-              current_task_count: current_task_count,
-              new_registerd_task_count: new_registerd_task_count,
-              status_logs: status_logs,
-              task_arns: result[:task_arns]
-            }
-          end
-
-          def wait(service, task_definition_arn)
-            raise Exceptions::NotFoundError, "'#{service}' service is not found." unless exist?(service)
-
-            wait_time = 0
-
-            @logger.info('Start deployment.')
-            @logger.info(LOG_SEPARATOR)
-
-            result = @ecs.describe_services(
-              cluster: @cluster,
-              services: [service]
-            )
-            desired_count = result[:services][0][:desired_count]
-
-            loop do
-              sleep(Settings.deploy.polling_interval)
-              wait_time += Settings.deploy.polling_interval
-              result = deploy_status(service, task_definition_arn)
-
-              @logger.info("Deploying service... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)")
-              @logger.info("New task: #{task_definition_arn}")
-
-              if result[:status_logs].count.positive?
-                result[:status_logs].each do |log|
-                  @logger.info(log)
-                end
-
-                @logger.info(LOG_SEPARATOR)
-              end
-
-              if result[:new_registerd_task_count] == desired_count && result[:current_task_count].zero?
-                @logger.info("Service update succeeded. [#{result[:new_registerd_task_count]}/#{desired_count}]")
-                @logger.info("New task definition: #{task_definition_arn}")
-
-                break
-              else
-                @logger.info('You can stop process with Ctrl+C. Deployment continues in background.')
-
-                if wait_time > Settings.deploy.wait_timeout
-                  @logger.info("New task definition: #{task_definition_arn}")
-                  raise Exceptions::DeployTimeoutError, 'Service is being updating, but process is timed out.'
-                end
-              end
-            end
-
-            result[:task_arns]
           end
         end
       end

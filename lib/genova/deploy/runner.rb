@@ -3,7 +3,7 @@ module Genova
     class Runner
       class << self
         def call(deploy_job, options = {})
-          logger = Genova::Logger::MongodbLogger.new(deploy_job.id)
+          logger = Genova::Logger::MongodbLogger.new(deploy_job)
           logger.level = options[:verbose] ? :debug : Settings.logger.level
           logger.info('Start deploy.')
 
@@ -21,37 +21,36 @@ module Genova
             alias: deploy_job.alias,
             logger: logger
           )
-          ecs_client = Ecs::Client.new(deploy_job.cluster, code_manager, logger: logger)
+          ecs_client = Ecs::Client.new(deploy_job, code_manager, logger: logger)
 
           deploy_job.started_at = Time.now.utc
           deploy_job.commit_id = ecs_client.ready
           deploy_job.save
 
-          deploy_response = case deploy_job.type
-                            when DeployJob.type.find_value(:run_task)
-                              ecs_client.deploy_run_task(deploy_job.run_task, deploy_job.override_container, deploy_job.override_command, deploy_job.label)
-                            when DeployJob.type.find_value(:service)
-                              ecs_client.deploy_service(deploy_job.service, deploy_job.label)
-                            when DeployJob.type.find_value(:scheduled_task)
-                              ecs_client.deploy_scheduled_task(deploy_job.scheduled_task_rule, deploy_job.scheduled_task_target, deploy_job.label)
-                            end
-
-          if Settings.github.deployment_tag && deploy_job.branch.present?
-            logger.info("Pushed tag: #{deploy_job.deployment_tag}")
-
-            deploy_job.deployment_tag = deploy_job.label
-            code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
+          case deploy_job.type
+          when DeployJob.type.find_value(:run_task)
+            ecs_client.deploy_run_task
+          when DeployJob.type.find_value(:service)
+            ecs_client.deploy_service(async_wait: options[:async_wait])
+          when DeployJob.type.find_value(:scheduled_task)
+            ecs_client.deploy_scheduled_task
           end
 
-          deploy_job.status = DeployJob.status.find_value(:success).to_s
-          deploy_job.task_definition_arn = deploy_response.task_definition_arn
-          deploy_job.task_arns = deploy_response.task_arns
-          deploy_job.finished_at = Time.now.utc
-          deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f
-          deploy_job.save
+          unless options[:async_wait]
+            if Settings.github.deployment_tag && deploy_job.branch.present?
+              logger.info("Pushed tag: #{deploy_job.deployment_tag}")
+  
+              deploy_job.deployment_tag = deploy_job.label
+              code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
+            end
+  
+            deploy_job.status = DeployJob.status.find_value(:success).to_s
+            deploy_job.finished_at = Time.now.utc
+            deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f
+            deploy_job.save
+          end
 
-          logger.info('Deployment was successful.')
-
+          logger.info('Deployment was finished.')
           transaction.commit
         rescue Interrupt
           logger.error("Detected forced termination of program. {\"deploy id\": #{deploy_job.id}}")
