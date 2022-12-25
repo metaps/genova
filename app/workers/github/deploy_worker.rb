@@ -1,5 +1,8 @@
 module Github
-  class DeployWorker < BaseWorker
+  class DeployWorker
+    include Sidekiq::Worker
+    include Genova::Sidekiq::SlackAlert
+
     sidekiq_options queue: :github_deploy, retry: false
 
     def perform(id)
@@ -27,9 +30,9 @@ module Github
         branch: values[:branch]
       }
 
-      Genova::Deploy::Step::Runner.call(result[:steps], params, Genova::Deploy::Step::SlackLogger.new(response[:ts]))
+      Genova::Deploy::Step::Runner.call(result[:steps], params, Genova::Deploy::Step::SlackHook.new(response[:ts]))
     rescue => e
-      slack_notify(e)
+      send(e)
       raise e
     end
 

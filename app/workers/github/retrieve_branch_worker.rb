@@ -1,5 +1,8 @@
 module Github
-  class RetrieveBranchWorker < BaseWorker
+  class RetrieveBranchWorker
+    include Sidekiq::Worker
+    include Genova::Sidekiq::SlackAlert
+
     sidekiq_options queue: :github_retrieve_branch, retry: false
 
     def perform(id)
@@ -11,7 +14,7 @@ module Github
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.ask_branch(params)
     rescue => e
-      params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
+      params.present? ? send(e, id, params[:user]) : send(e, id)
       raise e
     end
   end

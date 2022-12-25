@@ -24,7 +24,7 @@ module Genova
 
         def cancel
           params = @session_store.params
-          Genova::Transaction.new(params[:repository]).cancel if params[:repository].present?
+          Genova::Deploy::Transaction.new(params[:repository]).cancel if params[:repository].present?
 
           'Deployment was canceled.'
         end
@@ -88,15 +88,15 @@ module Genova
         end
 
         def approve_run_task
-          approve_target
+          approve_resource
         end
 
         def approve_service
-          approve_target
+          approve_resource
         end
 
         def approve_scheduled_task
-          approve_target
+          approve_resource
         end
 
         def approve_deploy_from_history
@@ -128,9 +128,7 @@ module Genova
           'Workflow deployment started.'
         end
 
-        private
-
-        def approve_target
+        def approve_resource
           value = @payload.dig(:actions, 0, :selected_option, :value)
           targets = value.split(':')
           type = targets[0].to_sym
@@ -152,7 +150,7 @@ module Genova
           @session_store.save(params)
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Target', value)
+          BlockKit::Helper.section_field('Resource', value)
         end
       end
     end

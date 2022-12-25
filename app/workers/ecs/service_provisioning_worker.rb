@@ -5,13 +5,13 @@ module Ecs
     include Sidekiq::Worker
 
     sidekiq_options queue: :ecs_service_provisioning, retry: false
-    
+
     def perform(id)
       @deploy_job = DeployJob.find(id)
       @ecs = Aws::ECS::Client.new
 
       @logger = Genova::Logger::MongodbLogger.new(@deploy_job)
-      @logger.info('Start monitoring service update.')
+      @logger.info('Start monitoring.')
       @logger.info(LOG_SEPARATOR)
 
       begin
@@ -25,9 +25,9 @@ module Ecs
         loop do
           sleep(Settings.deploy.polling_interval)
           wait_time += Settings.deploy.polling_interval
-          result = deploy_status(@deploy_job.task_definition_arn)
+          result = service_status(@deploy_job.task_definition_arn)
 
-          @logger.info("Deploying service... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)")
+          @logger.info("Service is being updated... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)")
           @logger.info("New task: #{@deploy_job.task_definition_arn}")
 
           if result[:status_logs].count.positive?
@@ -39,47 +39,23 @@ module Ecs
           end
 
           if result[:new_registerd_task_count] == desired_count && result[:current_task_count].zero?
-            @logger.info("Service update succeeded. [#{result[:new_registerd_task_count]}/#{desired_count}]")
-            @logger.info("New task definition: #{@deploy_job.task_definition_arn}")
+            @logger.info("All tasks have been replaced. [#{result[:new_registerd_task_count]}/#{desired_count}]")
+            @logger.info("New task definition [#{@deploy_job.task_definition_arn}]")
 
             break
-          else
-            @logger.info('You can stop process with Ctrl+C. Deployment continues in background.')
-
-            if wait_time > Settings.deploy.wait_timeout
-              @logger.info("New task definition: #{@deploy_job.task_definition_arn}")
-              raise Exceptions::DeployTimeoutError, 'Service is being updating, but process is timed out.'
-            end
+          elsif wait_time > Settings.deploy.wait_timeout
+            @logger.info("New task definition [#{@deploy_job.task_definition_arn}]")
+            raise Exceptions::DeployTimeoutError, 'Monitoring service changes, timeout reached.'
           end
         end
 
-        if Settings.github.deployment_tag && @deploy_job.branch.present?
-          @logger.info("Pushed tag: #{@deploy_job.deployment_tag}")
-
-          @deploy_job.deployment_tag = @deploy_job.label
-          Genova::CodeManager::Git.new(
-            @deploy_job.repository,
-            branch: @deploy_job.branch,
-            tag: @deploy_job.tag,
-            logger: @logger
-          ).release(@deploy_job.deployment_tag, @deploy_job.commit_id)
-        end
-
-        @deploy_job.task_arns = result[:task_arns]
-        @deploy_job.status = DeployJob.status.find_value(:success).to_s
-        @deploy_job.finished_at = Time.now.utc
-        @deploy_job.execution_time = @deploy_job.finished_at.to_f - @deploy_job.started_at.to_f
-        @deploy_job.save
-
+        @deploy_job.update_status_complate(task_arns: result[:task_arns])
       rescue => e
-        @logger.error("Deployment has stopped because an error has occurred. {\"deploy id\": #{@deploy_job.id}}")
+        @logger.error('Error during deployment.')
         @logger.error(e.message)
         @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
 
-        @deploy_job.status = DeployJob.status.find_value(:failure).to_s
-        @deploy_job.finished_at = Time.now.utc
-        @deploy_job.execution_time = @deploy_job.finished_at.to_f - @deploy_job.started_at.to_f if @deploy_job.started_at.present?
-        @deploy_job.save
+        @deploy_job.update_status_failure
       end
     end
 
@@ -104,10 +80,10 @@ module Ecs
       end
     end
 
-    def deploy_status(task_definition_arn)
+    def service_status(task_definition_arn)
       detect_stopped_task(task_definition_arn)
 
-      # Get current tasks
+      # Get current tasks.
       result = @ecs.list_tasks(
         cluster: @deploy_job.cluster,
         service_name: @deploy_job.service,
@@ -136,6 +112,8 @@ module Ecs
           status_logs << "- Task ARN: #{task[:task_arn]}"
           status_logs << "  Task definition ARN: #{task[:task_definition_arn]} [#{task[:last_status]}]"
         end
+      else
+        status_logs << 'All old tasks have been stopped. Wait for a new task to start.'
       end
 
       {

@@ -1,7 +1,7 @@
 module Genova
   module Deploy
     module Step
-      class StdoutLogger
+      class StdoutHook
         def initialize
           @logger = ::Logger.new($stdout)
         end
@@ -11,7 +11,7 @@ module Genova
         end
 
         def start_deploy(_params)
-          @logger.info('Start Deployment.')
+          @logger.info('Start deployment.')
         end
 
         def complete_deploy(_params)

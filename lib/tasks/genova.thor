@@ -103,7 +103,7 @@ module GenovaCli
           mode: DeployJob.mode.find_value(:manual),
           force: options[:force]
         },
-        Genova::Deploy::Step::StdoutLogger.new
+        Genova::Deploy::Step::StdoutHook.new
       )
     end
   end
@@ -192,7 +192,7 @@ module GenovaCli
     desc 'clear-transaction', 'Cancel deploy transactions.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def clear_transaction
-      transaction = ::Genova::Transaction.new(options[:repository])
+      transaction = ::Genova::Deploy::Transaction.new(options[:repository])
 
       if transaction.running?
         transaction.cancel

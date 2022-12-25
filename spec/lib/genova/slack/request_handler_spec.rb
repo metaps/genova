@@ -184,8 +184,8 @@ module Genova
           end
         end
 
-        context 'when invoke approve_target' do
-          it 'should be execute approve_target' do
+        context 'when invoke approve_service' do
+          it 'should be execute approve_service' do
             allow(::Slack::DeployConfirmWorker).to receive(:perform_async)
 
             payload = {
@@ -197,7 +197,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_target',
+                  action_id: 'approve_service',
                   selected_option: {
                     value: 'service:api'
                   }

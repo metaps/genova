@@ -6,10 +6,10 @@ module Genova
           class << self
             attr_accessor :task_role_arn
 
-            def build(cluster, task_definition_arn, target_config, options = {})
+            def build(deploy_job, task_definition_arn, target_config, options = {})
               ecs = Aws::ECS::Client.new
-              clusters = ecs.describe_clusters(clusters: [cluster]).clusters
-              raise Exceptions::NotFoundError, "Cluster does not eixst. [#{cluster}]" if clusters.count.zero?
+              clusters = ecs.describe_clusters(clusters: [deploy_job.cluster]).clusters
+              raise Exceptions::NotFoundError, "Cluster does not eixst. [#{deploy_job.cluster}]" if clusters.count.zero?
 
               logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
               logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?

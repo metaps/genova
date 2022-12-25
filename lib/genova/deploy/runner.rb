@@ -5,9 +5,9 @@ module Genova
         def call(deploy_job, options = {})
           logger = Genova::Logger::MongodbLogger.new(deploy_job)
           logger.level = options[:verbose] ? :debug : Settings.logger.level
-          logger.info('Start deploy.')
+          logger.info('Deployment has started.')
 
-          transaction = Genova::Transaction.new(deploy_job.repository, logger: logger)
+          transaction = Genova::Deploy::Transaction.new(deploy_job.repository, logger: logger)
           transaction.cancel if options[:force]
           transaction.begin
 
@@ -36,28 +36,21 @@ module Genova
             ecs_client.deploy_scheduled_task
           end
 
-          unless options[:async_wait]
-            if Settings.github.deployment_tag && deploy_job.branch.present?
-              logger.info("Pushed tag: #{deploy_job.deployment_tag}")
-  
-              deploy_job.deployment_tag = deploy_job.label
-              code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
-            end
-  
-            deploy_job.status = DeployJob.status.find_value(:success).to_s
-            deploy_job.finished_at = Time.now.utc
-            deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f
-            deploy_job.save
+          if !options[:async_wait] && Settings.github.deployment_tag && deploy_job.branch.present?
+            logger.info("Push tags to Git. [#{deploy_job.label}]")
+
+            deploy_job.deployment_tag = deploy_job.label
+            code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
           end
 
-          logger.info('Deployment was finished.')
           transaction.commit
+          logger.info('Deployment is finished.')
         rescue Interrupt
-          logger.error("Detected forced termination of program. {\"deploy id\": #{deploy_job.id}}")
+          logger.info('Deploy detected forced termination.')
 
           cancel(transaction, deploy_job)
         rescue => e
-          logger.error("Deployment has stopped because an error has occurred. {\"deploy id\": #{deploy_job.id}}")
+          logger.error('Error during deployment.')
           logger.error(e.message)
           logger.error(e.backtrace.join("\n")) if e.backtrace.present?
 
@@ -67,11 +60,7 @@ module Genova
 
         def cancel(transaction, deploy_job)
           transaction.cancel
-
-          deploy_job.status = DeployJob.status.find_value(:failure).to_s
-          deploy_job.finished_at = Time.now.utc
-          deploy_job.execution_time = deploy_job.finished_at.to_f - deploy_job.started_at.to_f if deploy_job.started_at.present?
-          deploy_job.save
+          deploy_job.update_status_failure
         end
       end
     end

@@ -44,10 +44,10 @@ module Genova
         image.tag(repo: "#{@base_path}/#{repository_name}", tag: image_tag)
 
         image.push(nil, repo_tag: repo_tag_latest)
-        @logger.info("Pushed image. {\"tag\": #{repo_tag_latest}}")
+        @logger.info("Push the built image to the ECR. [#{repo_tag_latest}]")
 
         image.push(nil, repo_tag: repo_tag_version)
-        @logger.info("Pushed image. {\"tag\": #{repo_tag_version}}")
+        @logger.info("Push the built image to the ECR. [#{repo_tag_version}]")
       end
 
       private

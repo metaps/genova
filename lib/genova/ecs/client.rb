@@ -46,11 +46,7 @@ module Genova
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
         run_task_client = Deployer::RunTask::Client.new(@deploy_job.cluster, logger: @logger)
-        task_arns = run_task_client.execute(task_definition.task_definition_arn, options)
-
-        @deploy_job.task_definition_arn = task_definition.task_definition_arn
-        @deploy_job.task_arns = task_arns
-        @deploy_job.save
+        run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
       def deploy_service(options)
@@ -80,24 +76,22 @@ module Genova
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
         task_definition = create_task(task_definition_path, target_config[:task_overrides], @deploy_job.label)
+        @deploy_job.task_definition_arn = task_definition.task_definition_arn
 
         push_image(target_config[:containers], task_definition, @deploy_job.label)
 
         rule_config = @deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)
 
-        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@deploy_job.cluster, logger: @logger)
+        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@deploy_job, logger: @logger)
         scheduled_task_client.update(
           rule_config[:rule],
           rule_config[:expression],
-          Ecs::Deployer::ScheduledTask::Target.build(@deploy_job.cluster, task_definition.task_definition_arn, target_config, logger: @logger),
+          Ecs::Deployer::ScheduledTask::Target.build(@deploy_job, task_definition.task_definition_arn, target_config, logger: @logger),
           {
             enabled: rule_config[:enabled],
             description: rule_config[:description]
           }
         )
-
-        @deploy_job.task_definition_arn = task_definition.task_definition_arn
-        @deploy_job.save
       end
 
       private

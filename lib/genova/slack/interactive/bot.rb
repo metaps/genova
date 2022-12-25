@@ -86,7 +86,7 @@ module Genova
           actions << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
 
           blocks = []
-          blocks << BlockKit::Helper.section('Select the branch or tag to be deployed.')
+          blocks << BlockKit::Helper.section('Specify resources to deploy.')
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -209,7 +209,7 @@ module Genova
 
         def start_step(params)
           send([
-                 BlockKit::Helper.header("Start Deployment Step ##{params[:index]}.")
+                 BlockKit::Helper.header("Start deployment Step ##{params[:index]}.")
                ])
         end
 

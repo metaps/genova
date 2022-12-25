@@ -1,7 +1,7 @@
 module Genova
   module Deploy
     module Step
-      class SlackLogger
+      class SlackHook
         def initialize(id)
           @bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
         end

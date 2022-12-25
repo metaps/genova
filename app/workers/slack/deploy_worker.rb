@@ -1,5 +1,8 @@
 module Slack
-  class DeployWorker < BaseWorker
+  class DeployWorker
+    include Sidekiq::Worker
+    include Genova::Sidekiq::SlackAlert
+
     sidekiq_options queue: :slack_deploy, retry: false
 
     def perform(id)
@@ -29,14 +32,14 @@ module Slack
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.detect_slack_deploy(deploy_job: deploy_job)
 
-      transaction = Genova::Transaction.new(params[:repository])
+      transaction = Genova::Deploy::Transaction.new(params[:repository])
       bot.send_message('Please wait as other deployments are in progress.') if transaction.running?
 
       Genova::Deploy::Runner.call(deploy_job)
 
       bot.complete_deploy(deploy_job: deploy_job)
     rescue => e
-      params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
+      params.present? ? send(e, id, params[:user]) : send(e, id)
       raise e
     end
   end

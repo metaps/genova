@@ -11,6 +11,8 @@ module Genova
           end
 
           def update(task_definition_arn, options = {})
+            @logger.info('Update service task.')
+
             params = {
               cluster: @deploy_job.cluster,
               service: @deploy_job.service,
@@ -28,10 +30,11 @@ module Genova
             @deploy_job.save
 
             if @async_wait
-              @logger.info('Monitor service updating in asynchronous mode.')
+              @logger.info('Monitor ECR service update status in asynchronous mode.')
               ::Ecs::ServiceProvisioningWorker.perform_async(@deploy_job.id)
             else
-              @logger.info('Monitor service updating in synchronous mode.')
+              @logger.info('Monitor ECR service update status in synchronous mode.')
+              @logger.info('You can stop monitoring by pressing Ctrl+C.') if @deploy_job.mode == DeployJob.mode.find_value(:manual)
               ::Ecs::ServiceProvisioningWorker.new.perform(@deploy_job.id)
             end
           end
@@ -44,11 +47,11 @@ module Genova
             )
             result[:services].each do |svc|
               next unless svc[:service_name] == @deploy_job.service && svc[:status] == 'ACTIVE'
-      
+
               status = svc
               break
             end
-      
+
             status.nil? ? false : true
           end
         end

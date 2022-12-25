@@ -1,5 +1,8 @@
 module Slack
-  class WorkflowDeployWorker < BaseWorker
+  class WorkflowDeployWorker
+    include Sidekiq::Worker
+    include Genova::Sidekiq::SlackAlert
+
     sidekiq_options queue: :slack_deploy, retry: false
 
     def perform(id)
@@ -13,10 +16,10 @@ module Slack
           slack_user_id: params[:user],
           slack_user_name: params[:user_name]
         },
-        Genova::Deploy::Step::SlackLogger.new(id)
+        Genova::Deploy::Step::SlackHook.new(id)
       )
     rescue => e
-      params.present? ? slack_notify(e, id, params[:user]) : slack_notify(e, id)
+      params.present? ? send(e, id, params[:user]) : send(e, id)
       raise e
     end
   end

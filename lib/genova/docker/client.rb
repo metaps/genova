@@ -10,9 +10,7 @@ module Genova
       end
 
       def build_image(container_config, image_name)
-        cache_key = image_name[0...image_name.index(':')]
-
-        @logger.info("Building image... [#{cache_key}]")
+        @logger.info('Building image...')
         build = parse_docker_build(container_config[:build], @cipher)
 
         config_base_path = Pathname(@code_manager.base_path).join('config').to_s
@@ -33,7 +31,7 @@ module Genova
         build_option_string = build_options.map { |key, value| "#{key} #{value}" }.join(' ') + build[:build_args]
 
         command = "docker build #{build_option_string} ."
-        @logger.info("Docker build path: #{docker_base_path}")
+        @logger.info("Detect Docker build path [#{docker_base_path}]")
 
         Genova::Command::Executor.call(command, work_dir: docker_base_path, logger: @logger)
 
