@@ -2,6 +2,13 @@
 
 ## Upgrading from 3.2 to 4.0
 
+Some parameter names in `settings.yml` have been changed.
+If you have overwritten parameters in `settings.local.yml`, you need to change the parameter names.
+
+* `aws.service.ecr` -> `aws.ecr`
+* `deploy.polling_interval` -> `ecs.polling_interval`
+* `deploy.wait_interval` -> `ecs.wait_interval`
+
 Upgrading to 4.0 requires a rebuild of genova.
 
 ```zsh

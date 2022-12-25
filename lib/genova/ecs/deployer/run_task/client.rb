@@ -62,10 +62,10 @@ module Genova
               run_task_size = describe_tasks[:tasks].size
 
               describe_tasks[:tasks].each do |task|
-                raise Exceptions::DeployTimeoutError, "Monitoring run task, timeout reached. [#{task[:task_arn]}]" if wait_time > Settings.deploy.wait_timeout
+                raise Exceptions::DeployTimeoutError, "Monitoring run task, timeout reached. [#{task[:task_arn]}]" if wait_time > Settings.ecs.wait_timeout
 
-                sleep(Settings.deploy.polling_interval)
-                wait_time += Settings.deploy.polling_interval
+                sleep(Settings.ecs.polling_interval)
+                wait_time += Settings.ecs.polling_interval
 
                 @logger.info("Waiting for run task execution... (#{wait_time}s elapsed)")
                 @logger.info(LOG_SEPARATOR)

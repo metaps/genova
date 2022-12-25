@@ -16,40 +16,40 @@ module Ecs
 
       begin
         wait_time = 0
-        result = @ecs.describe_services(
+        response = @ecs.describe_services(
           cluster: @deploy_job.cluster,
           services: [@deploy_job.service]
         )
-        desired_count = result[:services][0][:desired_count]
+        desired_count = response[:services][0][:desired_count]
 
         loop do
-          sleep(Settings.deploy.polling_interval)
-          wait_time += Settings.deploy.polling_interval
-          result = service_status(@deploy_job.task_definition_arn)
+          sleep(Settings.ecs.polling_interval)
+          wait_time += Settings.ecs.polling_interval
+          response = retrieve_status(@deploy_job.task_definition_arn)
 
-          @logger.info("Service is being updated... [#{result[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)")
+          @logger.info("Service is being updated... [#{response[:new_registerd_task_count]}/#{desired_count}] (#{wait_time}s elapsed)")
           @logger.info("New task: #{@deploy_job.task_definition_arn}")
 
-          if result[:status_logs].count.positive?
-            result[:status_logs].each do |log|
+          if response[:status_logs].count.positive?
+            response[:status_logs].each do |log|
               @logger.info(log)
             end
 
             @logger.info(LOG_SEPARATOR)
           end
 
-          if result[:new_registerd_task_count] == desired_count && result[:current_task_count].zero?
-            @logger.info("All tasks have been replaced. [#{result[:new_registerd_task_count]}/#{desired_count}]")
+          if response[:new_registerd_task_count] == desired_count && response[:current_task_count].zero?
+            @logger.info("All tasks have been replaced. [#{response[:new_registerd_task_count]}/#{desired_count}]")
             @logger.info("New task definition [#{@deploy_job.task_definition_arn}]")
 
             break
-          elsif wait_time > Settings.deploy.wait_timeout
+          elsif wait_time > Settings.ecs.wait_timeout
             @logger.info("New task definition [#{@deploy_job.task_definition_arn}]")
             raise Exceptions::DeployTimeoutError, 'Monitoring service changes, timeout reached.'
           end
         end
 
-        @deploy_job.update_status_complate(task_arns: result[:task_arns])
+        @deploy_job.update_status_complate(task_arns: response[:task_arns])
       rescue => e
         @logger.error('Error during deployment.')
         @logger.error(e.message)
@@ -80,11 +80,11 @@ module Ecs
       end
     end
 
-    def service_status(task_definition_arn)
+    def retrieve_status(task_definition_arn)
       detect_stopped_task(task_definition_arn)
 
       # Get current tasks.
-      result = @ecs.list_tasks(
+      response = @ecs.list_tasks(
         cluster: @deploy_job.cluster,
         service_name: @deploy_job.service,
         desired_status: 'RUNNING'
@@ -94,12 +94,12 @@ module Ecs
       current_task_count = 0
       status_logs = []
 
-      if result[:task_arns].size.positive?
+      if response[:task_arns].size.positive?
         status_logs << 'Current services:'
 
         tasks = @ecs.describe_tasks(
           cluster: @deploy_job.cluster,
-          tasks: result[:task_arns]
+          tasks: response[:task_arns]
         )
 
         tasks[:tasks].each do |task|
@@ -120,7 +120,7 @@ module Ecs
         current_task_count: current_task_count,
         new_registerd_task_count: new_registerd_task_count,
         status_logs: status_logs,
-        task_arns: result[:task_arns]
+        task_arns: response[:task_arns]
       }
     end
   end

@@ -15,10 +15,6 @@ docker:
   #   # This option maps to `docker build --memory`.
   #   # memory:
 
-deploy:
-  wait_timeout: 900
-  polling_interval: 10
-
 github:
   account: metaps
 
@@ -44,10 +40,11 @@ github:
   #     # If you changed `base_path`, specify unique alias name to identify `deploy.yml`. (Optional)
   #     alias:
 
-aws:
-  service:
-    ecr:
-      read_timeout: 900
+ecs:
+  wait_timeout: 900
+  polling_interval: 5
+ecr:
+  read_timeout: 900
 
 slack:
   api_token: ''

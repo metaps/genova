@@ -14,7 +14,7 @@ module Github
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.ask_branch(params)
     rescue => e
-      params.present? ? send(e, id, params[:user]) : send(e, id)
+      params.present? ? send_error(e, id, params[:user]) : send_error(e, id)
       raise e
     end
   end

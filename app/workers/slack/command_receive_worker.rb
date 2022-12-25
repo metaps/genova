@@ -34,7 +34,7 @@ module Slack
 
       klass.call(statements, values[:user], values[:parent_message_ts])
     rescue => e
-      values.present? ? send(e, values[:parent_message_ts], values[:user]) : send(e)
+      values.present? ? send_error(e, values[:parent_message_ts], values[:user]) : send_error(e)
       raise e
     end
   end

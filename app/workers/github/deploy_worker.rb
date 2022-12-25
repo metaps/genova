@@ -32,7 +32,7 @@ module Github
 
       Genova::Deploy::Step::Runner.call(result[:steps], params, Genova::Deploy::Step::SlackHook.new(response[:ts]))
     rescue => e
-      send(e)
+      send_error(e)
       raise e
     end
 

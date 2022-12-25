@@ -8,7 +8,7 @@ module Genova
         @logger = params[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @base_path = base_path
 
-        ::Docker.options[:read_timeout] = Settings.aws.service.ecr.read_timeout
+        ::Docker.options[:read_timeout] = Settings.ecr.read_timeout
         ::Docker.logger = @logger
       end
 

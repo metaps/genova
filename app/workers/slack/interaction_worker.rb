@@ -11,7 +11,7 @@ module Slack
       payload = Genova::Sidekiq::JobStore.find(id)
       Genova::Slack::RequestHandler.call(payload)
     rescue => e
-      payload.present? ? send(e, payload[:container][:thread_ts], payload[:user][:id]) : send(e)
+      payload.present? ? send_error(e, payload[:container][:thread_ts], payload[:user][:id]) : send_error(e)
       raise e
     end
   end
