@@ -19,7 +19,7 @@ module Genova
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select history to deploy."),
                  BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_deploy_from_history', options),
+                                            BlockKit::Helper.static_select('approve_deploy_from_history', 'History', options),
                                             BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
                                           ])
                ])
