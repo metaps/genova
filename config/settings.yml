@@ -21,8 +21,7 @@ github:
   # Secret key to authenticate push events from GitHub.
   secret_key: ''
 
-  # Create tag after deployment.
-  # If you enable it, please specify `GITHUB_OAUTH_TOKEN`.
+    # Specify `true` to push Git tag after deployment.
   deployment_tag: false
 
   default_branch: master

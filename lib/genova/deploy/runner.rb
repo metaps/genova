@@ -11,9 +11,6 @@ module Genova
           transaction.cancel if options[:force]
           transaction.begin
 
-          deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
-          deploy_job.save
-
           code_manager = CodeManager::Git.new(
             deploy_job.repository,
             branch: deploy_job.branch,
@@ -23,6 +20,7 @@ module Genova
           )
           ecs_client = Ecs::Client.new(deploy_job, code_manager, logger: logger)
 
+          deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
           deploy_job.started_at = Time.now.utc
           deploy_job.commit_id = ecs_client.ready
           deploy_job.save
@@ -48,19 +46,18 @@ module Genova
         rescue Interrupt
           logger.info('Deploy detected forced termination.')
 
-          cancel(transaction, deploy_job)
+          transaction.cancel
+          deploy_job.update_status_failure
+
         rescue => e
           logger.error('Error during deployment.')
           logger.error(e.message)
           logger.error(e.backtrace.join("\n")) if e.backtrace.present?
 
-          cancel(transaction, deploy_job)
-          raise e
-        end
-
-        def cancel(transaction, deploy_job)
           transaction.cancel
           deploy_job.update_status_failure
+
+          raise e
         end
       end
     end

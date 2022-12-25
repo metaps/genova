@@ -3,7 +3,7 @@ module Slack
     include Sidekiq::Worker
     include Genova::Sidekiq::SlackAlert
 
-    sidekiq_options queue: :slack_deploy, retry: false
+    sidekiq_options queue: :workflow_deploy, retry: false
 
     def perform(id)
       logger.info('Started Slack::WorkflowDeployWorker')

@@ -8,6 +8,7 @@ If you have overwritten parameters in `settings.local.yml`, you need to change t
 * `aws.service.ecr` -> `aws.ecr`
 * `deploy.polling_interval` -> `ecs.polling_interval`
 * `deploy.wait_interval` -> `ecs.wait_interval`
+* `thread_conversion` -> (Destroyed)
 
 Upgrading to 4.0 requires a rebuild of genova.
 
