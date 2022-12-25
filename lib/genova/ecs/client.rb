@@ -45,7 +45,7 @@ module Genova
         options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
-        run_task_client = Deployer::RunTask::Client.new(@deploy_job.cluster, logger: @logger)
+        run_task_client = Deployer::RunTask::Client.new(@deploy_job, logger: @logger)
         run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
