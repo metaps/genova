@@ -48,7 +48,6 @@ module Genova
 
           transaction.cancel
           deploy_job.update_status_failure
-
         rescue => e
           logger.error('Error during deployment.')
           logger.error(e.message)

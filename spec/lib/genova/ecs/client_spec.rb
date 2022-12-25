@@ -8,7 +8,7 @@ module Genova
           DeployJob.collection.drop
         end
 
-        let(:deploy_job) {
+        let(:deploy_job) do
           DeployJob.create!(
             id: DeployJob.generate_id,
             mode: DeployJob.mode.find_value(:manual),
@@ -17,7 +17,7 @@ module Genova
             repository: 'repository',
             cluster: 'cluster'
           )
-        }
+        end
         let(:code_manager) { double(CodeManager::Git) }
         let(:client) { Ecs::Client.new(deploy_job, code_manager) }
         let(:deploy_config) { double(Genova::Config::DeployConfig) }
