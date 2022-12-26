@@ -5,7 +5,8 @@
 Some parameter names in `settings.yml` have been changed.
 If you have overwritten parameters in `settings.local.yml`, you need to change the parameter names.
 
-* `aws.service.ecr` -> `aws.ecr`
+* `aws.service.ecr` -> `ecr`
+* `aws.service.ecs` -> `ecs`
 * `deploy.polling_interval` -> `ecs.polling_interval`
 * `deploy.wait_interval` -> `ecs.wait_interval`
 * `thread_conversion` -> (Destroyed)
