@@ -10,7 +10,7 @@ module Genova
         allow(Ecs::Client).to receive(:new).and_return(ecs_client)
       end
 
-      describe '#call' do
+      describe 'call' do
         context 'when deploying a service' do
           before do
             allow(ecs_client).to receive(:deploy_service)
