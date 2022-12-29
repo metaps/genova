@@ -30,7 +30,7 @@ module Github
         branch: values[:branch]
       }
 
-      Genova::Deploy::Step::Runner.call(result[:steps], params, Genova::Deploy::Step::SlackHook.new(response[:ts]))
+      Genova::Deploy::Step::Runner.call(result[:steps], Genova::Deploy::Step::SlackHook.new(response[:ts]), params)
     rescue => e
       send_error(e)
       raise e

@@ -39,7 +39,7 @@ module Genova
 
               allow(service_provisioning_worker).to receive(:perform)
               allow(::Ecs::ServiceProvisioningWorker).to receive(:new).and_return(service_provisioning_worker)
-              
+
               expect { service_client.update('task_definition_arn') }.to_not raise_error
             end
           end

@@ -45,6 +45,17 @@ ecs:
 ecr:
   read_timeout: 900
 
+# Workflows can be defined to step through the deployment of tasks.
+workflows:
+  # - name: staging_release
+  #   steps:
+  #     - repository:
+  #       branch:
+  #       cluster:
+  #       type:
+  #       async_wait: true
+  #       resources:
+
 slack:
   api_token: ''
   signing_secret: ''
@@ -61,7 +72,7 @@ slack:
   # Limits deployment to specified users. (Optional)
   # permissions:
   #   -
-  #     # Target of restrictions. You can specify `repository` or `cluster`.
+  #     # Target of restrictions. You can specify `repository` or `cluster` or 'workflow'.
   #     policy:
   #
   #     # You can specify full match or partial match for string (e.g. `foo*`, `*`).

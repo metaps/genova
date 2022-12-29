@@ -18,20 +18,20 @@ module Genova
             alias: deploy_job.alias,
             logger: logger
           )
-          ecs_client = Ecs::Client.new(deploy_job, code_manager, logger: logger)
+          ecs = Ecs::Client.new(deploy_job, code_manager, logger: logger)
 
           deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
           deploy_job.started_at = Time.now.utc
-          deploy_job.commit_id = ecs_client.ready
+          deploy_job.commit_id = ecs.ready
           deploy_job.save
 
           case deploy_job.type
           when DeployJob.type.find_value(:run_task)
-            ecs_client.deploy_run_task
+            ecs.deploy_run_task
           when DeployJob.type.find_value(:service)
-            ecs_client.deploy_service(async_wait: options[:async_wait])
+            ecs.deploy_service(async_wait: options[:async_wait])
           when DeployJob.type.find_value(:scheduled_task)
-            ecs_client.deploy_scheduled_task
+            ecs.deploy_scheduled_task
           end
 
           if !options[:async_wait] && Settings.github.deployment_tag && deploy_job.branch.present?
