@@ -27,16 +27,16 @@ module Genova
         end
 
         describe 'history_options' do
-          let(:history_mock) { double(Genova::Slack::Interactive::History) }
+          let(:history) { double(Genova::Slack::Interactive::History) }
 
           it 'should be return histories' do
-            allow(history_mock).to receive(:list).and_return([Oj.dump(
+            allow(history).to receive(:list).and_return([Oj.dump(
               id: Time.now.utc.strftime('%Y%m%d-%H%M%S'),
               repository: 'repository',
               branch: 'branch',
               cluster: 'cluster'
             )])
-            allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
+            allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history)
 
             results = Genova::Slack::BlockKit::ElementObject.history_options(user: 'user')
             expect(results.count).to eq(1)
@@ -44,11 +44,11 @@ module Genova
         end
 
         describe 'branch_options' do
-          let(:code_manager_mock) { double(Genova::CodeManager::Git) }
+          let(:code_manager) { double(Genova::CodeManager::Git) }
 
           it 'should be return brahches' do
-            allow(code_manager_mock).to receive(:origin_branches).and_return(['branch'])
-            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+            allow(code_manager).to receive(:origin_branches).and_return(['branch'])
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
             results = Genova::Slack::BlockKit::ElementObject.branch_options(account: 'account', repository: 'repository')
             expect(results.count).to eq(1)
@@ -56,11 +56,11 @@ module Genova
         end
 
         describe 'tag_options' do
-          let(:code_manager_mock) { double(Genova::CodeManager::Git) }
+          let(:code_manager) { double(Genova::CodeManager::Git) }
 
           it 'should be return tags' do
-            allow(code_manager_mock).to receive(:origin_tags).and_return(['tag'])
-            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+            allow(code_manager).to receive(:origin_tags).and_return(['tag'])
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
             results = Genova::Slack::BlockKit::ElementObject.tag_options(account: 'account', repository: 'repository')
             expect(results.count).to eq(1)
@@ -68,17 +68,17 @@ module Genova
         end
 
         describe 'cluster_options' do
-          let(:code_manager_mock) { double(Genova::CodeManager::Git) }
+          let(:code_manager) { double(Genova::CodeManager::Git) }
 
           it 'should be return clusters' do
-            allow(code_manager_mock).to receive(:load_deploy_config).and_return(
+            allow(code_manager).to receive(:load_deploy_config).and_return(
               clusters: [
                 {
                   name: 'cluster'
                 }
               ]
             )
-            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
             results = Genova::Slack::BlockKit::ElementObject.cluster_options(
               acount: 'account',
@@ -92,8 +92,8 @@ module Genova
         end
 
         describe 'target_options' do
-          let(:code_manager_mock) { double(Genova::CodeManager::Git) }
-          let(:deploy_config_mock) { double(Genova::Config::DeployConfig) }
+          let(:code_manager) { double(Genova::CodeManager::Git) }
+          let(:deploy_config) { double(Genova::Config::DeployConfig) }
           let(:params) do
             {
               account: 'account',
@@ -105,7 +105,7 @@ module Genova
           end
 
           it 'should be return targets' do
-            allow(deploy_config_mock).to receive(:find_cluster).and_return(
+            allow(deploy_config).to receive(:find_cluster).and_return(
               run_tasks: {
                 run_task: nil
               },
@@ -123,8 +123,8 @@ module Genova
                 }
               ]
             )
-            allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
-            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+            allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
             service_options = Genova::Slack::BlockKit::ElementObject.service_options(params)
             run_task_options = Genova::Slack::BlockKit::ElementObject.run_task_options(params)

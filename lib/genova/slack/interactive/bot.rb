@@ -226,9 +226,11 @@ module Genova
                ])
         end
 
-        def complete_steps
+        def complete_steps(params)
+          mention = params[:user].present? ? "<@#{params[:user]}>" : '<!channel>'
+
           send([
-                 BlockKit::Helper.section('<!channel>'),
+                 BlockKit::Helper.section(mention),
                  BlockKit::Helper.section('All deployments are complete.')
                ])
         end

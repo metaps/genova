@@ -34,7 +34,7 @@ module Genova
               end
             end
 
-            callback.complete_steps
+            callback.complete_steps(user: options[:slack_user_id])
           end
         end
       end

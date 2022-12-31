@@ -9,11 +9,11 @@ module V2
 
     describe 'GET /auth' do
       context 'when you can add team' do
-        let(:response_mock) { double(RestClient::Response) }
+        let(:rest_client_response) { double(RestClient::Response) }
 
         it 'should be return success' do
-          allow(response_mock).to receive(:body).and_return(Oj.dump({}))
-          allow(RestClient).to receive(:post).and_return(response_mock)
+          allow(rest_client_response).to receive(:body).and_return(Oj.dump({}))
+          allow(RestClient).to receive(:post).and_return(rest_client_response)
 
           get '/api/v2/slack/auth'
           expect(response).to have_http_status :ok

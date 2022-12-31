@@ -18,8 +18,8 @@ module Genova
           @bot.complete_deploy(params)
         end
 
-        def complete_steps
-          @bot.complete_steps
+        def complete_steps(params)
+          @bot.complete_steps(params)
         end
       end
     end

@@ -15,7 +15,7 @@ module Slack
         )
         deploy_job.save
       end
-      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
+      let(:bot) { double(Genova::Slack::Interactive::Bot) }
 
       include_context :session_start
 
@@ -29,9 +29,9 @@ module Slack
           type: DeployJob.type.find_value(:service)
         )
 
-        allow(bot_mock).to receive(:detect_slack_deploy)
-        allow(bot_mock).to receive(:complete_deploy)
-        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
+        allow(bot).to receive(:detect_slack_deploy)
+        allow(bot).to receive(:complete_deploy)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 
         allow(Genova::Deploy::Runner).to receive(:call)
 

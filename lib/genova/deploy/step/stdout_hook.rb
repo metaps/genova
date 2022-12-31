@@ -18,7 +18,7 @@ module Genova
           @logger.info('Deployment was successful.')
         end
 
-        def complete_steps
+        def complete_steps(_params)
           @logger.info('All deployments are complete.')
         end
       end
