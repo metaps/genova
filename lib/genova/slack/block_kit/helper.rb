@@ -63,6 +63,14 @@ module Genova
             }
           end
 
+          def radio_buttons(action_id, options)
+            {
+              type: 'radio_buttons',
+              action_id: action_id,
+              options: options
+            }
+          end
+
           def primary_button(text, value, action_id)
             {
               type: 'button',

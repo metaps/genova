@@ -96,8 +96,8 @@ module Genova
             allow(ecs_client).to receive(:describe_services).and_return(describe_services_response)
             allow(service).to receive(:task_definition)
             allow(describe_task_definition_response).to receive(:[]).with(:tags).and_return([{
-                                                                                                   key: 'genova.build'
-                                                                                                 }])
+                                                                                              key: 'genova.build'
+                                                                                            }])
             allow(ecs_client).to receive(:describe_task_definition).and_return(describe_task_definition_response)
 
             expect { bot.ask_confirm_deploy(params, show_target: true) }.not_to raise_error

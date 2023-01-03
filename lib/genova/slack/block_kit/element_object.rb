@@ -50,7 +50,7 @@ module Genova
             histories = Genova::Slack::Interactive::History.new(params[:user]).list
             histories.each do |history|
               data = Oj.load(history)
-              time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').in_time_zone(Settings.timezone).strftime('%m/%d %H:%M')
+              time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').in_time_zone(Settings.timezone).to_s
 
               options.push(
                 text: {
@@ -60,7 +60,7 @@ module Genova
                 value: data[:id],
                 description: {
                   type: 'plain_text',
-                  text: "#{data[:repository]}/#{data[:branch].present? ? data[:branch] : data[:tag]}/#{data[:cluster]}"
+                  text: build_history_description(data)
                 }
               )
             end
@@ -173,11 +173,35 @@ module Genova
             cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
             options = parse_scheduled_tasks(cluster_config[:scheduled_tasks]) if cluster_config[:scheduled_tasks].present?
-
             options
           end
 
           private
+
+          def build_history_description(data)
+            messages = []
+            messages << "Repository: #{data[:repository]}"
+
+            messages << if data[:branch].present?
+                          "Branch: #{data[:branch]}"
+                        else
+                          "Tag: #{data[:tag]}"
+                        end
+
+            messages << "Cluster: #{data[:cluster]}"
+
+            case data[:type]
+            when DeployJob.type.find_value(:run_task)
+              messages << "Run task: #{data[:run_task]}"
+            when DeployJob.type.find_value(:service)
+              messages << "Service: #{data[:service]}"
+            when DeployJob.type.find_value(:scheduled_task)
+              messages << "Scheduled task rule: #{data[:scheduled_task_rule]}"
+              messages << "Scheduled task target: #{data[:scheduled_task_target]}"
+            end
+
+            messages.join("\n")
+          end
 
           def parse_run_tasks(run_tasks)
             options = []
