@@ -15,6 +15,9 @@ module Genova
 
       describe 'call' do
         before do
+          allow(File).to receive(:file?).and_return(true)
+          allow(File).to receive(:file?).with("#{ENV.fetch('HOME')}/.ssh/id_rsa").and_return(true)
+
           DeployJob.collection.drop
         end
 
@@ -31,7 +34,7 @@ module Genova
           end
 
           it 'should be \'deploy_run_task\' method is executed' do
-            Runner.call(deploy_job)
+            Runner.call(deploy_job, force: true)
             expect(ecs).to have_received(:deploy_run_task).once
           end
 
