@@ -15,50 +15,55 @@ docker:
   #   # This option maps to `docker build --memory`.
   #   # memory:
 
-deploy:
-  wait_timeout: 900
-  polling_interval: 10
-
 github:
   account: metaps
 
   # Secret key to authenticate push events from GitHub.
-  secret_key: ''
+  secret_key:
 
-  # Create tag after deployment.
-  # If you enable it, please specify `GITHUB_OAUTH_TOKEN`.
+    # Specify `true` to push Git tag after deployment.
   deployment_tag: false
 
   default_branch: master
   deploy_lock_timeout: 1200
 
-  # Used in repository list when deploying from Slack. (Optional)
+  # Used in repository list when deploying from Slack (Optional).
   # Also, if `config/deploy.yml` is located in location other than root directory,
   # you need to specify` base_path`.
   # repositories:
   #   # Repository name.
   #   - name:
-  #     # For example, if you put `config/deploy.yml` under `api` directory, specify `api` for `base_path`. (Optional)
+  #     # For example, if you put `config/deploy.yml` under `api` directory, specify `api` for `base_path` (Optional).
   #     base_path:
   #
-  #     # If you changed `base_path`, specify unique alias name to identify `deploy.yml`. (Optional)
+  #     # If you changed `base_path`, specify unique alias name to identify `deploy.yml` (Optional).
   #     alias:
 
-aws:
-  service:
-    ecr:
-      read_timeout: 900
+ecs:
+  wait_timeout: 900
+  polling_interval: 5
+
+ecr:
+  read_timeout: 900
+
+# Workflows can be defined to step through the deployment of tasks.
+# https://github.com/metaps/genova/wiki/Workflow
+workflows:
+  # - name: staging_release
+  #   steps:
+  #     - repository:
+  #       branch:
+  #       cluster:
+  #       type:
+  #       async_wait: true
+  #       resources:
 
 slack:
-  api_token: ''
-  signing_secret: ''
-  vertification_token: ''
-  client_id: ''
-  client_secret: ''
-
-  # Specify `true` to display the deployment log in thread format.
-  thread_conversion: true
-
+  api_token:
+  signing_secret:
+  vertification_token:
+  client_id:
+  client_secret:
   command:
     max_history: 10
   interactive:
@@ -66,15 +71,9 @@ slack:
     tag_limit: 20
     command_timeout: 1800
 
-  # Limits deployment to specified users. (Optional)
+  # By enabling `permissions`, you can limit the members who can deploy from Slack.
+  # https://github.com/metaps/genova/wiki/Integrate-Slack#restrict-deploying-users
   # permissions:
-  #   -
-  #     # Target of restrictions. You can specify `repository` or `cluster`.
-  #     policy:
-  #
-  #     # You can specify full match or partial match for string (e.g. `foo*`, `*`).
+  #   - policy:
   #     resources:
-  #
-  #     # List of allowed users. User can be specified by user ID.
-  #     # You can specify full match or partial match for string.
   #     allow_users:

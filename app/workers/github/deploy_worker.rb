@@ -1,5 +1,8 @@
 module Github
-  class DeployWorker < BaseWorker
+  class DeployWorker
+    include Sidekiq::Worker
+    include Genova::Sidekiq::SlackAlert
+
     sidekiq_options queue: :github_deploy, retry: false
 
     def perform(id)
@@ -15,46 +18,21 @@ module Github
 
       bot = Genova::Slack::Interactive::Bot.new
       response = bot.detect_auto_deploy(
-        account: values[:account],
         repository: values[:repository],
         branch: values[:branch],
         commit_url: values[:commit_url],
         author: values[:author]
       )
-      deploy_bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: response[:ts])
 
-      result[:steps].each.with_index(1) do |step, i|
-        deploy_bot.start_auto_deploy_step(index: i)
+      params = {
+        mode: DeployJob.mode.find_value(:auto),
+        repository: values[:repository],
+        branch: values[:branch]
+      }
 
-        step[:resources].each do |resource|
-          service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
-          run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
-
-          deploy_job = DeployJob.create(
-            id: DeployJob.generate_id,
-            type: DeployJob.type.find_value(step[:type]),
-            status: DeployJob.status.find_value(:in_progress),
-            mode: DeployJob.mode.find_value(:auto),
-            account: values[:account],
-            repository: values[:repository],
-            branch: values[:branch],
-            cluster: step[:cluster],
-            service: service,
-            scheduled_task_rule: nil,
-            scheduled_task_target: nil,
-            run_task: run_task
-          )
-
-          deploy_bot.start_auto_deploy_run(deploy_job: deploy_job)
-          Genova::Run.call(deploy_job)
-
-          deploy_bot.finished_deploy(deploy_job: deploy_job)
-        end
-      end
-
-      deploy_bot.finished_auto_deploy_all
+      Genova::Deploy::Step::Runner.call(result[:steps], Genova::Deploy::Step::SlackHook.new(response[:ts]), params)
     rescue => e
-      slack_notify(e)
+      send_error(e)
       raise e
     end
 

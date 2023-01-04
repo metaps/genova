@@ -184,8 +184,8 @@ module Genova
           end
         end
 
-        context 'when invoke approve_target' do
-          it 'should be execute approve_target' do
+        context 'when invoke approve_service' do
+          it 'should be execute approve_service' do
             allow(::Slack::DeployConfirmWorker).to receive(:perform_async)
 
             payload = {
@@ -197,7 +197,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_target',
+                  action_id: 'approve_service',
                   selected_option: {
                     value: 'service:api'
                   }
@@ -210,11 +210,11 @@ module Genova
         end
 
         context 'when invoke approve_deploy_from_history' do
-          let(:history_mock) { double(Genova::Slack::Interactive::History) }
+          let(:history) { double(Genova::Slack::Interactive::History) }
 
           it 'should be execute approve_deploy_from_history' do
-            allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history_mock)
-            allow(history_mock).to receive(:find!).and_return({})
+            allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history)
+            allow(history).to receive(:find!).and_return({})
             allow(::Slack::DeployHistoryWorker).to receive(:perform_async)
 
             payload = {

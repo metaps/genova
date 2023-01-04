@@ -5,16 +5,18 @@ module Genova
         class Client
           LOG_SEPARATOR = '-' * 96
 
-          def initialize(cluster, options = {})
-            @cluster = cluster
+          def initialize(deploy_job, options = {})
+            @deploy_job = deploy_job
             @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
             @ecs_client = Aws::ECS::Client.new
           end
 
           def execute(task_definition_arn, params = {})
+            @logger.info('Execute run task.')
+
             options = {}
             options[:launch_type] = params[:launch_type]
-            options[:cluster] = @cluster
+            options[:cluster] = @deploy_job.cluster
             options[:task_definition] = task_definition_arn
             options[:count] = params[:desired_count].present? ? params[:desired_count] : 1
             options[:group] = params[:group]
@@ -30,52 +32,61 @@ module Genova
             if results[:failures].present?
               message = ''
               results[:failures].each do |failure|
-                message += "#{failure[:reason]} occurred and execution failed. (#{failure[:arn]})"
+                message += "#{failure[:reason]} occurred and execution failed. [#{failure[:arn]}]"
               end
 
               raise Exceptions::RunTaskError, message
             end
 
             task_arns = results[:tasks].map { |key| key[:task_arn] }
-
             wait(task_arns)
-            task_arns
+
+            @deploy_job.update_status_complate(
+              task_definition_arn: task_definition_arn,
+              task_arns: task_arns
+            )
           end
 
           private
 
           def wait(task_arns)
-            wait_time = 0
-
-            @logger.info('Start tasks.')
-            @logger.info(task_arns)
+            @logger.info('Wait for the Run task execution to complete.')
+            @logger.info(task_arns.join(', '))
             @logger.info(LOG_SEPARATOR)
 
+            wait_time = 0
             stopped_tasks = []
 
             loop do
-              describe_tasks = @ecs_client.describe_tasks(cluster: @cluster, tasks: task_arns)
+              describe_tasks = @ecs_client.describe_tasks(cluster: @deploy_job.cluster, tasks: task_arns)
               run_task_size = describe_tasks[:tasks].size
 
               describe_tasks[:tasks].each do |task|
-                raise Exceptions::DeployTimeoutError, "Process is timed out. (Task ARN: #{task[:task_arn]})" if wait_time > Settings.deploy.wait_timeout
+                raise Exceptions::DeployTimeoutError, "Monitoring run task, timeout reached. [#{task[:task_arn]}]" if wait_time > Settings.ecs.wait_timeout
 
-                sleep(Settings.deploy.polling_interval)
-                wait_time += Settings.deploy.polling_interval
+                sleep(Settings.ecs.polling_interval)
+                wait_time += Settings.ecs.polling_interval
 
-                @logger.info("Waiting for execution result... (#{wait_time}s elapsed)")
+                @logger.info("Waiting for run task execution... (#{wait_time}s elapsed)")
                 @logger.info(LOG_SEPARATOR)
+                @logger.info("#{task[:task_arn]} [#{task[:last_status]}]")
 
                 next unless task[:last_status] == 'STOPPED' && !stopped_tasks.include?(task[:task_arn])
 
                 stopped_tasks << task[:task_arn]
+                @logger.info("Stopped reason: #{task[:stopped_reason]}")
 
-                @logger.info('Run task has finished.')
-                @logger.info(JSON.pretty_generate(task.to_h))
+                task[:containers].each do |container|
+                  next if container[:exit_code].zero?
+
+                  @logger.warn("Error detected in container exit status. [#{container[:name]}]")
+                end
               end
 
               break if run_task_size == stopped_tasks.size
             end
+
+            @logger.info('All run tasks have been completed.')
           end
         end
       end

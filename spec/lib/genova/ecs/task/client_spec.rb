@@ -4,14 +4,14 @@ module Genova
   module Ecs
     module Task
       describe Client do
-        let(:cipher_mock) { double(Utils::Cipher) }
+        let(:cipher) { double(Utils::Cipher) }
         let(:task_client) { Ecs::Task::Client.new }
-        let(:ecs_client_mock) { double(Aws::ECS::Client) }
-        let(:task_definition_mock) { double(Aws::ECS::Types::TaskDefinition) }
+        let(:ecs_client) { double(Aws::ECS::Client) }
+        let(:task_definition) { double(Aws::ECS::Types::TaskDefinition) }
 
         before do
-          allow(Utils::Cipher).to receive(:new).and_return(cipher_mock)
-          allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client_mock)
+          allow(Utils::Cipher).to receive(:new).and_return(cipher)
+          allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client)
           allow(Aws::KMS::Client).to receive(:new)
         end
 
@@ -24,10 +24,10 @@ module Genova
               }.to_yaml
             )
 
-            allow(task_definition_mock).to receive(:[]).with(:task_definition).and_return(double(Aws::ECS::Types::TaskDefinition))
-            allow(ecs_client_mock).to receive(:register_task_definition).and_return(task_definition_mock)
+            allow(task_definition).to receive(:[]).with(:task_definition).and_return(double(Aws::ECS::Types::TaskDefinition))
+            allow(ecs_client).to receive(:register_task_definition).and_return(task_definition)
 
-            expect(task_client.register(any_args)).to be_a(task_definition_mock.class)
+            expect(task_client.register(any_args)).to be_a(task_definition.class)
           end
         end
 
@@ -131,10 +131,10 @@ module Genova
           end
 
           before do
-            allow(cipher_mock).to receive(:encrypt_format?).with('VALUE').and_return(false)
-            allow(cipher_mock).to receive(:encrypt_format?).with(1).and_return(false)
-            allow(cipher_mock).to receive(:encrypt_format?).with('${ENCRYPT_VALUE}').and_return('decrypted_value')
-            allow(cipher_mock).to receive(:decrypt).and_return('decrypted_value')
+            allow(cipher).to receive(:encrypt_format?).with('VALUE').and_return(false)
+            allow(cipher).to receive(:encrypt_format?).with(1).and_return(false)
+            allow(cipher).to receive(:encrypt_format?).with('${ENCRYPT_VALUE}').and_return('decrypted_value')
+            allow(cipher).to receive(:decrypt).and_return('decrypted_value')
           end
 
           it 'shuold be return string value' do

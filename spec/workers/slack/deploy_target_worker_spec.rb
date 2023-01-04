@@ -3,13 +3,13 @@ require 'rails_helper'
 module Slack
   describe DeployTargetWorker do
     describe 'perform' do
-      let(:bot_mock) { double(Genova::Slack::Interactive::Bot) }
+      let(:bot) { double(Genova::Slack::Interactive::Bot) }
 
       include_context :session_start
 
       before do
-        allow(bot_mock).to receive(:ask_target)
-        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot_mock)
+        allow(bot).to receive(:ask_target)
+        allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 
         subject.perform(id)
       end

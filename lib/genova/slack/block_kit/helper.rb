@@ -51,19 +51,24 @@ module Genova
             }
           end
 
-          def static_select(action_id, options, placeholder, params = {})
-            element = {
+          def static_select(action_id, placeholder, options)
+            {
               type: 'static_select',
               placeholder: {
                 type: 'plain_text',
                 text: placeholder
               },
-              action_id: action_id
+              action_id: action_id,
+              options: options
             }
+          end
 
-            option_key = params[:group] ? 'option_groups' : 'options'
-            element[option_key.to_sym] = options
-            element
+          def radio_buttons(action_id, options)
+            {
+              type: 'radio_buttons',
+              action_id: action_id,
+              options: options
+            }
           end
 
           def primary_button(text, value, action_id)

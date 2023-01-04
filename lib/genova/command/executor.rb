@@ -7,7 +7,7 @@ module Genova
         logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
 
         begin
-          logger.info("$ #{command}")
+          logger.info("Execute command. [#{command}]")
 
           Dir.chdir(options[:work_dir]) if options[:work_dir].present?
           Open3.popen3(command) do |stdin, stdout, stderr|

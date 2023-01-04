@@ -13,8 +13,8 @@ module Github
         }
       )
     end
-    let(:code_manager_mock) { double(Genova::CodeManager::Git) }
-    let(:deploy_config_mock) do
+    let(:code_manager) { double(Genova::CodeManager::Git) }
+    let(:deploy_config) do
       Genova::Config::DeployConfig.new(
         auto_deploy: [{
           branch: 'branch',
@@ -27,7 +27,7 @@ module Github
         clusters: []
       )
     end
-    let(:slack_bot_mock) { double(Genova::Slack::Interactive::Bot) }
+    let(:slack_bot) { double(Genova::Slack::Interactive::Bot) }
 
     before(:each) do
       DeployJob.delete_all
@@ -35,17 +35,17 @@ module Github
       remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
       Redis.current.del(remove_key)
 
-      allow(code_manager_mock).to receive(:load_deploy_config).and_return(deploy_config_mock)
-      allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager_mock)
+      allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
+      allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
-      allow(slack_bot_mock).to receive(:detect_auto_deploy).and_return(parent_message_ts: Time.now.utc.to_f)
-      allow(slack_bot_mock).to receive(:start_auto_deploy_step)
-      allow(slack_bot_mock).to receive(:start_auto_deploy_run)
-      allow(slack_bot_mock).to receive(:finished_deploy)
-      allow(slack_bot_mock).to receive(:finished_auto_deploy_all)
-      allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot_mock)
+      allow(slack_bot).to receive(:detect_auto_deploy).and_return(parent_message_ts: Time.now.utc.to_f)
+      allow(slack_bot).to receive(:start_step)
+      allow(slack_bot).to receive(:start_deploy)
+      allow(slack_bot).to receive(:complete_deploy)
+      allow(slack_bot).to receive(:complete_steps)
+      allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot)
 
-      allow(Genova::Run).to receive(:call)
+      allow(Genova::Deploy::Runner).to receive(:call)
     end
 
     describe 'perform' do

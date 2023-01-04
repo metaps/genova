@@ -3,14 +3,14 @@ require 'rails_helper'
 module Genova
   module Ecr
     describe Client do
-      let(:ecr_mock) { double(Aws::ECR::Client) }
+      let(:ecr) { double(Aws::ECR::Client) }
       let(:ecr_client) { Ecr::Client.new }
 
       describe 'authenticate' do
         it 'shuold be return true' do
           authorization_token = Base64.strict_encode64('username:password')
-          allow(ecr_mock).to receive(:get_authorization_token).and_return(authorization_data: [{ authorization_token: authorization_token }])
-          allow(Aws::ECR::Client).to receive(:new).and_return(ecr_mock)
+          allow(ecr).to receive(:get_authorization_token).and_return(authorization_data: [{ authorization_token: authorization_token }])
+          allow(Aws::ECR::Client).to receive(:new).and_return(ecr)
 
           allow(::Docker).to receive(:authenticate!).and_return(true)
 
@@ -20,16 +20,16 @@ module Genova
 
       describe 'push_image' do
         it 'should be image push' do
-          allow(ecr_mock).to receive(:describe_repositories).and_return(repositories: [{ repository_name: 'repository' }])
-          allow(Aws::ECR::Client).to receive(:new).and_return(ecr_mock)
+          allow(ecr).to receive(:describe_repositories).and_return(repositories: [{ repository_name: 'repository' }])
+          allow(Aws::ECR::Client).to receive(:new).and_return(ecr)
 
-          image_mock = double(::Docker::Image)
-          allow(image_mock).to receive(:tag)
-          allow(image_mock).to receive(:push)
-          allow(::Docker::Image).to receive(:get).and_return(image_mock)
+          image = double(::Docker::Image)
+          allow(image).to receive(:tag)
+          allow(image).to receive(:push)
+          allow(::Docker::Image).to receive(:get).and_return(image)
 
           ecr_client.push_image('image_tag', 'repository')
-          expect(image_mock).to have_received(:push).twice
+          expect(image).to have_received(:push).twice
         end
       end
     end

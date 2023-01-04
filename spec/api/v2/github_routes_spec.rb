@@ -42,6 +42,8 @@ module V2
       end
 
       before do
+        allow(Settings.github).to receive(:secret_key).and_return('')
+
         remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
         Redis.current.del(remove_key)
       end

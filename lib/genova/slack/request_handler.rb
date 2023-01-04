@@ -9,7 +9,7 @@ module Genova
 
           action = @payload.dig(:actions, 0)
 
-          raise Genova::Exceptions::RoutingError, "`#{ation[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
+          raise Genova::Exceptions::RoutingError, "`#{action[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
           result = {
             update_original: true,
@@ -24,7 +24,7 @@ module Genova
 
         def cancel
           params = @session_store.params
-          Genova::Transaction.new(params[:repository]).cancel if params[:repository].present?
+          Genova::Deploy::Transaction.new(params[:repository]).cancel if params[:repository].present?
 
           'Deployment was canceled.'
         end
@@ -48,6 +48,16 @@ module Genova
           ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Repository', params[:repository])
+        end
+
+        def approve_workflow
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          @session_store.save(name: value)
+
+          bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
+          bot.ask_confirm_workflow_deploy(name: value)
+
+          BlockKit::Helper.section_field('Workflow', value)
         end
 
         def approve_branch
@@ -77,7 +87,48 @@ module Genova
           BlockKit::Helper.section_field('Cluster', value)
         end
 
-        def approve_target
+        def approve_run_task
+          approve_resource
+        end
+
+        def approve_service
+          approve_resource
+        end
+
+        def approve_scheduled_task
+          approve_resource
+        end
+
+        def approve_deploy_from_history
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+
+          params = Genova::Slack::Interactive::History.new(@payload[:user][:id]).find!(value)
+
+          @session_store.save(params)
+          ::Slack::DeployHistoryWorker.perform_async(@thread_ts)
+
+          'Checking history...'
+        end
+
+        def approve_deploy
+          permission = Interactive::Permission.new(@payload[:user][:id])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
+
+          ::Slack::DeployWorker.perform_async(@thread_ts)
+
+          'Deployment started.'
+        end
+
+        def approve_workflow_deploy
+          permission = Interactive::Permission.new(@payload[:user][:id])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
+
+          ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
+
+          'Workflow deployment started.'
+        end
+
+        def approve_resource
           value = @payload.dig(:actions, 0, :selected_option, :value)
           targets = value.split(':')
           type = targets[0].to_sym
@@ -99,28 +150,7 @@ module Genova
           @session_store.save(params)
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Target', value)
-        end
-
-        def approve_deploy_from_history
-          value = @payload.dig(:actions, 0, :selected_option, :value)
-
-          params = Genova::Slack::Interactive::History.new(@payload[:user][:id]).find!(value)
-
-          @session_store.save(params)
-          ::Slack::DeployHistoryWorker.perform_async(@thread_ts)
-
-          'Checking history...'
-        end
-
-        def approve_deploy
-          permission = Interactive::Permission.new(@payload[:user][:id])
-
-          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
-
-          ::Slack::DeployWorker.perform_async(@thread_ts)
-
-          'Deployment started.'
+          BlockKit::Helper.section_field('Resource', value)
         end
       end
     end
