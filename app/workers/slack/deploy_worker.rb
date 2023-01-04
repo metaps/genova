@@ -22,6 +22,8 @@ module Slack
                                      tag: params[:tag],
                                      cluster: params[:cluster],
                                      run_task: params[:run_task],
+                                     override_container: params[:override_container],
+                                     override_command: params[:override_command],
                                      service: params[:service],
                                      scheduled_task_rule: params[:scheduled_task_rule],
                                      scheduled_task_target: params[:scheduled_task_target])

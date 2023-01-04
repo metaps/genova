@@ -11,9 +11,12 @@ module Genova
 
           raise Genova::Exceptions::RoutingError, "`#{action[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
+          content = send(action[:action_id])
+          return if content.nil?
+
           result = {
             update_original: true,
-            blocks: [BlockKit::Helper.section(send(action[:action_id]))],
+            blocks: [BlockKit::Helper.section(content)],
             thread_ts: @thread_ts
           }
 
@@ -88,15 +91,63 @@ module Genova
         end
 
         def approve_run_task
-          approve_resource
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          targets = value.split(':')
+          params = {
+            type: DeployJob.type.find_value(:run_task),
+            run_task: targets[1]
+          }
+          @session_store.save(params)
+
+          nil
+        end
+
+        def submit_run_task
+          params = {
+            override_container: @payload[:state][:values][:run_task_override_container][:submit_run_task_override_container][:value],
+            override_command: @payload[:state][:values][:run_task_override_command][:submit_run_task_override_command][:value]
+          }
+          @session_store.save(params)
+
+          value = @session_store.params[:run_task]
+
+          value += " (#{params[:override_container]}:#{params[:override_command]})" if params[:override_container].present? && params[:override_command].present?
+
+          return if @session_store.params[:run_task].nil?
+
+          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
+          BlockKit::Helper.section_field('Run task', value)
         end
 
         def approve_service
-          approve_resource
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          targets = value.split(':')
+
+          params = {
+            type: DeployJob.type.find_value(:service),
+            service: targets[1]
+          }
+
+          @session_store.save(params)
+          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
+
+          BlockKit::Helper.section_field('Service', params[:service])
         end
 
         def approve_scheduled_task
-          approve_resource
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          targets = value.split(':')
+
+          params = {
+            type: DeployJob.type.find_value(:scheduled_task),
+            scheduled_task_rule: targets[1],
+            scheduled_task_target: targets[2]
+          }
+
+          @session_store.save(params)
+          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
+
+          BlockKit::Helper.section_field('Scheduled task', "#{targets[1]} / #{targets[2]}")
         end
 
         def approve_deploy_from_history
@@ -126,31 +177,6 @@ module Genova
           ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
 
           'Workflow deployment started.'
-        end
-
-        def approve_resource
-          value = @payload.dig(:actions, 0, :selected_option, :value)
-          targets = value.split(':')
-          type = targets[0].to_sym
-
-          params = {
-            type: type
-          }
-
-          case type
-          when :run_task
-            params[:run_task] = targets[1]
-          when :service
-            params[:service] = targets[1]
-          when :scheduled_task
-            params[:scheduled_task_rule] = targets[1]
-            params[:scheduled_task_target] = targets[2]
-          end
-
-          @session_store.save(params)
-          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
-
-          BlockKit::Helper.section_field('Resource', value)
         end
       end
     end

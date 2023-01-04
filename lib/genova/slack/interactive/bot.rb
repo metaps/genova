@@ -31,13 +31,15 @@ module Genova
 
           raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if repositoriy_options.size.zero?
 
-          actions = []
-          actions << BlockKit::Helper.static_select('approve_repository', 'Repository', repositoriy_options)
-          actions << BlockKit::Helper.static_select('approve_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
-          actions << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:user]}> Specify the repository or workflow to deploy.")
+          blocks << BlockKit::Helper.static_select('approve_repository', 'Repository', repositoriy_options)
+          blocks << BlockKit::Helper.static_select('approve_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
+
+          blocks << BlockKit::Helper.section(' ')
+          blocks << BlockKit::Helper.divider
+
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -47,13 +49,15 @@ module Genova
           branch_options = BlockKit::ElementObject.branch_options(repository: params[:repository])
           tag_options = BlockKit::ElementObject.tag_options(repository: params[:repository])
 
-          actions = []
-          actions << BlockKit::Helper.static_select('approve_branch', 'Branch', branch_options)
-          actions << BlockKit::Helper.static_select('approve_tag', 'Tag', tag_options) if tag_options.size.positive?
-          actions << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-
           blocks = []
           blocks << BlockKit::Helper.section('Specify a branch or tag.')
+          blocks << BlockKit::Helper.static_select('approve_branch', 'Branch', branch_options)
+          blocks << BlockKit::Helper.static_select('approve_tag', 'Tag', tag_options) if tag_options.size.positive?
+
+          blocks << BlockKit::Helper.section(' ')
+          blocks << BlockKit::Helper.divider
+
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -63,13 +67,17 @@ module Genova
           options = BlockKit::ElementObject.cluster_options(params)
           raise Genova::Exceptions::NotFoundError, 'No deployable clusters found.' if options.size.zero?
 
-          send([
-                 BlockKit::Helper.section('Specify cluster.'),
-                 BlockKit::Helper.actions([
-                                            BlockKit::Helper.static_select('approve_cluster', 'Cluster', options),
-                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-                                          ])
-               ])
+          blocks = []
+          blocks << BlockKit::Helper.section('Specify cluster.')
+          blocks << BlockKit::Helper.static_select('approve_cluster', 'Cluster', options)
+
+          blocks << BlockKit::Helper.section(' ')
+          blocks << BlockKit::Helper.divider
+
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
+          blocks << BlockKit::Helper.actions(actions)
+
+          send(blocks)
         end
 
         def ask_target(params)
@@ -79,14 +87,32 @@ module Genova
 
           raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if run_task_options.size.zero? && service_options.size.zero? && scheduled_task_options.size.zero?
 
-          actions = []
-          actions << BlockKit::Helper.static_select('approve_run_task', 'Run task', run_task_options) if run_task_options.size.positive?
-          actions << BlockKit::Helper.static_select('approve_service', 'Service', service_options) if service_options.size.positive?
-          actions << BlockKit::Helper.static_select('approve_scheduled_task', 'Scheduled task', scheduled_task_options) if scheduled_task_options.size.positive?
-          actions << BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
-
           blocks = []
           blocks << BlockKit::Helper.section('Specify resources to deploy.')
+
+          if service_options.size.positive?
+            blocks << BlockKit::Helper.static_select('approve_service', 'Service', service_options)
+            blocks << BlockKit::Helper.section(' ')
+            blocks << BlockKit::Helper.divider
+          end
+
+          if scheduled_task_options.size.positive?
+            blocks << BlockKit::Helper.static_select('approve_scheduled_task', 'Scheduled task', scheduled_task_options)
+            blocks << BlockKit::Helper.section(' ')
+            blocks << BlockKit::Helper.divider
+          end
+
+          if run_task_options.size.positive?
+            blocks << BlockKit::Helper.static_select('approve_run_task', 'Run task', run_task_options)
+            blocks << BlockKit::Helper.section('The command to be executed in Run task can be overridden (Optional).')
+            blocks << BlockKit::Helper.plain_text_input('submit_run_task_override_container', 'Override container', placeholder: 'Input container', block_id: 'run_task_override_container')
+            blocks << BlockKit::Helper.plain_text_input('submit_run_task_override_command', 'Override command', placeholder: 'Input command', block_id: 'run_task_override_command')
+            blocks << BlockKit::Helper.section(' ')
+            blocks << BlockKit::Helper.actions([BlockKit::Helper.primary_button('Next', 'next', 'submit_run_task')])
+            blocks << BlockKit::Helper.divider
+          end
+
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -97,7 +123,7 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section('Ready to deploy!')
-          blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:run_task].present?
+          blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:type] == DeployJob.type.find_value(:run_task)
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
                                                BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
@@ -309,11 +335,11 @@ module Genova
 
             task_definition_arn = services[0].task_definition
           else
-            cloud_watch_events_client = Aws::CloudWatchEvents::Client.new
-            rules = cloud_watch_events_client.list_rules(name_prefix: params[:scheduled_task_rule])
+            event_bridge = Aws::EventBridge::Client.new
+            rules = event_bridge.list_rules(name_prefix: params[:scheduled_task_rule])
             raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
 
-            targets = cloud_watch_events_client.list_targets_by_rule(rule: rules[:rules][0].name)
+            targets = event_bridge.list_targets_by_rule(rule: rules[:rules][0].name)
             target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
             raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
 

@@ -75,6 +75,10 @@
         <div class="columns">
           <dt class="column is-2">Run task</dt>
           <dd class="column is-4"><%= @deploy_job.run_task %></dd>
+          <% if @deploy_job.override_container.present? %>
+            <dt class="column is-2">Override container / Override command</dt>
+            <dd class="column is-4"><%= @deploy_job.override_container %> / <%= @deploy_job.override_command %></dd>
+          <% end %>
         </div>
       <% end %>
       <% if @deploy_job.type == DeployJob.type.find_value(:scheduled_task) %>
