@@ -13,7 +13,7 @@ module Genova
           params = history.clone
           params[:user] = user
 
-          session_store.save(history)
+          session_store.merge(history)
           client.ask_confirm_deploy(params, mention: true)
         end
       end

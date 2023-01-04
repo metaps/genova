@@ -25,14 +25,14 @@ module Genova
 
         private
 
-        def cancel
+        def submit_cancel
           params = @session_store.params
           Genova::Deploy::Transaction.new(params[:repository]).cancel if params[:repository].present?
 
           'Deployment was canceled.'
         end
 
-        def approve_repository
+        def selected_repository
           value = @payload.dig(:actions, 0, :selected_option, :value)
           params = {}
 
@@ -47,15 +47,15 @@ module Genova
 
           raise Genova::Exceptions::UnexpectedError, "#{value} repository does not exist." if params[:repository].nil?
 
-          @session_store.save(params)
+          @session_store.merge(params)
           ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Repository', params[:repository])
         end
 
-        def approve_workflow
+        def selected_workflow
           value = @payload.dig(:actions, 0, :selected_option, :value)
-          @session_store.save(name: value)
+          @session_store.merge(name: value)
 
           bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
           bot.ask_confirm_workflow_deploy(name: value)
@@ -63,41 +63,39 @@ module Genova
           BlockKit::Helper.section_field('Workflow', value)
         end
 
-        def approve_branch
+        def selected_branch
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.save(branch: value)
+          @session_store.merge(branch: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Branch', value)
         end
 
-        def approve_tag
+        def selected_tag
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.save(tag: value)
+          @session_store.merge(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Tag', value)
         end
 
-        def approve_cluster
+        def selected_cluster
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.save(cluster: value)
+          @session_store.merge(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Cluster', value)
         end
 
-        def approve_run_task
-          value = @payload.dig(:actions, 0, :selected_option, :value)
-          targets = value.split(':')
+        def selected_run_task
           params = {
             type: DeployJob.type.find_value(:run_task),
-            run_task: targets[1]
+            run_task: @payload.dig(:actions, 0, :selected_option, :value)
           }
-          @session_store.save(params)
+          @session_store.merge(params)
 
           nil
         end
@@ -107,11 +105,11 @@ module Genova
             override_container: @payload[:state][:values][:run_task_override_container][:submit_run_task_override_container][:value],
             override_command: @payload[:state][:values][:run_task_override_command][:submit_run_task_override_command][:value]
           }
-          @session_store.save(params)
+          @session_store.merge(params)
 
           value = @session_store.params[:run_task]
 
-          value += " (#{params[:override_container]}:#{params[:override_command]})" if params[:override_container].present? && params[:override_command].present?
+          value += " (#{params[:override_container]} / #{params[:override_command]})" if params[:override_container].present? && params[:override_command].present?
 
           return if @session_store.params[:run_task].nil?
 
@@ -119,49 +117,46 @@ module Genova
           BlockKit::Helper.section_field('Run task', value)
         end
 
-        def approve_service
-          value = @payload.dig(:actions, 0, :selected_option, :value)
-          targets = value.split(':')
-
+        def selected_service
           params = {
             type: DeployJob.type.find_value(:service),
-            service: targets[1]
+            service: @payload.dig(:actions, 0, :selected_option, :value)
           }
 
-          @session_store.save(params)
+          @session_store.merge(params)
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
           BlockKit::Helper.section_field('Service', params[:service])
         end
 
-        def approve_scheduled_task
+        def selected_scheduled_task
           value = @payload.dig(:actions, 0, :selected_option, :value)
           targets = value.split(':')
 
           params = {
             type: DeployJob.type.find_value(:scheduled_task),
-            scheduled_task_rule: targets[1],
-            scheduled_task_target: targets[2]
+            scheduled_task_rule: targets[0],
+            scheduled_task_target: targets[1]
           }
 
-          @session_store.save(params)
+          @session_store.merge(params)
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Scheduled task', "#{targets[1]} / #{targets[2]}")
+          BlockKit::Helper.section_field('Scheduled task', "#{params[:scheduled_task_rule]} / #{params[:scheduled_task_target]}")
         end
 
-        def approve_deploy_from_history
+        def submit_history
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
           params = Genova::Slack::Interactive::History.new(@payload[:user][:id]).find!(value)
 
-          @session_store.save(params)
+          @session_store.merge(params)
           ::Slack::DeployHistoryWorker.perform_async(@thread_ts)
 
           'Checking history...'
         end
 
-        def approve_deploy
+        def submit_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
 
@@ -170,7 +165,7 @@ module Genova
           'Deployment started.'
         end
 
-        def approve_workflow_deploy
+        def selected_workflow_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
 

@@ -12,7 +12,7 @@ module Genova
         raise Genova::Exceptions::SlackWebAPIError, response[:error] unless response[:ok]
 
         instance = new(build_id(parent_message_ts))
-        instance.save({ user: user, user_name: response[:user][:name] }, merge: false)
+        instance.merge({ user: user, user_name: response[:user][:name] }, merge: false)
         instance
       end
 
@@ -23,7 +23,7 @@ module Genova
         new(id)
       end
 
-      def save(values, merge: true)
+      def merge(values, merge: true)
         values = params.merge(values) if merge
 
         Redis.current.multi do

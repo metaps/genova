@@ -19,8 +19,8 @@ module Genova
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select history to deploy."),
                  BlockKit::Helper.actions([
-                                            BlockKit::Helper.radio_buttons('approve_deploy_from_history', options),
-                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                            BlockKit::Helper.radio_buttons('submit_history', options),
+                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')
                                           ])
                ])
         end
@@ -33,13 +33,13 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:user]}> Specify the repository or workflow to deploy.")
-          blocks << BlockKit::Helper.static_select('approve_repository', 'Repository', repositoriy_options)
-          blocks << BlockKit::Helper.static_select('approve_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
+          blocks << BlockKit::Helper.static_select('selected_repository', 'Repository', repositoriy_options)
+          blocks << BlockKit::Helper.static_select('selected_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
 
           blocks << BlockKit::Helper.section(' ')
           blocks << BlockKit::Helper.divider
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -51,13 +51,13 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section('Specify a branch or tag.')
-          blocks << BlockKit::Helper.static_select('approve_branch', 'Branch', branch_options)
-          blocks << BlockKit::Helper.static_select('approve_tag', 'Tag', tag_options) if tag_options.size.positive?
+          blocks << BlockKit::Helper.static_select('selected_branch', 'Branch', branch_options)
+          blocks << BlockKit::Helper.static_select('selected_tag', 'Tag', tag_options) if tag_options.size.positive?
 
           blocks << BlockKit::Helper.section(' ')
           blocks << BlockKit::Helper.divider
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -69,12 +69,12 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section('Specify cluster.')
-          blocks << BlockKit::Helper.static_select('approve_cluster', 'Cluster', options)
+          blocks << BlockKit::Helper.static_select('selected_cluster', 'Cluster', options)
 
           blocks << BlockKit::Helper.section(' ')
           blocks << BlockKit::Helper.divider
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -91,19 +91,19 @@ module Genova
           blocks << BlockKit::Helper.section('Specify resources to deploy.')
 
           if service_options.size.positive?
-            blocks << BlockKit::Helper.static_select('approve_service', 'Service', service_options)
+            blocks << BlockKit::Helper.static_select('selected_service', 'Service', service_options)
             blocks << BlockKit::Helper.section(' ')
             blocks << BlockKit::Helper.divider
           end
 
           if scheduled_task_options.size.positive?
-            blocks << BlockKit::Helper.static_select('approve_scheduled_task', 'Scheduled task', scheduled_task_options)
+            blocks << BlockKit::Helper.static_select('selected_scheduled_task', 'Scheduled task', scheduled_task_options)
             blocks << BlockKit::Helper.section(' ')
             blocks << BlockKit::Helper.divider
           end
 
           if run_task_options.size.positive?
-            blocks << BlockKit::Helper.static_select('approve_run_task', 'Run task', run_task_options)
+            blocks << BlockKit::Helper.static_select('selected_run_task', 'Run task', run_task_options)
             blocks << BlockKit::Helper.section('The command to be executed in Run task can be overridden (Optional).')
             blocks << BlockKit::Helper.plain_text_input('submit_run_task_override_container', 'Override container', placeholder: 'Input container', block_id: 'run_task_override_container')
             blocks << BlockKit::Helper.plain_text_input('submit_run_task_override_command', 'Override command', placeholder: 'Input command', block_id: 'run_task_override_command')
@@ -112,7 +112,7 @@ module Genova
             blocks << BlockKit::Helper.divider
           end
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')]
+          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -125,8 +125,8 @@ module Genova
           blocks << BlockKit::Helper.section('Ready to deploy!')
           blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:type] == DeployJob.type.find_value(:run_task)
           blocks << BlockKit::Helper.actions([
-                                               BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_deploy'),
-                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                               BlockKit::Helper.primary_button('Deploy', 'deploy', 'submit_deploy'),
+                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')
                                              ])
 
           send(blocks)
@@ -151,8 +151,8 @@ module Genova
           end
 
           blocks << BlockKit::Helper.actions([
-                                               BlockKit::Helper.primary_button('Deploy', 'deploy', 'approve_workflow_deploy'),
-                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'cancel')
+                                               BlockKit::Helper.primary_button('Deploy', 'deploy', 'selected_workflow_deploy'),
+                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')
                                              ])
 
           send(blocks)
@@ -298,6 +298,11 @@ module Genova
           case params[:type]
           when DeployJob.type.find_value(:run_task)
             fields << BlockKit::Helper.section_short_field('Run task', params[:run_task])
+
+            if params[:override_container].present?
+              fields << BlockKit::Helper.section_short_field('Override container', params[:override_container])
+              fields << BlockKit::Helper.section_short_field('Override command', params[:override_command])
+            end
 
           when DeployJob.type.find_value(:service)
             fields << BlockKit::Helper.section_short_field('Service', params[:service])

@@ -14,8 +14,8 @@ module Genova
       end
 
       describe 'call' do
-        context 'when invoke cancel' do
-          it 'should be execute cancel' do
+        context 'when invoke submit_cancel' do
+          it 'should be execute submit_cancel' do
             payload = {
               container: {
                 thread_ts: id
@@ -25,7 +25,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'cancel'
+                  action_id: 'submit_cancel'
                 }
               ]
             }
@@ -33,8 +33,8 @@ module Genova
           end
         end
 
-        context 'when invoke approve_repository' do
-          it 'should be execute approve_repository' do
+        context 'when invoke selected_repository' do
+          it 'should be execute selected_repository' do
             Settings.add_source!(
               github: {
                 repositories: [{
@@ -55,7 +55,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_repository',
+                  action_id: 'selected_repository',
                   selected_option: {
                     value: 'repository'
                   }
@@ -67,8 +67,8 @@ module Genova
           end
         end
 
-        context 'when invoke approve_branch' do
-          it 'should be execute approve_branch' do
+        context 'when invoke selected_branch' do
+          it 'should be execute selected_branch' do
             allow(::Slack::DeployClusterWorker).to receive(:perform_async)
 
             payload = {
@@ -80,7 +80,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_branch',
+                  action_id: 'selected_branch',
                   selected_opton: {
                     value: 'master'
                   }
@@ -106,7 +106,7 @@ module Genova
               state: {
                 values: {
                   block_id: {
-                    approve_branch: {
+                    selected_branch: {
                       selected_option: {
                         value: 'master'
                       }
@@ -117,7 +117,7 @@ module Genova
               actions: [
                 {
                   block_id: 'block_id',
-                  action_id: 'approve_branch'
+                  action_id: 'selected_branch'
                 }
               ]
             }
@@ -126,8 +126,8 @@ module Genova
           end
         end
 
-        context 'when invoke approve_cluster' do
-          it 'should be execute approve_cluster' do
+        context 'when invoke selected_cluster' do
+          it 'should be execute selected_cluster' do
             allow(::Slack::DeployTargetWorker).to receive(:perform_async)
 
             payload = {
@@ -139,7 +139,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_cluster',
+                  action_id: 'selected_cluster',
                   selected_option: {
                     value: 'cluster'
                   }
@@ -165,7 +165,7 @@ module Genova
               state: {
                 values: {
                   block_id: {
-                    approve_cluster: {
+                    selected_cluster: {
                       selected_option: {
                         value: 'cluster'
                       }
@@ -176,7 +176,7 @@ module Genova
               actions: [
                 {
                   block_id: 'block_id',
-                  action_id: 'approve_cluster'
+                  action_id: 'selected_cluster'
                 }
               ]
             }
@@ -184,8 +184,8 @@ module Genova
           end
         end
 
-        context 'when invoke approve_service' do
-          it 'should be execute approve_service' do
+        context 'when invoke selected_service' do
+          it 'should be execute selected_service' do
             allow(::Slack::DeployConfirmWorker).to receive(:perform_async)
 
             payload = {
@@ -197,7 +197,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_service',
+                  action_id: 'selected_service',
                   selected_option: {
                     value: 'service:api'
                   }
@@ -209,10 +209,10 @@ module Genova
           end
         end
 
-        context 'when invoke approve_deploy_from_history' do
+        context 'when invoke submit_history' do
           let(:history) { double(Genova::Slack::Interactive::History) }
 
-          it 'should be execute approve_deploy_from_history' do
+          it 'should be execute submit_history' do
             allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history)
             allow(history).to receive(:find!).and_return({})
             allow(::Slack::DeployHistoryWorker).to receive(:perform_async)
@@ -226,7 +226,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_deploy_from_history'
+                  action_id: 'submit_history'
                 }
               ]
             }
@@ -235,8 +235,8 @@ module Genova
           end
         end
 
-        context 'when invoke approve_deploy' do
-          it 'should be execute approve_deploy' do
+        context 'when invoke submit_deploy' do
+          it 'should be execute submit_deploy' do
             allow(DeployJob).to receive(:create)
             allow(::Slack::DeployWorker).to receive(:perform_async)
 
@@ -249,7 +249,7 @@ module Genova
               },
               actions: [
                 {
-                  action_id: 'approve_deploy'
+                  action_id: 'submit_deploy'
                 }
               ]
             }

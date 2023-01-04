@@ -22,7 +22,7 @@ module Slack
       before do
         DeployJob.collection.drop
 
-        session_store.save(
+        session_store.merge(
           deploy_job_id: deploy_job_id,
           repository: 'repository',
           cluster: 'cluster',
