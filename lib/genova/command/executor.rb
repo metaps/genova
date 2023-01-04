@@ -3,13 +3,26 @@ require 'open3'
 module Genova
   module Command
     class Executor
-      def self.call(command, options = {})
-        logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+      class << self
+        def call(command, options = {})
+          @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+          @options = options
 
-        begin
-          logger.info("Execute command. [#{command}]")
+          begin
+            wait_for_execute(command)
+          rescue Interrupt
+            @logger.error('Detected forced termination of program.')
+            raise Interrupt
+          rescue => e
+            @logger.error(e.message)
+            raise e
+          end
+        end
 
-          Dir.chdir(options[:work_dir]) if options[:work_dir].present?
+        def wait_for_execute(command)
+          @logger.info("Execute command. [#{command}]")
+
+          Dir.chdir(@options[:work_dir]) if @options[:work_dir].present?
           Open3.popen3(command) do |stdin, stdout, stderr|
             stdin.close_write
 
@@ -18,19 +31,13 @@ module Genova
                 io.each do |line|
                   next if line.nil? || line.empty?
 
-                  logger.info(line.chomp)
+                  @logger.info(line.chomp)
                 end
               end
 
               break if stdout.eof? && stderr.eof?
             end
           end
-        rescue Interrupt
-          logger.error('Detected forced termination of program.')
-          raise Interrupt
-        rescue => e
-          logger.error(e.message)
-          raise e
         end
       end
     end

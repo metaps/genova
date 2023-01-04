@@ -111,7 +111,7 @@ module Genova
             }
           end
 
-          def cancel_button(text, value, action_id)
+          def button(text, value, action_id)
             {
               type: 'button',
               text: {

@@ -20,7 +20,7 @@ module Genova
                  BlockKit::Helper.section("<@#{params[:user]}> Please select history to deploy."),
                  BlockKit::Helper.actions([
                                             BlockKit::Helper.radio_buttons('submit_history', options),
-                                            BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')
+                                            BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')
                                           ])
                ])
         end
@@ -39,7 +39,7 @@ module Genova
           blocks << BlockKit::Helper.section(' ')
           blocks << BlockKit::Helper.divider
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
+          actions = [BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -57,7 +57,7 @@ module Genova
           blocks << BlockKit::Helper.section(' ')
           blocks << BlockKit::Helper.divider
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
+          actions = [BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -74,7 +74,7 @@ module Genova
           blocks << BlockKit::Helper.section(' ')
           blocks << BlockKit::Helper.divider
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
+          actions = [BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -112,7 +112,7 @@ module Genova
             blocks << BlockKit::Helper.divider
           end
 
-          actions = [BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')]
+          actions = [BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')]
           blocks << BlockKit::Helper.actions(actions)
 
           send(blocks)
@@ -126,7 +126,7 @@ module Genova
           blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:type] == DeployJob.type.find_value(:run_task)
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'submit_deploy'),
-                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')
+                                               BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')
                                              ])
 
           send(blocks)
@@ -152,7 +152,7 @@ module Genova
 
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'selected_workflow_deploy'),
-                                               BlockKit::Helper.cancel_button('Cancel', 'cancel', 'submit_cancel')
+                                               BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')
                                              ])
 
           send(blocks)
