@@ -11,25 +11,26 @@ module Genova
 
           raise Genova::Exceptions::RoutingError, "`#{action[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
-          content = send(action[:action_id])
-          return if content.nil?
-
-          result = {
-            update_original: true,
-            blocks: [BlockKit::Helper.section(content)],
-            thread_ts: @thread_ts
-          }
-
-          RestClient.post(@payload[:response_url], result.to_json, content_type: :json)
+          send(action[:action_id])
         end
 
         private
+
+        def show_message(message)
+          params = {
+            update_original: true,
+            blocks: [BlockKit::Helper.section(message)],
+            thread_ts: @thread_ts
+          }
+
+          RestClient.post(@payload[:response_url], params.to_json, content_type: :json)
+        end
 
         def submit_cancel
           params = @session_store.params
           Genova::Deploy::Transaction.new(params[:repository]).cancel if params[:repository].present?
 
-          'Deployment was canceled.'
+          show_message('Deployment was canceled.')
         end
 
         def selected_repository
@@ -50,7 +51,7 @@ module Genova
           @session_store.merge(params)
           ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Repository', params[:repository])
+          show_message(BlockKit::Helper.section_field('Repository', params[:repository]))
         end
 
         def selected_workflow
@@ -60,7 +61,7 @@ module Genova
           bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
           bot.ask_confirm_workflow_deploy(name: value)
 
-          BlockKit::Helper.section_field('Workflow', value)
+          show_message(BlockKit::Helper.section_field('Workflow', value))
         end
 
         def selected_branch
@@ -69,7 +70,7 @@ module Genova
           @session_store.merge(branch: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Branch', value)
+          show_message(BlockKit::Helper.section_field('Branch', value))
         end
 
         def selected_tag
@@ -78,7 +79,7 @@ module Genova
           @session_store.merge(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Tag', value)
+          show_message(BlockKit::Helper.section_field('Tag', value))
         end
 
         def selected_cluster
@@ -87,7 +88,7 @@ module Genova
           @session_store.merge(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Cluster', value)
+          show_message(BlockKit::Helper.section_field('Cluster', value))
         end
 
         def selected_run_task
@@ -96,8 +97,6 @@ module Genova
             run_task: @payload.dig(:actions, 0, :selected_option, :value)
           }
           @session_store.merge(params)
-
-          nil
         end
 
         def submit_run_task
@@ -114,7 +113,7 @@ module Genova
           return if @session_store.params[:run_task].nil?
 
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
-          BlockKit::Helper.section_field('Run task', value)
+          show_message(BlockKit::Helper.section_field('Run task', value))
         end
 
         def selected_service
@@ -126,7 +125,7 @@ module Genova
           @session_store.merge(params)
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Service', params[:service])
+          show_message(BlockKit::Helper.section_field('Service', params[:service]))
         end
 
         def selected_scheduled_task
@@ -142,7 +141,7 @@ module Genova
           @session_store.merge(params)
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Scheduled task', "#{params[:scheduled_task_rule]} / #{params[:scheduled_task_target]}")
+          show_message(BlockKit::Helper.section_field('Scheduled task', "#{params[:scheduled_task_rule]} / #{params[:scheduled_task_target]}"))
         end
 
         def submit_history
@@ -153,7 +152,7 @@ module Genova
           @session_store.merge(params)
           ::Slack::DeployHistoryWorker.perform_async(@thread_ts)
 
-          'Checking history...'
+          show_message('Checking history...')
         end
 
         def submit_deploy
@@ -162,7 +161,7 @@ module Genova
 
           ::Slack::DeployWorker.perform_async(@thread_ts)
 
-          'Deployment started.'
+          show_message('Deployment started.')
         end
 
         def selected_workflow_deploy
@@ -171,7 +170,7 @@ module Genova
 
           ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
 
-          'Workflow deployment started.'
+          show_message('Workflow deployment started.')
         end
       end
     end
