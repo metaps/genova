@@ -14,7 +14,8 @@ genova provides the ability to deploy and manage applications to [Amazon ECS](ht
 By using genova, you can deploy services, execute arbitrary tasks, and execute scheduled tasks.
 In addition to command line deployment, genova supports interactive deployment via Slack, deployment triggered by push using GitHub Webhook, and CI/CD integration using GitHub Actions.
 
-<img src="https://user-images.githubusercontent.com/1632478/138811064-20877cfb-8a6c-4279-a04f-9e13582c366c.png" width="60%">
+<img src="https://user-images.githubusercontent.com/1632478/210537641-14a7a307-7e89-4eb7-9108-bfbd3a26a18e.png" width="80%">
+
 
 ## Features
 
