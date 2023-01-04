@@ -7,8 +7,7 @@ module Genova
           logger.level = options[:verbose] ? :debug : Settings.logger.level
           logger.info('Deployment has started.')
 
-          transaction = Genova::Deploy::Transaction.new(deploy_job.repository, logger: logger)
-          transaction.cancel if options[:force]
+          transaction = Genova::Deploy::Transaction.new(deploy_job.repository, logger: logger, force: options[:force])
           transaction.begin
 
           code_manager = CodeManager::Git.new(

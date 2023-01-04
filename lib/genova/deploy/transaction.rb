@@ -7,9 +7,12 @@ module Genova
         @key = "trans_#{Settings.github.account}:#{repository}"
         @repository = repository
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+        @force = options[:force]
       end
 
       def begin
+        cancel if @force
+
         @logger.info('Begin transaction.')
 
         waiting_time = 0
