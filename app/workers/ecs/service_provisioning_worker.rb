@@ -16,7 +16,6 @@ module Ecs
 
       begin
         wait_for_task_replacement
-        @deploy_job.update_status_complate(task_arns: response[:task_arns])
       rescue => e
         @logger.error('Error during deployment.')
         @logger.error(e.message)
@@ -55,7 +54,9 @@ module Ecs
           @logger.info("All tasks have been replaced. [#{response[:new_registerd_task_count]}/#{desired_count}]")
           @logger.info("New task definition [#{@deploy_job.task_definition_arn}]")
 
+          @deploy_job.update_status_complate(task_arns: response[:task_arns])
           break
+
         elsif wait_time > Settings.ecs.wait_timeout
           @logger.info("New task definition [#{@deploy_job.task_definition_arn}]")
           raise Genova::Exceptions::DeployTimeoutError, 'Monitoring service changes, timeout reached.'

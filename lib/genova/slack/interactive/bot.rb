@@ -35,7 +35,7 @@ module Genova
           blocks << BlockKit::Helper.section("<@#{params[:user]}> Specify the repository or workflow to deploy.")
           blocks << BlockKit::Helper.static_select('Repository', 'selected_repository', repositoriy_options)
 
-          if workflow_options.size.positive? 
+          if workflow_options.size.positive?
             blocks << BlockKit::Helper.static_select('Workflow', 'selected_workflow', workflow_options)
           else
             text = ':star: Using genova <https://github.com/metaps/genova/wiki/Workflow|Workflow feature>, multiple service updates and tasks can be executed in a specified order.'
