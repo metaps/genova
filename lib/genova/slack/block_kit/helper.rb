@@ -71,10 +71,14 @@ module Genova
             block
           end
 
-          def static_select(action_id, label, options)
+          def static_select(section, action_id, options)
             {
-              type: 'input',
-              element: {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: section
+              },
+              accessory: {
                 type: 'static_select',
                 placeholder: {
                   type: 'plain_text',
@@ -82,10 +86,6 @@ module Genova
                 },
                 action_id: action_id,
                 options: options
-              },
-              label: {
-                type: 'plain_text',
-                text: label
               }
             }
           end
@@ -133,6 +133,18 @@ module Genova
           def divider
             {
               type: 'divider'
+            }
+          end
+
+          def context_markdown(text)
+            {
+              type: 'context',
+              elements: [
+                {
+                  type: 'mrkdwn',
+                  text: text
+                }
+              ]
             }
           end
 

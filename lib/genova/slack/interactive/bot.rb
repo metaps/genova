@@ -33,10 +33,15 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:user]}> Specify the repository or workflow to deploy.")
-          blocks << BlockKit::Helper.static_select('selected_repository', 'Repository', repositoriy_options)
-          blocks << BlockKit::Helper.static_select('selected_workflow', 'Workflow', workflow_options) if workflow_options.size.positive?
+          blocks << BlockKit::Helper.static_select('Repository', 'selected_repository', repositoriy_options)
 
-          blocks << BlockKit::Helper.section(' ')
+          if workflow_options.size.positive? 
+            blocks << BlockKit::Helper.static_select('Workflow', 'selected_workflow', workflow_options)
+          else
+            text = ':star: Using genova <https://github.com/metaps/genova/wiki/Workflow|Workflow feature>, multiple service updates and tasks can be executed in a specified order.'
+            blocks << BlockKit::Helper.context_markdown(text)
+          end
+
           blocks << BlockKit::Helper.divider
 
           actions = [BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')]
@@ -50,9 +55,8 @@ module Genova
           tag_options = BlockKit::ElementObject.tag_options(repository: params[:repository])
 
           blocks = []
-          blocks << BlockKit::Helper.section('Specify a branch or tag.')
-          blocks << BlockKit::Helper.static_select('selected_branch', 'Branch', branch_options)
-          blocks << BlockKit::Helper.static_select('selected_tag', 'Tag', tag_options) if tag_options.size.positive?
+          blocks << BlockKit::Helper.static_select('Branch', 'selected_branch', branch_options)
+          blocks << BlockKit::Helper.static_select('Tag', 'selected_tag', tag_options) if tag_options.size.positive?
 
           blocks << BlockKit::Helper.section(' ')
           blocks << BlockKit::Helper.divider
@@ -68,10 +72,7 @@ module Genova
           raise Genova::Exceptions::NotFoundError, 'No deployable clusters found.' if options.size.zero?
 
           blocks = []
-          blocks << BlockKit::Helper.section('Specify cluster.')
-          blocks << BlockKit::Helper.static_select('selected_cluster', 'Cluster', options)
-
-          blocks << BlockKit::Helper.section(' ')
+          blocks << BlockKit::Helper.static_select('Cluster', 'selected_cluster', options)
           blocks << BlockKit::Helper.divider
 
           actions = [BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')]
@@ -88,26 +89,24 @@ module Genova
           raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if run_task_options.size.zero? && service_options.size.zero? && scheduled_task_options.size.zero?
 
           blocks = []
-          blocks << BlockKit::Helper.section('Specify resources to deploy.')
 
           if service_options.size.positive?
-            blocks << BlockKit::Helper.static_select('selected_service', 'Service', service_options)
+            blocks << BlockKit::Helper.static_select('Service', 'selected_service', service_options)
             blocks << BlockKit::Helper.section(' ')
             blocks << BlockKit::Helper.divider
           end
 
           if scheduled_task_options.size.positive?
-            blocks << BlockKit::Helper.static_select('selected_scheduled_task', 'Scheduled task', scheduled_task_options)
+            blocks << BlockKit::Helper.static_select('Scheduled task', 'selected_scheduled_task', scheduled_task_options)
             blocks << BlockKit::Helper.section(' ')
             blocks << BlockKit::Helper.divider
           end
 
           if run_task_options.size.positive?
-            blocks << BlockKit::Helper.static_select('selected_run_task', 'Run task', run_task_options)
-            blocks << BlockKit::Helper.section('The command to be executed in Run task can be overridden (Optional).')
+            blocks << BlockKit::Helper.static_select('Run task', 'selected_run_task', run_task_options)
+            blocks << BlockKit::Helper.context_markdown(':star: The command to be executed in Run task can be overridden (Optional).')
             blocks << BlockKit::Helper.plain_text_input('submit_run_task_override_container', 'Override container', placeholder: 'Input container', block_id: 'run_task_override_container')
             blocks << BlockKit::Helper.plain_text_input('submit_run_task_override_command', 'Override command', placeholder: 'Input command', block_id: 'run_task_override_command')
-            blocks << BlockKit::Helper.section(' ')
             blocks << BlockKit::Helper.actions([BlockKit::Helper.primary_button('Next', 'next', 'submit_run_task')])
             blocks << BlockKit::Helper.divider
           end
@@ -170,7 +169,7 @@ module Genova
 
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:deploy_job].slack_user_id}>") if params[:deploy_job].mode == DeployJob.mode.find_value(:slack)
-          blocks << BlockKit::Helper.section('Deployment was successful.')
+          blocks << BlockKit::Helper.section('Deployment is complete.')
           blocks << BlockKit::Helper.section_fieldset(fields)
 
           send(blocks)
