@@ -339,11 +339,11 @@ module Genova
 
             task_definition_arn = services[0].task_definition
           else
-            event_bridge = Aws::EventBridge::Client.new
-            rules = event_bridge.list_rules(name_prefix: params[:scheduled_task_rule])
+            eventbridge = Aws::EventBridge::Client.new
+            rules = eventbridge.list_rules(name_prefix: params[:scheduled_task_rule])
             raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
 
-            targets = event_bridge.list_targets_by_rule(rule: rules[:rules][0].name)
+            targets = eventbridge.list_targets_by_rule(rule: rules[:rules][0].name)
             target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }
             raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{params[:scheduled_task_target]}]" if target.nil?
 
