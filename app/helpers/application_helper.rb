@@ -5,6 +5,8 @@ module ApplicationHelper
       'Service'
     when DeployJob.type.find_value(:scheduled_task)
       'Scheduled task'
+    when DeployJob.type.find_value(:run_task)
+      'Run task'
     end
   end
 end

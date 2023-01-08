@@ -9,27 +9,31 @@ module Genova
 
           action = @payload.dig(:actions, 0)
 
-          raise Genova::Exceptions::RoutingError, "`#{ation[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
+          raise Genova::Exceptions::RoutingError, "`#{action[:action_id]}` action does not exist." unless RequestHandler.respond_to?(action[:action_id], true)
 
-          result = {
-            update_original: true,
-            blocks: [BlockKit::Helper.section(send(action[:action_id]))],
-            thread_ts: @thread_ts
-          }
-
-          RestClient.post(@payload[:response_url], result.to_json, content_type: :json)
+          send(action[:action_id])
         end
 
         private
 
-        def cancel
-          params = @session_store.params
-          Genova::Transaction.new(params[:repository]).cancel if params[:repository].present?
+        def show_message(message)
+          params = {
+            update_original: true,
+            blocks: [BlockKit::Helper.section(message)],
+            thread_ts: @thread_ts
+          }
 
-          'Deployment was canceled.'
+          RestClient.post(@payload[:response_url], params.to_json, content_type: :json)
         end
 
-        def approve_repository
+        def submit_cancel
+          params = @session_store.params
+          Genova::Deploy::Transaction.new(params[:repository]).cancel if params[:repository].present?
+
+          show_message('Deployment was canceled.')
+        end
+
+        def selected_repository
           value = @payload.dig(:actions, 0, :selected_option, :value)
           params = {}
 
@@ -44,83 +48,129 @@ module Genova
 
           raise Genova::Exceptions::UnexpectedError, "#{value} repository does not exist." if params[:repository].nil?
 
-          @session_store.save(params)
+          @session_store.merge(params)
           ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Repository', params[:repository])
+          show_message(BlockKit::Helper.section_field('Repository', params[:repository]))
         end
 
-        def approve_branch
+        def selected_workflow
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          @session_store.merge(name: value)
+
+          bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
+          bot.ask_confirm_workflow_deploy(name: value)
+
+          show_message(BlockKit::Helper.section_field('Workflow', value))
+        end
+
+        def selected_branch
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.save(branch: value)
+          @session_store.merge(branch: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Branch', value)
+          show_message(BlockKit::Helper.section_field('Branch', value))
         end
 
-        def approve_tag
+        def selected_tag
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.save(tag: value)
+          @session_store.merge(tag: value)
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Tag', value)
+          show_message(BlockKit::Helper.section_field('Tag', value))
         end
 
-        def approve_cluster
+        def selected_cluster
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.save(cluster: value)
+          @session_store.merge(cluster: value)
           ::Slack::DeployTargetWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Cluster', value)
+          show_message(BlockKit::Helper.section_field('Cluster', value))
         end
 
-        def approve_target
-          value = @payload.dig(:actions, 0, :selected_option, :value)
-          targets = value.split(':')
-          type = targets[0].to_sym
-
+        def selected_run_task
           params = {
-            type: type
+            type: DeployJob.type.find_value(:run_task),
+            run_task: @payload.dig(:actions, 0, :selected_option, :value)
+          }
+          @session_store.merge(params)
+        end
+
+        def submit_run_task
+          params = {
+            override_container: @payload[:state][:values][:run_task_override_container][:submit_run_task_override_container][:value],
+            override_command: @payload[:state][:values][:run_task_override_command][:submit_run_task_override_command][:value]
+          }
+          @session_store.merge(params)
+
+          value = @session_store.params[:run_task]
+
+          value += " (#{params[:override_container]} / #{params[:override_command]})" if params[:override_container].present? && params[:override_command].present?
+
+          return if @session_store.params[:run_task].nil?
+
+          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
+          show_message(BlockKit::Helper.section_field('Run task', value))
+        end
+
+        def selected_service
+          params = {
+            type: DeployJob.type.find_value(:service),
+            service: @payload.dig(:actions, 0, :selected_option, :value)
           }
 
-          case type
-          when :run_task
-            params[:run_task] = targets[1]
-          when :service
-            params[:service] = targets[1]
-          when :scheduled_task
-            params[:scheduled_task_rule] = targets[1]
-            params[:scheduled_task_target] = targets[2]
-          end
-
-          @session_store.save(params)
+          @session_store.merge(params)
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
 
-          BlockKit::Helper.section_field('Target', value)
+          show_message(BlockKit::Helper.section_field('Service', params[:service]))
         end
 
-        def approve_deploy_from_history
+        def selected_scheduled_task
+          value = @payload.dig(:actions, 0, :selected_option, :value)
+          targets = value.split(':')
+
+          params = {
+            type: DeployJob.type.find_value(:scheduled_task),
+            scheduled_task_rule: targets[0],
+            scheduled_task_target: targets[1]
+          }
+
+          @session_store.merge(params)
+          ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
+
+          show_message(BlockKit::Helper.section_field('Scheduled task', "#{params[:scheduled_task_rule]} / #{params[:scheduled_task_target]}"))
+        end
+
+        def submit_history
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
           params = Genova::Slack::Interactive::History.new(@payload[:user][:id]).find!(value)
 
-          @session_store.save(params)
+          @session_store.merge(params)
           ::Slack::DeployHistoryWorker.perform_async(@thread_ts)
 
-          'Checking history...'
+          show_message('Checking history...')
         end
 
-        def approve_deploy
+        def submit_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
-
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
 
           ::Slack::DeployWorker.perform_async(@thread_ts)
 
-          'Deployment started.'
+          show_message('Deployment started.')
+        end
+
+        def selected_workflow_deploy
+          permission = Interactive::Permission.new(@payload[:user][:id])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
+
+          ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
+
+          show_message('Workflow deployment started.')
         end
       end
     end

@@ -102,6 +102,22 @@ class DeployJob
     results
   end
 
+  def update_status_complate(params = {})
+    self.status = DeployJob.status.find_value(:success).to_s
+    self.finished_at = Time.now.utc
+    self.execution_time = finished_at.to_f - started_at.to_f
+    self.task_arns = params[:task_arns] if params[:task_arns].present?
+    self.task_definition_arn = params[:task_definition_arn] if params[:task_definition_arn].present?
+    save
+  end
+
+  def update_status_failure
+    self.status = DeployJob.status.find_value(:failure).to_s
+    self.finished_at = Time.now.utc
+    self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
+    save
+  end
+
   private
 
   def check_type

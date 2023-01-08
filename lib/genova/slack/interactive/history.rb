@@ -17,6 +17,8 @@ module Genova
             tag: deploy_job.tag,
             cluster: deploy_job.cluster,
             run_task: deploy_job.run_task,
+            override_container: deploy_job.override_container,
+            override_command: deploy_job.override_command,
             service: deploy_job.service,
             scheduled_task_rule: deploy_job.scheduled_task_rule,
             scheduled_task_target: deploy_job.scheduled_task_target

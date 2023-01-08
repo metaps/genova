@@ -45,7 +45,7 @@ module GenovaCli
 
         raise Genova::Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
 
-        ::Genova::Run.call(deploy_job, verbose: options[:verbose], force: options[:force])
+        ::Genova::Deploy::Runner.call(deploy_job, verbose: options[:verbose], force: options[:force])
       end
     end
 
@@ -92,6 +92,17 @@ module GenovaCli
       hash_options[:type] = DeployJob.type.find_value(:scheduled_task)
 
       deploy(hash_options)
+    end
+
+    desc 'workflow', 'Step Deployment with workflow'
+    option :name, requred: true, aliases: :n, desc: 'Workflow name to deploy.'
+    def workflow
+      Genova::Deploy::Workflow::Runner.call(
+        options[:name],
+        Genova::Deploy::Step::StdoutHook.new,
+        mode: DeployJob.mode.find_value(:manual),
+        force: options[:force]
+      )
     end
   end
 
@@ -179,7 +190,7 @@ module GenovaCli
     desc 'clear-transaction', 'Cancel deploy transactions.'
     option :repository, required: true, aliases: :r, desc: 'Repository name.'
     def clear_transaction
-      transaction = ::Genova::Transaction.new(options[:repository])
+      transaction = ::Genova::Deploy::Transaction.new(options[:repository])
 
       if transaction.running?
         transaction.cancel

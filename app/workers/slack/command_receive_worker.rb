@@ -1,5 +1,8 @@
 module Slack
-  class CommandReceiveWorker < BaseWorker
+  class CommandReceiveWorker
+    include Sidekiq::Worker
+    include Genova::Sidekiq::SlackAlert
+
     sidekiq_options queue: :slack_command_receive, retry: false
 
     def perform(id)
@@ -31,7 +34,7 @@ module Slack
 
       klass.call(statements, values[:user], values[:parent_message_ts])
     rescue => e
-      values.present? ? slack_notify(e, values[:parent_message_ts], values[:user]) : slack_notify(e)
+      values.present? ? send_error(e, values[:parent_message_ts], values[:user]) : send_error(e)
       raise e
     end
   end

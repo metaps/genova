@@ -6,7 +6,7 @@ module Genova
 
         def create(id, params)
           key = generate_key(id)
-          raise Exceptions::DupplicateJobError, 'Duplicate job execution was canceled.' if Redis.current.exists?(key)
+          # raise Exceptions::DupplicateJobError, 'Duplicate job execution was canceled.' if Redis.current.exists?(key)
 
           Redis.current.multi do
             Redis.current.set(key, params.to_json)
