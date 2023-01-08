@@ -24,13 +24,33 @@ module Genova
             options
           end
 
+          def workflow_options(params)
+            options = []
+            permission = Genova::Slack::Interactive::Permission.new(params[:user])
+
+            workflows = Settings.workflows || []
+            workflows.each do |workflow|
+              next unless permission.allow_workflow?(workflow[:name])
+
+              options.push(
+                text: {
+                  type: 'plain_text',
+                  text: workflow[:name]
+                },
+                value: workflow[:name]
+              )
+            end
+
+            options
+          end
+
           def history_options(params)
             options = []
 
             histories = Genova::Slack::Interactive::History.new(params[:user]).list
             histories.each do |history|
               data = Oj.load(history)
-              time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').in_time_zone(Settings.timezone).strftime('%m/%d %H:%M')
+              time = Time.strptime(data[:id], '%Y%m%d-%H%M%S').in_time_zone(Settings.timezone).to_s
 
               options.push(
                 text: {
@@ -40,7 +60,7 @@ module Genova
                 value: data[:id],
                 description: {
                   type: 'plain_text',
-                  text: "#{data[:repository]}/#{data[:branch].present? ? data[:branch] : data[:tag]}/#{data[:cluster]}"
+                  text: build_history_description(data)
                 }
               )
             end
@@ -112,8 +132,8 @@ module Genova
             options
           end
 
-          def target_options(params)
-            target_options = []
+          def run_task_options(params)
+            options = []
             code_manager = Genova::CodeManager::Git.new(
               params[:repository],
               alias: params[:alias],
@@ -122,40 +142,72 @@ module Genova
             )
             cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
-            if cluster_config[:run_tasks].present?
-              target_options << {
-                label: {
-                  type: 'plain_text',
-                  text: 'Run task'
-                },
-                options: parse_run_tasks(cluster_config[:run_tasks])
-              }
-            end
+            options = parse_run_tasks(cluster_config[:run_tasks]) if cluster_config[:run_tasks].present?
 
-            if cluster_config[:services].present?
-              target_options << {
-                label: {
-                  type: 'plain_text',
-                  text: 'Service'
-                },
-                options: parse_services(cluster_config[:services])
-              }
-            end
+            options
+          end
 
-            if cluster_config[:scheduled_tasks].present?
-              target_options << {
-                label: {
-                  type: 'plain_text',
-                  text: 'Scheduled task'
-                },
-                options: parse_scheduled_tasks(cluster_config[:scheduled_tasks])
-              }
-            end
+          def service_options(params)
+            options = []
+            code_manager = Genova::CodeManager::Git.new(
+              params[:repository],
+              alias: params[:alias],
+              branch: params[:branch],
+              tag: params[:tag]
+            )
+            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
 
-            target_options
+            options = parse_services(cluster_config[:services]) if cluster_config[:services].present?
+
+            options
+          end
+
+          def scheduled_task_options(params)
+            options = []
+            code_manager = Genova::CodeManager::Git.new(
+              params[:repository],
+              alias: params[:alias],
+              branch: params[:branch],
+              tag: params[:tag]
+            )
+            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
+
+            options = parse_scheduled_tasks(cluster_config[:scheduled_tasks]) if cluster_config[:scheduled_tasks].present?
+            options
           end
 
           private
+
+          def build_history_description(data)
+            messages = []
+            messages << "Repository: #{data[:repository]}"
+
+            messages << if data[:branch].present?
+                          "Branch: #{data[:branch]}"
+                        else
+                          "Tag: #{data[:tag]}"
+                        end
+
+            messages << "Cluster: #{data[:cluster]}"
+
+            case data[:type]
+            when DeployJob.type.find_value(:run_task)
+              messages << "Run task: #{data[:run_task]}"
+
+              if data[:override_container].present?
+                messages << "Override container: #{data[:override_container]}"
+                messages << "Override command: #{data[:override_command]}"
+              end
+
+            when DeployJob.type.find_value(:service)
+              messages << "Service: #{data[:service]}"
+            when DeployJob.type.find_value(:scheduled_task)
+              messages << "Scheduled task rule: #{data[:scheduled_task_rule]}"
+              messages << "Scheduled task target: #{data[:scheduled_task_target]}"
+            end
+
+            messages.join("\n")
+          end
 
           def parse_run_tasks(run_tasks)
             options = []
@@ -166,7 +218,7 @@ module Genova
                   type: 'plain_text',
                   text: middle_truncate(run_task.to_s)
                 },
-                value: "run_task:#{run_task}"
+                value: run_task
               )
             end
 
@@ -182,7 +234,7 @@ module Genova
                   type: 'plain_text',
                   text: middle_truncate(service.to_s)
                 },
-                value: "service:#{service}"
+                value: service
               )
             end
 
@@ -200,7 +252,7 @@ module Genova
                     type: 'plain_text',
                     text: "#{middle_truncate(rule[:rule], 30)}:#{middle_truncate(target[:name], 30)}"
                   },
-                  value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
+                  value: "#{rule[:rule]}:#{target[:name]}"
                 )
               end
             end

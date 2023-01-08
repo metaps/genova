@@ -5,10 +5,10 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-gem 'aws-sdk-cloudwatchevents'
 gem 'aws-sdk-core'
 gem 'aws-sdk-ecr'
 gem 'aws-sdk-ecs'
+gem 'aws-sdk-eventbridge'
 gem 'aws-sdk-iam'
 gem 'aws-sdk-kms'
 gem 'bootsnap', require: false

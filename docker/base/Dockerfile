@@ -7,7 +7,6 @@ ENV APP_HOME=/app
 WORKDIR $APP_HOME
 COPY Gemfile* $APP_HOME/
 
-RUN echo 123
 RUN bundle install -j4
 
 COPY ./docker/base/.vimrc /root/.vimrc

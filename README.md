@@ -11,20 +11,21 @@ genova provides the ability to deploy and manage applications to [Amazon ECS](ht
 
 ## Overview
 
-By using genova, you can deploy services, execute arbitrary tasks, and execute scheduled tasks.
-In addition to command line deployment, genova supports interactive deployment via Slack, deployment triggered by push using GitHub Webhook, and CI/CD integration using GitHub Actions.
+genova can deploy services on ECS clusters, perform standalone tasks, and execute scheduled tasks.
 
-<img src="https://user-images.githubusercontent.com/1632478/138811064-20877cfb-8a6c-4279-a04f-9e13582c366c.png" width="60%">
+<img src="https://user-images.githubusercontent.com/1632478/210537641-14a7a307-7e89-4eb7-9108-bfbd3a26a18e.png" width="70%">
+
 
 ## Features
 
 genova has the following features.
 
 * YAML-based task definitions
-* Some deployment flows
-  * Deploying from the command line
-  * Interactive deployment using Slack
-  * Deploying using GitHub Actions/Webhooks
+* Various deployment methods
+  * Command Line Deploy
+  * Slack
+  * GitHub Actions
+  * GitHub Webhooks
 * Provides a web console to manage deployment status
 
 ## How Deployment Works
@@ -44,8 +45,8 @@ _The AWS resources (services and scheduled tasks) to be deployed must be created
 
 ## Files to be placed in the application repository
 
-genova will clone your repository to build and deploy your application.
-Your repository should have the following files in it.
+genova can clone a repository on GitHub to build and deploy your application.
+The following files must be created in the repository.
 
 ```yaml
 |- config/
@@ -58,7 +59,7 @@ Your repository should have the following files in it.
 ```
 
 * [Deploy configuration](https://github.com/metaps/genova/wiki/Deploy-configuration)
-* [Task configuration](https://github.com/metaps/genova/wiki/Task-configuration)
+* [Task configuration](https://github.com/metaps/genova/wiki/Task-definition)
 
 ## Setup genova
 

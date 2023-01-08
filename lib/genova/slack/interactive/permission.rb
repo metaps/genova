@@ -14,6 +14,10 @@ module Genova
           allow?('cluster', cluster)
         end
 
+        def allow_workflow?(workflow)
+          allow?('workflow', workflow)
+        end
+
         private
 
         def allow?(policy, value)

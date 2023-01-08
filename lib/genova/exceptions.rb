@@ -37,7 +37,5 @@ module Genova
     class UnexpectedError < Error; end
 
     class MigrationError < Error; end
-
-    class DupplicateJobError < Error; end
   end
 end

@@ -30,7 +30,7 @@ module Genova
               scheduled_task_target: result[:scheduled_task_target]
             }
 
-            session_store.save(params)
+            session_store.merge(params)
 
             params[:user] = user
             client.ask_confirm_deploy(params, mention: true)
@@ -87,7 +87,7 @@ module Genova
             end
 
             validator = HashValidator.validate(params, validations)
-            raise Genova::Exceptions::InvalidArgumentError, "#{validator.errors.keys[0]}: #{validator.errors.params[0]}" unless validator.valid?
+            raise Genova::Exceptions::InvalidArgumentError, "#{validator.errors.first[0]}: #{validator.errors.first[1]}" unless validator.valid?
 
             params
           end
