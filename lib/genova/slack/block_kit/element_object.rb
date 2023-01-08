@@ -193,6 +193,12 @@ module Genova
             case data[:type]
             when DeployJob.type.find_value(:run_task)
               messages << "Run task: #{data[:run_task]}"
+
+              if data[:override_container].present?
+                messages << "Override container: #{data[:override_container]}"
+                messages << "Override command: #{data[:override_command]}"
+              end
+
             when DeployJob.type.find_value(:service)
               messages << "Service: #{data[:service]}"
             when DeployJob.type.find_value(:scheduled_task)
@@ -212,7 +218,7 @@ module Genova
                   type: 'plain_text',
                   text: middle_truncate(run_task.to_s)
                 },
-                value: "run_task:#{run_task}"
+                value: run_task
               )
             end
 
@@ -228,7 +234,7 @@ module Genova
                   type: 'plain_text',
                   text: middle_truncate(service.to_s)
                 },
-                value: "service:#{service}"
+                value: service
               )
             end
 
@@ -246,7 +252,7 @@ module Genova
                     type: 'plain_text',
                     text: "#{middle_truncate(rule[:rule], 30)}:#{middle_truncate(target[:name], 30)}"
                   },
-                  value: "scheduled_task:#{rule[:rule]}:#{target[:name]}"
+                  value: "#{rule[:rule]}:#{target[:name]}"
                 )
               end
             end

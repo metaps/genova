@@ -3,16 +3,19 @@ require 'rails_helper'
 module Genova
   module CodeManager
     describe Git do
+      let(:git) { double(::Git) }
+
       before do
-        allow(File).to receive(:file?).with(Rails.root.join('.ssh/id_rsa').to_s).and_return(true)
+        allow(File).to receive(:file?).and_return(true)
+        allow(FileUtils).to receive(:rm_rf)
+        allow(::Git).to receive(:clone)
+        allow(::Git).to receive(:open).and_return(git)
       end
 
       let(:code_manager) { CodeManager::Git.new('repository', branch: 'master') }
       let(:deploy_config) { double(Genova::Config::DeployConfig) }
 
       describe 'pull' do
-        let(:git) { double(::Git) }
-
         it 'should be get latest source' do
           allow(code_manager).to receive(:clone)
           allow(git).to receive(:fetch)
@@ -21,15 +24,12 @@ module Genova
           allow(git).to receive(:branch)
           allow(git).to receive(:reset_hard)
           allow(git).to receive(:log)
-          allow(code_manager).to receive(:client).and_return(git)
 
           expect { code_manager.update }.to_not raise_error
         end
       end
 
       describe 'load_deploy_config' do
-        let(:git) { double(::Git) }
-
         it 'should be return config' do
           allow(git).to receive(:fetch)
           allow(git).to receive(:show).and_return('{ clusters: [] }')
@@ -46,8 +46,6 @@ module Genova
       end
 
       describe 'origin_branches' do
-        let(:git) { double(::Git) }
-
         it 'should be return origin branches' do
           allow(code_manager).to receive(:clone)
 
@@ -62,14 +60,12 @@ module Genova
 
           allow(git).to receive(:fetch)
           allow(git).to receive(:branches).and_return(branches)
-          allow(code_manager).to receive(:client).and_return(git)
 
           expect(code_manager.origin_branches.size).to eq(1)
         end
       end
 
       describe 'find_commit' do
-        let(:git) { double(::Git) }
         let(:tag) { double(::Git::Object::Tag) }
 
         it 'should be return commit id' do
@@ -77,9 +73,19 @@ module Genova
           allow(git).to receive(:fetch)
           allow(tag).to receive(:sha).and_return('id')
           allow(git).to receive(:tag).and_return(tag)
-          allow(code_manager).to receive(:client).and_return(git)
 
           expect(code_manager.find_commit('tag')).to eq('id')
+        end
+      end
+
+      describe 'release' do
+        it 'should be tag sent' do
+          allow(code_manager).to receive(:update)
+          allow(git).to receive(:add_tag)
+          allow(git).to receive(:push)
+
+          expect { code_manager.release('tag', 'commit') }.to_not raise_error
+          expect(git).to have_received(:push).once
         end
       end
     end

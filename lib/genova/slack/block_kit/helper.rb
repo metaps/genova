@@ -51,15 +51,42 @@ module Genova
             }
           end
 
-          def static_select(action_id, placeholder, options)
-            {
-              type: 'static_select',
-              placeholder: {
-                type: 'plain_text',
-                text: placeholder
+          def plain_text_input(action_id, label, options = {})
+            block = {
+              type: 'input',
+              element: {
+                type: 'plain_text_input',
+                action_id: action_id,
+                placeholder: {
+                  type: 'plain_text',
+                  text: options[:placeholder]
+                }
               },
-              action_id: action_id,
-              options: options
+              label: {
+                type: 'plain_text',
+                text: label
+              }
+            }
+            block[:block_id] = options[:block_id] if options[:block_id].present?
+            block
+          end
+
+          def static_select(section, action_id, options)
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: section
+              },
+              accessory: {
+                type: 'static_select',
+                placeholder: {
+                  type: 'plain_text',
+                  text: 'Select an item'
+                },
+                action_id: action_id,
+                options: options
+              }
             }
           end
 
@@ -84,7 +111,7 @@ module Genova
             }
           end
 
-          def cancel_button(text, value, action_id)
+          def button(text, value, action_id)
             {
               type: 'button',
               text: {
@@ -106,6 +133,18 @@ module Genova
           def divider
             {
               type: 'divider'
+            }
+          end
+
+          def context_markdown(text)
+            {
+              type: 'context',
+              elements: [
+                {
+                  type: 'mrkdwn',
+                  text: text
+                }
+              ]
             }
           end
 
