@@ -49,7 +49,7 @@ ecr:
 # Workflows can be defined to step through the deployment of tasks.
 # https://github.com/metaps/genova/wiki/Workflow
 workflows:
-  # - name: staging_release
+  # - name:
   #   steps:
   #     - repository:
   #       branch:
