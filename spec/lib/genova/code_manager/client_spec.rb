@@ -88,6 +88,22 @@ module Genova
           expect(git).to have_received(:push).once
         end
       end
+
+      describe 'default_branch' do
+        context 'when correct response is returned' do
+          it 'should be return default branch' do
+            allow(git).to receive(:remote_show_origin).and_return('HEAD branch: main')
+            expect(code_manager.default_branch).to eq('main')
+          end
+        end
+
+        context 'when invalid response is returned' do
+          it 'should be return default branch' do
+            allow(git).to receive(:remote_show_origin).and_return('invalid')
+            expect(code_manager.default_branch).to eq(nil)
+          end
+        end
+      end
     end
   end
 end

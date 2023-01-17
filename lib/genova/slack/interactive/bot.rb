@@ -55,7 +55,7 @@ module Genova
           tag_options = BlockKit::ElementObject.tag_options(repository: params[:repository])
 
           blocks = []
-          blocks << BlockKit::Helper.static_select('Branch', 'selected_branch', branch_options)
+          blocks << BlockKit::Helper.static_select('Branch', 'selected_branch', branch_options, groups: true)
           blocks << BlockKit::Helper.static_select('Tag', 'selected_tag', tag_options) if tag_options.size.positive?
 
           blocks << BlockKit::Helper.section(' ')

@@ -1,4 +1,10 @@
 module Git
+  class Base
+    def remote_show_origin
+      lib.remote_show_origin
+    end
+  end
+
   class Lib
     def branches_all
       arr = []
@@ -25,6 +31,10 @@ module Git
         break if count == Settings.slack.interactive.tag_limit
       end
       arr
+    end
+
+    def remote_show_origin
+      command('remote show origin')
     end
   end
 end
@@ -137,6 +147,15 @@ module Genova
         git = client
         git.add_tag(tag, commit)
         git.push('origin', @branch, tags: tag)
+      end
+
+      def default_branch
+        git = client
+
+        match = git.remote_show_origin.match(/HEAD branch:\s*(.+)/)
+        return nil if match.nil?
+
+        match[1]
       end
 
       private

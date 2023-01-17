@@ -71,8 +71,8 @@ module Genova
             block
           end
 
-          def static_select(section, action_id, options)
-            {
+          def static_select(section, action_id, options, params = {})
+            element = {
               type: 'section',
               text: {
                 type: 'mrkdwn',
@@ -84,10 +84,14 @@ module Genova
                   type: 'plain_text',
                   text: 'Select an item'
                 },
-                action_id: action_id,
-                options: options
+                action_id: action_id
               }
             }
+
+            option_key = (params[:groups] ? 'option_groups' : 'options').to_sym
+
+            element[:accessory][option_key] = options
+            element
           end
 
           def radio_buttons(action_id, options)
