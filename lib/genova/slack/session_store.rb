@@ -18,7 +18,7 @@ module Genova
 
       def self.load(parent_message_ts)
         id = build_id(parent_message_ts)
-        raise Genova::Exceptions::NotFoundError, 'Session does not exist. Please re-run command.' unless Redis.current.exists(id)
+        raise Genova::Exceptions::NotFoundError, 'Session does not exist. Please re-run command.' unless Redis.current.exists?(id)
 
         new(id)
       end

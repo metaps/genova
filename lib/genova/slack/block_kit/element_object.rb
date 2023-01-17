@@ -70,12 +70,30 @@ module Genova
 
           def branch_options(params)
             code_manager = Genova::CodeManager::Git.new(params[:repository])
-            options = []
-            size = 0
+            default_branch = code_manager.default_branch
+            option_groups = []
 
+            if default_branch.present?
+              option_groups << {
+                label: {
+                  type: 'plain_text',
+                  text: 'Default'
+                },
+                options: [
+                  {
+                    text: {
+                      type: 'plain_text',
+                      text: default_branch
+                    },
+                    value: default_branch
+                  }
+                ]
+              }
+            end
+
+            recently_options = []
             code_manager.origin_branches.each do |branch|
-              size += 1
-              options.push(
+              recently_options.push(
                 text: {
                   type: 'plain_text',
                   text: middle_truncate(branch)
@@ -84,16 +102,21 @@ module Genova
               )
             end
 
-            options
+            option_groups << {
+              label: {
+                type: 'plain_text',
+                text: 'Recently'
+              },
+              options: recently_options
+            }
+            option_groups
           end
 
           def tag_options(params)
             code_manager = Genova::CodeManager::Git.new(params[:repository])
             options = []
-            size = 0
 
             code_manager.origin_tags.each do |tag|
-              size += 1
               options.push(
                 text: {
                   type: 'plain_text',

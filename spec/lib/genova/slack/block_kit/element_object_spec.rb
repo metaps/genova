@@ -47,6 +47,7 @@ module Genova
           let(:code_manager) { double(Genova::CodeManager::Git) }
 
           it 'should be return brahches' do
+            allow(code_manager).to receive(:default_branch)
             allow(code_manager).to receive(:origin_branches).and_return(['branch'])
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
