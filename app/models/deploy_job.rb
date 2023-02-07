@@ -14,6 +14,7 @@ class DeployJob
   field :mode, type: String
   field :slack_user_id, type: String
   field :slack_user_name, type: String
+  field :slack_timestamp, type: Float
   field :repository, type: String
   field :account, type: String
   field :branch, type: String

@@ -43,7 +43,7 @@ module Genova
           matched = false
 
           values.each do |value|
-            matched = Utils::String.pattern_match?(value, search)
+            matched = value.pattern_match?(search)
             break if matched
           end
 

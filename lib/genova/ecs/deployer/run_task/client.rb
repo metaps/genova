@@ -12,7 +12,7 @@ module Genova
           end
 
           def execute(task_definition_arn, params = {})
-            @logger.info('Execute run task.')
+            @logger.info("Execute run task. (#{task_definition_arn})")
 
             options = {}
             options[:launch_type] = params[:launch_type]
@@ -45,6 +45,8 @@ module Genova
               task_definition_arn: task_definition_arn,
               task_arns: task_arns
             )
+
+            Genova::Deploy::Runner.finished(@deploy_job, @logger)
           end
 
           private

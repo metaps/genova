@@ -5,7 +5,7 @@ module Genova
         def call(deploy_job, options = {})
           @logger = Genova::Logger::MongodbLogger.new(deploy_job)
           @logger.level = options[:verbose] ? :debug : Settings.logger.level
-          @logger.info('Deployment has started.')
+          @logger.info('Start deployment.')
 
           @deploy_job = deploy_job
           @options = options
@@ -14,36 +14,29 @@ module Genova
 
           begin
             transaction.begin
-            execute
+            start
             transaction.commit
-
-            @logger.info('Deployment is finished.')
           rescue Interrupt
             @logger.info('Deploy detected forced termination.')
 
             transaction.cancel
             @deploy_job.update_status_failure
+
+            exit 1
           rescue => e
-            @logger.error('Error during deployment.')
+            @logger.error('Deployment failed.')
             @logger.error(e.message)
-            @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
+            @logger.error(e.backtrace.join("\n"))
 
             transaction.cancel
             @deploy_job.update_status_failure
 
-            raise e
+            exit 1
           end
         end
 
-        def execute
-          code_manager = CodeManager::Git.new(
-            @deploy_job.repository,
-            branch: @deploy_job.branch,
-            tag: @deploy_job.tag,
-            alias: @deploy_job.alias,
-            logger: @logger
-          )
-          ecs = Ecs::Client.new(@deploy_job, code_manager, logger: @logger)
+        def start
+          ecs = Ecs::Client.new(@deploy_job, logger: @logger)
 
           @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
           @deploy_job.started_at = Time.now.utc
@@ -58,13 +51,24 @@ module Genova
           when DeployJob.type.find_value(:scheduled_task)
             ecs.deploy_scheduled_task
           end
+        end
 
-          return unless Settings.github.deployment_tag && @deploy_job.branch.present?
+        def finished(deploy_job, logger)
+          return unless Settings.github.deployment_tag && deploy_job.branch.present?
 
-          @logger.info("Push tags to Git. [#{@deploy_job.label}]")
+          logger.info("Push tags to Git. [#{deploy_job.label}]")
 
-          @deploy_job.deployment_tag = @deploy_job.label
-          code_manager.release(@deploy_job.deployment_tag, @deploy_job.commit_id)
+          deploy_job.deployment_tag = deploy_job.label
+          code_manager = CodeManager::Git.new(
+            deploy_job.repository,
+            branch: deploy_job.branch,
+            tag: deploy_job.tag,
+            alias: deploy_job.alias,
+            logger: logger
+          )
+          code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
+
+          @logger.info('Deployment is complete.')
         end
       end
     end

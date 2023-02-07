@@ -15,7 +15,7 @@ module Genova
           )
         end
         let(:code_manager) { double(CodeManager::Git) }
-        let(:client) { Ecs::Client.new(deploy_job, code_manager) }
+        let(:client) { Ecs::Client.new(deploy_job) }
         let(:docker_client) { double(Genova::Docker::Client) }
         let(:ecr_client) { double(Ecr::Client) }
         let(:deploy_config) { double(Genova::Config::DeployConfig) }
@@ -31,6 +31,7 @@ module Genova
 
           allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
           allow(code_manager).to receive(:task_definition_config_path).and_return('task_definition_path')
+          allow(CodeManager::Git).to receive(:new).and_return(code_manager)
 
           allow(task_definition).to receive(:[]).with(:container_definitions).and_return(
             [{

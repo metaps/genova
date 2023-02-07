@@ -1,9 +1,15 @@
 module Genova
   module Ecs
     class Client
-      def initialize(deploy_job, code_manager, options = {})
+      def initialize(deploy_job, options = {})
         @deploy_job = deploy_job
-        @code_manager = code_manager
+        @code_manager = CodeManager::Git.new(
+          @deploy_job.repository,
+          branch: @deploy_job.branch,
+          tag: @deploy_job.tag,
+          alias: @deploy_job.alias,
+          logger: @logger
+        )
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @task_definitions = {}
         @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
@@ -12,13 +18,14 @@ module Genova
       end
 
       def ready
-        @logger.info('Start sending images to ECR.')
+        @logger.info('Authenticate to ECR.')
 
         @ecr_client.authenticate
         @code_manager.update
       end
 
       def deploy_run_task
+        @logger.info('Start run task.')
         run_task_config = @deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
 
         if @deploy_job.override_container.present?
@@ -50,6 +57,8 @@ module Genova
       end
 
       def deploy_service(options)
+        @logger.info('Start deploy service.')
+
         service_config = @deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
@@ -72,6 +81,7 @@ module Genova
       end
 
       def deploy_scheduled_task
+        @logger.info('Start deploy scheduled task.')
         target_config = @deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")

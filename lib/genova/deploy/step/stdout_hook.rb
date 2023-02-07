@@ -11,11 +11,9 @@ module Genova
         end
 
         def start_deploy(_params)
-          @logger.info('Start deployment.')
         end
 
         def complete_deploy(_params)
-          @logger.info('Deployment is complete.')
         end
 
         def complete_steps(_params)
