@@ -11,7 +11,7 @@ module Genova
           end
 
           def update(task_definition_arn, options = {})
-            @logger.info('Update service task.')
+            @logger.info("Update service task. (#{task_definition_arn})")
 
             params = {
               cluster: @deploy_job.cluster,

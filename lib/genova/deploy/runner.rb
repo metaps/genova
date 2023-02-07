@@ -5,7 +5,7 @@ module Genova
         def call(deploy_job, options = {})
           @logger = Genova::Logger::MongodbLogger.new(deploy_job)
           @logger.level = options[:verbose] ? :debug : Settings.logger.level
-          @logger.info('Deployment has started.')
+          @logger.info('Start deployment.')
 
           @deploy_job = deploy_job
           @options = options
@@ -67,6 +67,8 @@ module Genova
             logger: logger
           )
           code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
+
+          @logger.info('Deployment is complete.')
         end
       end
     end
