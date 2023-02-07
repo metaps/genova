@@ -16,6 +16,7 @@ module Slack
                                      mode: DeployJob.mode.find_value(:slack),
                                      slack_user_id: params[:user],
                                      slack_user_name: params[:user_name],
+                                     slack_timestamp: id,
                                      account: Settings.github.account,
                                      repository: params[:repository],
                                      branch: params[:branch],
@@ -38,8 +39,9 @@ module Slack
       bot.send_message('Please wait as other deployments are in progress.') if transaction.running?
 
       Genova::Deploy::Runner.call(deploy_job)
+      deploy_job = DeployJob.find(deploy_job.id)
 
-      bot.complete_deploy(deploy_job: deploy_job)
+      bot.complete_deploy(deploy_job: deploy_job) if deploy_job.status == DeployJob.status.find_value(:success)
     rescue => e
       params.present? ? send_error(e, id, params[:user]) : send_error(e, id)
       raise e

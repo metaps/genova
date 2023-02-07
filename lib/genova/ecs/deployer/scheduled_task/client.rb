@@ -40,6 +40,7 @@ module Genova
             @logger.info('EventBridge target has been updated.')
 
             @deploy_job.update_status_complate
+            Genova::Deploy::Runner.finished(@deploy_job, @logger)
           end
         end
       end

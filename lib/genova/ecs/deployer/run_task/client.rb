@@ -45,6 +45,8 @@ module Genova
               task_definition_arn: task_definition_arn,
               task_arns: task_arns
             )
+
+            Genova::Deploy::Runner.finished(@deploy_job, @logger)
           end
 
           private

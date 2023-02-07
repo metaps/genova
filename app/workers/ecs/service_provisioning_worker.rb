@@ -3,6 +3,8 @@ module Ecs
     LOG_SEPARATOR = '-' * 96
 
     include Sidekiq::Worker
+    include Genova::Sidekiq::SlackAlert
+    include Genova::Deploy
 
     sidekiq_options queue: :ecs_service_provisioning, retry: false
 
@@ -16,12 +18,14 @@ module Ecs
 
       begin
         wait_for_task_replacement
+        Genova::Deploy::Runner.finished(@deploy_job, @logger)
       rescue => e
-        @logger.error('Error during deployment.')
+        @logger.error('Deployment failed.')
         @logger.error(e.message)
-        @logger.error(e.backtrace.join("\n")) if e.backtrace.present?
+        @logger.error(e.backtrace.join("\n"))
 
         @deploy_job.update_status_failure
+        send_error(e, @deploy_job.slack_timestamp, @deploy_job.slack_user_id)
       end
     end
 
