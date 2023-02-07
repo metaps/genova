@@ -10,11 +10,9 @@ module Genova
           @logger.info("Deploy step ##{params[:index]}.")
         end
 
-        def start_deploy(_params)
-        end
+        def start_deploy(_params); end
 
-        def complete_deploy(_params)
-        end
+        def complete_deploy(_params); end
 
         def complete_steps(_params)
           @logger.info('All deployments are complete.')

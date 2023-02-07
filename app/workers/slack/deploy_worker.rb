@@ -39,7 +39,7 @@ module Slack
       bot.send_message('Please wait as other deployments are in progress.') if transaction.running?
 
       Genova::Deploy::Runner.call(deploy_job)
-      deploy_job = DeployJob.find(deploy_job.id)
+      deploy_job.reload
 
       bot.complete_deploy(deploy_job: deploy_job) if deploy_job.status == DeployJob.status.find_value(:success)
     rescue => e
