@@ -1,5 +1,3 @@
-require './lib/genova/extend/git'
-
 module Genova
   module CodeManager
     class Git

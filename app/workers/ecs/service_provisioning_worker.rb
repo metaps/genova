@@ -4,7 +4,6 @@ module Ecs
 
     include Sidekiq::Worker
     include Genova::Sidekiq::SlackAlert
-    include Genova::Deploy
 
     sidekiq_options queue: :ecs_service_provisioning, retry: false
 
@@ -25,7 +24,7 @@ module Ecs
         @logger.error(e.backtrace.join("\n"))
 
         @deploy_job.update_status_failure
-        send_error(e, @deploy_job.slack_timestamp, @deploy_job.slack_user_id)
+        send_error(e, @deploy_job.slack_timestamp, @deploy_job.slack_user_id) if @deploy_job.mode == DeployJob.mode.find_value(:slack)
       end
     end
 

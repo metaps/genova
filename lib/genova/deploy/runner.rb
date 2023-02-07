@@ -21,6 +21,8 @@ module Genova
 
             transaction.cancel
             @deploy_job.update_status_failure
+
+            exit 1
           rescue => e
             @logger.error('Deployment failed.')
             @logger.error(e.message)
@@ -28,6 +30,8 @@ module Genova
 
             transaction.cancel
             @deploy_job.update_status_failure
+
+            exit 1
           end
         end
 
