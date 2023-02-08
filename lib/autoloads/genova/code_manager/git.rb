@@ -9,7 +9,7 @@ module Genova
         @tag = options[:tag]
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @repository = repository
-        @repos_path = Rails.root.join('tmp', 'repos', @account, @repository).to_s
+        @repos_path = Rails.root.join('tmp/repos', @account, @repository).to_s
 
         name_or_alias = options[:alias].present? ? options[:alias] : @repository
         @repository_config = Genova::Config::SettingsHelper.find_repository(name_or_alias)
