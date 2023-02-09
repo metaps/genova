@@ -38,10 +38,10 @@ module Genova
         def start
           ecs = Ecs::Client.new(@deploy_job, logger: @logger)
 
-          @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
-          @deploy_job.started_at = Time.now.utc
-          @deploy_job.commit_id = ecs.ready
-          @deploy_job.save
+          @deploy_job.reload
+          raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
+
+          @deploy_job.update_status_in_progress(ecs.ready)
 
           case @deploy_job.type
           when DeployJob.type.find_value(:run_task)

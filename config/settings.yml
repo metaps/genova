@@ -66,6 +66,10 @@ slack:
   client_secret:
   command:
     max_history: 10
+
+  # Channel ID for message notification.
+  channel_id:
+
   interactive:
     branch_limit: 20
     tag_limit: 20
