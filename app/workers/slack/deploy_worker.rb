@@ -34,7 +34,7 @@ module Slack
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.detect_slack_deploy(deploy_job: deploy_job)
-      stop_ts = bot.show_stop_button(deploy_job.id)
+      stop_ts = bot.show_stop_button(deploy_job.id).ts
 
       transaction = Genova::Deploy::Transaction.new(params[:repository])
       bot.send_message('Please wait as other deployments are in progress.') if transaction.running?

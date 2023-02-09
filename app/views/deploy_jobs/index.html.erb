@@ -20,7 +20,7 @@
             <td>
               <% if deploy_job.status == 'success' %>
                 <i class="fa fa-check-circle"></i>
-              <% elsif deploy_job.status == 'initial' || deploy_job.status == 'in_progress' || deploy_job.status == 'reserved_cancel' %>
+              <% elsif ['initial', 'provisioning', 'deploying', 'reserved_cancel'].include?(deploy_job.status) %>
                 <i class="fa fa-spinner fa-spin"></i>
               <% elsif deploy_job.status == 'failure' %>
                 <i class="fa fa-exclamation-triangle"></i>

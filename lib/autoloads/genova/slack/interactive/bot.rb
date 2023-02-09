@@ -342,7 +342,7 @@ module Genova
           }
 
           @logger.info(data.to_json)
-          @client.chat_postMessage(data).ts
+          @client.chat_postMessage(data)
         end
 
         def running_task_definition(params)

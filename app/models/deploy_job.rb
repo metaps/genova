@@ -5,7 +5,7 @@ class DeployJob
   extend Enumerize
 
   enumerize :type, in: %i[run_task service scheduled_task]
-  enumerize :status, in: %i[initial in_progress success failure reserved_cancel cancel]
+  enumerize :status, in: %i[initial provisioning deploying success failure reserved_cancel cancel]
   enumerize :mode, in: %i[manual auto slack]
 
   field :id, type: String
@@ -103,13 +103,20 @@ class DeployJob
     results
   end
 
-  def update_status_in_progress(commit_id)
-    self.status = DeployJob.status.find_value(:in_progress).to_s
+  def update_status_provisioning(commit_id)
+    self.status = DeployJob.status.find_value(:provisioning).to_s
     self.started_at = Time.now.utc
     self.commit_id = commit_id
     save
 
-    logger.info('Deploy Status updated to In progress.')
+    logger.info('Deploy Status updated to Provisioning.')
+  end
+
+  def update_status_deploying
+    self.status = DeployJob.status.find_value(:deploying).to_s
+    save
+
+    logger.info('Deploy Status updated to Deploying.')
   end
 
   def update_status_complate(params = {})

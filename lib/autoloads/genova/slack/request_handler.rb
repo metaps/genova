@@ -167,7 +167,7 @@ module Genova
         def submit_stop
           deploy_job = DeployJob.find(@payload.dig(:actions, 0, :value))
 
-          if deploy_job.status ==  DeployJob.status.find_value(:initial)
+          if deploy_job.status == DeployJob.status.find_value(:initial) || deploy_job.status == DeployJob.status.find_value(:provisioning)
             deploy_job.update_status_reserved_cancel
             show_message('Cancellation request succeeded.')
           else
