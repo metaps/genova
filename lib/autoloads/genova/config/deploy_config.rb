@@ -2,7 +2,7 @@ module Genova
   module Config
     class DeployConfig < BaseConfig
       def validate!
-        schema = File.read(Rails.root.join('lib/autoloads/config/validator/deploy_config.json'))
+        schema = File.read(Rails.root.join('lib/autoloads/genova/config/validator/deploy_config.json'))
         errors = JSON::Validator.fully_validate(schema, @params)
 
         raise Exceptions::ValidationError, errors[0] if errors.size.positive?
