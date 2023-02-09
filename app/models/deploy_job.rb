@@ -5,7 +5,7 @@ class DeployJob
   extend Enumerize
 
   enumerize :type, in: %i[run_task service scheduled_task]
-  enumerize :status, in: %i[in_progress success failure]
+  enumerize :status, in: %i[in_progress success failure cancel]
   enumerize :mode, in: %i[manual auto slack]
 
   field :id, type: String
@@ -116,6 +116,13 @@ class DeployJob
     self.status = DeployJob.status.find_value(:failure).to_s
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
+    save
+  end
+
+  def update_status_cancel
+    self.status = DeployJob.status.find_value(:cancel).to_s
+    self.finished_at = Time.now.utc
+    self.execution_time = finished_at.to_f - started_at.to_f
     save
   end
 

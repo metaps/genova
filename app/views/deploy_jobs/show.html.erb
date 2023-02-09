@@ -13,6 +13,8 @@
             <i class="fa fa-spinner fa-spin"></i>
           <% elsif @deploy_job.status == 'failure' %>
             <i class="fa fa-exclamation-triangle"></i>
+          <% elsif @deploy_job.status == 'cancel' %>
+            <i class="fa fa-times-circle"></i>
           <% end %>
           <%= @deploy_job.status %>
         </dd>

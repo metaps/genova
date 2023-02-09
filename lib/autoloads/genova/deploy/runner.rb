@@ -20,7 +20,7 @@ module Genova
             @logger.info('Deploy detected forced termination.')
 
             transaction.cancel
-            @deploy_job.update_status_failure
+            @deploy_job.update_status_cancel
 
             exit 1
           rescue => e
