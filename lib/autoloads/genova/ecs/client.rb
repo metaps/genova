@@ -134,6 +134,8 @@ module Genova
       def deploy_pre_hook
         @deploy_job.reload
         raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
+
+        @deploy_job.update_status_deploying
       end
     end
   end

@@ -171,7 +171,8 @@ module Genova
             deploy_job.update_status_reserved_cancel
             show_message('Cancellation request succeeded.')
           else
-            show_message('Oops, the cancel failed because the deployment is already running.')
+            bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
+            bot.send_message('Oops! Cancellation failed. Deployment is already in progress.')
           end
         end
 

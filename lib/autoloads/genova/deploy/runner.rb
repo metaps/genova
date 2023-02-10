@@ -5,7 +5,7 @@ module Genova
         def call(deploy_job, options = {})
           @logger = Genova::Logger::MongodbLogger.new(deploy_job)
           @logger.level = options[:verbose] ? :debug : Settings.logger.level
-          @logger.info('Start deployment.')
+          @logger.info('Initial deployment.')
 
           @deploy_job = deploy_job
           @options = options
@@ -17,7 +17,7 @@ module Genova
             start
             transaction.commit
           rescue Interrupt
-            @logger.info('Deploy detected forced termination.')
+            @logger.info('Detect forced termination.')
 
             transaction.cancel
             @deploy_job.update_status_cancel
@@ -36,6 +36,7 @@ module Genova
         end
 
         def start
+          @logger.info('Start deployment.')
           ecs = Ecs::Client.new(@deploy_job, logger: @logger)
 
           @deploy_job.reload
