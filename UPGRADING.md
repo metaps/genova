@@ -6,7 +6,7 @@ The genova configuration parameter `slack.channel` is obsolete. Use `slack.chann
 The `channel_id` can be obtained from the URL by opening the channel in your browser.
 This issue is related to an Issue of slack-ruby-client used by genova.
 
-```
+```yaml
 # config/settings.local.yml
 
 slack:
