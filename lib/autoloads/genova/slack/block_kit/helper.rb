@@ -115,6 +115,19 @@ module Genova
             }
           end
 
+          def danger_button(text, value, action_id)
+            {
+              type: 'button',
+              text: {
+                type: 'plain_text',
+                text: text
+              },
+              value: value,
+              style: 'danger',
+              action_id: action_id
+            }
+          end
+
           def button(text, value, action_id)
             {
               type: 'button',

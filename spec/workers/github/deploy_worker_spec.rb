@@ -27,23 +27,25 @@ module Github
         clusters: []
       )
     end
-    let(:slack_bot) { double(Genova::Slack::Interactive::Bot) }
+    let(:bot) { double(Genova::Slack::Interactive::Bot) }
+    let(:client) { double(Slack::Web::Client) }
+    let(:remove_key) { Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at') }
 
     before(:each) do
       DeployJob.delete_all
-
-      remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
       Redis.current.del(remove_key)
+
+      allow(client).to receive(:ts)
+
+      allow(bot).to receive(:detect_auto_deploy).and_return(client)
+      allow(bot).to receive(:start_step)
+      allow(bot).to receive(:start_deploy)
+      allow(bot).to receive(:complete_deploy)
+      allow(bot).to receive(:complete_steps)
+      allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 
       allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
-
-      allow(slack_bot).to receive(:detect_auto_deploy).and_return(parent_message_ts: Time.now.utc.to_f)
-      allow(slack_bot).to receive(:start_step)
-      allow(slack_bot).to receive(:start_deploy)
-      allow(slack_bot).to receive(:complete_deploy)
-      allow(slack_bot).to receive(:complete_steps)
-      allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(slack_bot)
 
       allow(Genova::Deploy::Runner).to receive(:call)
     end

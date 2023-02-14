@@ -12,7 +12,7 @@ module Slack
       deploy_job = DeployJob.create!(id: DeployJob.generate_id,
                                      type: params[:type],
                                      alias: params[:alias],
-                                     status: DeployJob.status.find_value(:in_progress),
+                                     status: DeployJob.status.find_value(:initial),
                                      mode: DeployJob.mode.find_value(:slack),
                                      slack_user_id: params[:user],
                                      slack_user_name: params[:user_name],
@@ -34,6 +34,7 @@ module Slack
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.detect_slack_deploy(deploy_job: deploy_job)
+      canceller = bot.show_stop_button(deploy_job.id).ts
 
       transaction = Genova::Deploy::Transaction.new(params[:repository])
       bot.send_message('Please wait as other deployments are in progress.') if transaction.running?
@@ -41,7 +42,10 @@ module Slack
       Genova::Deploy::Runner.call(deploy_job)
       deploy_job.reload
 
-      bot.complete_deploy(deploy_job: deploy_job) if deploy_job.status == DeployJob.status.find_value(:success)
+      if deploy_job.status == DeployJob.status.find_value(:success)
+        bot.delete_message(canceller)
+        bot.complete_deploy(deploy_job: deploy_job)
+      end
     rescue => e
       params.present? ? send_error(e, id, params[:user]) : send_error(e, id)
       raise e

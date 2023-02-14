@@ -164,6 +164,18 @@ module Genova
           show_message('Deployment started.')
         end
 
+        def submit_stop
+          deploy_job = DeployJob.find(@payload.dig(:actions, 0, :value))
+
+          if deploy_job.status == DeployJob.status.find_value(:initial) || deploy_job.status == DeployJob.status.find_value(:provisioning)
+            deploy_job.update_status_reserved_cancel
+            show_message('Cancellation request succeeded.')
+          else
+            bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
+            bot.send_message('Oops! Cancellation failed. Deployment is already in progress.')
+          end
+        end
+
         def selected_workflow_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])

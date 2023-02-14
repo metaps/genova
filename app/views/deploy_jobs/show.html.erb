@@ -9,10 +9,12 @@
         <dd class="column is-4">
           <% if @deploy_job.status == 'success' %>
             <i class="fa fa-check-circle"></i>
-          <% elsif @deploy_job.status == 'in_progress' %>
+          <% elsif ['initial', 'provisioning', 'deploying', 'reserved_cancel'].include?(@deploy_job.status) %>
             <i class="fa fa-spinner fa-spin"></i>
           <% elsif @deploy_job.status == 'failure' %>
             <i class="fa fa-exclamation-triangle"></i>
+          <% elsif @deploy_job.status == 'cancel' %>
+            <i class="fa fa-times-circle"></i>
           <% end %>
           <%= @deploy_job.status %>
         </dd>

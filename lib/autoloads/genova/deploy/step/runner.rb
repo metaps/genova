@@ -14,7 +14,7 @@ module Genova
                 deploy_job = DeployJob.create!(
                   id: DeployJob.generate_id,
                   type: DeployJob.type.find_value(step[:type]),
-                  status: DeployJob.status.find_value(:in_progress),
+                  status: DeployJob.status.find_value(:initial),
                   mode: options[:mode],
                   slack_user_id: options[:slack_user_id],
                   slack_user_name: options[:slack_user_name],

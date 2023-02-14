@@ -52,6 +52,8 @@ module Genova
         options[:task_role_arn] = Aws::IAM::Role.new(run_task_config[:task_role]).arn if run_task_config[:task_role]
         options[:task_execution_role_arn] = Aws::IAM::Role.new(run_task_config[:task_execution_role]).arn if run_task_config[:task_execution_role]
 
+        deploy_pre_hook
+
         run_task_client = Deployer::RunTask::Client.new(@deploy_job, logger: @logger)
         run_task_client.execute(task_definition.task_definition_arn, options)
       end
@@ -64,7 +66,6 @@ module Genova
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
         push_image(service_config[:containers], task_definition, @deploy_job.label)
-
         service_client = Deployer::Service::Client.new(@deploy_job, logger: @logger, async_wait: options[:async_wait])
 
         raise Exceptions::ValidationError, "Service is not registered. [#{@deploy_job.service}]" unless service_client.exist?
@@ -77,6 +78,7 @@ module Genova
           :maximum_percent
         )
 
+        deploy_pre_hook
         service_client.update(task_definition.task_definition_arn, params)
       end
 
@@ -89,8 +91,8 @@ module Genova
         @deploy_job.task_definition_arn = task_definition.task_definition_arn
 
         push_image(target_config[:containers], task_definition, @deploy_job.label)
-
         rule_config = @deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)
+        deploy_pre_hook
 
         scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@deploy_job, logger: @logger)
         scheduled_task_client.update(
@@ -127,6 +129,13 @@ module Genova
 
         @task_definitions[task_definition_path] = task_client.register(task_definition_path, task_overrides, tag: tag) unless @task_definitions.include?(task_definition_path)
         @task_definitions[task_definition_path]
+      end
+
+      def deploy_pre_hook
+        @deploy_job.reload
+        raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
+
+        @deploy_job.update_status_deploying
       end
     end
   end

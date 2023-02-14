@@ -12,6 +12,13 @@ module Genova
           send([BlockKit::Helper.section(text)])
         end
 
+        def delete_message(ts)
+          @client.chat_delete(
+            channel: Settings.slack.channel_id,
+            ts: ts
+          )
+        end
+
         def ask_history(params)
           options = BlockKit::ElementObject.history_options(user: params[:user])
           raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
@@ -251,6 +258,14 @@ module Genova
                ])
         end
 
+        def show_stop_button(id)
+          blocks = []
+          blocks << BlockKit::Helper.actions([BlockKit::Helper.danger_button('Stop', id, 'submit_stop')])
+          blocks << BlockKit::Helper.context_markdown(':exclamation: Deployment may not be canceled depending on the progress of the deployment.')
+
+          send(blocks)
+        end
+
         def complete_steps(params)
           mention = params[:user].present? ? "<@#{params[:user]}>" : '<!channel>'
 
@@ -321,7 +336,7 @@ module Genova
 
         def send(blocks)
           data = {
-            channel: Settings.slack.channel,
+            channel: Settings.slack.channel_id,
             blocks: blocks,
             thread_ts: @parent_message_ts
           }

@@ -3,45 +3,43 @@ module Genova
     class Runner
       class << self
         def call(deploy_job, options = {})
-          @logger = Genova::Logger::MongodbLogger.new(deploy_job)
-          @logger.level = options[:verbose] ? :debug : Settings.logger.level
-          @logger.info('Start deployment.')
-
           @deploy_job = deploy_job
           @options = options
 
+          @logger = Genova::Logger::MongodbLogger.new(@deploy_job)
+          @logger.level = options[:verbose] ? :debug : Settings.logger.level
+          @logger.info('Initial deployment.')
+
           transaction = Genova::Deploy::Transaction.new(@deploy_job.repository, logger: @logger, force: @options[:force])
+          transaction.begin
+          start
+          transaction.commit
+        rescue Interrupt
+          @logger.info('Detect forced termination.')
 
-          begin
-            transaction.begin
-            start
-            transaction.commit
-          rescue Interrupt
-            @logger.info('Deploy detected forced termination.')
+          transaction.cancel
+          @deploy_job.update_status_cancel
 
-            transaction.cancel
-            @deploy_job.update_status_failure
+          exit 1
+        rescue => e
+          @logger.error('Deployment failed.')
+          @logger.error(e.message)
+          @logger.error(e.backtrace.join("\n"))
 
-            exit 1
-          rescue => e
-            @logger.error('Deployment failed.')
-            @logger.error(e.message)
-            @logger.error(e.backtrace.join("\n"))
+          transaction.cancel
+          @deploy_job.update_status_failure
 
-            transaction.cancel
-            @deploy_job.update_status_failure
-
-            exit 1
-          end
+          exit 1
         end
 
         def start
+          @logger.info('Start deployment.')
           ecs = Ecs::Client.new(@deploy_job, logger: @logger)
 
-          @deploy_job.status = DeployJob.status.find_value(:in_progress).to_s
-          @deploy_job.started_at = Time.now.utc
-          @deploy_job.commit_id = ecs.ready
-          @deploy_job.save
+          @deploy_job.reload
+          raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
+
+          @deploy_job.update_status_provisioning(ecs.ready)
 
           case @deploy_job.type
           when DeployJob.type.find_value(:run_task)

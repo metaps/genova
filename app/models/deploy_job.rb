@@ -5,7 +5,7 @@ class DeployJob
   extend Enumerize
 
   enumerize :type, in: %i[run_task service scheduled_task]
-  enumerize :status, in: %i[in_progress success failure]
+  enumerize :status, in: %i[initial provisioning deploying success failure reserved_cancel cancel]
   enumerize :mode, in: %i[manual auto slack]
 
   field :id, type: String
@@ -103,6 +103,22 @@ class DeployJob
     results
   end
 
+  def update_status_provisioning(commit_id)
+    self.status = DeployJob.status.find_value(:provisioning).to_s
+    self.started_at = Time.now.utc
+    self.commit_id = commit_id
+    save
+
+    logger.info('Deploy Status updated to Provisioning.')
+  end
+
+  def update_status_deploying
+    self.status = DeployJob.status.find_value(:deploying).to_s
+    save
+
+    logger.info('Deploy Status updated to Deploying.')
+  end
+
   def update_status_complate(params = {})
     self.status = DeployJob.status.find_value(:success).to_s
     self.finished_at = Time.now.utc
@@ -110,6 +126,8 @@ class DeployJob
     self.task_arns = params[:task_arns] if params[:task_arns].present?
     self.task_definition_arn = params[:task_definition_arn] if params[:task_definition_arn].present?
     save
+
+    logger.info('Deploy Status updated to Complete.')
   end
 
   def update_status_failure
@@ -117,9 +135,31 @@ class DeployJob
     self.finished_at = Time.now.utc
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
     save
+
+    logger.info('Deploy Status updated to Failure.')
+  end
+
+  def update_status_reserved_cancel
+    self.status = DeployJob.status.find_value(:reserved_cancel).to_s
+    save
+
+    logger.info('Deploy Status updated to Reserved cancel.')
+  end
+
+  def update_status_cancel
+    self.status = DeployJob.status.find_value(:cancel).to_s
+    self.finished_at = Time.now.utc
+    self.execution_time = finished_at.to_f - started_at.to_f
+    save
+
+    logger.info('Deploy Status updated to Cancel.')
   end
 
   private
+
+  def logger
+    Genova::Logger::MongodbLogger.new(self)
+  end
 
   def check_type
     errors[:base] << 'Please specify deploy type.' unless type.present?

@@ -16,6 +16,7 @@ module Slack
         deploy_job.save
       end
       let(:bot) { double(Genova::Slack::Interactive::Bot) }
+      let(:client) { double(Slack::Web::Client) }
 
       include_context :session_start
 
@@ -30,6 +31,8 @@ module Slack
         )
 
         allow(bot).to receive(:detect_slack_deploy)
+        allow(client).to receive(:ts)
+        allow(bot).to receive(:show_stop_button).and_return(client)
         allow(bot).to receive(:complete_deploy)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 
