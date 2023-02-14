@@ -259,11 +259,11 @@ module Genova
         end
 
         def show_stop_button(id)
-           blocks = []
-           blocks << BlockKit::Helper.actions([BlockKit::Helper.danger_button('Stop', id, 'submit_stop')])
-           blocks << BlockKit::Helper.context_markdown(':exclamation: Deployment may not be canceled depending on the progress of the deployment.')
+          blocks = []
+          blocks << BlockKit::Helper.actions([BlockKit::Helper.danger_button('Stop', id, 'submit_stop')])
+          blocks << BlockKit::Helper.context_markdown(':exclamation: Deployment may not be canceled depending on the progress of the deployment.')
 
-           send(blocks)
+          send(blocks)
         end
 
         def complete_steps(params)

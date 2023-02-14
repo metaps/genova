@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-class String
+describe String do
   describe 'pattern_match?' do
     context 'when exact match' do
       it 'should be returned true' do

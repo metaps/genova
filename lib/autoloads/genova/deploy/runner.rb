@@ -3,36 +3,33 @@ module Genova
     class Runner
       class << self
         def call(deploy_job, options = {})
-          @logger = Genova::Logger::MongodbLogger.new(deploy_job)
-          @logger.level = options[:verbose] ? :debug : Settings.logger.level
-          @logger.info('Initial deployment.')
-
           @deploy_job = deploy_job
           @options = options
 
+          @logger = Genova::Logger::MongodbLogger.new(@deploy_job)
+          @logger.level = options[:verbose] ? :debug : Settings.logger.level
+          @logger.info('Initial deployment.')
+
           transaction = Genova::Deploy::Transaction.new(@deploy_job.repository, logger: @logger, force: @options[:force])
+          transaction.begin
+          start
+          transaction.commit
+        rescue Interrupt
+          @logger.info('Detect forced termination.')
 
-          begin
-            transaction.begin
-            start
-            transaction.commit
-          rescue Interrupt
-            @logger.info('Detect forced termination.')
+          transaction.cancel
+          @deploy_job.update_status_cancel
 
-            transaction.cancel
-            @deploy_job.update_status_cancel
+          exit 1
+        rescue => e
+          @logger.error('Deployment failed.')
+          @logger.error(e.message)
+          @logger.error(e.backtrace.join("\n"))
 
-            exit 1
-          rescue => e
-            @logger.error('Deployment failed.')
-            @logger.error(e.message)
-            @logger.error(e.backtrace.join("\n"))
+          transaction.cancel
+          @deploy_job.update_status_failure
 
-            transaction.cancel
-            @deploy_job.update_status_failure
-
-            exit 1
-          end
+          exit 1
         end
 
         def start

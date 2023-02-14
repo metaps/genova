@@ -46,7 +46,6 @@ module Slack
         bot.delete_message(stop_ts)
         bot.complete_deploy(deploy_job: deploy_job)
       end
-
     rescue => e
       params.present? ? send_error(e, id, params[:user]) : send_error(e, id)
       raise e
