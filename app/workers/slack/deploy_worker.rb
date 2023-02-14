@@ -34,7 +34,7 @@ module Slack
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
       bot.detect_slack_deploy(deploy_job: deploy_job)
-      stop_ts = bot.show_stop_button(deploy_job.id).ts
+      canceller = bot.show_stop_button(deploy_job.id).ts
 
       transaction = Genova::Deploy::Transaction.new(params[:repository])
       bot.send_message('Please wait as other deployments are in progress.') if transaction.running?
@@ -43,7 +43,7 @@ module Slack
       deploy_job.reload
 
       if deploy_job.status == DeployJob.status.find_value(:success)
-        bot.delete_message(stop_ts)
+        bot.delete_message(canceller)
         bot.complete_deploy(deploy_job: deploy_job)
       end
     rescue => e
