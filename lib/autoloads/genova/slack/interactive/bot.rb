@@ -223,9 +223,7 @@ module Genova
             fields << BlockKit::Helper.section_short_field('Scheduled task target', params[:deploy_job].scheduled_task_target)
           end
 
-          console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/home" \
-                        "?region=#{ENV.fetch('AWS_REGION')}#/clusters/#{params[:deploy_job].cluster}/services/#{params[:deploy_job].service}/tasks"
-
+          console_uri = "https://#{ENV.fetch('AWS_REGION')}.console.aws.amazon.com/ecs/v2/clusters/#{params[:deploy_job].cluster}/tasks?region=#{ENV['AWS_REGION']}"
           send([
                  BlockKit::Helper.header('Start deploy job.'),
                  BlockKit::Helper.section_short_fieldset(fields),
@@ -315,7 +313,7 @@ module Genova
 
             if params[:override_container].present?
               fields << BlockKit::Helper.section_short_field('Override container', params[:override_container])
-              fields << BlockKit::Helper.section_short_field('Override command', params[:override_command])
+              fields << BlockKit::Helper.section_short_field('Override command', "`#{params[:override_command]}`")
             end
 
           when DeployJob.type.find_value(:service)

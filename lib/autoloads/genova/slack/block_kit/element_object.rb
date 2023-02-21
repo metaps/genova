@@ -229,7 +229,7 @@ module Genova
               messages << "Scheduled task target: #{data[:scheduled_task_target]}"
             end
 
-            messages.join("\n")
+            middle_truncate(messages.join("\n"), 140)
           end
 
           def parse_run_tasks(run_tasks)

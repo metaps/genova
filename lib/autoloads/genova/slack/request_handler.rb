@@ -106,11 +106,10 @@ module Genova
           }
           @session_store.merge(params)
 
-          value = @session_store.params[:run_task]
-
-          value += " (#{params[:override_container]} / #{params[:override_command]})" if params[:override_container].present? && params[:override_command].present?
-
           return if @session_store.params[:run_task].nil?
+
+          value = @session_store.params[:run_task]
+          value += "Override\n`#{params[:override_container]} / #{params[:override_command]}`" if params[:override_container].present? && params[:override_command].present?
 
           ::Slack::DeployConfirmWorker.perform_async(@thread_ts)
           show_message(BlockKit::Helper.section_field('Run task', value))
