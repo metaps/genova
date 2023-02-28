@@ -54,7 +54,13 @@ workflows:
   #     - repository:
   #       branch:
   #       cluster:
+  #
+  #       # The parameters that can be specified are as follows.
+  #       # * service
+  #       # * run_task
+  #       # (Scheduled tasks are not supported at this time. If you have any requests, please create an Issue.)
   #       type:
+  #
   #       async_wait: true
   #       resources:
 
