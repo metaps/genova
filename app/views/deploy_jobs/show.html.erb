@@ -49,15 +49,13 @@
             <%= link_to(@deploy_job.commit_id[0, 7], github_client.build_commit_uri(@deploy_job.commit_id)) %>
           <% end %>
         </dd>
-        <dt class="column is-2">Deployment Tag</dt>
-        <dd class="column is-4">
-          <% if @deploy_job.deployment_tag.present? %>
+        <% if @deploy_job.deployment_tag.present? %>
+          <dt class="column is-2">Git tag</dt>
+          <dd class="column is-4">
             <i class="fab fa-github"></i>
             <%= link_to(@deploy_job.deployment_tag, github_client.build_tag_uri(@deploy_job.deployment_tag)) %>
-          <% else %>
-            (Deployed with tag)
-          <% end %>
-        </dd>
+          </dd>
+        <% end %>
       </div>
       <div class="columns">
         <dt class="column is-2">Mode</dt>

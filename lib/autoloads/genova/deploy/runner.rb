@@ -57,6 +57,8 @@ module Genova
           logger.info("Push tags to Git. [#{deploy_job.label}]")
 
           deploy_job.deployment_tag = deploy_job.label
+          deploy_job.save
+
           code_manager = CodeManager::Git.new(
             deploy_job.repository,
             branch: deploy_job.branch,
