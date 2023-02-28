@@ -62,13 +62,19 @@ module Genova
         end
 
         describe 'update' do
+          let(:target) {
+            {
+              ecs_parameters: { task_definition_arn: 'task_definition_arn' }
+            }
+          }
+
           it 'should be update deploy_job status' do
             allow(client).to receive(:exist_rule?).and_return(true)
             allow(client).to receive(:exist_target?).and_return(true)
             allow(eventbridge).to receive(:put_rule)
             allow(eventbridge).to receive(:put_targets)
 
-            expect { client.update('name', 'schedule_expression', {}) }.to_not raise_error
+            expect { client.update('name', 'schedule_expression', target) }.to_not raise_error
             expect(deploy_job.status).to eq(DeployJob.status.find_value(:success))
           end
         end
