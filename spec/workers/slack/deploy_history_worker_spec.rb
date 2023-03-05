@@ -17,7 +17,7 @@ module Slack
         subject.perform(parent_message_ts)
       end
 
-      it 'should be in queeue' do
+      it 'should be in queue' do
         is_expected.to be_processed_in(:slack_deploy_history)
       end
 

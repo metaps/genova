@@ -20,7 +20,7 @@ module Genova
           transaction.cancel
           @deploy_job.update_status_cancel
 
-          exit 1
+          error_handler(e)
         rescue => e
           @logger.error('Deployment failed.')
           @logger.error(e.message)
@@ -29,7 +29,7 @@ module Genova
           transaction.cancel
           @deploy_job.update_status_failure
 
-          exit 1
+          error_handler(e)
         end
 
         def start
@@ -69,6 +69,14 @@ module Genova
           code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
 
           @logger.info('Deployment is complete.')
+        end
+
+        def error_handler(e)
+          if @deploy_job.mode == DeployJob.mode.find_value(:manual)
+            exit 1
+          else
+            raise e
+          end
         end
       end
     end
