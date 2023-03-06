@@ -17,6 +17,7 @@ module Slack
       end
       let(:bot) { double(Genova::Slack::Interactive::Bot) }
       let(:client) { double(Slack::Web::Client) }
+      let(:runner) { double(Genova::Deploy::Runner) }
 
       include_context :session_start
 
@@ -39,7 +40,8 @@ module Slack
 
       context 'when job was successful' do
         before do
-          allow(Genova::Deploy::Runner).to receive(:call)
+          allow(runner).to receive(:run)
+          allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)
           subject.perform(id)
         end
 
@@ -54,7 +56,8 @@ module Slack
 
       context 'when job failed' do
         before do
-          allow(Genova::Deploy::Runner).to receive(:call).and_raise(Genova::Exceptions::ImageBuildError)
+          allow(runner).to receive(:run).and_raise(Genova::Exceptions::ImageBuildError)
+          allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)
         end
 
         it 'shouold be notify Slack of errors' do

@@ -20,9 +20,12 @@ module Genova
               }
             ]
           end
+          let(:runner) { double(Genova::Deploy::Runner) }
 
           it 'shuold be not error' do
-            allow(Deploy::Runner).to receive(:call)
+            allow(runner).to receive(:run)
+            allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)
+
             expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
           end
         end

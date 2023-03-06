@@ -45,7 +45,7 @@ module GenovaCli
 
         raise Genova::Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
 
-        ::Genova::Deploy::Runner.call(deploy_job, verbose: options[:verbose], force: options[:force])
+        ::Genova::Deploy::Runner.new(deploy_job, verbose: options[:verbose], force: options[:force]).run
       end
     end
 
