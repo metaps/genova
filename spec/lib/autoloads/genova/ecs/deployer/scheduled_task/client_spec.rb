@@ -62,11 +62,11 @@ module Genova
         end
 
         describe 'update' do
-          let(:target) {
+          let(:target) do
             {
               ecs_parameters: { task_definition_arn: 'task_definition_arn' }
             }
-          }
+          end
 
           it 'should be update deploy_job status' do
             allow(client).to receive(:exist_rule?).and_return(true)

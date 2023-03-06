@@ -17,7 +17,7 @@ module Ecs
 
       begin
         wait_for_task_replacement
-        Genova::Deploy::Runner.finished(@deploy_job, @logger)
+        @deploy_job.finished
       rescue => e
         @logger.error('Deployment failed.')
         @logger.error(e.message)

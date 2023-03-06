@@ -50,31 +50,9 @@ module Genova
       end
 
       def error_handler(e)
-        if @deploy_job.mode == DeployJob.mode.find_value(:manual)
-          exit 1
-        else
-          raise e
-        end
-      end
+        raise e unless @deploy_job.mode == DeployJob.mode.find_value(:manual)
 
-      def self.finished(deploy_job, logger)
-        return unless Settings.github.deployment_tag && deploy_job.branch.present?
-
-        logger.info("Push tags to Git. [#{deploy_job.label}]")
-
-        deploy_job.deployment_tag = deploy_job.label
-        deploy_job.save
-
-        code_manager = CodeManager::Git.new(
-          deploy_job.repository,
-          branch: deploy_job.branch,
-          tag: deploy_job.tag,
-          alias: deploy_job.alias,
-          logger: logger
-        )
-        code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
-
-        logger.info('Deployment is complete.')
+        exit 1
       end
     end
   end
