@@ -34,6 +34,7 @@ module Genova
           cluster: 'cluster'
         )
       end
+      let(:runner) { Runner.new(service) }
 
       before do
         allow(ecs).to receive(:ready)
@@ -45,7 +46,7 @@ module Genova
         DeployJob.collection.drop
       end
 
-      describe 'call' do
+      describe 'run' do
         context 'when exceptions do not occur' do
           before do
             allow(File).to receive(:file?).and_return(true)
@@ -54,21 +55,21 @@ module Genova
 
           context 'when executing the run task' do
             it 'should be \'deploy_run_task\' method is executed' do
-              Runner.call(run_task)
+              Runner.new(run_task).run
               expect(ecs).to have_received(:deploy_run_task).once
             end
           end
 
           context 'when deploying a service' do
             it 'should be \'deploy_service\' method is executed' do
-              Runner.call(service)
+              Runner.new(service).run
               expect(ecs).to have_received(:deploy_service).once
             end
           end
 
           context 'when deploying a scheduled task' do
             it 'should be \'deploy_scheduled_task\' method is executed' do
-              Runner.call(scheduled_task)
+              Runner.new(scheduled_task).run
               expect(ecs).to have_received(:deploy_scheduled_task).once
             end
           end
@@ -76,20 +77,20 @@ module Genova
 
         context 'when interrupt occur' do
           it 'should be return exit 1' do
-            allow(Runner).to receive(:start).and_raise(Interrupt)
+            allow(ecs).to receive(:deploy_service).and_raise(Interrupt)
             allow($stdout).to receive(:write)
 
-            expect { Runner.call(service) }.to raise_error(SystemExit)
+            expect { runner.run }.to raise_error(SystemExit)
             expect(service.status).to eq(:cancel)
           end
         end
 
         context 'when runtime exception do occur' do
           it 'should be return exit 1' do
-            allow(Runner).to receive(:start).and_raise(RuntimeError)
+            allow(ecs).to receive(:deploy_service).and_raise(RuntimeError)
             allow($stdout).to receive(:write)
 
-            expect { Runner.call(service) }.to raise_error(SystemExit)
+            expect { runner.run }.to raise_error(SystemExit)
             expect(service.status).to eq(:failure)
           end
         end

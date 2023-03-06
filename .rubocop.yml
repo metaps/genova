@@ -24,6 +24,8 @@ Metrics/MethodLength:
   Max: 64
 Metrics/ModuleLength:
   Enabled: false
+Naming/MethodParameterName:
+  MinNameLength: 1
 Naming/VariableNumber:
   EnforcedStyle: snake_case
   CheckSymbols: false

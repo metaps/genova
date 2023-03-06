@@ -1,75 +1,58 @@
 module Genova
   module Deploy
     class Runner
-      class << self
-        def call(deploy_job, options = {})
-          @deploy_job = deploy_job
-          @options = options
+      def initialize(deploy_job, options = {})
+        @deploy_job = deploy_job
+        @options = options
 
-          @logger = Genova::Logger::MongodbLogger.new(@deploy_job)
-          @logger.level = options[:verbose] ? :debug : Settings.logger.level
-          @logger.info('Initial deployment.')
+        @logger = Genova::Logger::MongodbLogger.new(@deploy_job)
+        @logger.level = options[:verbose] ? :debug : Settings.logger.level
+      end
 
-          transaction = Genova::Deploy::Transaction.new(@deploy_job.repository, logger: @logger, force: @options[:force])
-          transaction.begin
-          start
-          transaction.commit
-        rescue Interrupt
-          @logger.info('Detect forced termination.')
+      def run
+        transaction = Genova::Deploy::Transaction.new(@deploy_job.repository, logger: @logger, force: @options[:force])
+        transaction.begin
 
-          transaction.cancel
-          @deploy_job.update_status_cancel
+        @logger.info('Start deployment.')
+        ecs = Ecs::Client.new(@deploy_job, logger: @logger)
 
-          exit 1
-        rescue => e
-          @logger.error('Deployment failed.')
-          @logger.error(e.message)
-          @logger.error(e.backtrace.join("\n"))
+        @deploy_job.reload
+        raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
 
-          transaction.cancel
-          @deploy_job.update_status_failure
+        @deploy_job.update_status_provisioning(ecs.ready)
 
-          exit 1
+        case @deploy_job.type
+        when DeployJob.type.find_value(:run_task)
+          ecs.deploy_run_task
+        when DeployJob.type.find_value(:service)
+          ecs.deploy_service(async_wait: @options[:async_wait])
+        when DeployJob.type.find_value(:scheduled_task)
+          ecs.deploy_scheduled_task
         end
 
-        def start
-          @logger.info('Start deployment.')
-          ecs = Ecs::Client.new(@deploy_job, logger: @logger)
+        transaction.commit
+      rescue Interrupt => e
+        @logger.info('Detect forced termination.')
 
-          @deploy_job.reload
-          raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
+        transaction.cancel
+        @deploy_job.update_status_cancel
 
-          @deploy_job.update_status_provisioning(ecs.ready)
+        error_handler(e)
+      rescue => e
+        @logger.error('Deployment failed.')
+        @logger.error(e.message)
+        @logger.error(e.backtrace.join("\n"))
 
-          case @deploy_job.type
-          when DeployJob.type.find_value(:run_task)
-            ecs.deploy_run_task
-          when DeployJob.type.find_value(:service)
-            ecs.deploy_service(async_wait: @options[:async_wait])
-          when DeployJob.type.find_value(:scheduled_task)
-            ecs.deploy_scheduled_task
-          end
-        end
+        transaction.cancel
+        @deploy_job.update_status_failure
 
-        def finished(deploy_job, logger)
-          return unless Settings.github.deployment_tag && deploy_job.branch.present?
+        error_handler(e)
+      end
 
-          logger.info("Push tags to Git. [#{deploy_job.label}]")
+      def error_handler(e)
+        raise e unless @deploy_job.mode == DeployJob.mode.find_value(:manual)
 
-          deploy_job.deployment_tag = deploy_job.label
-          deploy_job.save
-
-          code_manager = CodeManager::Git.new(
-            deploy_job.repository,
-            branch: deploy_job.branch,
-            tag: deploy_job.tag,
-            alias: deploy_job.alias,
-            logger: logger
-          )
-          code_manager.release(deploy_job.deployment_tag, deploy_job.commit_id)
-
-          @logger.info('Deployment is complete.')
-        end
+        exit 1
       end
     end
   end

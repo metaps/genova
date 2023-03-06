@@ -155,6 +155,26 @@ class DeployJob
     logger.info('Deploy Status updated to Cancel.')
   end
 
+  def finished
+    return unless Settings.github.deployment_tag && branch.present?
+
+    logger.info("Push tags to Git. [#{label}]")
+
+    self.deployment_tag = label
+    save
+
+    code_manager = Genova::CodeManager::Git.new(
+      repository,
+      branch: branch,
+      tag: tag,
+      alias: self.alias,
+      logger: logger
+    )
+    code_manager.release(deployment_tag, commit_id)
+
+    logger.info('Deployment is complete.')
+  end
+
   private
 
   def logger

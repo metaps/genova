@@ -29,7 +29,7 @@ module Genova
                 )
 
                 callback.start_deploy(deploy_job: deploy_job)
-                Deploy::Runner.call(deploy_job, force: options[:force], async_wait: step[:async_wait])
+                Deploy::Runner.new(deploy_job, force: options[:force], async_wait: step[:async_wait]).run
                 callback.complete_deploy(deploy_job: deploy_job)
               end
             end

@@ -30,6 +30,7 @@ module Github
     let(:bot) { double(Genova::Slack::Interactive::Bot) }
     let(:client) { double(Slack::Web::Client) }
     let(:remove_key) { Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at') }
+    let(:runner) { double(Genova::Deploy::Runner) }
 
     before(:each) do
       DeployJob.delete_all
@@ -47,7 +48,8 @@ module Github
       allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
-      allow(Genova::Deploy::Runner).to receive(:call)
+      allow(runner).to receive(:run)
+      allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)
     end
 
     describe 'perform' do

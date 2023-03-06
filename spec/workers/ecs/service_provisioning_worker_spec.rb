@@ -55,7 +55,7 @@ module Ecs
         subject.perform(deploy_job.id)
       end
 
-      it 'should be in queeue' do
+      it 'should be in queue' do
         is_expected.to be_processed_in(:ecs_service_provisioning)
       end
 

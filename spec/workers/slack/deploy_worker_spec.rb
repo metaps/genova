@@ -17,6 +17,7 @@ module Slack
       end
       let(:bot) { double(Genova::Slack::Interactive::Bot) }
       let(:client) { double(Slack::Web::Client) }
+      let(:runner) { double(Genova::Deploy::Runner) }
 
       include_context :session_start
 
@@ -35,18 +36,36 @@ module Slack
         allow(bot).to receive(:show_stop_button).and_return(client)
         allow(bot).to receive(:complete_deploy)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
-
-        allow(Genova::Deploy::Runner).to receive(:call)
-
-        subject.perform(id)
       end
 
-      it 'should be in queeue' do
-        is_expected.to be_processed_in(:slack_deploy)
+      context 'when job was successful' do
+        before do
+          allow(runner).to receive(:run)
+          allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)
+          subject.perform(id)
+        end
+
+        it 'should be in queeue' do
+          is_expected.to be_processed_in(:slack_deploy)
+        end
+
+        it 'should be no retry' do
+          is_expected.to be_retryable(false)
+        end
       end
 
-      it 'should be no retry' do
-        is_expected.to be_retryable(false)
+      context 'when job failed' do
+        before do
+          allow(runner).to receive(:run).and_raise(Genova::Exceptions::ImageBuildError)
+          allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)
+        end
+
+        it 'shouold be notify Slack of errors' do
+          allow(subject).to receive(:send_error)
+
+          expect { subject.perform(id) }.to raise_error(Genova::Exceptions::ImageBuildError)
+          expect(subject).to have_received(:send_error).once
+        end
       end
     end
   end
