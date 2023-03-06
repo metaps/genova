@@ -122,13 +122,14 @@ module Genova
       def fetch_config(path)
         path = Pathname(@repository_config[:base_path]).join(path).cleanpath.to_s if @repository_config.present? && @repository_config[:base_path].present?
 
-        client.fetch
+        update
+        config = File.read("#{repos_path}/#{path}")
 
-        config = if @branch.present?
-                   client.show("origin/#{@branch}", path)
-                 else
-                   client.show("tags/#{@tag}", path)
-                 end
+#        config = if @branch.present?
+#                   client.show("origin/#{@branch}", path)
+#                 else
+#                   client.show("tags/#{@tag}", path)
+#                 end
 
         YAML.load(config).deep_symbolize_keys
       end
@@ -140,7 +141,7 @@ module Genova
         uri = Genova::Github::Client.new(@repository).build_clone_uri
         @logger.info("Git clone: #{uri}")
 
-        ::Git.clone(uri, '', path: @repos_path)
+        ::Git.clone(uri, '', branch: @branch, path: @repos_path, recursive: true)
       end
 
       def client
