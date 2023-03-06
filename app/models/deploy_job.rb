@@ -163,7 +163,7 @@ class DeployJob
     self.deployment_tag = label
     save
 
-    code_manager = CodeManager::Git.new(
+    code_manager = Genova::CodeManager::Git.new(
       repository,
       branch: branch,
       tag: tag,
