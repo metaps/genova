@@ -41,6 +41,7 @@ module Genova
         git.clean(force: true, d: true)
         git.checkout(checkout)
         git.reset_hard(reset_hard)
+        git.submodule
 
         git.log(1).to_s
       end
@@ -124,6 +125,7 @@ module Genova
 
         update
         config = File.read("#{repos_path}/#{path}")
+        puts config
 
 #        config = if @branch.present?
 #                   client.show("origin/#{@branch}", path)

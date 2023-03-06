@@ -3,6 +3,10 @@ module Git
     def remote_show_origin
       lib.remote_show_origin
     end
+
+    def submodule
+      lib.submodule
+    end
   end
 
   class Lib
@@ -31,6 +35,10 @@ module Git
         break if count == Settings.slack.interactive.tag_limit
       end
       arr
+    end
+
+    def submodule
+      command('-C /app/tmp/repos/metaps/reshine-infra submodule update --remote')
     end
 
     def remote_show_origin
