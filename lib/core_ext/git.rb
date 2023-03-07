@@ -4,8 +4,8 @@ module Git
       lib.remote_show_origin
     end
 
-    def submodule
-      lib.submodule
+    def submodule_update
+      lib.submodule_update
     end
   end
 
@@ -37,8 +37,8 @@ module Git
       arr
     end
 
-    def submodule
-      command('-C /app/tmp/repos/metaps/reshine-infra submodule update --remote')
+    def submodule_update
+      command("-C #{@git_work_dir} submodule update --remote")
     end
 
     def remote_show_origin

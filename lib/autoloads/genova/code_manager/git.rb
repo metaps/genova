@@ -41,7 +41,7 @@ module Genova
         git.clean(force: true, d: true)
         git.checkout(checkout)
         git.reset_hard(reset_hard)
-        git.submodule
+        git.submodule_update
 
         git.log(1).to_s
       end
@@ -89,7 +89,7 @@ module Genova
         if @branch.present?
           git.remote.branch(@branch).gcommit.log(1).first.to_s
         else
-          puts git.tag(@tag).sha
+          git.tag(@tag).sha
         end
       end
 
@@ -125,13 +125,6 @@ module Genova
 
         update
         config = File.read("#{repos_path}/#{path}")
-        puts config
-
-#        config = if @branch.present?
-#                   client.show("origin/#{@branch}", path)
-#                 else
-#                   client.show("tags/#{@tag}", path)
-#                 end
 
         YAML.load(config).deep_symbolize_keys
       end
