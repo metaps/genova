@@ -38,6 +38,7 @@ module Git
     end
 
     def submodule_update
+      command("-C #{@git_work_dir} submodule update --init")
       command("-C #{@git_work_dir} submodule update --remote")
     end
 
