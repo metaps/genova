@@ -61,40 +61,6 @@ The following files must be created in the repository.
 * [Deploy configuration](https://github.com/metaps/genova/wiki/Deploy-configuration)
 * [Task configuration](https://github.com/metaps/genova/wiki/Task-definition)
 
-## Setup genova
-
-```shell
-$ git clone https://github.com/metaps/genova.git
-$ cd genova
-
-# Register the private key you need to clone the repository from GitHub.
-$ vi .ssh/id_rsa
-$ chmod 400 .ssh/id_rsa
-
-# In settings.local.yml, you can customize the behavior settings of genova.
-$ cp config/settings.yml config/settings.local.yml
-
-# The .env file defines the configuration for starting genova.
-$ cp .env.default .env
-
-$ docker-compose build
-$ docker-compose up
-```
-
-* [env configuration](https://github.com/metaps/genova/wiki/Environment-configuration)
-
-Once the container has started, go to `http://localhost:3000/`, which should bring up the genova web console.
-
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_index.png" width="80%">
-
-The web console allows you to check the status and history of the deployment.
-
-<img src="https://raw.githubusercontent.com/wiki/metaps/genova/assets/images/console_show.png" width="80%">
-
-_If you allow access to the web console via the Internet, be sure to restrict the accessible members via ALB (Amazon Cognito or IP authentication) or proxy.
-However, if you are deploying Slack/GitHub integration, do not restrict the `/api/*` path as it accepts callbacks.
-the API uses its own authentication logic to restrict the requestor._
-
 ## More detailed documentation
 
 See the [Wiki](https://github.com/metaps/genova/wiki).
