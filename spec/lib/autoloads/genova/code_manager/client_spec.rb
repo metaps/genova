@@ -23,6 +23,7 @@ module Genova
           allow(git).to receive(:checkout)
           allow(git).to receive(:branch)
           allow(git).to receive(:reset_hard)
+          allow(git).to receive(:submodule_update)
           allow(git).to receive(:log)
 
           expect { code_manager.update }.to_not raise_error
@@ -30,10 +31,10 @@ module Genova
       end
 
       describe 'load_deploy_config' do
+        let(:config) { { clusters: [] } }
+
         it 'should be return config' do
-          allow(git).to receive(:fetch)
-          allow(git).to receive(:show).and_return('{ clusters: [] }')
-          allow(code_manager).to receive(:client).and_return(git)
+          allow(code_manager).to receive(:fetch_config).and_return({ clusters: [] })
 
           expect(code_manager.load_deploy_config).to be_a(Genova::Config::DeployConfig)
         end

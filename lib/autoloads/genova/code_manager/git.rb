@@ -41,6 +41,7 @@ module Genova
         git.clean(force: true, d: true)
         git.checkout(checkout)
         git.reset_hard(reset_hard)
+        git.submodule_update
 
         git.log(1).to_s
       end
@@ -88,7 +89,7 @@ module Genova
         if @branch.present?
           git.remote.branch(@branch).gcommit.log(1).first.to_s
         else
-          puts git.tag(@tag).sha
+          git.tag(@tag).sha
         end
       end
 
@@ -122,13 +123,8 @@ module Genova
       def fetch_config(path)
         path = Pathname(@repository_config[:base_path]).join(path).cleanpath.to_s if @repository_config.present? && @repository_config[:base_path].present?
 
-        client.fetch
-
-        config = if @branch.present?
-                   client.show("origin/#{@branch}", path)
-                 else
-                   client.show("tags/#{@tag}", path)
-                 end
+        update
+        config = File.read("#{repos_path}/#{path}")
 
         YAML.load(config).deep_symbolize_keys
       end
@@ -140,7 +136,7 @@ module Genova
         uri = Genova::Github::Client.new(@repository).build_clone_uri
         @logger.info("Git clone: #{uri}")
 
-        ::Git.clone(uri, '', path: @repos_path)
+        ::Git.clone(uri, '', branch: @branch, path: @repos_path, recursive: true)
       end
 
       def client

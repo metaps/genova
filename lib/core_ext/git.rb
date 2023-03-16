@@ -3,6 +3,10 @@ module Git
     def remote_show_origin
       lib.remote_show_origin
     end
+
+    def submodule_update
+      lib.submodule_update
+    end
   end
 
   class Lib
@@ -31,6 +35,11 @@ module Git
         break if count == Settings.slack.interactive.tag_limit
       end
       arr
+    end
+
+    def submodule_update
+      command("-C #{@git_work_dir} submodule update --init")
+      command("-C #{@git_work_dir} submodule update --remote")
     end
 
     def remote_show_origin
