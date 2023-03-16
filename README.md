@@ -48,15 +48,6 @@ _The AWS resources (services and scheduled tasks) to be deployed must be created
 genova can clone a repository on GitHub to build and deploy your application.
 The following files must be created in the repository.
 
-```yaml
-|- config/
-  │ # Deploy configuration file.
-  ├ deploy.yml
-  └ deploy/
-     │ # Creates a task definition file based on the deployment configuration file.
-     │ # Give it any name you like (e.g. production.yml).
-     └ xxx.yml
-```
 
 * [Deploy configuration](https://github.com/metaps/genova/wiki/Deploy-configuration)
 * [Task configuration](https://github.com/metaps/genova/wiki/Task-definition)
