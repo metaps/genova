@@ -15,7 +15,6 @@ genova can deploy services on ECS clusters, perform standalone tasks, and execut
 
 <img src="https://user-images.githubusercontent.com/1632478/210537641-14a7a307-7e89-4eb7-9108-bfbd3a26a18e.png" width="70%">
 
-
 ## Features
 
 genova has the following features.
@@ -42,15 +41,6 @@ When a deployment is requested, the following steps will be taken to deploy the 
 7. Update the service or scheduled task. if it is a Run task, execute the task.
 
 _The AWS resources (services and scheduled tasks) to be deployed must be created in advance._
-
-## Files to be placed in the application repository
-
-genova can clone a repository on GitHub to build and deploy your application.
-The following files must be created in the repository.
-
-
-* [Deploy configuration](https://github.com/metaps/genova/wiki/Deploy-configuration)
-* [Task configuration](https://github.com/metaps/genova/wiki/Task-definition)
 
 ## More detailed documentation
 
