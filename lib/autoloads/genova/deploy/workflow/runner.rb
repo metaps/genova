@@ -6,7 +6,7 @@ module Genova
           def call(name, callback, options)
             workflows = Settings.workflows || []
 
-            workflow = workflows.find { |k| k[:name].include?(name) }
+            workflow = workflows.find { |k| k[:name] == name }
             raise Exceptions::ValidationError, "Workflow is undefined. [#{name}]" if workflow.nil?
 
             Step::Runner.call(workflow[:steps], callback, options)
