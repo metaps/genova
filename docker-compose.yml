@@ -82,7 +82,7 @@ services:
       - db:/data/db
     restart: ${DOCKER_RESTART}
   redis:
-    image: redis:5-alpine
+    image: redis:7-alpine
     restart: ${DOCKER_RESTART}
 
 volumes:
