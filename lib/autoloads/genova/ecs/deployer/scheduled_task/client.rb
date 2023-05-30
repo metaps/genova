@@ -14,7 +14,7 @@ module Genova
           end
 
           def exist_target?(rule, target)
-            targets = @eventbridge.list_targets_by_rule(rule: rule)
+            targets = @eventbridge.list_targets_by_rule(rule:)
             target = targets.targets.find { |v| v.id == target }
             target.present?
           end
@@ -26,8 +26,8 @@ module Genova
             raise Exceptions::NotFoundError, "Scheduled task target does not exist. [#{target[:id]}]" unless exist_target?(name, target[:id])
 
             @eventbridge.put_rule(
-              name: name,
-              schedule_expression: schedule_expression,
+              name:,
+              schedule_expression:,
               state: options[:enabled].nil? || options[:enabled] ? 'ENABLED' : 'DISABLED',
               description: options[:description]
             )

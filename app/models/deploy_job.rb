@@ -165,10 +165,10 @@ class DeployJob
 
     code_manager = Genova::CodeManager::Git.new(
       repository,
-      branch: branch,
-      tag: tag,
+      branch:,
+      tag:,
       alias: self.alias,
-      logger: logger
+      logger:
     )
     code_manager.release(deployment_tag, commit_id)
 

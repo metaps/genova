@@ -8,11 +8,11 @@ module Genova
       end
 
       def self.start!(parent_message_ts, user)
-        response = Genova::Slack::Client.get('users.info', user: user)
+        response = Genova::Slack::Client.get('users.info', user:)
         raise Genova::Exceptions::SlackWebAPIError, response[:error] unless response[:ok]
 
         instance = new(build_id(parent_message_ts))
-        instance.merge({ user: user, user_name: response[:user][:name] }, false)
+        instance.merge({ user:, user_name: response[:user][:name] }, false)
         instance
       end
 

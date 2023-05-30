@@ -18,7 +18,7 @@ module Genova
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: text
+                text:
               }
             }
           end
@@ -47,7 +47,7 @@ module Genova
           def section_short_fieldset(fields)
             {
               type: 'section',
-              fields: fields
+              fields:
             }
           end
 
@@ -56,7 +56,7 @@ module Genova
               type: 'input',
               element: {
                 type: 'plain_text_input',
-                action_id: action_id,
+                action_id:,
                 placeholder: {
                   type: 'plain_text',
                   text: options[:placeholder]
@@ -84,7 +84,7 @@ module Genova
                   type: 'plain_text',
                   text: 'Select an item'
                 },
-                action_id: action_id
+                action_id:
               }
             }
 
@@ -97,8 +97,8 @@ module Genova
           def radio_buttons(action_id, options)
             {
               type: 'radio_buttons',
-              action_id: action_id,
-              options: options
+              action_id:,
+              options:
             }
           end
 
@@ -107,11 +107,11 @@ module Genova
               type: 'button',
               text: {
                 type: 'plain_text',
-                text: text
+                text:
               },
-              value: value,
+              value:,
               style: 'primary',
-              action_id: action_id
+              action_id:
             }
           end
 
@@ -120,11 +120,11 @@ module Genova
               type: 'button',
               text: {
                 type: 'plain_text',
-                text: text
+                text:
               },
-              value: value,
+              value:,
               style: 'danger',
-              action_id: action_id
+              action_id:
             }
           end
 
@@ -133,10 +133,10 @@ module Genova
               type: 'button',
               text: {
                 type: 'plain_text',
-                text: text
+                text:
               },
-              value: value,
-              action_id: action_id
+              value:,
+              action_id:
             }
           end
 
@@ -159,7 +159,7 @@ module Genova
               elements: [
                 {
                   type: 'mrkdwn',
-                  text: text
+                  text:
                 }
               ]
             }

@@ -42,7 +42,7 @@ module V2
       let(:payload_body) do
         {
           payload: Oj.dump(
-            token: token,
+            token:,
             message: {
               ts: 'message_ts'
             }

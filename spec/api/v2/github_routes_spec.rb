@@ -57,7 +57,7 @@ module V2
 
           it 'should be return success' do
             allow(Github::DeployWorker).to receive(:perform_async)
-            post '/api/v2/github/push', params: webhook_pushed_commit, headers: headers
+            post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
             expect(response).to have_http_status :created
           end
         end
@@ -68,7 +68,7 @@ module V2
 
           it 'should be return error' do
             allow(Github::DeployWorker).to receive(:perform_async)
-            post '/api/v2/github/push', params: webhook_pushed_tag, headers: headers
+            post('/api/v2/github/push', params: webhook_pushed_tag, headers:)
             expect(response).to have_http_status :forbidden
           end
         end
@@ -79,7 +79,7 @@ module V2
         let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
 
         it 'should be return error' do
-          post '/api/v2/github/push', params: webhook_pushed_commit, headers: headers
+          post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden
         end
       end
@@ -114,7 +114,7 @@ module V2
         context 'when branch is pushed' do
           it 'should be return success' do
             allow(Github::DeployWorker).to receive(:perform_async)
-            post '/api/v2/github/actions/push', params: actions_pushed_commit, headers: headers
+            post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
             expect(response).to have_http_status :created
           end
         end
@@ -122,7 +122,7 @@ module V2
         context 'when tag is pushed' do
           it 'should be return error' do
             allow(Github::DeployWorker).to receive(:perform_async)
-            post '/api/v2/github/actions/push', params: actions_pushed_tag, headers: headers
+            post('/api/v2/github/actions/push', params: actions_pushed_tag, headers:)
             expect(response).to have_http_status :forbidden
           end
         end
@@ -133,7 +133,7 @@ module V2
 
         it 'should be return error' do
           allow(Github::DeployWorker).to receive(:perform_async)
-          post '/api/v2/github/actions/push', params: actions_pushed_commit, headers: headers
+          post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden
         end
       end

@@ -15,7 +15,7 @@ module Genova
       def authenticate
         authorization_token = @ecr.get_authorization_token[:authorization_data][0][:authorization_token]
         username, password = Base64.strict_decode64(authorization_token).split(':')
-        ::Docker.authenticate!(username: username, password: password, serveraddress: "https://#{@base_path}")
+        ::Docker.authenticate!(username:, password:, serveraddress: "https://#{@base_path}")
       end
 
       def push_image(image_tag, repository_name)
@@ -23,7 +23,7 @@ module Genova
         has_repository = false
 
         loop do
-          results = @ecr.describe_repositories(next_token: next_token)
+          results = @ecr.describe_repositories(next_token:)
           next_token = results[:next_token]
 
           if results[:repositories].find { |item| item[:repository_name] == repository_name }.present?
@@ -34,7 +34,7 @@ module Genova
           break if next_token.nil?
         end
 
-        @ecr.create_repository(repository_name: repository_name) unless has_repository
+        @ecr.create_repository(repository_name:) unless has_repository
 
         repo_tag_latest = "#{@base_path}/#{repository_name}:#{IMAGE_TAG_LATEST}"
         repo_tag_version = "#{@base_path}/#{repository_name}:#{image_tag}"

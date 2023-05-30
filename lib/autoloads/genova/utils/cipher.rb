@@ -1,7 +1,7 @@
 module Genova
   module Utils
     class Cipher
-      VARIABLE_PATTERN = /^\${(.+)}$/.freeze
+      VARIABLE_PATTERN = /^\${(.+)}$/
 
       def initialize
         @kms_client = Aws::KMS::Client.new

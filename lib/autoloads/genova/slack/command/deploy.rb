@@ -3,7 +3,7 @@ module Genova
     module Command
       class Deploy
         def self.call(statements, user, parent_message_ts)
-          client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
+          client = Genova::Slack::Interactive::Bot.new(parent_message_ts:)
           session_store = Genova::Slack::SessionStore.start!(parent_message_ts, user)
 
           type = case statements[:sub_command]
@@ -15,12 +15,12 @@ module Genova
                    DeployJob.type.find_value(:service)
                  end
 
-          if statements[:params].size.zero?
-            client.ask_repository(user: user, user_name: user)
+          if statements[:params].empty?
+            client.ask_repository(user:, user_name: user)
           else
             result = send("parse_#{type}", statements[:params])
             params = {
-              type: type,
+              type:,
               repository: result[:repository],
               branch: result[:branch],
               cluster: result[:cluster],

@@ -30,7 +30,7 @@ module Genova
                 arn: clusters[0].cluster_arn,
                 role_arn: Aws::IAM::Role.new(target_config[:cloudwatch_event_iam_role] || 'ecsEventsRole').arn,
                 ecs_parameters: {
-                  task_definition_arn: task_definition_arn,
+                  task_definition_arn:,
                   task_count: target_config[:task_count] || target_config[:desired_count] || 1
                 },
                 input: {
@@ -58,8 +58,8 @@ module Genova
               end
 
               container_override = {
-                name: name,
-                command: command
+                name:,
+                command:
               }
               container_override[:environment] = environment_overrides if environment_overrides.count.positive?
               container_override

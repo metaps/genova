@@ -9,7 +9,7 @@ module Genova
           url: "#{ENDPOINT_BASE}/#{endpoint}",
           headers: {
             Authorization: "Bearer #{Settings.slack.api_token}",
-            params: params
+            params:
           }
         )
         Oj.load(response.body, symbol_keys: true)
