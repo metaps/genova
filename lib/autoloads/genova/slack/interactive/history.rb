@@ -24,13 +24,13 @@ module Genova
             scheduled_task_target: deploy_job.scheduled_task_target
           )
 
-          Redis.current.lrem(@id, 1, value) if find(deploy_job.id).present?
-          Redis.current.lpush(@id, value)
-          Redis.current.rpop(@id) if Redis.current.llen(@id) > Settings.slack.command.max_history
+          Genova::RedisPool.get.lrem(@id, 1, value) if find(deploy_job.id).present?
+          Genova::RedisPool.get.lpush(@id, value)
+          Genova::RedisPool.get.rpop(@id) if Genova::RedisPool.get.llen(@id) > Settings.slack.command.max_history
         end
 
         def list
-          Redis.current.lrange(@id, 0, Settings.slack.command.max_history - 1)
+          Genova::RedisPool.get.lrange(@id, 0, Settings.slack.command.max_history - 1)
         end
 
         def find(id)
@@ -56,7 +56,7 @@ module Genova
         end
 
         def last
-          result = Redis.current.lindex(@id, 0)
+          result = Genova::RedisPool.get.lindex(@id, 0)
           result = Oj.load(result) if result.present?
           result
         end

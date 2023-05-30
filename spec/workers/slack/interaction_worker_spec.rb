@@ -7,7 +7,7 @@ module Slack
 
       before do
         remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'message_ts:message_ts')
-        Redis.current.del(remove_key)
+        Genova::RedisPool.get.del(remove_key)
 
         allow(Genova::Slack::RequestHandler).to receive(:call)
         subject.perform(key)

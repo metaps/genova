@@ -6,7 +6,7 @@ module Genova
       describe ElementObject do
         after do
           Settings.reload_from_files(Rails.root.join('config', 'settings.yml').to_s)
-          Redis.current.flushdb
+          Genova::RedisPool.get.flushdb
           DeployJob.delete_all
         end
 

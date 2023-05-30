@@ -126,7 +126,7 @@ module Genova
         update
         config = File.read("#{repos_path}/#{path}")
 
-        YAML.load(config).deep_symbolize_keys
+        YAML.unsafe_load(config).deep_symbolize_keys
       end
 
       def clone

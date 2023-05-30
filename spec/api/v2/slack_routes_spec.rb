@@ -4,7 +4,7 @@ module V2
   describe SlackRoutes do
     before do
       remove_key = Genova::Sidekiq::JobStore.send(:generate_key, 'message_ts:message_ts')
-      Redis.current.del(remove_key)
+      Genova::RedisPool.get.del(remove_key)
     end
 
     describe 'GET /auth' do

@@ -9,7 +9,7 @@ module Genova
         include_context :session_start
 
         before do
-          Redis.current.flushdb
+          Genova::RedisPool.get.flushdb
         end
 
         context 'when manual deploy' do

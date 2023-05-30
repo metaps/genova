@@ -12,7 +12,7 @@ module Genova
         def register(path, task_overrides = {}, params = {})
           raise IOError, "File does not exist. [#{path}]" unless File.file?(path)
 
-          yaml = YAML.load(File.read(path))
+          yaml = YAML.unsafe_load(File.read(path))
           task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)
           merge_task_parameters!(task_definition, task_overrides) if task_overrides.present?
 
