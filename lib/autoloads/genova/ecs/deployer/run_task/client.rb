@@ -81,7 +81,7 @@ module Genova
                 task[:containers].each do |container|
                   next if container[:exit_code].zero?
 
-                  @logger.warn("Error detected in container exit status. [#{container[:name]}]")
+                  raise Exceptions::RunTaskError, "Error detected in container exit status. [#{container[:name]}]"
                 end
               end
 
