@@ -14,7 +14,7 @@ module Git
       arr = []
       count = 0
 
-      command_lines('branch', ['-a', '--sort=-authordate']).each do |b|
+      command_lines('branch', '-a', '--sort=-authordate').each do |b|
         current = (b[0, 2] == '* ')
         arr << [b.gsub('* ', '').strip, current]
         count += 1
@@ -28,7 +28,7 @@ module Git
       arr = []
       count = 0
 
-      command_lines('tag', ['--sort=-v:refname']).each do |t|
+      command_lines('tag', '--sort=-v:refname').each do |t|
         arr << t
         count += 1
 
@@ -38,12 +38,12 @@ module Git
     end
 
     def submodule_update
-      command("-C #{@git_work_dir} submodule update --init")
-      command("-C #{@git_work_dir} submodule update --remote")
+      command('-C', @git_work_dir, 'submodule', 'update', '--init')
+      command('-C', @git_work_dir, 'submodule', 'update', '--remote')
     end
 
     def remote_show_origin
-      command('remote show origin')
+      command('remote', 'show', 'origin')
     end
   end
 end

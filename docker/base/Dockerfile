@@ -2,6 +2,7 @@ FROM ruby:3.2-alpine
 
 RUN apk --update add build-base openssh docker nodejs git tzdata vim --no-cache
 ENV APP_HOME=/app
+ENV RUBY_YJIT_ENABLE=1
 
 WORKDIR $APP_HOME
 COPY Gemfile* $APP_HOME/
