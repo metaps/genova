@@ -47,8 +47,10 @@ jobs:
           command: |
             wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
             echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.4 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+            sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
             sudo apt-get update
-            sudo apt-get install -y libssl-dev mongodb-org
+            sudo apt-get install -y mongodb-org
             sudo chmod 777 /var/lib/mongodb
             sudo chmod 777 /var/log/mongodb
             mongod --dbpath /var/lib/mongodb --fork --logpath=/var/log/mongodb/mongod.log
