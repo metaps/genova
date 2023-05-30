@@ -34,7 +34,7 @@ module V2
 
           key = "event_ts:#{params[:event][:event_ts]}"
           id = Genova::Sidekiq::JobStore.create(key, {
-                                                  statement: statement,
+                                                  statement:,
                                                   user: params[:event][:user],
                                                   parent_message_ts: params[:event][:ts]
                                                 })

@@ -33,7 +33,7 @@ module Slack
       history.add(deploy_job)
 
       bot = Genova::Slack::Interactive::Bot.new(parent_message_ts: id)
-      bot.detect_slack_deploy(deploy_job: deploy_job)
+      bot.detect_slack_deploy(deploy_job:)
       canceller = bot.show_stop_button(deploy_job.id).ts
 
       transaction = Genova::Deploy::Transaction.new(params[:repository])
@@ -44,7 +44,7 @@ module Slack
 
       if deploy_job.status == DeployJob.status.find_value(:success)
         bot.delete_message(canceller)
-        bot.complete_deploy(deploy_job: deploy_job)
+        bot.complete_deploy(deploy_job:)
       end
     rescue => e
       params.present? ? send_error(e, id, params[:user]) : send_error(e, id)

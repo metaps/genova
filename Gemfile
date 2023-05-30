@@ -29,19 +29,25 @@ gem 'mongoid'
 gem 'mongoid-scroll'
 gem 'oj'
 gem 'puma'
-gem 'rails', '6.1.3.1'
+gem 'rails', '~> 6.1.7.3'
 gem 'redis'
 gem 'rest-client'
+gem 'sassc-rails'
 gem 'sidekiq'
 gem 'slack-ruby-bot-server-events'
 gem 'strings-truncation'
+
+# sprockets 4.0.0以降はsprocketsを使わない場合もmanifest.jsを求められるため、バージョンを固定化する。
+# https://qiita.com/sasakura_870/items/106484f88c857bd9563e
+gem 'sprockets', '~> 3.7.2'
+
 gem 'tzinfo-data'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platform: :mri
   gem 'rspec-rails'
-  gem 'simplecov', '0.17.1'
+  gem 'simplecov', '~> 0.17.1'
 end
 
 group :test do

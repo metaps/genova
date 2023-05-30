@@ -26,24 +26,24 @@ module Genova
           @logger.warn("Wait #{LOCK_WAIT_INTERVAL} seconds for the lock to be released because there is already a transaction running. (Elapsed time: #{waiting_time}s)")
         end
 
-        Redis.current.multi do
-          Redis.current.setnx(@key, true)
-          Redis.current.expire(@key, Settings.github.deploy_lock_timeout)
+        Genova::RedisPool.get.multi do
+          Genova::RedisPool.get.setnx(@key, true)
+          Genova::RedisPool.get.expire(@key, Settings.github.deploy_lock_timeout)
         end
       end
 
       def running?
-        Redis.current.get(@key) || false
+        Genova::RedisPool.get.get(@key) || false
       end
 
       def commit
         @logger.info('Complete the transaction.')
-        Redis.current.del(@key)
+        Genova::RedisPool.get.del(@key)
       end
 
       def cancel
         @logger.info('Cancel transaction.')
-        Redis.current.del(@key)
+        Genova::RedisPool.get.del(@key)
       end
     end
   end

@@ -25,7 +25,7 @@ module Slack
         DeployJob.collection.drop
 
         session_store.merge(
-          deploy_job_id: deploy_job_id,
+          deploy_job_id:,
           repository: 'repository',
           cluster: 'cluster',
           type: DeployJob.type.find_value(:service)

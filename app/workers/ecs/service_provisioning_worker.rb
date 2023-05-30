@@ -74,7 +74,7 @@ module Ecs
         desired_status: 'STOPPED'
       )[:task_arns]
 
-      return if stopped_tasks.size.zero?
+      return if stopped_tasks.empty?
 
       description_tasks = @ecs_client.describe_tasks(
         cluster: @deploy_job.cluster,
@@ -123,9 +123,9 @@ module Ecs
       end
 
       {
-        current_task_count: current_task_count,
-        new_registerd_task_count: new_registerd_task_count,
-        status_logs: status_logs,
+        current_task_count:,
+        new_registerd_task_count:,
+        status_logs:,
         task_arns: response[:task_arns]
       }
     end

@@ -3,7 +3,7 @@ module Api
     format :json
 
     logger.formatter = GrapeLogging::Formatters::Default.new
-    use GrapeLogging::Middleware::RequestLogger, logger: logger
+    use(GrapeLogging::Middleware::RequestLogger, logger:)
 
     logger Logger.new($stdout, level: Settings.logger.level)
 

@@ -15,13 +15,13 @@ module Genova
         def delete_message(ts)
           @client.chat_delete(
             channel: Settings.slack.channel_id,
-            ts: ts
+            ts:
           )
         end
 
         def ask_history(params)
           options = BlockKit::ElementObject.history_options(user: params[:user])
-          raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.size.zero?
+          raise Genova::Exceptions::NotFoundError, 'History does not exist.' if options.empty?
 
           send([
                  BlockKit::Helper.section("<@#{params[:user]}> Please select history to deploy."),
@@ -36,7 +36,7 @@ module Genova
           repositoriy_options = BlockKit::ElementObject.repository_options(params)
           workflow_options = BlockKit::ElementObject.workflow_options(params)
 
-          raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if repositoriy_options.size.zero?
+          raise Genova::Exceptions::NotFoundError, 'Repositories is undefined.' if repositoriy_options.empty?
 
           blocks = []
           blocks << BlockKit::Helper.section("<@#{params[:user]}> Specify the repository or workflow to deploy.")
@@ -76,7 +76,7 @@ module Genova
 
         def ask_cluster(params)
           options = BlockKit::ElementObject.cluster_options(params)
-          raise Genova::Exceptions::NotFoundError, 'No deployable clusters found.' if options.size.zero?
+          raise Genova::Exceptions::NotFoundError, 'No deployable clusters found.' if options.empty?
 
           blocks = []
           blocks << BlockKit::Helper.static_select('Cluster', 'selected_cluster', options)
@@ -93,7 +93,7 @@ module Genova
           service_options = BlockKit::ElementObject.service_options(params)
           scheduled_task_options = BlockKit::ElementObject.scheduled_task_options(params)
 
-          raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if run_task_options.size.zero? && service_options.size.zero? && scheduled_task_options.size.zero?
+          raise Genova::Exceptions::NotFoundError, 'Target is undefined.' if run_task_options.empty? && service_options.empty? && scheduled_task_options.empty?
 
           blocks = []
 
@@ -335,7 +335,7 @@ module Genova
         def send(blocks)
           data = {
             channel: Settings.slack.channel_id,
-            blocks: blocks,
+            blocks:,
             thread_ts: @parent_message_ts
           }
 
@@ -348,13 +348,13 @@ module Genova
 
           if params[:service].present?
             services = ecs_client.describe_services(cluster: params[:cluster], services: [params[:service]]).services
-            raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.size.zero?
+            raise Exceptions::NotFoundError, "Service does not exist. [#{params[:service]}]" if services.empty?
 
             task_definition_arn = services[0].task_definition
           else
             eventbridge = Aws::EventBridge::Client.new
             rules = eventbridge.list_rules(name_prefix: params[:scheduled_task_rule])
-            raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].size.zero?
+            raise Exceptions::NotFoundError, "Scheduled task rule does not exist. [#{params[:scheduled_task_rule]}]" if rules[:rules].empty?
 
             targets = eventbridge.list_targets_by_rule(rule: rules[:rules][0].name)
             target = targets.targets.find { |v| v.id == params[:scheduled_task_target] }

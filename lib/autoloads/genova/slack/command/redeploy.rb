@@ -5,7 +5,7 @@ module Genova
         def self.call(_statements, user, parent_message_ts)
           session_store = Genova::Slack::SessionStore.start!(parent_message_ts, user)
 
-          client = Genova::Slack::Interactive::Bot.new(parent_message_ts: parent_message_ts)
+          client = Genova::Slack::Interactive::Bot.new(parent_message_ts:)
           history = Genova::Slack::Interactive::History.new(user).last
 
           raise Exceptions::NotFoundError, 'History does not exist.' unless history.present?

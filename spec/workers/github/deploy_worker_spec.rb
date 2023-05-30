@@ -34,7 +34,7 @@ module Github
 
     before(:each) do
       DeployJob.delete_all
-      Redis.current.del(remove_key)
+      Genova::RedisPool.get.del(remove_key)
 
       allow(client).to receive(:ts)
 

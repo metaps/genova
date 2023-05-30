@@ -7,7 +7,7 @@ module Genova
 
       before do
         key = Genova::Sidekiq::JobStore.send(:generate_key, 'id')
-        Redis.current.del(key)
+        Genova::RedisPool.get.del(key)
       end
 
       describe 'create' do

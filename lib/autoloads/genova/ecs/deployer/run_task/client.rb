@@ -42,8 +42,8 @@ module Genova
             wait(task_arns)
 
             @deploy_job.update_status_complate(
-              task_definition_arn: task_definition_arn,
-              task_arns: task_arns
+              task_definition_arn:,
+              task_arns:
             )
 
             @deploy_job.finished

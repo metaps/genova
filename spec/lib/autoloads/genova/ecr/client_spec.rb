@@ -9,7 +9,7 @@ module Genova
       describe 'authenticate' do
         it 'shuold be return true' do
           authorization_token = Base64.strict_encode64('username:password')
-          allow(ecr).to receive(:get_authorization_token).and_return(authorization_data: [{ authorization_token: authorization_token }])
+          allow(ecr).to receive(:get_authorization_token).and_return(authorization_data: [{ authorization_token: }])
           allow(Aws::ECR::Client).to receive(:new).and_return(ecr)
 
           allow(::Docker).to receive(:authenticate!).and_return(true)

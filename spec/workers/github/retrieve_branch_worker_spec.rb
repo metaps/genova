@@ -8,7 +8,7 @@ module Github
       include_context :session_start
 
       before do
-        Redis.current.flushdb
+        Genova::RedisPool.get.flushdb
 
         allow(bot).to receive(:ask_branch)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)

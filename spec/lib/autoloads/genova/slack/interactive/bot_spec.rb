@@ -22,7 +22,7 @@ module Genova
           let(:array) { double(Array) }
 
           it 'should be not error' do
-            allow(array).to receive(:size).and_return(1)
+            allow(array).to receive(:empty?).and_return(false)
             allow(BlockKit::ElementObject).to receive(:history_options).and_return(array)
 
             expect { bot.ask_history({}) }.not_to raise_error
@@ -55,7 +55,7 @@ module Genova
           let(:array) { double(Array) }
 
           it 'should be not error' do
-            allow(array).to receive(:size).and_return(1)
+            allow(array).to receive(:empty?).and_return(false)
             allow(BlockKit::ElementObject).to receive(:cluster_options).and_return(array)
 
             expect { bot.ask_cluster({}) }.not_to raise_error
@@ -66,6 +66,7 @@ module Genova
           let(:array) { double(Array) }
 
           it 'should be not error' do
+            allow(array).to receive(:empty?).and_return(false)
             allow(array).to receive(:size).and_return(1)
             allow(BlockKit::ElementObject).to receive(:run_task_options).and_return(array)
             allow(BlockKit::ElementObject).to receive(:service_options).and_return(array)
@@ -135,7 +136,7 @@ module Genova
             allow(deploy_job).to receive(:service)
             allow(deploy_job).to receive(:scheduled_task_rule)
 
-            expect { bot.detect_slack_deploy(deploy_job: deploy_job) }.not_to raise_error
+            expect { bot.detect_slack_deploy(deploy_job:) }.not_to raise_error
           end
         end
 
@@ -151,7 +152,7 @@ module Genova
             allow(deploy_job).to receive(:task_definition_arn).and_return('task_definition_arn')
             allow(deploy_job).to receive(:task_arns).and_return(['task_arn'])
 
-            expect { bot.complete_deploy(deploy_job: deploy_job) }.not_to raise_error
+            expect { bot.complete_deploy(deploy_job:) }.not_to raise_error
           end
         end
 

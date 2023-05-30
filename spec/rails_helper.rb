@@ -63,7 +63,7 @@ shared_context :session_start do
   let(:session_store) { Genova::Slack::SessionStore.load(id) }
 
   before do
-    Redis.current.flushdb
+    Genova::RedisPool.get.flushdb
 
     allow(Genova::Slack::Client).to receive(:get).and_return(
       ok: true,

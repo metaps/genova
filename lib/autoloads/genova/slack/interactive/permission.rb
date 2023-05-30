@@ -25,7 +25,7 @@ module Genova
           return true if permissions.nil?
 
           rules = permissions.select { |permission| permission[:policy] == policy }
-          return true if rules.size.zero?
+          return true if rules.empty?
 
           match = rules.find do |rule|
             next unless match?(rule[:resources], value)

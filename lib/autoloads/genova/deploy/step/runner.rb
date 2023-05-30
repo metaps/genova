@@ -22,15 +22,15 @@ module Genova
                   repository: options[:repository] || step[:repository],
                   branch: options[:branch] || step[:branch],
                   cluster: step[:cluster],
-                  service: service,
+                  service:,
                   scheduled_task_rule: nil,
                   scheduled_task_target: nil,
-                  run_task: run_task
+                  run_task:
                 )
 
-                callback.start_deploy(deploy_job: deploy_job)
+                callback.start_deploy(deploy_job:)
                 Deploy::Runner.new(deploy_job, force: options[:force], async_wait: step[:async_wait]).run
-                callback.complete_deploy(deploy_job: deploy_job)
+                callback.complete_deploy(deploy_job:)
               end
             end
 

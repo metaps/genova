@@ -284,7 +284,7 @@ module Genova
           end
 
           def middle_truncate(string, length = 75)
-            Strings::Truncation.truncate(string, position: :middle, omission: '...', length: length)
+            Strings::Truncation.truncate(string, position: :middle, omission: '...', length:)
           end
         end
       end

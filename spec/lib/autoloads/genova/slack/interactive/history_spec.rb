@@ -7,7 +7,7 @@ module Genova
         let(:history) { Genova::Slack::Interactive::History.new('user_id') }
 
         before do
-          Redis.current.flushdb
+          Genova::RedisPool.get.flushdb
           allow(Settings.slack.command).to receive(:max_history).and_return(2)
         end
 
