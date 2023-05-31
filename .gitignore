@@ -21,7 +21,6 @@
 /coverage
 /public/assets/*
 /.ssh
-/frontend/node_modules
 
 # Application files
 *.swp
