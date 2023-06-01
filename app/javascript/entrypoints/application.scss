@@ -7,16 +7,16 @@ $family-sans-serif: "Nunito", sans-serif;
 $size-6: 0.9rem;
 
 /** Import only what you need from Bulma */
-@import "../node_modules/bulma/sass/utilities/_all.sass";
-@import "../node_modules/bulma/sass/base/_all.sass";
-@import "../node_modules/bulma/sass/elements/container.sass";
-@import "../node_modules/bulma/sass/elements/table.sass";
-@import "../node_modules/bulma/sass/elements/title.sass";
-@import "../node_modules/bulma/sass/components/card.sass";
-@import "../node_modules/bulma/sass/components/navbar.sass";
-@import "../node_modules/bulma/sass/components/pagination.sass";
-@import "../node_modules/bulma/sass/grid/columns.sass";
-@import "../node_modules/bulma/sass/layout/section.sass";
+@import "bulma/sass/utilities/_all.sass";
+@import "bulma/sass/base/_all.sass";
+@import "bulma/sass/elements/container.sass";
+@import "bulma/sass/elements/table.sass";
+@import "bulma/sass/elements/title.sass";
+@import "bulma/sass/components/card.sass";
+@import "bulma/sass/components/navbar.sass";
+@import "bulma/sass/components/pagination.sass";
+@import "bulma/sass/grid/columns.sass";
+@import "bulma/sass/layout/section.sass";
 
 h3 {
   font-size: $size-5;

@@ -29,4 +29,5 @@ console.log('Visit the guide for more information: ', 'https://vite-ruby.netlify
 
 import 'bulma/css/bulma.min.css'
 import 'bulma-timeline/dist/css/bulma-timeline.min.css'
+import "@fortawesome/fontawesome-free/js/all"
 import './application.scss'
