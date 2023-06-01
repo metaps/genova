@@ -2,16 +2,25 @@
   <h2 class="title">Latest deployment</h2>
   <% if @deployments.size > 0 %>
     <% @deployments.each do |cluster, deployment| %>
-      <h3><%= cluster %></h3>
+      <h3 class="title is-5"><%= cluster %></h3>
       <% deployment.each_with_index do |value, i| %>
         <% if i == 0 || i % 3 == 0 %>
           <div class="columns">
         <% end %>
         <div class="column is-4">
           <div class="card">
+            <p class="has-text-right">
+              <% if value[:type] == DeployJob.type.find_value(:service) %>
+                <span class="tag is-success is-light">
+              <% else %>
+                <span class="tag is-link is-light">
+              <% end %>
+                <%= readable_type(value[:type]) %>
+                </span>
+            </p>
+
             <div class="card-content">
-              <h4><%= readable_type(value[:type]) %></h4>
-              <p class="title">
+              <p class="title is-4">
                 <% if value[:service].present? %>
                   <%= link_to(value[:service], deploy_job_path(value[:id])) %>
                 <% else %>
