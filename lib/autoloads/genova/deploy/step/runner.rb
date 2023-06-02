@@ -10,6 +10,8 @@ module Genova
               step[:resources].each do |resource|
                 service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
                 run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
+                scheduled_task = step[:type] == DeployJob.type.find_value(:scheduled_task).to_s ? resource : nil
+                scheduled_task_rule, scheduled_task_target = scheduled_task.split(':') if scheduled_task.present?
 
                 deploy_job = DeployJob.create!(
                   id: DeployJob.generate_id,
@@ -23,8 +25,8 @@ module Genova
                   branch: options[:branch] || step[:branch],
                   cluster: step[:cluster],
                   service:,
-                  scheduled_task_rule: nil,
-                  scheduled_task_target: nil,
+                  scheduled_task_rule:,
+                  scheduled_task_target:,
                   run_task:
                 )
 
