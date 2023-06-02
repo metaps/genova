@@ -11,7 +11,16 @@ module Genova
                 service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
                 run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
                 scheduled_task = step[:type] == DeployJob.type.find_value(:scheduled_task).to_s ? resource : nil
-                scheduled_task_rule, scheduled_task_target = scheduled_task.split(':') if scheduled_task.present?
+
+                if scheduled_task.present?
+                  parts = scheduled_task.split(':')
+
+                  unless parts.size == 2
+                    raise Exceptions::ValidationError, 'For scheduled task, specify the resource name separated by a colon between the rule and target.'
+                  end
+
+                  scheduled_task_rule, scheduled_task_target = parts
+                end
 
                 if service.nil? && run_task.nil? && scheduled_task.nil?
                   raise Exceptions::ValidationError, 'Type must be one of `service`, `run_task`, or `scheduled_task`.'

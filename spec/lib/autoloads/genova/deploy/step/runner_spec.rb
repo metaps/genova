@@ -5,28 +5,51 @@ module Genova
     module Step
       describe Runner do
         describe 'call' do
-          before do
-            DeployJob.collection.drop
-          end
-
+          let(:runner) { double(Genova::Deploy::Runner) }
           let(:steps) do
             [
               {
-                type: 'service',
-                resources: ['resource'],
+                type: type,
+                resources: resources,
                 cluster: 'cluster',
                 repository: 'repository',
                 branch: 'branch'
               }
             ]
           end
-          let(:runner) { double(Genova::Deploy::Runner) }
 
-          it 'shuold be not error' do
+          before do
+            DeployJob.collection.drop
+
             allow(runner).to receive(:run)
             allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)
+          end
 
-            expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
+          context 'when update service' do
+            let(:type) { 'service' }
+            let(:resources) { ['resource'] }
+
+            it 'shuold be not error' do
+              expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
+            end
+          end
+
+          context 'when update run task' do
+            let(:type) { 'run_task' }
+            let(:resources) { ['resource'] }
+
+            it 'shuold be not error' do
+              expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
+            end
+          end
+
+          context 'when update scheduled task' do
+            let(:type) { 'scheduled_task' }
+            let(:resources) { ['resource1:resource2'] }
+
+            it 'shuold be not error' do
+              expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
+            end
           end
         end
       end
