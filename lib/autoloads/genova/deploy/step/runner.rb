@@ -13,6 +13,10 @@ module Genova
                 scheduled_task = step[:type] == DeployJob.type.find_value(:scheduled_task).to_s ? resource : nil
                 scheduled_task_rule, scheduled_task_target = scheduled_task.split(':') if scheduled_task.present?
 
+                if service.nil? && run_task.nil? && scheduled_task.nil?
+                  raise Exceptions::ValidationError, 'Type must be one of `service`, `run_task`, or `scheduled_task`.'
+                end
+
                 deploy_job = DeployJob.create!(
                   id: DeployJob.generate_id,
                   type: DeployJob.type.find_value(step[:type]),
