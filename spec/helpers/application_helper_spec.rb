@@ -1,10 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe ApplicationHelper, type: :helper do
-  describe 'readable_type' do
+  describe 'type_tag' do
     it 'should be return correct service name' do
-      expect(helper.readable_type('service')).to eq('Service')
-      expect(helper.readable_type('scheduled_task')).to eq('Scheduled task')
+      expect(helper.type_tag('service')).to eq('<span class="tag is-info">Service</span>')
+      expect(helper.type_tag('scheduled_task')).to eq('<span class="tag is-warning">Scheduled task</span>')
+      expect(helper.type_tag('run_task')).to eq('<span class="tag is-success">Run task</span>')
     end
   end
 end

@@ -1,7 +1,7 @@
 <div class="container">
   <h2 class="title">Deploy jobs</h2>
   <% if @deploy_jobs.size > 0 %>
-    <table class="table is-fullwidth is-hoverable is-striped">
+    <table class="table is-fullwidth is-hoverable is-striped has-text-centered">
       <thead>
         <th>ID</th>
         <th>Status</th>
@@ -44,7 +44,7 @@
               <% end %>
             </td>
             <td><%= deploy_job.mode %></td>
-            <td><%= deploy_job.type %></td>
+            <td><%= type_tag(deploy_job.type).html_safe %></td>
             <td><%= deploy_job.cluster %></td>
             <td><%= deploy_job.created_at %></td>
           </tr>

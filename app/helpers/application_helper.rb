@@ -1,12 +1,17 @@
 module ApplicationHelper
-  def readable_type(type)
+  def type_tag(type)
     case type
     when DeployJob.type.find_value(:service)
-      'Service'
+      klass = 'is-info'
+      readable_type = 'Service'
     when DeployJob.type.find_value(:scheduled_task)
-      'Scheduled task'
+      klass = 'is-warning'
+      readable_type = 'Scheduled task'
     when DeployJob.type.find_value(:run_task)
-      'Run task'
+      klass = 'is-success'
+      readable_type = 'Run task'
     end
+
+    "<span class=\"tag #{klass}\">#{readable_type}</span>"
   end
 end

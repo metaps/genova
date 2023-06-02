@@ -61,7 +61,7 @@
         <dt class="column is-2">Mode</dt>
         <dd class="column is-4"><%= @deploy_job.mode %></dd>
         <dt class="column is-2">Type</dt>
-        <dd class="column is-4"><%= readable_type(@deploy_job.type) %></dd>
+        <dd class="column is-4"><%= type_tag(@deploy_job.type).html_safe %></dd>
       </div>
       <div class="columns">
         <dt class="column is-2">Cluster</dt>
@@ -133,7 +133,7 @@
       </div>
     </dl>
 
-    <h3 class="title">Logs</h3>
+    <h3 class="title is-5">Logs</h3>
     <% if @deploy_job.logs.present? %>
       <div class="logs">
         <% @deploy_job.logs.each do |log| %>
