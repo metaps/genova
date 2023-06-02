@@ -1,6 +1,6 @@
 FROM ruby:3.2-alpine
 
-RUN apk --update add build-base openssh docker nodejs git tzdata vim --no-cache
+RUN apk --update add build-base openssh docker git tzdata vim --no-cache
 ENV APP_HOME=/app
 ENV RUBY_YJIT_ENABLE=1
 

@@ -3,7 +3,7 @@ AllCops:
   - 'bin/**/*'
   - 'db/**/*'
   - 'etc/**/*'
-  - 'frontend/node_modules/**/*'
+  - 'node_modules/**/*'
   - 'tmp/**/*'
   TargetRubyVersion: 3.2
 
