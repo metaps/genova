@@ -9,6 +9,16 @@
         <% end %>
         <div class="column is-4">
           <div class="card">
+            <p class="has-text-right">
+              <% if value[:type] == DeployJob.type.find_value(:service) %>
+                <span class="tag is-success is-light">
+              <% else %>
+                <span class="tag is-link is-light">
+              <% end %>
+                <%= readable_type(value[:type]) %>
+                </span>
+            </p>
+
             <div class="card-content">
               <p class="has-text-right"><%= type_tag(value[:type]).html_safe %></p>
               <p class="title is-4">
