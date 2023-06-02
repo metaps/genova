@@ -20,6 +20,7 @@
 
                 <div class="card">
                   <div class="card-content">
+                    <p class="has-text-right"><%= type_tag(step[:type]).html_safe %></p>
                     <div class="media">
                       <div class="media-content">
                         <p class="title is-4"><%= step[:repository] %></p>
@@ -29,8 +30,6 @@
                     <dl class="subtitle">
                       <dt>Cluster</dt>
                       <dd><%= step[:cluster] %></dd>
-                      <dt>Type</dt>
-                      <dd><%= step[:type] %></dd>
                       <dt>Resources</dt>
                       <dd><%= step[:resources].join(', ') %></dd>
                     </dl>
