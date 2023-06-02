@@ -42,6 +42,7 @@ gem 'strings-truncation'
 gem 'sprockets', '~> 3.7.2'
 
 gem 'tzinfo-data'
+gem 'vite_rails'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

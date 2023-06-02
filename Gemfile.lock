@@ -124,6 +124,7 @@ GEM
       multi_json
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
+    dry-cli (1.0.0)
     dry-configurable (1.0.1)
       dry-core (~> 1.0, < 2)
       zeitwerk (~> 2.6)
@@ -289,6 +290,8 @@ GEM
       rack (>= 0.4)
     rack-cors (2.0.1)
       rack (>= 2.0.0)
+    rack-proxy (0.7.6)
+      rack
     rack-rewrite (1.5.1)
     rack-server-pages (0.1.0)
       rack
@@ -450,6 +453,13 @@ GEM
     unf_ext (0.0.8.2)
     unicode-display_width (2.4.2)
     vcr (6.1.0)
+    vite_rails (3.0.14)
+      railties (>= 5.1, < 8)
+      vite_ruby (~> 3.0, >= 3.2.2)
+    vite_ruby (3.3.2)
+      dry-cli (>= 0.7, < 2)
+      rack-proxy (~> 0.6, >= 0.6.1)
+      zeitwerk (~> 2.2)
     webmock (3.18.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -508,6 +518,7 @@ DEPENDENCIES
   strings-truncation
   tzinfo-data
   vcr
+  vite_rails
   webmock
 
 BUNDLED WITH

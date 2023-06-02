@@ -21,7 +21,6 @@
 /coverage
 /public/assets/*
 /.ssh
-/frontend/node_modules
 
 # Application files
 *.swp
@@ -29,3 +28,7 @@
 .DS_Store
 dump.rdb
 *.log
+
+# Vite Ruby
+/public/vite*
+node_modules

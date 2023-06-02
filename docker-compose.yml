@@ -14,7 +14,7 @@ services:
       dockerfile: docker/rails/Dockerfile
     env_file: .env
     volumes:
-      - node_modules:/app/frontend/node_modules:ro
+      - node_modules:/app/node_modules
       - assets:/app/public/assets:ro
       - repos:/app/tmp/repos
       - cache:/app/tmp/cache
@@ -68,14 +68,6 @@ services:
     restart: ${DOCKER_RESTART}
     depends_on:
       - base
-  node:
-    build:
-      context: .
-      dockerfile: docker/node/Dockerfile
-    volumes:
-      - node_modules:/app/frontend/node_modules:delegated
-      - assets:/app/public/assets:delegated
-      - .:/app
   mongo:
     image: mongo:4.4
     volumes:

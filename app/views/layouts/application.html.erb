@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="format-detection" content="telephone=no" />
     <title>genova</title>
-    <%= stylesheet_link_tag('/assets/stylesheets/application') %>
     <%= csrf_meta_tags %>
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag 'application' %>
   </head>
 
   <body>
