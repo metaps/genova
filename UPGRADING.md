@@ -4,6 +4,7 @@
 
 * The volume mount directory for node_modules has changed. Therefore, if you try to start it after building in the existing environment, you will get an `error Command "vite" not found.` error.
 In that case, please run `docker volume genova_node_modules` to remove the existing volume and then run the rebuild.
+* The `genova_node_1` container is obsolete. Please remove the container with the command `docker stop genova_node_1 && docker rm genova_node_1`.
 
 ## Upgrading from 4.0 to 4.1
 
