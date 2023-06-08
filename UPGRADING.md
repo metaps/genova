@@ -2,7 +2,7 @@
 
 ## Upgrading from 4.1 to 4.2
 
-The volume mount directory for node_modules has changed. Therefore, if you try to start it after building in the existing environment, you will get an `error Command "vite" not found.` error.
+The volume mount directory for `node_modules` has changed. Therefore, if you try to start it after building in the existing environment, you will get an `error Command "vite" not found.` error.
 In that case, please run `docker volume genova_node_modules` to remove the existing volume and then run the rebuild.
 
 ## Upgrading from 4.0 to 4.1
