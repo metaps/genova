@@ -1,7 +1,7 @@
 module Genova
   module Version
     MAJOR = 4
-    MINOR = 2
+    MINOR = 3
     TINY = 0
 
     STRING = [MAJOR, MINOR, TINY].join('.')
