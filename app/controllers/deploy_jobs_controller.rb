@@ -14,11 +14,13 @@ class DeployJobsController < ApplicationController
   def parse_conditions
     conditions = {}
 
+    # Dates are stored in ISODate and search is not implemented yet.
     if params[:search].present?
       pairs = params[:search].split(',')
       pairs.each do |pair|
-        key, value = pair.split(':')
+        key, value = pair.split(':', 2)
         next if value.nil?
+
         conditions[key.strip.to_sym] = value.strip
       end
     end
