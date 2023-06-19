@@ -31,6 +31,7 @@ module Github
     let(:client) { double(Slack::Web::Client) }
     let(:remove_key) { Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at') }
     let(:runner) { double(Genova::Deploy::Runner) }
+    let(:chat) { double(::Slack::Web::Api::Endpoints::Chat) }
 
     before(:each) do
       DeployJob.delete_all
@@ -43,7 +44,11 @@ module Github
       allow(bot).to receive(:start_deploy)
       allow(bot).to receive(:complete_deploy)
       allow(bot).to receive(:complete_steps)
+
+      allow(chat).to receive(:ts)
+      allow(bot).to receive(:show_stop_button).and_return(chat)
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
+      allow(bot).to receive(:delete_message)
 
       allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)

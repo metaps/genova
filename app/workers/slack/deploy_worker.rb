@@ -42,10 +42,8 @@ module Slack
       Genova::Deploy::Runner.new(deploy_job).run
       deploy_job.reload
 
-      if deploy_job.status == DeployJob.status.find_value(:success)
-        bot.delete_message(canceller)
-        bot.complete_deploy(deploy_job:)
-      end
+      bot.delete_message(canceller)
+      bot.complete_deploy(deploy_job:)
     rescue => e
       params.present? ? send_error(e, id, params[:user]) : send_error(e, id)
       raise e
