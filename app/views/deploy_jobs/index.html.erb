@@ -1,5 +1,15 @@
 <div class="container">
   <h2 class="title">Deploy jobs</h2>
+  <form>
+    <div class="field">
+      <div class="control has-icons-left">
+        <input class="input is-small is-rounded" type="text" name="search" placeholder="Example: cluster:production (Keywords can be field names such as id, status, repository, branch, etc.)" value="<%= params[:search] %>">
+        <span class="icon is-small is-left">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+      </div>
+    </div>
+  </form>
   <% if @deploy_jobs.size > 0 %>
     <table class="table is-fullwidth is-hoverable is-striped has-text-centered">
       <thead>
