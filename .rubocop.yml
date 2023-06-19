@@ -1,6 +1,5 @@
 AllCops:
   Exclude:
-  - 'bin/**/*'
   - 'db/**/*'
   - 'etc/**/*'
   - 'node_modules/**/*'
