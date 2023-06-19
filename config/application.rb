@@ -12,7 +12,6 @@ require 'action_mailer/railtie'
 # require "action_text/engine"
 require 'action_view/railtie'
 require 'action_cable/engine'
-# require "sprockets/railtie"
 require 'rails/test_unit/railtie'
 
 # Require the gems listed in Gemfile, including any gems
@@ -22,24 +21,15 @@ Bundler.require(*Rails.groups)
 module Genova
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.0
-
-    # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration can go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded after loading
-    # the framework and any gems in your application.
-
-    config.autoload_paths << Rails.root.join('lib/autoloads')
+    config.load_defaults 7.0
     config.eager_load_paths << Rails.root.join('lib/autoloads')
-    config.time_zone = Settings.timezone
-    config.after_initialize do
-      Mongoid.logger = ::Logger.new($stderr).tap do |logger|
-        logger.level = ::Logger::WARN
-      end
 
-      Mongo::Logger.logger = ::Logger.new($stderr).tap do |logger|
-        logger.level = ::Logger::WARN
-      end
-    end
+    # Configuration for the application, engines, and railties goes here.
+    #
+    # These settings can be overridden in specific environments using the files
+    # in config/environments, which are processed later.
+    #
+    # config.time_zone = "Central Time (US & Canada)"
+    # config.eager_load_paths << Rails.root.join("extras")
   end
 end

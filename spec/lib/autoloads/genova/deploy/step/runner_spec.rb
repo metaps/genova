@@ -9,8 +9,8 @@ module Genova
           let(:steps) do
             [
               {
-                type: type,
-                resources: resources,
+                type:,
+                resources:,
                 cluster: 'cluster',
                 repository: 'repository',
                 branch: 'branch'

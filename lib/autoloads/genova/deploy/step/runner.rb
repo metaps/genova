@@ -15,16 +15,12 @@ module Genova
                 if scheduled_task.present?
                   parts = scheduled_task.split(':')
 
-                  unless parts.size == 2
-                    raise Exceptions::ValidationError, 'For scheduled task, specify the resource name separated by a colon between the rule and target.'
-                  end
+                  raise Exceptions::ValidationError, 'For scheduled task, specify the resource name separated by a colon between the rule and target.' unless parts.size == 2
 
                   scheduled_task_rule, scheduled_task_target = parts
                 end
 
-                if service.nil? && run_task.nil? && scheduled_task.nil?
-                  raise Exceptions::ValidationError, 'Type must be one of `service`, `run_task`, or `scheduled_task`.'
-                end
+                raise Exceptions::ValidationError, 'Type must be one of `service`, `run_task`, or `scheduled_task`.' if service.nil? && run_task.nil? && scheduled_task.nil?
 
                 deploy_job = DeployJob.create!(
                   id: DeployJob.generate_id,
