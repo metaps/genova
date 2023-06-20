@@ -5,6 +5,8 @@ module Genova
     module Step
       describe Runner do
         describe 'call' do
+          let(:chat) { double(::Slack::Web::Api::Endpoints::Chat) }
+          let(:bot) { double(Slack::Interactive::Bot) }
           let(:runner) { double(Genova::Deploy::Runner) }
           let(:steps) do
             [
@@ -20,6 +22,11 @@ module Genova
 
           before do
             DeployJob.collection.drop
+
+            allow(chat).to receive(:ts)
+            allow(bot).to receive(:show_stop_button).and_return(chat)
+            allow(bot).to receive(:delete_message)
+            allow(Slack::Interactive::Bot).to receive(:new).and_return(bot)
 
             allow(runner).to receive(:run)
             allow(Genova::Deploy::Runner).to receive(:new).and_return(runner)

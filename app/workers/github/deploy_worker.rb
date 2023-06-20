@@ -27,7 +27,8 @@ module Github
       params = {
         mode: DeployJob.mode.find_value(:auto),
         repository: values[:repository],
-        branch: values[:branch]
+        branch: values[:branch],
+        slack_timestamp: response.ts
       }
 
       Genova::Deploy::Step::Runner.call(result[:steps], Genova::Deploy::Step::SlackHook.new(response.ts), params)

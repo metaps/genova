@@ -35,6 +35,7 @@ module Slack
         allow(client).to receive(:ts)
         allow(bot).to receive(:show_stop_button).and_return(client)
         allow(bot).to receive(:complete_deploy)
+        allow(bot).to receive(:delete_message)
         allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
       end
 

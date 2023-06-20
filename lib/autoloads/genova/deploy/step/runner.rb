@@ -29,6 +29,7 @@ module Genova
                   mode: options[:mode],
                   slack_user_id: options[:slack_user_id],
                   slack_user_name: options[:slack_user_name],
+                  slack_timestamp: options[:slack_timestamp],
                   account: Settings.github.account,
                   repository: options[:repository] || step[:repository],
                   branch: options[:branch] || step[:branch],
@@ -40,7 +41,13 @@ module Genova
                 )
 
                 callback.start_deploy(deploy_job:)
+
+                bot = Slack::Interactive::Bot.new(parent_message_ts: options[:slack_timestamp])
+                canceller = bot.show_stop_button(deploy_job.id).ts
+
                 Deploy::Runner.new(deploy_job, force: options[:force], async_wait: step[:async_wait]).run
+
+                bot.delete_message(canceller)
                 callback.complete_deploy(deploy_job:)
               end
             end
