@@ -5,7 +5,7 @@ ENV['SLACK_CLIENT_SECRET'] = Settings.slack.client_secret.to_s
 
 SlackRubyBotServer.configure do |config|
   config.oauth_version = :v2
-  config.logger = ::Logger.new(STDOUT)
+  config.logger = ::Logger.new($stdout)
 end
 
 SlackRubyBotServer::Events.configure do |config|
