@@ -37,7 +37,7 @@ module Genova
           reset_hard = "refs/tags/#{@tag}"
         end
 
-        git.fetch
+        git.fetch(prune: true)
         git.clean(force: true, d: true)
         git.checkout(checkout)
         git.reset_hard(reset_hard)
@@ -56,7 +56,7 @@ module Genova
 
       def origin_branches
         git = client
-        git.fetch
+        git.fetch(prune: true)
 
         branches = []
 
@@ -71,7 +71,7 @@ module Genova
 
       def origin_tags
         git = client
-        git.fetch
+        git.fetch(prune: true)
 
         tags = []
 
@@ -84,7 +84,7 @@ module Genova
 
       def origin_last_commit
         git = client
-        git.fetch
+        git.fetch(prune: true)
 
         if @branch.present?
           git.remote.branch(@branch).gcommit.log(1).first.to_s
@@ -95,7 +95,7 @@ module Genova
 
       def find_commit(tag)
         git = client
-        git.fetch
+        git.fetch(prune: true)
         git.tag(tag).sha
       rescue ::Git::GitTagNameDoesNotExist
         nil
