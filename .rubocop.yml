@@ -1,9 +1,10 @@
 AllCops:
   Exclude:
-  - 'db/**/*'
-  - 'etc/**/*'
-  - 'node_modules/**/*'
-  - 'tmp/**/*'
+    - 'bin/**/*' 
+    - 'db/**/*'
+    - 'etc/**/*'
+    - 'node_modules/**/*'
+    - 'tmp/**/*'
   TargetRubyVersion: 3.2
 
 AsciiComments:
