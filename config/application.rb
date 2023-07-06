@@ -23,6 +23,7 @@ module Genova
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
     config.eager_load_paths << Rails.root.join('lib/autoloads')
+    config.time_zone = Settings.timezone
 
     # Configuration for the application, engines, and railties goes here.
     #
