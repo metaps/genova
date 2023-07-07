@@ -25,6 +25,12 @@ module Genova
     config.eager_load_paths << Rails.root.join('lib/autoloads')
     config.time_zone = Settings.timezone
 
+    config.after_initialize do
+      Mongo::Logger.logger = ::Logger.new($stderr).tap do |logger|
+        logger.level = ::Logger::WARN
+      end
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
