@@ -34,7 +34,12 @@ module Genova
           break if next_token.nil?
         end
 
-        @ecr.create_repository(repository_name:) unless has_repository
+        unless has_repository
+          raise Exceptions::ValidationError, "Repository does not exist. [#{repository_name}]" unless Settings.ecr.create_repository
+
+          @ecr.create_repository(repository_name:) unless has_repository
+
+        end
 
         repo_tag_latest = "#{@base_path}/#{repository_name}:#{IMAGE_TAG_LATEST}"
         repo_tag_version = "#{@base_path}/#{repository_name}:#{image_tag}"

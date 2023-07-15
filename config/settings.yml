@@ -46,6 +46,10 @@ ecs:
 ecr:
   read_timeout: 900
 
+  # Specify true to create a repository if there is no repository.
+  #If false is specified, an error is raised if the repository is unregistered.
+  create_repository: true
+
 # Workflows can be defined to step through the deployment of tasks.
 # https://github.com/metaps/genova/wiki/Workflow
 workflows:
