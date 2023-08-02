@@ -24,7 +24,7 @@ module Genova
         end
 
         describe Client do
-          let(:service_client) { Ecs::Deployer::Service::Client.new(deploy_job, async_wait: false) }
+          let(:service_client) { Ecs::Deployer::Service::Client.new(deploy_job, ::Logger.new($stdout), async_wait: false) }
 
           describe 'update' do
             let(:service_provisioning_worker) { double(::Ecs::ServiceProvisioningWorker) }

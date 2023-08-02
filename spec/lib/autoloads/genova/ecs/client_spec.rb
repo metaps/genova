@@ -15,7 +15,7 @@ module Genova
           )
         end
         let(:code_manager) { double(CodeManager::Git) }
-        let(:client) { Ecs::Client.new(deploy_job) }
+        let(:client) { Ecs::Client.new(deploy_job, ::Logger.new($stdout)) }
         let(:docker_client) { double(Genova::Docker::Client) }
         let(:ecr_client) { double(Ecr::Client) }
         let(:deploy_config) { double(Genova::Config::DeployConfig) }

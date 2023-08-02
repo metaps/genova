@@ -33,7 +33,7 @@ module Github
     let(:runner) { double(Genova::Deploy::Runner) }
     let(:chat) { double(::Slack::Web::Api::Endpoints::Chat) }
 
-    before(:each) do
+    before do
       DeployJob.delete_all
       Genova::RedisPool.get.del(remove_key)
 

@@ -6,7 +6,7 @@ module Genova
       describe 'build_image' do
         let(:cipher) { double(Utils::Cipher) }
         let(:code_manager) { double(CodeManager::Git) }
-        let(:docker_client) { Genova::Docker::Client.new(code_manager) }
+        let(:docker_client) { Genova::Docker::Client.new(code_manager, ::Logger.new($stdout)) }
 
         it 'should be return repository name' do
           allow(code_manager).to receive(:base_path).and_return('.')

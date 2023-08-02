@@ -3,9 +3,9 @@ module Genova
     class Client
       BUILD_KEY = 'com.metaps.genova.build_key'.freeze
 
-      def initialize(code_manager, options = {})
+      def initialize(code_manager, logger)
         @code_manager = code_manager
-        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+        @logger = logger
         @cipher = Genova::Utils::Cipher.new
       end
 

@@ -3,9 +3,9 @@ module Genova
     class Client
       IMAGE_TAG_LATEST = 'latest'.freeze
 
-      def initialize(params = {})
+      def initialize(logger)
         @ecr = Aws::ECR::Client.new
-        @logger = params[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+        @logger = logger
         @base_path = base_path
 
         ::Docker.options[:read_timeout] = Settings.ecr.read_timeout

@@ -14,7 +14,7 @@ module Genova
         transaction.begin
 
         @logger.info('Start deployment.')
-        ecs = Ecs::Client.new(@deploy_job, logger: @logger)
+        ecs = Ecs::Client.new(@deploy_job, @logger)
 
         @deploy_job.reload
         raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)

@@ -102,8 +102,6 @@ module Genova
       end
 
       def release(tag, commit)
-        update
-
         git = client
         git.add_tag(tag, commit)
         git.push('origin', @branch, tags: tag)
@@ -122,8 +120,6 @@ module Genova
 
       def fetch_config(path)
         path = Pathname(@repository_config[:base_path]).join(path).cleanpath.to_s if @repository_config.present? && @repository_config[:base_path].present?
-
-        update
         config = File.read("#{repos_path}/#{path}")
 
         YAML.unsafe_load(config).deep_symbolize_keys
@@ -141,6 +137,7 @@ module Genova
 
       def client
         clone
+
         ::Git.open(@repos_path, log: @logger)
       end
     end

@@ -5,9 +5,9 @@ module Genova
         class Client
           LOG_SEPARATOR = '-' * 96
 
-          def initialize(deploy_job, options = {})
+          def initialize(deploy_job, logger, options = {})
             @deploy_job = deploy_job
-            @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+            @logger = logger
             @ecs_client = Aws::ECS::Client.new
           end
 
