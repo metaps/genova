@@ -42,6 +42,8 @@ module Genova
       end
 
       def cancel
+        return unless running?
+
         @logger.info('Cancel transaction.')
         Genova::RedisPool.get.del(@key)
       end

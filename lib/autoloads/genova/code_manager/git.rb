@@ -43,7 +43,10 @@ module Genova
         git.reset_hard(reset_hard)
         git.submodule_update
 
-        git.log(1).to_s
+        commit_id = git.log(1).to_s
+        @logger.info("Latest commit ID: #{commit_id}")
+
+        commit_id
       end
 
       def load_deploy_config

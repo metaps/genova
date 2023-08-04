@@ -11,6 +11,8 @@ module Genova
           logger: logger
         )
         @logger = logger
+        @logger.info("genova #{Genova::Version::LONG_STRING}")
+
         @task_definitions = {}
         @docker_client = Genova::Docker::Client.new(@code_manager, logger)
         @ecr_client = Genova::Ecr::Client.new(logger)
