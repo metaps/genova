@@ -55,7 +55,7 @@ module Genova
           result[:context] = build[:context] || '.'
           result[:docker_filename] = build[:dockerfile] || 'Dockerfile'
 
-          parse_build_args(build[:args], cipher) if build[:args].is_a(Hash)
+          parse_build_args(build[:args], cipher) if build[:args].is_a?(Hash)
         end
 
         result
