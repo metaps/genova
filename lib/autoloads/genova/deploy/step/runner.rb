@@ -8,19 +8,8 @@ module Genova
               callback.start_step(index: i)
 
               step[:resources].each do |resource|
-                service = step[:type] == DeployJob.type.find_value(:service).to_s ? resource : nil
-                run_task = step[:type] == DeployJob.type.find_value(:run_task).to_s ? resource : nil
-                scheduled_task = step[:type] == DeployJob.type.find_value(:scheduled_task).to_s ? resource : nil
-
-                if scheduled_task.present?
-                  parts = scheduled_task.split(':')
-
-                  raise Exceptions::ValidationError, 'For scheduled task, specify the resource name separated by a colon between the rule and target.' unless parts.size == 2
-
-                  scheduled_task_rule, scheduled_task_target = parts
-                end
-
-                raise Exceptions::ValidationError, 'Type must be one of `service`, `run_task`, or `scheduled_task`.' if service.nil? && run_task.nil? && scheduled_task.nil?
+                service, run_task, scheduled_task = extract_resources(step[:type], resource)
+                scheduled_task_rule, scheduled_task_target = extract_scheduled_task(scheduled_task) if scheduled_task.present?
 
                 deploy_job = DeployJob.create!(
                   id: DeployJob.generate_id,
@@ -53,6 +42,24 @@ module Genova
             end
 
             callback.complete_steps(user: options[:slack_user_id])
+          end
+
+          def extract_resources(type, resource)
+            results = [
+              type == DeployJob.type.find_value(:service).to_s ? resource : nil,
+              type == DeployJob.type.find_value(:run_task).to_s ? resource : nil,
+              type == DeployJob.type.find_value(:scheduled_task).to_s ? resource : nil
+            ]
+            raise Exceptions::ValidationError, 'Type must be one of `service`, `run_task`, or `scheduled_task`.' if results.all?(&:nil?)
+
+            results
+          end
+
+          def extract_scheduled_task(scheduled_task)
+            parts = scheduled_task.split(':')
+            raise Exceptions::ValidationError, 'For scheduled task, specify the resource name separated by a colon between the rule and target.' unless parts.size == 2
+
+            scheduled_task_rule, scheduled_task_target = parts
           end
         end
       end
