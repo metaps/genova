@@ -1,6 +1,5 @@
 class ApplicationController < ActionController::Base
-  # rescue_from Exception, with: :render_500 if Rails.env.production?
-  rescue_from Exception, with: :render_500
+  rescue_from Exception, with: :render_500 if Rails.env.production?
 
   protect_from_forgery with: :exception
 
