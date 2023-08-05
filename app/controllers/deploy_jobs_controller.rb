@@ -9,6 +9,17 @@ class DeployJobsController < ApplicationController
     render status: :not_found if @deploy_job.nil?
   end
 
+  def download
+    deploy_job = DeployJob.find(params[:id])
+    return redirect_to root_path if deploy_job.nil?
+
+    send_data(
+      (deploy_job.logs || []).join("\n"),
+      filename: "deployjob_#{deploy_job.id}.log",
+      type: 'text/plain'
+    )
+  end
+
   private
 
   def parse_conditions

@@ -10,7 +10,7 @@ module Genova
               logger.warn('"task_count" parameter is deprecated. Set variable "desired_count" instead.') if target_config[:task_count].present?
               logger.warn('"overrides" parameter is deprecated. Set variable "container_overrides" instead.') if target_config[:overrides].present?
 
-              ecs = Aws::ECS::Client.new(logger: logger)
+              ecs = Aws::ECS::Client.new(logger:)
               clusters = ecs.describe_clusters(clusters: [deploy_job.cluster]).clusters
               raise Exceptions::NotFoundError, "Cluster does not eixst. [#{deploy_job.cluster}]" if clusters.count.zero?
 

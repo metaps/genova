@@ -55,15 +55,17 @@ module Genova
           result[:context] = build[:context] || '.'
           result[:docker_filename] = build[:dockerfile] || 'Dockerfile'
 
-          if build[:args].is_a?(Hash)
-            build[:args].each do |key, value|
-              value = cipher.decrypt(value) if cipher.encrypt_format?(value)
-              result[:build_args] += " --build-arg #{key}='#{value}'"
-            end
-          end
+          parse_build_args(build[:args], cipher) if build[:args].is_a(Hash)
         end
 
         result
+      end
+
+      def parse_build_args(args, cipher)
+        args.each do |key, value|
+          value = cipher.decrypt(value) if cipher.encrypt_format?(value)
+          result[:build_args] += " --build-arg #{key}='#{value}'"
+        end
       end
     end
   end

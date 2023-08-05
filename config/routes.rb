@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
   root to: 'deploy_jobs#index'
   resources :deploy_jobs, only: %i[index show] do
+    get :download, on: :member
   end
 
   get 'workflows', controller: :workflows, action: :index

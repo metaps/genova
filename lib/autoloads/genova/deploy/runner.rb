@@ -7,6 +7,7 @@ module Genova
 
         @logger = Genova::Logger::MongodbLogger.new(@deploy_job)
         @logger.level = options[:verbose] ? :debug : Settings.logger.level
+        @logger.info(Genova::Version::LONG_STRING)
       end
 
       def run

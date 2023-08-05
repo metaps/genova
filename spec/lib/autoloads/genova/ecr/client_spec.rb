@@ -6,7 +6,7 @@ module Genova
       let(:ecr) { double(Aws::ECR::Client) }
       let(:ecr_client) { Ecr::Client.new(::Logger.new($stdout)) }
 
-      befor do
+      before do
         allow(Aws::ECR::Client).to receive(:new).and_return(ecr)
       end
 

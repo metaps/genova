@@ -3,7 +3,7 @@ module Genova
     module Deployer
       module ScheduledTask
         class Client
-          def initialize(deploy_job, logger, options = {})
+          def initialize(deploy_job, logger, _options = {})
             @deploy_job = deploy_job
             @logger = logger
             @eventbridge = Aws::EventBridge::Client.new
