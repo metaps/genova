@@ -1,19 +1,19 @@
 module Genova
   module Ecs
     class Client
-      def initialize(deploy_job, options = {})
+      def initialize(deploy_job, logger)
         @deploy_job = deploy_job
         @code_manager = CodeManager::Git.new(
           @deploy_job.repository,
           branch: @deploy_job.branch,
           tag: @deploy_job.tag,
           alias: @deploy_job.alias,
-          logger: @logger
+          logger:
         )
-        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+        @logger = logger
         @task_definitions = {}
-        @docker_client = Genova::Docker::Client.new(@code_manager, logger: @logger)
-        @ecr_client = Genova::Ecr::Client.new(logger: @logger)
+        @docker_client = Genova::Docker::Client.new(@code_manager, logger)
+        @ecr_client = Genova::Ecr::Client.new(logger)
         @deploy_config = @code_manager.load_deploy_config
       end
 
@@ -54,7 +54,7 @@ module Genova
 
         deploy_pre_hook
 
-        run_task_client = Deployer::RunTask::Client.new(@deploy_job, logger: @logger)
+        run_task_client = Deployer::RunTask::Client.new(@deploy_job, @logger)
         run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
@@ -66,7 +66,7 @@ module Genova
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
         push_image(service_config[:containers], task_definition, @deploy_job.label)
-        service_client = Deployer::Service::Client.new(@deploy_job, logger: @logger, async_wait: options[:async_wait])
+        service_client = Deployer::Service::Client.new(@deploy_job, @logger, async_wait: options[:async_wait])
 
         raise Exceptions::ValidationError, "Service is not registered. [#{@deploy_job.service}]" unless service_client.exist?
 
@@ -94,11 +94,11 @@ module Genova
         rule_config = @deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)
         deploy_pre_hook
 
-        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@deploy_job, logger: @logger)
+        scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@deploy_job, @logger)
         scheduled_task_client.update(
           rule_config[:rule],
           rule_config[:expression],
-          Ecs::Deployer::ScheduledTask::Target.build(@deploy_job, task_definition.task_definition_arn, target_config, logger: @logger),
+          Ecs::Deployer::ScheduledTask::Target.build(@deploy_job, task_definition.task_definition_arn, target_config, @logger),
           {
             enabled: rule_config[:enabled],
             description: rule_config[:description]

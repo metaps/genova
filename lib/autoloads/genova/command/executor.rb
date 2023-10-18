@@ -4,8 +4,8 @@ module Genova
   module Command
     class Executor
       class << self
-        def call(command, options = {})
-          @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+        def call(command, logger, options = {})
+          @logger = logger
           @options = options
 
           begin

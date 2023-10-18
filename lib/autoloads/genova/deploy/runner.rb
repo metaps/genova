@@ -7,6 +7,7 @@ module Genova
 
         @logger = Genova::Logger::MongodbLogger.new(@deploy_job)
         @logger.level = options[:verbose] ? :debug : Settings.logger.level
+        @logger.info(Genova::Version::LONG_STRING)
       end
 
       def run
@@ -14,7 +15,7 @@ module Genova
         transaction.begin
 
         @logger.info('Start deployment.')
-        ecs = Ecs::Client.new(@deploy_job, logger: @logger)
+        ecs = Ecs::Client.new(@deploy_job, @logger)
 
         @deploy_job.reload
         raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)

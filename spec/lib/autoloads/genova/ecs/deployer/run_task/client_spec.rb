@@ -16,7 +16,7 @@ module Genova
             )
           end
           let(:ecs_client) { double(Aws::ECS::Client) }
-          let(:client) { Client.new(deploy_job) }
+          let(:client) { Client.new(deploy_job, ::Logger.new($stdout)) }
 
           before do
             DeployJob.collection.drop

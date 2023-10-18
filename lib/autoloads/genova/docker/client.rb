@@ -3,9 +3,9 @@ module Genova
     class Client
       BUILD_KEY = 'com.metaps.genova.build_key'.freeze
 
-      def initialize(code_manager, options = {})
+      def initialize(code_manager, logger)
         @code_manager = code_manager
-        @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
+        @logger = logger
         @cipher = Genova::Utils::Cipher.new
       end
 
@@ -33,7 +33,7 @@ module Genova
         command = "docker build #{build_option_string} ."
         @logger.info("Detect Docker build path [#{docker_base_path}]")
 
-        Genova::Command::Executor.call(command, work_dir: docker_base_path, logger: @logger)
+        Genova::Command::Executor.call(command, @logger, work_dir: docker_base_path)
 
         result = ::Docker::Image.all(all: true, filters: { label: ["#{BUILD_KEY}=#{build_value}"] }.to_json)
         raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." if result.empty?

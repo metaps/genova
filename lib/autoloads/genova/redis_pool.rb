@@ -1,6 +1,4 @@
 module Genova
-  # Genova::RedisPool.getが廃止されたため、独自のコネクションプールを実装。
-  # https://www.timedia.co.jp/tech/ruby-rediscurrent/
   class RedisPool
     class Wrapper < ConnectionPool::Wrapper
       def initialize(pool)

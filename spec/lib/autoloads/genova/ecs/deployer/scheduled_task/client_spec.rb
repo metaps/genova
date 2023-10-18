@@ -14,7 +14,7 @@ module Genova
             cluster: 'cluster'
           )
         end
-        let(:client) { Ecs::Deployer::ScheduledTask::Client.new(deploy_job) }
+        let(:client) { Ecs::Deployer::ScheduledTask::Client.new(deploy_job, ::Logger.new($stdout)) }
         let(:eventbridge) { double(Aws::EventBridge::Client) }
 
         before do

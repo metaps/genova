@@ -109,14 +109,14 @@ class DeployJob
     self.commit_id = commit_id
     save
 
-    logger.info('Deploy Status updated to Provisioning.')
+    logger.info('Deploy status updated. [provisioning]')
   end
 
   def update_status_deploying
     self.status = DeployJob.status.find_value(:deploying).to_s
     save
 
-    logger.info('Deploy Status updated to Deploying.')
+    logger.info('Deploy status updated. [deploying]')
   end
 
   def update_status_complate(params = {})
@@ -127,7 +127,7 @@ class DeployJob
     self.task_definition_arn = params[:task_definition_arn] if params[:task_definition_arn].present?
     save
 
-    logger.info('Deploy Status updated to Complete.')
+    logger.info('Deploy status updated. [complete]')
   end
 
   def update_status_failure
@@ -136,14 +136,14 @@ class DeployJob
     self.execution_time = finished_at.to_f - started_at.to_f if started_at.present?
     save
 
-    logger.info('Deploy Status updated to Failure.')
+    logger.info('Deploy status updated. [failure]')
   end
 
   def update_status_reserved_cancel
     self.status = DeployJob.status.find_value(:reserved_cancel).to_s
     save
 
-    logger.info('Deploy Status updated to Reserved cancel.')
+    logger.info('Deploy status updated. [reserved cancel]')
   end
 
   def update_status_cancel
@@ -152,7 +152,7 @@ class DeployJob
     self.execution_time = finished_at.to_f - started_at.to_f
     save
 
-    logger.info('Deploy Status updated to Cancel.')
+    logger.info('Deploy status updated. [cancel]')
   end
 
   def finished

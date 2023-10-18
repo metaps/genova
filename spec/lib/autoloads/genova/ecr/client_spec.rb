@@ -4,9 +4,9 @@ module Genova
   module Ecr
     describe Client do
       let(:ecr) { double(Aws::ECR::Client) }
-      let(:ecr_client) { Ecr::Client.new }
+      let(:ecr_client) { Ecr::Client.new(::Logger.new($stdout)) }
 
-      before(:each) do
+      before do
         allow(Aws::ECR::Client).to receive(:new).and_return(ecr)
       end
 
@@ -24,7 +24,7 @@ module Genova
       describe 'push_image' do
         let(:image) { double(::Docker::Image) }
 
-        before(:each) do
+        before do
           allow(image).to receive(:tag)
           allow(image).to receive(:push)
           allow(::Docker::Image).to receive(:get).and_return(image)

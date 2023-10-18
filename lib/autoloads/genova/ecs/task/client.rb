@@ -37,6 +37,24 @@ module Genova
           # https://github.com/metaps/genova/issues/283
           reset_array!(task_definition, task_overrides, :requires_compatibilities)
 
+          override_container_definitions!(task_definition, task_overrides)
+
+          task_definition
+        end
+
+        def reset_array!(task_definition, task_overrides, *params)
+          return unless task_definition.dig(*params).present?
+          return unless task_overrides.dig(*params).present?
+
+          if params.size > 1
+            value = task_definition.dig(*params[0..params.size - 2])
+            value[params[params.size - 1]] = []
+          else
+            task_definition[params[0]] = []
+          end
+        end
+
+        def override_container_definitions!(task_definition, task_overrides)
           (task_overrides[:container_definitions] || []).each_with_index do |override_container_definition, index|
             container_definition = task_definition[:container_definitions].find { |k, _v| k[:name] == override_container_definition[:name] }
 
@@ -52,27 +70,16 @@ module Genova
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
 
-            if container_definition[:environment].present? && override_container_definition[:environment].present?
-              override_container_definition[:environment].each do |environment|
-                container_definition[:environment].delete_if { |k, _v| k[:name] == environment[:name] }
-              end
-            end
-
+            merge_container_environment!(container_definition, override_container_definition)
             container_definition.deeper_merge!(override_container_definition)
           end
-
-          task_definition
         end
 
-        def reset_array!(task_definition, task_overrides, *params)
-          return unless task_definition.dig(*params).present?
-          return unless task_overrides.dig(*params).present?
+        def merge_container_environment!(container_definition, override_container_definition)
+          return unless container_definition[:environment].present? && override_container_definition[:environment].present?
 
-          if params.size > 1
-            value = task_definition.dig(*params[0..params.size - 2])
-            value[params[params.size - 1]] = []
-          else
-            task_definition[params[0]] = []
+          override_container_definition[:environment].each do |environment|
+            container_definition[:environment].delete_if { |k, _v| k[:name] == environment[:name] }
           end
         end
 
