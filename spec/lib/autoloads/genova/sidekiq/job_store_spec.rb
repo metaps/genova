@@ -11,13 +11,13 @@ module Genova
       end
 
       describe 'create' do
-        it 'should be return store id' do
+        it 'should return store id' do
           expect(Genova::Sidekiq::JobStore.create('id', params)).to match(/^job_store_\w+$/)
         end
       end
 
       describe 'find' do
-        it 'should be return store value' do
+        it 'should return store value' do
           id = Genova::Sidekiq::JobStore.create('id', params)
           value = Genova::Sidekiq::JobStore.find(id)
 

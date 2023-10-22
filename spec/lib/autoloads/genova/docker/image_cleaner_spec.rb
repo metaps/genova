@@ -30,7 +30,7 @@ module Genova
         let(:repo_tags) { ['latest'] }
 
         context 'when there is a built image' do
-          it 'should be return execute result' do
+          it 'should return execute result' do
             image_info[:Labels][Genova::Docker::Client::BUILD_KEY] = 'build_key'
 
             expect { Genova::Docker::ImageCleaner.call }.not_to raise_error
@@ -41,7 +41,7 @@ module Genova
         context 'when there is a <none> image' do
           let(:repo_tags) { ['<none>:<none>'] }
 
-          it 'should be return execute result' do
+          it 'should return execute result' do
             expect { Genova::Docker::ImageCleaner.call }.not_to raise_error
             expect(image).to have_received(:remove).once
           end

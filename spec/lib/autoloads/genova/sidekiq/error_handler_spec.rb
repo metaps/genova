@@ -6,7 +6,7 @@ module Genova
       let(:bot) { double(Genova::Slack::Interactive::Bot) }
 
       describe 'notify' do
-        it 'should be send slack message' do
+        it 'should send slack message' do
           allow(bot).to receive(:error)
           allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 

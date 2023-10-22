@@ -36,17 +36,16 @@ module Genova
 
       describe '#commit' do
         it 'should complete the transaction' do
-          transaction = Genova::Deploy::Transaction.new('repository_name')
           allow(Genova::RedisPool.get).to receive(:del)
-          
-          expect(transaction.commit).to be_nil
+
+          transaction.commit
+          expect(Genova::RedisPool.get.get("trans_#{Settings.github.account}")).to be_nil
         end
       end
 
       describe '#cancel' do
         it 'should cancel the transaction' do
-          transaction = Genova::Deploy::Transaction.new('repository_name')
-          
+          transaction.commit
           expect(Genova::RedisPool.get.get("trans_#{Settings.github.account}")).to be_nil
         end
       end

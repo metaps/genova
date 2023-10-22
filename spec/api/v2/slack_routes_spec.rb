@@ -11,7 +11,7 @@ module V2
       context 'when you can add team' do
         let(:rest_client_response) { double(RestClient::Response) }
 
-        it 'should be return success' do
+        it 'should return success' do
           allow(rest_client_response).to receive(:body).and_return(Oj.dump({}))
           allow(RestClient).to receive(:post).and_return(rest_client_response)
 
@@ -24,7 +24,7 @@ module V2
       context 'when you can\' add team' do
         let(:exception_with_response) { double(RestClient::ExceptionWithResponse) }
 
-        it 'should be return error' do
+        it 'should return error' do
           allow(exception_with_response).to receive(:body).and_return(Oj.dump(
                                                                         type: 'type',
                                                                         message: 'message'
@@ -53,7 +53,7 @@ module V2
       context 'when valid signature' do
         let(:token) { Settings.slack.vertification_token }
 
-        it 'should be return success' do
+        it 'should return success' do
           post '/api/v2/slack/post', params: payload_body
 
           expect(response).to have_http_status :created
@@ -63,7 +63,7 @@ module V2
       context 'when invalid signature' do
         let(:token) { 'invalid_token' }
 
-        it 'should be return error' do
+        it 'should return error' do
           post '/api/v2/slack/post', params: payload_body
 
           expect(response).to have_http_status :forbidden
@@ -74,7 +74,7 @@ module V2
 
     describe 'POST /event' do
       context 'when event is sent from Slack' do
-        it 'should be return success' do
+        it 'should return success' do
           post '/api/v2/slack/event', params: { challenge: 'challenge' }
 
           expect(response).to have_http_status :created

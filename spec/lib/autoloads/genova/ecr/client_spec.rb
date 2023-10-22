@@ -31,7 +31,7 @@ module Genova
         end
 
         context 'when repository exist.' do
-          it 'should be image push' do
+          it 'should image push' do
             allow(ecr).to receive(:describe_repositories).and_return(repositories: [{ repository_name: 'repository' }])
 
             ecr_client.push_image('imsage_tag', 'repository')
@@ -41,7 +41,7 @@ module Genova
 
         context 'when repository not exist.' do
           context 'when the create_repository parameter is true' do
-            it 'should be image push' do
+            it 'should image push' do
               allow(ecr).to receive(:describe_repositories).and_return(repositories: [])
               allow(ecr).to receive(:create_repository)
 
@@ -51,7 +51,7 @@ module Genova
           end
 
           context 'when the create_repository parameter is false' do
-            it 'should be return error' do
+            it 'should return error' do
               allow(Settings.ecr).to receive(:create_repository).and_return(false)
               allow(ecr).to receive(:describe_repositories).and_return(repositories: [])
               allow(Aws::ECR::Client).to receive(:new).and_return(ecr)

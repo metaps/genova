@@ -10,7 +10,7 @@ module Genova
           allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
         end
 
-        it 'should be return help message' do
+        it 'should return help message' do
           allow(bot).to receive(:send_message)
           expect { Genova::Slack::Command::Help.call(bot, {}, 'user') }.not_to raise_error
         end

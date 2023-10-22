@@ -16,7 +16,7 @@ module Genova
         end
 
         describe 'register' do
-          it 'should be return new task' do
+          it 'should return new task' do
             allow(File).to receive(:file?).and_return(true)
             allow(File).to receive(:read).and_return(
               {
@@ -80,7 +80,7 @@ module Genova
             }
           end
 
-          it 'should be return merge parameters' do
+          it 'should return merge parameters' do
             expect(task_client.send(:merge_task_parameters!, task_definition, task_overrides)).to eq(
               {
                 container_definitions: [

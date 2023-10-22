@@ -13,7 +13,7 @@ module Genova
         end
 
         describe 'send_message' do
-          it 'should be not error' do
+          it 'should not error' do
             expect { bot.send_message('message') }.not_to raise_error
           end
         end
@@ -21,7 +21,7 @@ module Genova
         describe 'ask_history' do
           let(:array) { double(Array) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(array).to receive(:empty?).and_return(false)
             allow(BlockKit::ElementObject).to receive(:history_options).and_return(array)
 
@@ -32,7 +32,7 @@ module Genova
         describe 'ask_repository' do
           let(:array) { double(Array) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(BlockKit::ElementObject).to receive(:repository_options).and_return([array])
 
             expect { bot.ask_repository({}) }.not_to raise_error
@@ -42,7 +42,7 @@ module Genova
         describe 'ask_branch' do
           let(:array) { double(Array) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(array).to receive(:size).and_return(1)
             allow(BlockKit::ElementObject).to receive(:branch_options)
             allow(BlockKit::ElementObject).to receive(:tag_options).and_return(array)
@@ -54,7 +54,7 @@ module Genova
         describe 'ask_cluster' do
           let(:array) { double(Array) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(array).to receive(:empty?).and_return(false)
             allow(BlockKit::ElementObject).to receive(:cluster_options).and_return(array)
 
@@ -65,7 +65,7 @@ module Genova
         describe 'ask_target' do
           let(:array) { double(Array) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(array).to receive(:empty?).and_return(false)
             allow(array).to receive(:size).and_return(1)
             allow(BlockKit::ElementObject).to receive(:run_task_options).and_return(array)
@@ -88,7 +88,7 @@ module Genova
           let(:service) { double(Aws::ECS::Types::Service) }
           let(:describe_task_definition_response) { double(Aws::ECS::Types::DescribeTaskDefinitionResponse) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(code_manager).to receive(:origin_last_commit).and_return('xxx')
             allow(code_manager).to receive(:find_commit).and_return('yyy')
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
@@ -118,7 +118,7 @@ module Genova
             }
           end
 
-          it 'should be not error' do
+          it 'should not error' do
             expect { bot.detect_auto_deploy(params) }.not_to raise_error
           end
         end
@@ -126,7 +126,7 @@ module Genova
         describe 'detect_slack_deploy' do
           let(:deploy_job) { double(DeployJob) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(deploy_job).to receive(:id)
             allow(deploy_job).to receive(:repository)
             allow(deploy_job).to receive(:account)
@@ -143,7 +143,7 @@ module Genova
         describe 'complete_deploy' do
           let(:deploy_job) { double(DeployJob) }
 
-          it 'should be not error' do
+          it 'should not error' do
             allow(deploy_job).to receive(:mode)
             allow(deploy_job).to receive(:tag)
             allow(deploy_job).to receive(:account)
@@ -157,7 +157,7 @@ module Genova
         end
 
         describe 'error' do
-          it 'should be not error' do
+          it 'should not error' do
             expect { bot.error(error: Genova::Exceptions::Error.new) }.not_to raise_error
           end
         end

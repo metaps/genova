@@ -15,7 +15,7 @@ module Genova
         end
 
         context 'when history exists' do
-          it 'should be sent history to slack' do
+          it 'should sent history to slack' do
             allow(Genova::Slack::BlockKit::ElementObject).to receive(:history_options).and_return([text: 'text', value: 'value'])
             allow(bot).to receive(:ask_history)
 

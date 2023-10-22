@@ -15,7 +15,7 @@ RSpec.describe DeployJobsController, type: :controller do
   end
 
   describe 'GET #index' do
-    it 'should be return success' do
+    it 'should return success' do
       get :index
       expect(response).to have_http_status(:ok)
     end
@@ -27,13 +27,13 @@ RSpec.describe DeployJobsController, type: :controller do
     end
 
     context 'when DeployJob exist.' do
-      it 'should be return 200' do
+      it 'should return 200' do
         expect(get(:show, params: { id: deploy_job.id })).to have_http_status(:ok)
       end
     end
 
     context 'when DeployJob not exist.' do
-      it 'should be return 404' do
+      it 'should return 404' do
         expect(get(:show, params: { id: 'dummy' })).to have_http_status(:not_found)
       end
     end
@@ -41,11 +41,11 @@ RSpec.describe DeployJobsController, type: :controller do
 
   describe 'GET #download' do
     context 'when DeployJob exist.' do
-      it 'should be return 200' do
+      it 'should return 200' do
         expect(get(:download, params: { id: deploy_job.id })).to have_http_status(:ok)
       end
 
-      it 'should be redirect' do
+      it 'should redirect' do
         expect(get(:download, params: { id: 'dummy' })).to redirect_to(root_path)
       end
     end

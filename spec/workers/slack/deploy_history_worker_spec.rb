@@ -17,11 +17,11 @@ module Slack
         subject.perform(parent_message_ts)
       end
 
-      it 'should be in queue' do
+      it 'should in queue' do
         is_expected.to be_processed_in(:slack_deploy_history)
       end
 
-      it 'should be no retry' do
+      it 'should no retry' do
         is_expected.to be_retryable(false)
       end
     end

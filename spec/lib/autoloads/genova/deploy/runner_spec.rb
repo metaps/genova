@@ -54,21 +54,21 @@ module Genova
           end
 
           context 'when executing the run task' do
-            it 'should be \'deploy_run_task\' method is executed' do
+            it 'should \'deploy_run_task\' method is executed' do
               Runner.new(run_task).run
               expect(ecs).to have_received(:deploy_run_task).once
             end
           end
 
           context 'when deploying a service' do
-            it 'should be \'deploy_service\' method is executed' do
+            it 'should \'deploy_service\' method is executed' do
               Runner.new(service).run
               expect(ecs).to have_received(:deploy_service).once
             end
           end
 
           context 'when deploying a scheduled task' do
-            it 'should be \'deploy_scheduled_task\' method is executed' do
+            it 'should \'deploy_scheduled_task\' method is executed' do
               Runner.new(scheduled_task).run
               expect(ecs).to have_received(:deploy_scheduled_task).once
             end
@@ -76,7 +76,7 @@ module Genova
         end
 
         context 'when interrupt occur' do
-          it 'should be return exit 1' do
+          it 'should return exit 1' do
             allow(ecs).to receive(:deploy_service).and_raise(Interrupt)
             allow($stdout).to receive(:write)
 
@@ -86,7 +86,7 @@ module Genova
         end
 
         context 'when runtime exception do occur' do
-          it 'should be return exit 1' do
+          it 'should return exit 1' do
             allow(ecs).to receive(:deploy_service).and_raise(RuntimeError)
             allow($stdout).to receive(:write)
 
