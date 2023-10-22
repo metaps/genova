@@ -1,6 +1,4 @@
-if !Rails.env.test? && Settings.github.account.blank?
-  raise 'The GitHub account or organization is undefined. Please create `config.local.yml` and set `github.account`.'
-end
+raise 'The GitHub account or organization is undefined. Please create `config.local.yml` and set `github.account`.' if !Rails.env.test? && Settings.github.account.blank?
 
 deprecated_envs = %w[
   GENOVA_URL

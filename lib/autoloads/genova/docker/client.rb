@@ -19,6 +19,8 @@ module Genova
 
         raise Exceptions::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.file?(docker_file_path)
 
+        @logger.info("Detect Docker build path [#{docker_base_path}]")
+
         repository_name = image_name.match(%r{/([^:]+)})[1]
         build_value = SecureRandom.alphanumeric(8)
 
@@ -28,12 +30,12 @@ module Genova
           '--label': "#{BUILD_KEY}=#{build_value}"
         }
         build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
-        build_option_string = build_options.map { |key, value| "#{key} #{value}" }.join(' ') + build[:build_args]
+        base_command = "docker build #{build_options.map { |key, value| "#{key} #{value}" }.join(' ')}"
 
-        command = "docker build #{build_option_string} ."
-        @logger.info("Detect Docker build path [#{docker_base_path}]")
+        command = "#{base_command}#{build[:build_args_string]} ."
+        filtered_command = "#{base_command}#{build[:build_args_filtered_string]} ."
 
-        Genova::Command::Executor.call(command, @logger, work_dir: docker_base_path)
+        Genova::Command::Executor.call(command, @logger, work_dir: docker_base_path, filtered_command:)
 
         result = ::Docker::Image.all(all: true, filters: { label: ["#{BUILD_KEY}=#{build_value}"] }.to_json)
         raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." if result.empty?
@@ -45,7 +47,8 @@ module Genova
 
       def parse_docker_build(build, cipher)
         result = {
-          build_args: ''
+          build_args_string: '',
+          build_args_filtered_string: ''
         }
 
         if build.is_a?(String)
@@ -57,8 +60,15 @@ module Genova
 
           if build[:args].is_a?(Hash)
             build[:args].each do |key, value|
-              value = cipher.decrypt(value) if cipher.encrypt_format?(value)
-              result[:build_args] += " --build-arg #{key}='#{value}'"
+              if cipher.encrypt_format?(value)
+                result[:build_args_string] += " --build-arg #{key}='#{cipher.decrypt(value)}'"
+                result[:build_args_filtered_string] += " --build-arg #{key}='{FILTERD}'"
+              else
+                arg = " --build-arg #{key}='#{value}'"
+
+                result[:build_args_string] += arg
+                result[:build_args_filtered_string] += arg
+              end
             end
           end
         end

@@ -19,25 +19,29 @@ module Genova
           end
         end
 
+        private
+
+        def handle_io(stdin, stdout, stderr)
+          stdin.close_write
+
+          loop do
+            IO.select([stdout, stderr]).flatten.compact.each do |io|
+              io.each do |line|
+                next if line.nil? || line.empty?
+
+                @logger.info(line.chomp)
+              end
+            end
+
+            break if stdout.eof? && stderr.eof?
+          end
+        end
+
         def wait_for_execute(command)
-          @logger.info("Execute command. [#{command}]")
+          @logger.info("Execute command. [#{@options[:filtered_command].presence || command}]")
 
           Dir.chdir(@options[:work_dir]) if @options[:work_dir].present?
-          Open3.popen3(command) do |stdin, stdout, stderr|
-            stdin.close_write
-
-            loop do
-              IO.select([stdout, stderr]).flatten.compact.each do |io|
-                io.each do |line|
-                  next if line.nil? || line.empty?
-
-                  @logger.info(line.chomp)
-                end
-              end
-
-              break if stdout.eof? && stderr.eof?
-            end
-          end
+          Open3.popen3(command) { |stdin, stdout, stderr| handle_io(stdin, stdout, stderr) }
         end
       end
     end
