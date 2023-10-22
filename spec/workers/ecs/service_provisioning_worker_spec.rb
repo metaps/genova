@@ -55,11 +55,11 @@ module Ecs
         subject.perform(deploy_job.id)
       end
 
-      it 'should be in queue' do
+      it 'should in queue' do
         is_expected.to be_processed_in(:ecs_service_provisioning)
       end
 
-      it 'should be no retry' do
+      it 'should no retry' do
         is_expected.to be_retryable(false)
       end
     end

@@ -12,7 +12,7 @@ module Genova
 
         describe 'allow_repository?' do
           context 'when user has repository access' do
-            it 'should be allow access' do
+            it 'should allow access' do
               Settings.add_source!(
                 slack: {
                   permissions: [{
@@ -29,7 +29,7 @@ module Genova
           end
 
           context 'when the user does not have repository access' do
-            it 'should be not allow access' do
+            it 'should not allow access' do
               Settings.add_source!(
                 slack: {
                   permissions: [{

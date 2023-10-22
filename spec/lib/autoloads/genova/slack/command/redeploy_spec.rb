@@ -9,7 +9,7 @@ module Genova
         include_context :session_start
 
         context 'when exists history' do
-          it 'should be return confirm message' do
+          it 'should return confirm message' do
             history = double(Genova::Slack::Interactive::History)
             allow(history).to receive(:last).and_return(
               account: 'account',
@@ -29,7 +29,7 @@ module Genova
         end
 
         context 'when not exist history' do
-          it 'should be return error' do
+          it 'should return error' do
             history = double(Genova::Slack::Interactive::History)
             allow(history).to receive(:last).and_return(nil)
             allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history)

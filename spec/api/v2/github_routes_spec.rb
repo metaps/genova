@@ -55,7 +55,7 @@ module V2
           let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, webhook_pushed_commit)}" }
           let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
 
-          it 'should be return success' do
+          it 'should return success' do
             allow(Github::DeployWorker).to receive(:perform_async)
             post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
             expect(response).to have_http_status :created
@@ -66,7 +66,7 @@ module V2
           let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, webhook_pushed_tag)}" }
           let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
 
-          it 'should be return error' do
+          it 'should return error' do
             allow(Github::DeployWorker).to receive(:perform_async)
             post('/api/v2/github/push', params: webhook_pushed_tag, headers:)
             expect(response).to have_http_status :forbidden
@@ -78,7 +78,7 @@ module V2
         let(:signature) { 'sha1=invalid_signature' }
         let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
 
-        it 'should be return error' do
+        it 'should return error' do
           post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden
         end
@@ -112,7 +112,7 @@ module V2
         let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => Settings.github.secret_key } }
 
         context 'when branch is pushed' do
-          it 'should be return success' do
+          it 'should return success' do
             allow(Github::DeployWorker).to receive(:perform_async)
             post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
             expect(response).to have_http_status :created
@@ -120,7 +120,7 @@ module V2
         end
 
         context 'when tag is pushed' do
-          it 'should be return error' do
+          it 'should return error' do
             allow(Github::DeployWorker).to receive(:perform_async)
             post('/api/v2/github/actions/push', params: actions_pushed_tag, headers:)
             expect(response).to have_http_status :forbidden
@@ -131,7 +131,7 @@ module V2
       context 'when invalid secret key' do
         let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => 'invalid_secret_key' } }
 
-        it 'should be return error' do
+        it 'should return error' do
           allow(Github::DeployWorker).to receive(:perform_async)
           post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden

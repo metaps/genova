@@ -68,7 +68,7 @@ module Genova
             }
           end
 
-          it 'should be update deploy_job status' do
+          it 'should update deploy_job status' do
             allow(client).to receive(:exist_rule?).and_return(true)
             allow(client).to receive(:exist_target?).and_return(true)
             allow(eventbridge).to receive(:put_rule)

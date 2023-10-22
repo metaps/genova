@@ -23,7 +23,7 @@ module Genova
               )
             end
 
-            it 'should be return one history' do
+            it 'should return one history' do
               history.add(deploy_job)
               expect(history.list.size).to eq(1)
             end
@@ -50,7 +50,7 @@ module Genova
                 service: 'production'
               )
             end
-            it 'should be return two history' do
+            it 'should return two history' do
               history.add(deploy_job_1)
               history.add(deploy_job_2)
 
@@ -70,7 +70,7 @@ module Genova
               )
             end
 
-            it 'should be return one history' do
+            it 'should return one history' do
               history.add(deploy_job)
               history.add(deploy_job)
 
@@ -109,7 +109,7 @@ module Genova
                 service: 'development'
               )
             end
-            it 'should be delete old history' do
+            it 'should delete old history' do
               history.add(deploy_job_1)
               history.add(deploy_job_2)
               history.add(deploy_job_3)
@@ -131,7 +131,7 @@ module Genova
                 service: 'development'
               )
             end
-            it 'should be return last value' do
+            it 'should return last value' do
               history.add(deploy_job)
               last = history.last
 
@@ -165,7 +165,7 @@ module Genova
               )
             end
 
-            it 'should be return last value' do
+            it 'should return last value' do
               history.add(deploy_job_1)
               history.add(deploy_job_2)
 

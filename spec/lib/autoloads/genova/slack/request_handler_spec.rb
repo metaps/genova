@@ -15,7 +15,7 @@ module Genova
 
       describe 'call' do
         context 'when invoke submit_cancel' do
-          it 'should be execute submit_cancel' do
+          it 'should execute submit_cancel' do
             payload = {
               container: {
                 thread_ts: id
@@ -34,7 +34,7 @@ module Genova
         end
 
         context 'when invoke selected_repository' do
-          it 'should be execute selected_repository' do
+          it 'should execute selected_repository' do
             Settings.add_source!(
               github: {
                 repositories: [{
@@ -68,7 +68,7 @@ module Genova
         end
 
         context 'when invoke selected_branch' do
-          it 'should be execute selected_branch' do
+          it 'should execute selected_branch' do
             allow(::Slack::DeployClusterWorker).to receive(:perform_async)
 
             payload = {
@@ -93,7 +93,7 @@ module Genova
         end
 
         context 'when invoke approve_default_branch' do
-          it 'should be execute approve_default_branch' do
+          it 'should execute approve_default_branch' do
             allow(::Slack::DeployClusterWorker).to receive(:perform_async)
 
             payload = {
@@ -127,7 +127,7 @@ module Genova
         end
 
         context 'when invoke selected_cluster' do
-          it 'should be execute selected_cluster' do
+          it 'should execute selected_cluster' do
             allow(::Slack::DeployTargetWorker).to receive(:perform_async)
 
             payload = {
@@ -152,7 +152,7 @@ module Genova
         end
 
         context 'when invoke approve_default_cluster' do
-          it 'should be execute approve_default_cluster' do
+          it 'should execute approve_default_cluster' do
             allow(::Slack::DeployTargetWorker).to receive(:perform_async)
 
             payload = {
@@ -185,7 +185,7 @@ module Genova
         end
 
         context 'when invoke selected_service' do
-          it 'should be execute selected_service' do
+          it 'should execute selected_service' do
             allow(::Slack::DeployConfirmWorker).to receive(:perform_async)
 
             payload = {
@@ -212,7 +212,7 @@ module Genova
         context 'when invoke submit_history' do
           let(:history) { double(Genova::Slack::Interactive::History) }
 
-          it 'should be execute submit_history' do
+          it 'should execute submit_history' do
             allow(Genova::Slack::Interactive::History).to receive(:new).and_return(history)
             allow(history).to receive(:find!).and_return({})
             allow(::Slack::DeployHistoryWorker).to receive(:perform_async)
@@ -236,7 +236,7 @@ module Genova
         end
 
         context 'when invoke submit_deploy' do
-          it 'should be execute submit_deploy' do
+          it 'should execute submit_deploy' do
             allow(DeployJob).to receive(:create)
             allow(::Slack::DeployWorker).to receive(:perform_async)
 

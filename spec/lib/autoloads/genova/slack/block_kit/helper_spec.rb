@@ -5,7 +5,7 @@ module Genova
     module BlockKit
       describe Helper do
         describe 'escape_emoji' do
-          it 'should be escape string' do
+          it 'should escape string' do
             expect(Genova::Slack::BlockKit::Helper.send(:escape_emoji, ':test:')).to eq(":\u00ADtest\u00AD:")
           end
         end

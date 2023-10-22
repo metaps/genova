@@ -11,7 +11,7 @@ module Genova
         end
 
         describe 'repository_options' do
-          it 'should be return repositories' do
+          it 'should return repositories' do
             Settings.add_source!(
               github: {
                 repositories: [{
@@ -29,7 +29,7 @@ module Genova
         describe 'history_options' do
           let(:history) { double(Genova::Slack::Interactive::History) }
 
-          it 'should be return histories' do
+          it 'should return histories' do
             allow(history).to receive(:list).and_return([Oj.dump(
               id: Time.now.utc.strftime('%Y%m%d-%H%M%S'),
               repository: 'repository',
@@ -46,7 +46,7 @@ module Genova
         describe 'branch_options' do
           let(:code_manager) { double(Genova::CodeManager::Git) }
 
-          it 'should be return brahches' do
+          it 'should return brahches' do
             allow(code_manager).to receive(:default_branch)
             allow(code_manager).to receive(:origin_branches).and_return(['branch'])
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
@@ -59,7 +59,7 @@ module Genova
         describe 'tag_options' do
           let(:code_manager) { double(Genova::CodeManager::Git) }
 
-          it 'should be return tags' do
+          it 'should return tags' do
             allow(code_manager).to receive(:origin_tags).and_return(['tag'])
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
@@ -71,7 +71,7 @@ module Genova
         describe 'cluster_options' do
           let(:code_manager) { double(Genova::CodeManager::Git) }
 
-          it 'should be return clusters' do
+          it 'should return clusters' do
             allow(code_manager).to receive(:load_deploy_config).and_return(
               clusters: [
                 {
@@ -105,7 +105,7 @@ module Genova
             }
           end
 
-          it 'should be return targets' do
+          it 'should return targets' do
             allow(deploy_config).to receive(:find_cluster).and_return(
               run_tasks: {
                 run_task: nil

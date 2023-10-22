@@ -29,7 +29,7 @@ module Genova
           describe 'update' do
             let(:service_provisioning_worker) { double(::Ecs::ServiceProvisioningWorker) }
 
-            it 'should be return service arn' do
+            it 'should return service arn' do
               update_service_response = double(Aws::ECS::Types::UpdateServiceResponse)
               service = double(Aws::ECS::Types::Service)
 
@@ -60,7 +60,7 @@ module Genova
             end
 
             context 'when exist service' do
-              it 'should be return true' do
+              it 'should return true' do
                 expect(service_client.send(:exist?)).to be(true)
               end
             end

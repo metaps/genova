@@ -13,7 +13,7 @@ module Genova
         end
 
         context 'when manual deploy' do
-          it 'should be return confirm message' do
+          it 'should return confirm message' do
             allow(bot).to receive(:ask_confirm_deploy)
             allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 
@@ -30,7 +30,7 @@ module Genova
         end
 
         context 'when interactive deploy' do
-          it 'should be return repositories' do
+          it 'should return repositories' do
             allow(bot).to receive(:ask_repository)
             allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 

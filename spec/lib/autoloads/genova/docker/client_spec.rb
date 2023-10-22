@@ -8,7 +8,7 @@ module Genova
         let(:code_manager) { double(CodeManager::Git) }
         let(:docker_client) { Genova::Docker::Client.new(code_manager, ::Logger.new($stdout)) }
 
-        it 'should be return repository name' do
+        it 'should return repository name' do
           allow(code_manager).to receive(:base_path).and_return('.')
           allow(Utils::Cipher).to receive(:new).and_return(cipher)
 
