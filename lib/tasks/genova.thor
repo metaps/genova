@@ -1,7 +1,7 @@
 module GenovaCli
   # Stop processing if an error occurs in `config/initializer/validator.rb`.
   unless Rails.application.initialized?
-    puts "Rails environment was not loaded correctly."
+    puts 'Rails environment was not loaded correctly.'
     exit(1)
   end
 
