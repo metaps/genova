@@ -5,7 +5,7 @@ module Genova
     module Task
       describe Client do
         let(:cipher) { double(Utils::Cipher) }
-        let(:task_client) { Ecs::Task::Client.new }
+        let(:task_client) { Ecs::Task::Client.new(::Logger.new($stdout)) }
         let(:ecs_client) { double(Aws::ECS::Client) }
         let(:task_definition) { double(Aws::ECS::Types::TaskDefinition) }
 

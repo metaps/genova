@@ -3,7 +3,8 @@ module Genova
     class Cipher
       VARIABLE_PATTERN = /^\${(.+)}$/
 
-      def initialize
+      def initialize(logger)
+        @logger = logger
         @kms_client = Aws::KMS::Client.new
       end
 
@@ -15,6 +16,8 @@ module Genova
       end
 
       def decrypt(value)
+        @logger.info("Decrypt value: #{value}")
+
         match = value.match(VARIABLE_PATTERN)
         raise Exceptions::KmsDecryptError, 'Encrypted string is invalid.' unless match
 

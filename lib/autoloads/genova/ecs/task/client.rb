@@ -4,9 +4,9 @@ module Genova
   module Ecs
     module Task
       class Client
-        def initialize
+        def initialize(logger)
           @ecs_client = Aws::ECS::Client.new
-          @cipher = Genova::Utils::Cipher.new
+          @cipher = Genova::Utils::Cipher.new(logger)
         end
 
         def register(path, task_overrides = {}, params = {})
