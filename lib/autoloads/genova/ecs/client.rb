@@ -125,7 +125,7 @@ module Genova
       def deploy_scheduled_tasks(tag, params); end
 
       def create_task(task_definition_path, task_overrides, tag)
-        task_client = Ecs::Task::Client.new
+        task_client = Ecs::Task::Client.new(@logger)
 
         @task_definitions[task_definition_path] = task_client.register(task_definition_path, task_overrides, tag:) unless @task_definitions.include?(task_definition_path)
         @task_definitions[task_definition_path]

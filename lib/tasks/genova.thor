@@ -117,7 +117,7 @@ module GenovaCli
     option :master_key, required: true, desc: 'KMS master key used for encryption.'
     option :value, required: true, desc: 'Strings to encrypt'
     def encrypt
-      cipher = Genova::Utils::Cipher.new
+      cipher = Genova::Utils::Cipher.new(Logger.new($stdout))
       value = cipher.encrypt(options[:master_key], options[:value])
 
       puts "Encrypted value: #{value}"
@@ -126,7 +126,7 @@ module GenovaCli
     desc 'decrypt', 'Decrypt KMS encrypted values.'
     option :value, required: true, desc: 'Strings to decrypt'
     def decrypt
-      cipher = Genova::Utils::Cipher.new
+      cipher = Genova::Utils::Cipher.new(Logger.new($stdout))
       value = cipher.decrypt(options[:value])
 
       puts "Decrypted value: #{value}"

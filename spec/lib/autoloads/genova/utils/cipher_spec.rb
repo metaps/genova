@@ -4,7 +4,7 @@ module Genova
   module Utils
     describe Cipher do
       let(:kms_client) { double(Aws::KMS::Client) }
-      let(:cipher) { Utils::Cipher.new }
+      let(:cipher) { Utils::Cipher.new(::Logger.new($stdout)) }
 
       before do
         allow(Aws::KMS::Client).to receive(:new).and_return(kms_client)

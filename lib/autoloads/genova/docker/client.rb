@@ -6,7 +6,7 @@ module Genova
       def initialize(code_manager, logger)
         @code_manager = code_manager
         @logger = logger
-        @cipher = Genova::Utils::Cipher.new
+        @cipher = Genova::Utils::Cipher.new(logger)
       end
 
       def build_image(container_config, image_name)
