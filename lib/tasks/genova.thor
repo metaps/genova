@@ -1,4 +1,10 @@
 module GenovaCli
+  # Stop processing if an error occurs in `config/initializer/validator.rb`.
+  unless Rails.application.initialized?
+    puts "Rails environment was not loaded correctly."
+    exit(1)
+  end
+
   class Deploy < Thor
     class_option :branch, aliases: :b, desc: 'Branch to deploy.'
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
