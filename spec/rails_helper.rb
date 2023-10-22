@@ -56,6 +56,10 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   Aws.config[:stub_responses] = true
+
+  config.before(:each) do
+    allow(Settings.github).to receive(:account).and_return('metaps')
+  end
 end
 
 shared_context :session_start do

@@ -16,15 +16,18 @@ docker:
   #   # memory:
 
 github:
-  account: metaps
+  # Repository account or organization.
+  account:
 
   # Secret key to authenticate push events from GitHub.
   secret_key:
 
-    # Specify `true` to push Git tag after deployment.
+  # Specify `true` to push Git tag after deployment.
   deployment_tag: false
 
-  default_branch: master
+  # Default branch if you do not specify a branch with `-b` when deploying from the CLI.
+  default_branch: main
+
   deploy_lock_timeout: 1200
 
   # Used in repository list when deploying from Slack (Optional).
