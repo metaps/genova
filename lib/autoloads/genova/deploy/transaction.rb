@@ -1,10 +1,10 @@
 module Genova
   module Deploy
     class Transaction
-      LOCK_WAIT_INTERVAL = 10
+      LOCK_WAIT_INTERVAL = 20
 
       def initialize(repository, options = {})
-        @key = "trans_#{Settings.github.account}:#{repository}"
+        @key = "trans_#{Settings.github.account}"
         @repository = repository
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @force = options[:force]
