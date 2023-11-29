@@ -25,7 +25,8 @@
                         ]
                       }
                     }
-                  }
+                  },
+                  "target": { "type": "string" }
                 }
               }
             ]
