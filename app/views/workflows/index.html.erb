@@ -1,7 +1,7 @@
 <div class="container">
   <h2 class="title">Workflows</h2>
 
-  <% if Settings.workflows.size > 0 %>
+  <% if Settings.workflows.present? && Settings.workflows.size > 0 %>
     <% Settings.workflows.each_with_index do |workflow, i| %>
       <% if i % 2 == 0 %>
         <div class="columns">
