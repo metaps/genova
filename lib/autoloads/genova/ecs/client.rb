@@ -1,7 +1,7 @@
 module Genova
   module Ecs
     class Client
-      def initialize(deploy_job, logger)
+      def initialize(deploy_job, options, logger)
         @deploy_job = deploy_job
         @code_manager = CodeManager::Git.new(
           @deploy_job.repository,
@@ -10,9 +10,13 @@ module Genova
           alias: @deploy_job.alias,
           logger:
         )
+        @options = options
         @logger = logger
         @task_definitions = {}
+
         @docker_client = Genova::Docker::Client.new(@code_manager, logger)
+        @docker_client.no_cache = @options[:no_cache] if @options[:no_cache].present?
+
         @ecr_client = Genova::Ecr::Client.new(logger)
         @deploy_config = @code_manager.load_deploy_config
       end
@@ -58,7 +62,7 @@ module Genova
         run_task_client.execute(task_definition.task_definition_arn, options)
       end
 
-      def deploy_service(options)
+      def deploy_service
         @logger.info('Start deploy service.')
 
         service_config = @deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
@@ -66,7 +70,7 @@ module Genova
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
         push_image(service_config[:containers], task_definition, @deploy_job.label)
-        service_client = Deployer::Service::Client.new(@deploy_job, @logger, async_wait: options[:async_wait])
+        service_client = Deployer::Service::Client.new(@deploy_job, @logger, async_wait: @options[:async_wait])
 
         raise Exceptions::ValidationError, "Service is not registered. [#{@deploy_job.service}]" unless service_client.exist?
 

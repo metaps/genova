@@ -15,7 +15,7 @@ module Genova
           )
         end
         let(:code_manager) { double(CodeManager::Git) }
-        let(:client) { Ecs::Client.new(deploy_job, ::Logger.new($stdout)) }
+        let(:client) { Ecs::Client.new(deploy_job, {}, ::Logger.new($stdout)) }
         let(:docker_client) { double(Genova::Docker::Client) }
         let(:ecr_client) { double(Ecr::Client) }
         let(:deploy_config) { double(Genova::Config::DeployConfig) }
@@ -77,7 +77,7 @@ module Genova
             allow(service_client).to receive(:exist?).and_return(true)
             allow(Ecs::Deployer::Service::Client).to receive(:new).and_return(service_client)
 
-            expect { client.deploy_service(async_wait: false) }.to_not raise_error
+            expect { client.deploy_service }.to_not raise_error
           end
         end
       end

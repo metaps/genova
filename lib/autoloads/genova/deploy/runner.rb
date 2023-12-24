@@ -15,7 +15,7 @@ module Genova
         transaction.begin
 
         @logger.info('Start deployment.')
-        ecs = Ecs::Client.new(@deploy_job, @logger)
+        ecs = Ecs::Client.new(@deploy_job, @options, @logger)
 
         @deploy_job.reload
         raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
@@ -26,7 +26,7 @@ module Genova
         when DeployJob.type.find_value(:run_task)
           ecs.deploy_run_task
         when DeployJob.type.find_value(:service)
-          ecs.deploy_service(async_wait: @options[:async_wait])
+          ecs.deploy_service
         when DeployJob.type.find_value(:scheduled_task)
           ecs.deploy_scheduled_task
         end

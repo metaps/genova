@@ -29,14 +29,19 @@ module V2
         end
 
         if params[:event].present?
-          element = params.dig(:event, :blocks, 0, :elements, 0, :elements).find { |k, _v| k[:type] == 'text' }
+          elements = params.dig(:event, :blocks, 0, :elements, 0, :elements)
+
+          user = elements.find { |k, _v| k[:type] == 'user' }
+          element = elements.find { |k, _v| k[:type] == 'text' }
+
           statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
 
           key = "event_ts:#{params[:event][:event_ts]}"
           id = Genova::Sidekiq::JobStore.create(key, {
                                                   statement:,
                                                   user: params[:event][:user],
-                                                  parent_message_ts: params[:event][:ts]
+                                                  parent_message_ts: params[:event][:ts],
+                                                  mention_user_id: user[:user_id]
                                                 })
           Slack::CommandReceiveWorker.perform_async(id)
         end
