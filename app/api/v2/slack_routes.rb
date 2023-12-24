@@ -41,7 +41,7 @@ module V2
                                                   statement:,
                                                   user: params[:event][:user],
                                                   parent_message_ts: params[:event][:ts],
-                                                  mention_user_id: user[:user_id]
+                                                  mention_user: user[:user_id]
                                                 })
           Slack::CommandReceiveWorker.perform_async(id)
         end

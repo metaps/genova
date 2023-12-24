@@ -2,10 +2,10 @@ module Genova
   module Slack
     module Command
       class Help
-        def self.usage(user_id)
+        def self.usage(user)
           client = ::Slack::Web::Client.new(token: Settings.slack.api_token)
 
-          user_info = client.users_info(user: user_id)
+          user_info = client.users_info(user: user)
           user_name = user_info.user.real_name
 
           <<~DOC.freeze
@@ -60,7 +60,7 @@ module Genova
 
         def self.call(statements, _user, _parent_message_ts)
           client = Genova::Slack::Interactive::Bot.new
-          client.send_message(usage(statements[:mention_user_id]))
+          client.send_message(usage(statements[:mention_user]))
         end
       end
     end
