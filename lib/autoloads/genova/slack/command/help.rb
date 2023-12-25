@@ -5,7 +5,7 @@ module Genova
         def self.usage(user)
           client = ::Slack::Web::Client.new(token: Settings.slack.api_token)
 
-          user_info = client.users_info(user: user)
+          user_info = client.users_info(user:)
           user_name = user_info.user.real_name
 
           <<~DOC.freeze

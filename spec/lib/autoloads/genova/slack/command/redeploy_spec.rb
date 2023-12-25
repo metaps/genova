@@ -23,7 +23,7 @@ module Genova
             allow(bot).to receive(:ask_confirm_deploy)
             allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
 
-            expect { Genova::Slack::Command::Redeploy.call(bot, {}, 'user') }.not_to raise_error
+            expect { Genova::Slack::Command::Redeploy.call({}, 'user', Time.now.utc.to_f) }.not_to raise_error
             expect(bot).to have_received(:ask_confirm_deploy).once
           end
         end

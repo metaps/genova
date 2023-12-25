@@ -24,12 +24,12 @@ module Slack
       before do
         DeployJob.collection.drop
 
-        session_store.merge(
-          deploy_job_id:,
-          repository: 'repository',
-          cluster: 'cluster',
-          type: DeployJob.type.find_value(:service)
-        )
+        session_store.merge({
+                              deploy_job_id:,
+                              repository: 'repository',
+                              cluster: 'cluster',
+                              type: DeployJob.type.find_value(:service)
+                            })
 
         allow(bot).to receive(:detect_slack_deploy)
         allow(client).to receive(:ts)
