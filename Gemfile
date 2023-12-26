@@ -16,7 +16,12 @@ gem 'config'
 gem 'deep_merge', require: 'deep_merge/rails_compat'
 gem 'docker-api'
 gem 'enumerize'
-gem 'git'
+
+# When using git with Sidekiq, errors may occur because it is not thread safe.
+# Until the issue is fixed, the policy is to use the thread-safe fork version.
+# https://github.com/metaps/genova/issues/369
+gem 'git', git: 'https://github.com/fxposter/ruby-git', branch: 'remove-chdir'
+
 gem 'grape'
 gem 'grape_logging'
 gem 'hash_validator'
@@ -45,8 +50,6 @@ gem 'tzinfo-data'
 gem 'vite_rails'
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platform: :mri
   gem 'rspec-rails'
   gem 'simplecov', '~> 0.17.1'
 end
@@ -54,6 +57,7 @@ end
 group :test do
   # http://qiita.com/Anorlondo448/items/95946ebb071a4c3500fb
   gem 'rspec-sidekiq'
+
   gem 'vcr'
   gem 'webmock'
 end

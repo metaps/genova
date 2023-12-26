@@ -4,7 +4,7 @@ module Genova
       LOCK_WAIT_INTERVAL = 20
 
       def initialize(repository, options = {})
-        @key = "trans_#{Settings.github.account}"
+        @key = "trans_#{Settings.github.account}:#{repository}"
         @repository = repository
         @logger = options[:logger] || ::Logger.new($stdout, level: Settings.logger.level)
         @force = options[:force]
