@@ -11,7 +11,7 @@ module Genova
 
       def build_image(container_config, image_name)
         @logger.info('Building image...')
-        build = parse_docker_build(container_config[:build], @cipher)
+        build = parse_docker_build(container_config[:build])
 
         config_base_path = Pathname(@code_manager.base_path).join('config').to_s
         docker_base_path = File.expand_path(build[:context], config_base_path)
@@ -45,35 +45,53 @@ module Genova
 
       private
 
-      def parse_docker_build(build, cipher)
+      def parse_build_string(context)
+        {
+          build_args_string: '',
+          build_args_filtered_string: '',
+          context: context || '.',
+          docker_filename: 'Dockerfile'
+        }
+      end
+
+      def parse_build_hash(build)
         result = {
           build_args_string: '',
-          build_args_filtered_string: ''
+          build_args_filtered_string: '',
+          context: build[:context] || '.',
+          docker_filename: build[:dockerfile] || 'Dockerfile'
         }
 
-        if build.is_a?(String)
-          result[:context] = build || '.'
-          result[:docker_filename] = 'Dockerfile'
-        else
-          result[:context] = build[:context] || '.'
-          result[:docker_filename] = build[:dockerfile] || 'Dockerfile'
+        if build[:target].present?
+          target_option = " --target #{build[:target]}"
 
-          if build[:args].is_a?(Hash)
-            build[:args].each do |key, value|
-              if cipher.encrypt_format?(value)
-                result[:build_args_string] += " --build-arg #{key}='#{cipher.decrypt(value)}'"
-                result[:build_args_filtered_string] += " --build-arg #{key}='{FILTERD}'"
-              else
-                arg = " --build-arg #{key}='#{value}'"
+          result[:build_args_string] += target_option
+          result[:build_args_filtered_string] += target_option
+        end
 
-                result[:build_args_string] += arg
-                result[:build_args_filtered_string] += arg
-              end
+        if build[:args].is_a?(Hash)
+          build[:args].each do |key, value|
+            if @cipher.encrypt_format?(value)
+              result[:build_args_string] += " --build-arg #{key}='#{@cipher.decrypt(value)}'"
+              result[:build_args_filtered_string] += " --build-arg #{key}='{FILTERD}'"
+            else
+              arg = " --build-arg #{key}='#{value}'"
+
+              result[:build_args_string] += arg
+              result[:build_args_filtered_string] += arg
             end
           end
         end
 
         result
+      end
+
+      def parse_docker_build(build)
+        if build.is_a?(String)
+          parse_build_string(build)
+        else
+          parse_build_hash(build)
+        end
       end
     end
   end
