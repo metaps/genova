@@ -17,7 +17,8 @@ module Slack
       statements = {
         command: commands[0],
         sub_command: commands[1],
-        params: {}
+        params: {},
+        mention_user: values[:mention_user]
       }
 
       if statement.size > 1

@@ -3,6 +3,8 @@ module Genova
     class Client
       BUILD_KEY = 'com.metaps.genova.build_key'.freeze
 
+      attr_accessor :no_cache
+
       def initialize(code_manager, logger)
         @code_manager = code_manager
         @logger = logger
@@ -30,7 +32,9 @@ module Genova
           '--label': "#{BUILD_KEY}=#{build_value}"
         }
         build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
-        base_command = "docker build #{build_options.map { |key, value| "#{key} #{value}" }.join(' ')}"
+        build_options['--no-cache'] = nil if @no_cache
+
+        base_command = "docker build #{build_options.map { |key, value| "#{key}#{value.present? ? " #{value}" : ''}" }.join(' ')}"
 
         command = "#{base_command}#{build[:build_args_string]} ."
         filtered_command = "#{base_command}#{build[:build_args_filtered_string]} ."

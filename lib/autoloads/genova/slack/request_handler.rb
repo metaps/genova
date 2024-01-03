@@ -56,7 +56,7 @@ module Genova
 
         def selected_workflow
           value = @payload.dig(:actions, 0, :selected_option, :value)
-          @session_store.merge(name: value)
+          @session_store.merge({ name: value })
 
           bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
           bot.ask_confirm_workflow_deploy(name: value)
@@ -67,7 +67,7 @@ module Genova
         def selected_branch
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.merge(branch: value)
+          @session_store.merge({ branch: value })
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
           show_message(BlockKit::Helper.section_field('Branch', value))
@@ -76,7 +76,7 @@ module Genova
         def selected_tag
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.merge(tag: value)
+          @session_store.merge({ tag: value })
           ::Slack::DeployClusterWorker.perform_async(@thread_ts)
 
           show_message(BlockKit::Helper.section_field('Tag', value))
@@ -85,7 +85,7 @@ module Genova
         def selected_cluster
           value = @payload.dig(:actions, 0, :selected_option, :value)
 
-          @session_store.merge(cluster: value)
+          @session_store.merge({ cluster: value })
           ::Slack::DeployTargetWorker.perform_async(@thread_ts)
 
           show_message(BlockKit::Helper.section_field('Cluster', value))

@@ -6,6 +6,7 @@ module GenovaCli
   end
 
   class Deploy < Thor
+    class_option :'no-cache', desc: 'Build the image without caching.'
     class_option :branch, aliases: :b, desc: 'Branch to deploy.'
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
     class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Show confirmation message before deploying.'
@@ -51,7 +52,13 @@ module GenovaCli
 
         raise Genova::Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save
 
-        ::Genova::Deploy::Runner.new(deploy_job, verbose: options[:verbose], force: options[:force]).run
+        params = {
+          verbose: options[:verbose],
+          force: options[:force],
+          no_cache: options.key?(:'no-cache')
+        }
+
+        ::Genova::Deploy::Runner.new(deploy_job, params).run
       end
     end
 

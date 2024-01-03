@@ -19,7 +19,7 @@ module Genova
             allow(Genova::Slack::BlockKit::ElementObject).to receive(:history_options).and_return([text: 'text', value: 'value'])
             allow(bot).to receive(:ask_history)
 
-            expect { Genova::Slack::Command::History.call(bot, {}, 'user') }.not_to raise_error
+            expect { Genova::Slack::Command::History.call({}, 'user', Time.now.utc.to_f) }.not_to raise_error
           end
         end
       end

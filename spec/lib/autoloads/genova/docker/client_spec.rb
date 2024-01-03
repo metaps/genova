@@ -22,14 +22,22 @@ module Genova
         end
 
         context 'when build is string' do
-          it 'should return repository name' do
-            container_config = {
-              name: 'web',
-              build: '.'
-            }
+          container_config = {
+            name: 'web',
+            build: '.'
+          }
 
-            expect { warn 'Error!' }.to output("Error!\n").to_stderr
+          it 'should return repository name' do
             expect(docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')).to eq('web')
+          end
+
+          it 'should return repository name when --no-cache is specified' do
+            docker_client.no_cache = true
+            docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')
+
+            expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
+              expect(command).to include('--no-cache')
+            end
           end
         end
 
