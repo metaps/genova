@@ -138,8 +138,9 @@ module Genova
               branch: params[:branch],
               tag: params[:tag]
             )
+            code_manager.update
 
-            deploy_config = code_manager.load_deploy_config
+            deploy_config = code_manager.deploy_config
             deploy_config[:clusters].each do |cluster_params|
               next unless permission.allow_cluster?(cluster_params[:name])
 
@@ -163,7 +164,8 @@ module Genova
               branch: params[:branch],
               tag: params[:tag]
             )
-            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
+            code_manager.update
+            cluster_config = code_manager.deploy_config.find_cluster(params[:cluster])
 
             options = parse_run_tasks(cluster_config[:run_tasks]) if cluster_config[:run_tasks].present?
 
@@ -178,7 +180,8 @@ module Genova
               branch: params[:branch],
               tag: params[:tag]
             )
-            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
+            code_manager.update
+            cluster_config = code_manager.deploy_config.find_cluster(params[:cluster])
 
             options = parse_services(cluster_config[:services]) if cluster_config[:services].present?
 
@@ -193,7 +196,8 @@ module Genova
               branch: params[:branch],
               tag: params[:tag]
             )
-            cluster_config = code_manager.load_deploy_config.find_cluster(params[:cluster])
+            code_manager.update
+            cluster_config = code_manager.deploy_config.find_cluster(params[:cluster])
 
             options = parse_scheduled_tasks(cluster_config[:scheduled_tasks]) if cluster_config[:scheduled_tasks].present?
             options

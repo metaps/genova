@@ -29,7 +29,7 @@ module Genova
           allow(docker_client).to receive(:build_image).and_return(['repository_name'])
           allow(Genova::Docker::Client).to receive(:new).and_return(docker_client)
 
-          allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
+          allow(code_manager).to receive(:deploy_config).and_return(deploy_config)
           allow(code_manager).to receive(:task_definition_config_path).and_return('task_definition_path')
           allow(CodeManager::Git).to receive(:new).and_return(code_manager)
 

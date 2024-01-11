@@ -50,7 +50,8 @@ module Github
       allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
       allow(bot).to receive(:delete_message)
 
-      allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
+      allow(code_manager).to receive(:deploy_config).and_return(deploy_config)
+      allow(code_manager).to receive(:update)
       allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
       allow(runner).to receive(:run)

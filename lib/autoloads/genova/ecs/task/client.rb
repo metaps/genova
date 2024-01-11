@@ -26,7 +26,7 @@ module Genova
 
           result = @ecs_client.register_task_definition(task_definition)
 
-          @logger.info("Task created. (#{result[:task_definition][:task_definition_arn]})")
+          @logger.info("Task created. [#{result[:task_definition][:task_definition_arn]}]")
 
           result[:task_definition]
         end

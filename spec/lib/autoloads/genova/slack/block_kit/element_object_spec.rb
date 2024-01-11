@@ -72,7 +72,8 @@ module Genova
           let(:code_manager) { double(Genova::CodeManager::Git) }
 
           it 'should return clusters' do
-            allow(code_manager).to receive(:load_deploy_config).and_return(
+            allow(code_manager).to receive(:update)
+            allow(code_manager).to receive(:deploy_config).and_return(
               clusters: [
                 {
                   name: 'cluster'
@@ -106,6 +107,7 @@ module Genova
           end
 
           it 'should return targets' do
+            allow(code_manager).to receive(:update)
             allow(deploy_config).to receive(:find_cluster).and_return(
               run_tasks: {
                 run_task: nil
@@ -124,7 +126,7 @@ module Genova
                 }
               ]
             )
-            allow(code_manager).to receive(:load_deploy_config).and_return(deploy_config)
+            allow(code_manager).to receive(:deploy_config).and_return(deploy_config)
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
 
             service_options = Genova::Slack::BlockKit::ElementObject.service_options(params)

@@ -18,7 +18,6 @@ module Genova
         @docker_client.no_cache = @options[:no_cache] if @options[:no_cache].present?
 
         @ecr_client = Genova::Ecr::Client.new(logger)
-        @deploy_config = @code_manager.load_deploy_config
       end
 
       def ready
@@ -30,7 +29,7 @@ module Genova
 
       def deploy_run_task
         @logger.info('Start run task.')
-        run_task_config = @deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
+        run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
 
         if @deploy_job.override_container.present?
           run_task_config[:container_overrides] = [
@@ -65,7 +64,7 @@ module Genova
       def deploy_service
         @logger.info('Start deploy service.')
 
-        service_config = @deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
+        service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
@@ -88,14 +87,16 @@ module Genova
 
       def deploy_scheduled_task
         @logger.info('Start deploy scheduled task.')
-        target_config = @deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
+
+        deploy_config = @code_manager.deploy_config
+        target_config = deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
         task_definition = create_task(task_definition_path, target_config[:task_overrides], @deploy_job.label)
         @deploy_job.task_definition_arn = task_definition.task_definition_arn
 
         push_image(target_config[:containers], task_definition, @deploy_job.label)
-        rule_config = @deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)
+        rule_config = deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)
         deploy_pre_hook
 
         scheduled_task_client = Ecs::Deployer::ScheduledTask::Client.new(@deploy_job, @logger)

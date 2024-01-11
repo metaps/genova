@@ -29,7 +29,7 @@ module Genova
         build_options = {
           '-t': "#{repository_name}:latest",
           '-f': docker_file_path,
-          '--label': "#{BUILD_KEY}=#{build_value}",
+          '--label': "#{BUILD_KEY}=#{build_value}"
         }
         build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
         build_options['--no-cache'] = nil if @no_cache
