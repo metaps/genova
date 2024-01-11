@@ -20,8 +20,6 @@ module Genova
         @deploy_job.reload
         raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
 
-        @deploy_job.update_status_provisioning(ecs.ready)
-
         case @deploy_job.type
         when DeployJob.type.find_value(:run_task)
           ecs.deploy_run_task

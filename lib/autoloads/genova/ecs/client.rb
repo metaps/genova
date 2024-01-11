@@ -20,15 +20,10 @@ module Genova
         @ecr_client = Genova::Ecr::Client.new(logger)
       end
 
-      def ready
-        @logger.info('Authenticate to ECR.')
-
-        @ecr_client.authenticate
-        @code_manager.update
-      end
-
       def deploy_run_task
         @logger.info('Start run task.')
+        ready
+
         run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
 
         if @deploy_job.override_container.present?
@@ -63,6 +58,7 @@ module Genova
 
       def deploy_service
         @logger.info('Start deploy service.')
+        ready
 
         service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
@@ -87,6 +83,7 @@ module Genova
 
       def deploy_scheduled_task
         @logger.info('Start deploy scheduled task.')
+        ready
 
         deploy_config = @code_manager.deploy_config
         target_config = deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
@@ -112,6 +109,15 @@ module Genova
       end
 
       private
+
+      def ready
+        @logger.info('Authenticate to ECR.')
+
+        @ecr_client.authenticate
+        commit_id = @code_manager.update
+
+        @deploy_job.update_status_provisioning(commit_id)
+      end
 
       def push_image(containers_config, task_definition, tag)
         count = 0
