@@ -14,10 +14,7 @@ module Genova
           allow(Utils::Cipher).to receive(:new).and_return(cipher)
 
           allow(File).to receive(:file?).and_return(true)
-
-          allow(executor).to receive(:command)
-          allow(Command::Executor).to receive(:call).and_return(executor)
-
+          allow(Command::Executor).to receive(:call).and_return(0)
           allow(::Docker::Image).to receive(:all).and_return(foo: 'bar')
         end
 

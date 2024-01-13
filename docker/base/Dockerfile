@@ -1,6 +1,6 @@
 FROM ruby:3.2-alpine
 
-RUN apk --update add build-base openssh docker git gcompat tzdata vim --no-cache
+RUN apk --update add build-base openssh docker git gcompat tzdata --no-cache
 ENV APP_HOME=/app
 ENV RUBY_YJIT_ENABLE=1
 
