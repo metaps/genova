@@ -49,7 +49,7 @@ module Genova
         commit_id
       end
 
-      def load_deploy_config
+      def deploy_config
         Genova::Config::DeployConfig.new(fetch_config('config/deploy.yml'))
       end
 
@@ -122,8 +122,6 @@ module Genova
       private
 
       def fetch_config(path)
-        update
-
         path = Pathname(@repository_config[:base_path]).join(path).cleanpath.to_s if @repository_config.present? && @repository_config[:base_path].present?
         config = File.read("#{repos_path}/#{path}")
 

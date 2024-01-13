@@ -41,7 +41,8 @@ module Github
 
     def find(repository, branch)
       code_manager = Genova::CodeManager::Git.new(repository, branch:)
-      auto_deploy_config = code_manager.load_deploy_config[:auto_deploy]
+      code_manager.update
+      auto_deploy_config = code_manager.deploy_config[:auto_deploy]
 
       return nil if auto_deploy_config.nil?
 

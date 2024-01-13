@@ -7,6 +7,7 @@ module Genova
         def initialize(logger)
           @ecs_client = Aws::ECS::Client.new
           @cipher = Genova::Utils::Cipher.new(logger)
+          @logger = logger
         end
 
         def register(path, task_overrides = {}, params = {})
@@ -24,6 +25,9 @@ module Genova
           task_definition[:tags] << { key: 'genova.build', value: params[:tag] }
 
           result = @ecs_client.register_task_definition(task_definition)
+
+          @logger.info("Task created. [#{result[:task_definition][:task_definition_arn]}]")
+
           result[:task_definition]
         end
 

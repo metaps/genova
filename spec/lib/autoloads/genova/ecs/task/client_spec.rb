@@ -7,6 +7,7 @@ module Genova
         let(:cipher) { double(Utils::Cipher) }
         let(:task_client) { Ecs::Task::Client.new(::Logger.new($stdout)) }
         let(:ecs_client) { double(Aws::ECS::Client) }
+        let(:register_task_definition_response) { double(Aws::ECS::Types::RegisterTaskDefinitionResponse) }
         let(:task_definition) { double(Aws::ECS::Types::TaskDefinition) }
 
         before do
@@ -24,8 +25,9 @@ module Genova
               }.to_yaml
             )
 
-            allow(task_definition).to receive(:[]).with(:task_definition).and_return(double(Aws::ECS::Types::TaskDefinition))
-            allow(ecs_client).to receive(:register_task_definition).and_return(task_definition)
+            allow(task_definition).to receive(:[]).with(:task_definition_arn)
+            allow(register_task_definition_response).to receive(:[]).with(:task_definition).and_return(task_definition)
+            allow(ecs_client).to receive(:register_task_definition).and_return(register_task_definition_response)
 
             expect(task_client.register(any_args)).to be_a(task_definition.class)
           end

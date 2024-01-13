@@ -13,7 +13,6 @@ module Genova
       end
 
       let(:code_manager) { CodeManager::Git.new('repository', branch: 'master') }
-      let(:deploy_config) { double(Genova::Config::DeployConfig) }
 
       describe 'pull' do
         it 'should get latest source' do
@@ -30,13 +29,13 @@ module Genova
         end
       end
 
-      describe 'load_deploy_config' do
+      describe 'deploy_config' do
         let(:config) { { clusters: [] } }
 
         it 'should return config' do
           allow(code_manager).to receive(:fetch_config).and_return({ clusters: [] })
 
-          expect(code_manager.load_deploy_config).to be_a(Genova::Config::DeployConfig)
+          expect(code_manager.deploy_config).to be_a(Genova::Config::DeployConfig)
         end
       end
 
