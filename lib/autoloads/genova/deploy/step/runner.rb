@@ -59,7 +59,7 @@ module Genova
             parts = scheduled_task.split(':')
             raise Exceptions::ValidationError, 'For scheduled task, specify the resource name separated by a colon between the rule and target.' unless parts.size == 2
 
-            scheduled_task_rule, scheduled_task_target = parts
+            parts
           end
         end
       end

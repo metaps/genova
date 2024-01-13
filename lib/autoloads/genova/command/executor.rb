@@ -1,5 +1,3 @@
-require 'open3'
-
 module Genova
   module Command
     class Executor
@@ -9,7 +7,8 @@ module Genova
           @options = options
 
           begin
-            wait_for_execute(command)
+            status = wait_for_execute(command)
+            status.exitstatus
           rescue Interrupt
             @logger.error('Detected forced termination of program.')
             raise Interrupt
@@ -40,8 +39,15 @@ module Genova
         def wait_for_execute(command)
           @logger.info("Execute command. [#{@options[:filtered_command].presence || command}]")
 
+          exit_status = nil
           Dir.chdir(@options[:work_dir]) if @options[:work_dir].present?
-          Open3.popen3(command) { |stdin, stdout, stderr| handle_io(stdin, stdout, stderr) }
+
+          Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
+            handle_io(stdin, stdout, stderr)
+            exit_status = wait_thr.value
+          end
+
+          exit_status
         end
       end
     end

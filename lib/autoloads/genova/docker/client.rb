@@ -21,33 +21,40 @@ module Genova
 
         raise Exceptions::ValidationError, "#{build[:docker_filename]} does not exist. [#{docker_file_path}]" unless File.file?(docker_file_path)
 
-        @logger.info("Detect Docker build path [#{docker_base_path}]")
+        @logger.info("Detect docker build path [#{docker_base_path}]")
 
         repository_name = image_name.match(%r{/([^:]+)})[1]
-        build_value = SecureRandom.alphanumeric(8)
-
-        build_options = {
-          '-t': "#{repository_name}:latest",
-          '-f': docker_file_path,
-          '--label': "#{BUILD_KEY}=#{build_value}"
-        }
-        build_options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
-        build_options['--no-cache'] = nil if @no_cache
-
-        base_command = "docker build #{build_options.map { |key, value| "#{key}#{value.present? ? " #{value}" : ''}" }.join(' ')}"
+        base_command = build_base_command(repository_name, docker_file_path)
 
         command = "#{base_command}#{build[:build_args_string]} ."
         filtered_command = "#{base_command}#{build[:build_args_filtered_string]} ."
 
-        Genova::Command::Executor.call(command, @logger, work_dir: docker_base_path, filtered_command:)
+        start_time = Time.now
+        exit_code = Genova::Command::Executor.call(command, @logger, work_dir: docker_base_path, filtered_command:)
 
-        result = ::Docker::Image.all(all: true, filters: { label: ["#{BUILD_KEY}=#{build_value}"] }.to_json)
-        raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." if result.empty?
+        raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." unless exit_code.zero?
+
+        end_time = Time.now
+        execution_time = (end_time - start_time).round(2)
+
+        @logger.info("Docker build time: #{execution_time} seconds.")
 
         repository_name
       end
 
       private
+
+      def build_base_command(repository_name, docker_file_path)
+        options = {
+          '-t': "#{repository_name}:latest",
+          '-f': docker_file_path,
+          '--label': "#{BUILD_KEY}=#{SecureRandom.alphanumeric(8)}"
+        }
+        options['-m'] = Settings.docker.build.memory if Settings.dig('docker', 'build', 'memory').present?
+        options['--no-cache'] = nil if @no_cache
+
+        "docker build #{options.map { |key, value| "#{key}#{value.present? ? " #{value}" : ''}" }.join(' ')}"
+      end
 
       def parse_build_string(context)
         {
