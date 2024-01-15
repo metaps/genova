@@ -121,16 +121,23 @@ module Genova
 
       def push_image(containers_config, task_definition, tag)
         count = 0
+        @deploy_job.docker_build_time = 0
 
         containers_config.each do |container_config|
           container_definition = task_definition[:container_definitions].find { |container| container[:name] == container_config[:name] }
           raise Exceptions::ValidationError, "#{container_config[:name]} does not exist in task definition." if container_definition.nil?
 
-          @ecr_client.push_image(tag, @docker_client.build_image(container_config, container_definition[:image]))
+          repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
+
+          @deploy_job.docker_build_time += @docker_client.build_image(container_config, repository_name)
+          @ecr_client.push_image(tag, repository_name)
+
           count += 1
         end
 
         raise Exceptions::ValidationError, 'Push image is not found.' if count.zero?
+
+        @deploy_job.save
       end
 
       def deploy_scheduled_tasks(tag, params); end

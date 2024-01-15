@@ -11,7 +11,7 @@ module Genova
         @cipher = Genova::Utils::Cipher.new(logger)
       end
 
-      def build_image(container_config, image_name)
+      def build_image(container_config, repository_name)
         @logger.info('Building image...')
         build = parse_docker_build(container_config[:build])
 
@@ -23,7 +23,6 @@ module Genova
 
         @logger.info("Detect docker build path [#{docker_base_path}]")
 
-        repository_name = image_name.match(%r{/([^:]+)})[1]
         base_command = build_base_command(repository_name, docker_file_path)
 
         command = "#{base_command}#{build[:build_args_string]} ."
@@ -35,11 +34,11 @@ module Genova
         raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." unless exit_code.zero?
 
         end_time = Time.now
-        execution_time = (end_time - start_time).round(2)
+        build_time = (end_time - start_time).round(2)
 
-        @logger.info("Docker build time: #{execution_time} seconds.")
+        @logger.info("Docker build time: #{build_time} seconds.")
 
-        repository_name
+        build_time
       end
 
       private

@@ -26,7 +26,7 @@ module Genova
         before do
           DeployJob.collection.drop
 
-          allow(docker_client).to receive(:build_image).and_return(['repository_name'])
+          allow(docker_client).to receive(:build_image).and_return(0.0)
           allow(Genova::Docker::Client).to receive(:new).and_return(docker_client)
 
           allow(code_manager).to receive(:deploy_config).and_return(deploy_config)
@@ -36,7 +36,8 @@ module Genova
 
           allow(task_definition).to receive(:[]).with(:container_definitions).and_return(
             [{
-              name: 'web'
+              name: 'web',
+              image: 'xxx.dkr.ecr.ap-northeast-1.amazonaws.com/xxx:latest'
             }]
           )
           allow(task_definition).to receive(:task_definition_arn).and_return('task_definition_arn')
@@ -55,7 +56,8 @@ module Genova
           it 'shuold be not error' do
             allow(deploy_config).to receive(:find_run_task).and_return(
               containers: [
-                name: 'web'
+                name: 'web',
+                image: ' xxx.dkr.ecr.ap-northeast-1.amazonaws.com/xxx:latest'
               ]
             )
 
