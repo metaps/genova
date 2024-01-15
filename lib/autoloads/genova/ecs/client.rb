@@ -130,7 +130,6 @@ module Genova
           repository_name = container_definition[:image].match(%r{/([^:]+)})[1]
 
           @deploy_job.docker_build_time += @docker_client.build_image(container_config, repository_name)
-
           @ecr_client.push_image(tag, repository_name)
 
           count += 1

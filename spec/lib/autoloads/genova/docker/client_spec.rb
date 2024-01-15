@@ -24,13 +24,13 @@ module Genova
             build: '.'
           }
 
-          it 'should return repository name' do
-            expect(docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')).to eq('web')
+          it 'should return docker build time' do
+            expect(docker_client.build_image(container_config, 'web')).to eq(0.0)
           end
 
-          it 'should return repository name when --no-cache is specified' do
+          it 'should return docker build time when --no-cache is specified' do
             docker_client.no_cache = true
-            docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')
+            docker_client.build_image(container_config, 'web')
 
             expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
               expect(command).to include('--no-cache')
@@ -54,7 +54,7 @@ module Genova
             allow(cipher).to receive(:encrypt_format?).and_return(true, false)
             allow(cipher).to receive(:decrypt).and_return('foo', 'bar')
 
-            expect(docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')).to eq('web')
+            expect(docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')).to eq(0.0)
           end
         end
       end

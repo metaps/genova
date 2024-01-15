@@ -34,16 +34,6 @@ module Genova
           allow(code_manager).to receive(:update)
           allow(CodeManager::Git).to receive(:new).and_return(code_manager)
 
-          allow(task_definition).to receive(:[]).with(:container_definitions).and_return(
-            [{
-              name: 'web'
-            }]
-          )
-          allow(task_definition).to receive(:task_definition_arn).and_return('task_definition_arn')
-
-          allow(task_client).to receive(:register).and_return(task_definition)
-          allow(Ecs::Task::Client).to receive(:new).and_return(task_client)
-
           allow(ecr_client).to receive(:authenticate)
           allow(ecr_client).to receive(:push_image)
           allow(Ecr::Client).to receive(:new).and_return(ecr_client)
@@ -55,7 +45,8 @@ module Genova
           it 'shuold be not error' do
             allow(deploy_config).to receive(:find_run_task).and_return(
               containers: [
-                name: 'web'
+                name: 'web',
+                image: ' xxx.dkr.ecr.ap-northeast-1.amazonaws.com/xxx:latest'
               ]
             )
 
