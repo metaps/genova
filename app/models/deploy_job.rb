@@ -33,6 +33,7 @@ class DeployJob
   field :task_arns, type: Array
   field :started_at, type: Time
   field :finished_at, type: Time
+  field :docker_build_time, type: Float
   field :execution_time, type: Float
   field :deployment_tag, type: String
 

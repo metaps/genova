@@ -124,8 +124,14 @@
         <dd class="column is-4"><%= @deploy_job.finished_at %></dd>
       </div>
       <div class="columns">
+        <dt class="column is-2">Docker build time</dt>
+        <dd class="column is-4">
+          <% if @deploy_job.docker_build_time.present? %>
+            <%= BigDecimal(@deploy_job.docker_build_time.to_s).floor(2).to_f %> sec
+          <% end %>
+        </dd>
         <dt class="column is-2">Execution time</dt>
-        <dd class="column is-10">
+        <dd class="column is-4">
           <% if @deploy_job.execution_time.present? %>
             <%= BigDecimal(@deploy_job.execution_time.to_s).floor(2).to_f %> sec
           <% end %>
