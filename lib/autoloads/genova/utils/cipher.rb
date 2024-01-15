@@ -5,11 +5,11 @@ module Genova
 
       def initialize(logger)
         @logger = logger
-        @kms_client = Aws::KMS::Client.new
+        @kms = Aws::KMS::Client.new
       end
 
-      def encrypt(master_key, value)
-        encode = @kms_client.encrypt(key_id: "alias/#{master_key}", plaintext: value)
+      def encrypt(key_id, value)
+        encode = @kms.encrypt(key_id:, plaintext: value)
         "${#{Base64.strict_encode64(encode.ciphertext_blob)}}"
       rescue => e
         raise Exceptions::KmsEncryptError, e.to_s
@@ -22,7 +22,7 @@ module Genova
         raise Exceptions::KmsDecryptError, 'Encrypted string is invalid.' unless match
 
         begin
-          @kms_client.decrypt(ciphertext_blob: Base64.strict_decode64(match[1])).plaintext
+          @kms.decrypt(ciphertext_blob: Base64.strict_decode64(match[1])).plaintext
         rescue => e
           raise Exceptions::KmsDecryptError, e.to_s
         end

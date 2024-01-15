@@ -48,41 +48,43 @@ class DeployJob
   end
 
   def self.latest_deployments
-    deploy_job = DeployJob.collection.aggregate([
-                                                  { '$sort' => { 'created_at': -1 } },
-                                                  { '$match' => { '$or': [
-                                                    { 'type': DeployJob.type.find_value(:service) },
-                                                    { 'type': DeployJob.type.find_value(:scheduled_task) }
-                                                  ] } },
-                                                  { '$match' => { 'status': 'success' } },
-                                                  { '$group' => {
-                                                    '_id' => {
-                                                      'cluster': '$cluster',
-                                                      'type': '$type',
-                                                      'service': '$service',
-                                                      'scheduled_task_rule': '$scheduled_task_rule',
-                                                      'scheduled_task_target': '$scheduled_task_target'
-                                                    },
-                                                    'id': { '$first' => '$_id' },
-                                                    'cluster': { '$first' => '$cluster' },
-                                                    'type': { '$first' => '$type' },
-                                                    'service': { '$first' => '$service' },
-                                                    'scheduled_task_rule': { '$first' => '$scheduled_task_rule' },
-                                                    'scheduled_task_target': { '$first' => '$scheduled_task_target' },
-                                                    'repository': { '$first' => '$repository' },
-                                                    'branch': { '$first' => '$branch' },
-                                                    'tag': { '$first' => '$tag' },
-                                                    'created_at': { '$first' => '$created_at' }
-                                                  } },
-                                                  { '$project' => { '_id': 0 } },
-                                                  { '$sort' => {
-                                                    'cluster' => 1,
-                                                    'type' => -1,
-                                                    'service' => 1,
-                                                    'scheduled_task_rule' => 1,
-                                                    'scheduled_task_target' => 1
-                                                  } }
-                                                ])
+    pipeline = [
+      { '$sort' => { 'created_at': -1 } },
+      { '$match' => { '$or': [
+        { 'type': DeployJob.type.find_value(:service) },
+        { 'type': DeployJob.type.find_value(:scheduled_task) }
+      ] } },
+      { '$match' => { 'status': 'success' } },
+      { '$group' => {
+        '_id' => {
+          'cluster': '$cluster',
+          'type': '$type',
+          'service': '$service',
+          'scheduled_task_rule': '$scheduled_task_rule',
+          'scheduled_task_target': '$scheduled_task_target'
+        },
+        'id': { '$first' => '$_id' },
+        'cluster': { '$first' => '$cluster' },
+        'type': { '$first' => '$type' },
+        'service': { '$first' => '$service' },
+        'scheduled_task_rule': { '$first' => '$scheduled_task_rule' },
+        'scheduled_task_target': { '$first' => '$scheduled_task_target' },
+        'repository': { '$first' => '$repository' },
+        'branch': { '$first' => '$branch' },
+        'tag': { '$first' => '$tag' },
+        'created_at': { '$first' => '$created_at' }
+      } },
+      { '$project' => { '_id': 0 } },
+      { '$sort' => {
+        'cluster' => 1,
+        'type' => -1,
+        'service' => 1,
+        'scheduled_task_rule' => 1,
+        'scheduled_task_target' => 1
+      } }
+    ]
+
+    deploy_job = DeployJob.collection.aggregate(pipeline)
 
     results = {}
     deploy_job.each do |value|
@@ -101,6 +103,13 @@ class DeployJob
     end
 
     results
+  end
+
+  def self.delete_invalid_jobs
+    one_day_ago = Time.now - 1.day
+    deleted_count = DeployJob.where(:created_at.lt => one_day_ago, :status.in => %i[initial provisioning deploying]).delete_all
+
+    logger.info("Deleted #{deleted_count} invalid jobs.")
   end
 
   def update_status_provisioning(commit_id)

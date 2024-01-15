@@ -6,8 +6,6 @@ module Genova
       class << self
         def call
           logger = ::Logger.new($stdout, level: Settings.logger.level)
-          logger.info('Cleanp unused images.')
-
           images = using_images
 
           ::Docker::Image.all.each do |image|
@@ -26,7 +24,7 @@ module Genova
             end
           end
 
-          logger.info('Successful cleanup of the image.')
+          logger.info('Deleted unused images.')
         end
 
         private
