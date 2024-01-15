@@ -26,13 +26,24 @@ module Genova
         before do
           DeployJob.collection.drop
 
-          allow(docker_client).to receive(:build_image).and_return(['repository_name'])
+          allow(docker_client).to receive(:build_image).and_return(0.0)
           allow(Genova::Docker::Client).to receive(:new).and_return(docker_client)
 
           allow(code_manager).to receive(:deploy_config).and_return(deploy_config)
           allow(code_manager).to receive(:task_definition_config_path).and_return('task_definition_path')
           allow(code_manager).to receive(:update)
           allow(CodeManager::Git).to receive(:new).and_return(code_manager)
+
+          allow(task_definition).to receive(:[]).with(:container_definitions).and_return(
+            [{
+              name: 'web',
+              image: 'xxx.dkr.ecr.ap-northeast-1.amazonaws.com/xxx:latest'
+            }]
+          )
+          allow(task_definition).to receive(:task_definition_arn).and_return('task_definition_arn')
+
+          allow(task_client).to receive(:register).and_return(task_definition)
+          allow(Ecs::Task::Client).to receive(:new).and_return(task_client)
 
           allow(ecr_client).to receive(:authenticate)
           allow(ecr_client).to receive(:push_image)
