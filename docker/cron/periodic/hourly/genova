@@ -1,4 +1,9 @@
 #!/bin/sh
 
 cd /app
-bundle exec thor genova:docker-cleanup
+
+echo 'thor genova:util:delete_invalid_jobs'
+thor genova:util:delete_invalid_jobs
+
+echo 'thor genova:util:delete_old_images'
+thor genova:util:delete_old_images
