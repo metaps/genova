@@ -2,7 +2,7 @@ module GenovaCli
   class Utils < Thor
     namespace :utils
 
-    desc 'delete-invalid-jobs', 'Delete invalid and inconsistent jobs (jobs older than 1 week).'
+    desc 'delete-invalid-jobs', 'Delete invalid and inconsistent jobs (jobs older than 1 day).'
     long_desc 'This task is usually performed by cron, so there is no need to do it manually.'
     def delete_invalid_jobs
       DeployJob.delete_invalid_jobs

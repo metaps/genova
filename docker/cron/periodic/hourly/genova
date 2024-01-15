@@ -3,7 +3,7 @@
 cd /app
 
 echo 'thor genova:util:delete_invalid_jobs'
-thor genova:util:delete_invalid_jobs
+thor genova:util:delete-invalid-jobs
 
 echo 'thor genova:util:delete_old_images'
-thor genova:util:delete_old_images
+thor genova:util:delete-old-images

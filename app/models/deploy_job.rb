@@ -106,8 +106,8 @@ class DeployJob
   end
 
   def self.delete_invalid_jobs
-    one_week_ago = Time.now - 7.day
-    deleted_count = DeployJob.where(:created_at.lt => one_week_ago, :status.in => %i[initial provisioning deploying]).delete_all
+    one_day_ago = Time.now - 1.day
+    deleted_count = DeployJob.where(:created_at.lt => one_day_ago, :status.in => %i[initial provisioning deploying]).delete_all
 
     logger.info("Deleted #{deleted_count} invalid jobs.")
   end
