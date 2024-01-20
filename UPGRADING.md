@@ -2,7 +2,7 @@
 
 ## Upgrading from 4.2 to 5.0
 
-Contains updates to node_modules. Please update the package using the yarn command.
+Contains updates to `node_modules`. Please update the package using the yarn command.
 
 ```shell
 $ docker-compose run --rm --entrypoint yarn rails
