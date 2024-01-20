@@ -26,14 +26,22 @@ class DeployJobsController < ApplicationController
     conditions = {}
 
     # Dates are stored in ISODate and search is not implemented yet.
-    if params[:search].present?
-      pairs = params[:search].split(',')
+    if params[:keywords].present?
+      pairs = params[:keywords].split(',')
       pairs.each do |pair|
         key, value = pair.split(':', 2)
         next if value.nil?
 
         conditions[key.strip.to_sym] = value.strip
       end
+    end
+
+    if params[:dates].present?
+      dates = params[:dates].split(' - ')
+      start_date = DateTime.parse(dates[0])
+      end_date = DateTime.parse(dates[1]).end_of_day
+
+      conditions[:created_at] = { '$gte': start_date, '$lte': end_date }
     end
 
     conditions

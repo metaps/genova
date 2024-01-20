@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@babel/runtime@^7.21.0":
+  version "7.23.8"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.8.tgz#8ee6fe1ac47add7122902f257b8ddf55c898f650"
+  integrity sha512-Y7KbAP984rn1VGMbGqKmBLio9V7y5Je9GvU4rQPCPinCyNfUcToxIXl06d59URp/F3LwinvODxab5N/G6qggkw==
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
 "@esbuild/android-arm64@0.17.19":
   version "0.17.19"
   resolved "https://registry.yarnpkg.com/@esbuild/android-arm64/-/android-arm64-0.17.19.tgz#bafb75234a5d3d1b690e7c2956a599345e84a2fd"
@@ -158,6 +165,13 @@ braces@^3.0.2, braces@~3.0.2:
   dependencies:
     fill-range "^7.0.1"
 
+bulma-calendar@^6.1.19:
+  version "6.1.19"
+  resolved "https://registry.yarnpkg.com/bulma-calendar/-/bulma-calendar-6.1.19.tgz#95ba8eefc8e3a795636592533821c3f686cb37e8"
+  integrity sha512-roosrqoXWGTP7MR5PW151XO4mnarov2qvfzvHfGKzT8rV+SGRZmhzbr4/xmUxRyD+vdn6mSG+ensda4mvvKDow==
+  dependencies:
+    date-fns "^2.21.3"
+
 bulma-timeline@^3.0.5:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/bulma-timeline/-/bulma-timeline-3.0.5.tgz#7a95cbbbfbb292a0e3c8fa3fb9f5e898dc55fdfa"
@@ -182,6 +196,13 @@ bulma@^0.9.4:
     readdirp "~3.6.0"
   optionalDependencies:
     fsevents "~2.3.2"
+
+date-fns@^2.21.3:
+  version "2.30.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.30.0.tgz#f367e644839ff57894ec6ac480de40cae4b0f4d0"
+  integrity sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==
+  dependencies:
+    "@babel/runtime" "^7.21.0"
 
 debug@^4.3.4:
   version "4.3.4"
@@ -342,6 +363,11 @@ readdirp@~3.6.0:
   integrity sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==
   dependencies:
     picomatch "^2.2.1"
+
+regenerator-runtime@^0.14.0:
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.14.1.tgz#356ade10263f685dda125100cd862c1db895327f"
+  integrity sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==
 
 reusify@^1.0.4:
   version "1.0.4"
