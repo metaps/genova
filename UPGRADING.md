@@ -1,5 +1,13 @@
 # Upgrading
 
+## Upgrading from 4.2 to 5.0
+
+Contains updates to node_modules. Please update the package using the yarn command.
+
+```shell
+docker-compose run --rm --entrypoint yarn rails
+```
+
 ## Upgrading from 4.1 to 4.2
 
 The volume mount directory for `node_modules` has changed. Therefore, if you try to start it after building in the existing environment, you will get an `error Command "vite" not found.` error.
