@@ -5,7 +5,7 @@
 Contains updates to node_modules. Please update the package using the yarn command.
 
 ```shell
-docker-compose run --rm --entrypoint yarn rails
+$ docker-compose run --rm --entrypoint yarn rails
 ```
 
 ## Upgrading from 4.1 to 4.2
