@@ -1,22 +1,20 @@
 <div class="container">
   <h2 class="title">Deploy jobs</h2>
   <form>
-    <div class="field">
-      <div class="columns">
-        <div class="column is-7">
-          <div class="control has-icons-left">
-            <input class="input" type="text" name="keywords" placeholder="Example: cluster:production,status:success" value="<%= params[:keywords] %>">
-            <span class="icon is-left">
-              <i class="fa-solid fa-magnifying-glass"></i>
-            </span>
-          </div>
+    <div class="columns">
+      <div class="column is-7">
+        <div class="control has-icons-left">
+          <input class="input" type="text" name="keywords" placeholder="Example: cluster:production,status:success" value="<%= params[:keywords] %>">
+          <span class="icon is-left">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </span>
         </div>
-        <div class="column is-4">
-          <input type="date" name="dates">
-        </div>
-        <div class="column is-1">
-          <input type="submit" value="Search" class="button">
-        </div>
+      </div>
+      <div class="column is-4">
+        <input type="date" name="dates">
+      </div>
+      <div class="column is-1">
+        <input type="submit" value="Search" class="button">
       </div>
     </div>
   </form>
