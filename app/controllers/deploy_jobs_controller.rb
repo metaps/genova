@@ -39,8 +39,8 @@ class DeployJobsController < ApplicationController
     if params[:dates].present?
       dates = params[:dates].split(' - ')
 
-      start_date = Date.strptime(dates[0], "%Y/%m/%d")&start_of_day rescue nil
-      end_date = Date.strptime(dates[1], "%Y/%m/%d")&.end_of_day rescue nil
+      start_date = Date.strptime(dates[0], "%Y/%m/%d")&.beginning_of_day
+      end_date = Date.strptime(dates[1], "%Y/%m/%d")&.end_of_day
 
       if start_date && end_date
         conditions[:created_at] = { '$gte': start_date, '$lte': end_date }
