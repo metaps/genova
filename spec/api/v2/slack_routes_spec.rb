@@ -51,7 +51,7 @@ module V2
       end
 
       context 'when valid signature' do
-        let(:token) { Settings.slack.vertification_token }
+        let(:token) { Settings.slack.verification_token }
 
         it 'should return success' do
           post '/api/v2/slack/post', params: payload_body
