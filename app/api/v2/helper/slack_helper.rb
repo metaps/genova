@@ -5,7 +5,9 @@ module V2
 
       def verify_signature?
         data = payload_to_hash
-        data.include?(:token) && data[:token] == Settings.slack.vertification_token
+
+        # https://github.com/metaps/genova/issues/407
+        data.include?(:token) && data[:token] == Settings.slack.vertification_token || data.include?(:token) && data[:token] == Settings.slack.verification_token
       end
 
       def payload_to_hash
