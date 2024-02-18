@@ -74,7 +74,7 @@ workflows:
 slack:
   api_token:
   signing_secret:
-  vertification_token:
+  verification_token:
   client_id:
   client_secret:
   command:
