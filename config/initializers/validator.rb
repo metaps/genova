@@ -1,18 +1,6 @@
-raise 'The GitHub account or organization is undefined. Please create `config.local.yml` and set `github.account`.' if !Rails.env.test? && Settings.github.account.blank?
+if ENV.fetch('SSH_PRIVATE_KEY', nil).nil?
+  ENV['SSH_PRIVATE_KEY'] = '/app/.ssh/id_rsa'
 
-deprecated_envs = %w[
-  GENOVA_URL
-  GITHUB_PEM
-  GITHUB_SECRET_KEY
-  SLACK_API_TOKEN
-  SLACK_CHANNEL
-  SLACK_CLIENT_ID
-  SLACK_CLIENT_SECRET
-  SLACK_VERIFICATION_TOKEN
-]
-
-deprecated_envs.each do |key|
-  raise Genova::Exceptions::MigrationError, "The #{key} environment variable has been removed. Please move the variable to the configuration file (https://github.com/metaps/genova/issues/260)." if ENV[key].present?
-
-  raise Genova::Exceptions::MigrationError, "The 'slack.channel' parameter has been discarded. Please use 'slack.channel_id' instead. (https://github.com/slack-ruby/slack-ruby-client/issues/271)." if Settings.slack.channel.present?
+  logger = Logger.new(STDOUT)
+  logger.warn("Cannot find the environment variable 'SSH_PRIVATE_KEY' in the .env file, please add 'SSH_PRIVATE_KEY=.ssh/id_rsa'.")
 end

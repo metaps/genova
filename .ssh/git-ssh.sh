@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec ssh -i /app/.ssh/id_rsa "$@"
+exec ssh -i /app/${SSH_PRIVATE_KEY} "$@"
