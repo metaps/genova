@@ -1,3 +1,5 @@
+require 'open3'
+
 module Genova
   module Command
     class Executor
