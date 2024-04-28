@@ -11,7 +11,7 @@ module Genova
       end
 
       describe 'authenticate' do
-        it 'shuold be return true' do
+        it 'should return true' do
           authorization_token = Base64.strict_encode64('username:password')
           allow(ecr).to receive(:get_authorization_token).and_return(authorization_data: [{ authorization_token: }])
 

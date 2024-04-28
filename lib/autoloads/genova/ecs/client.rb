@@ -116,6 +116,9 @@ module Genova
         @ecr_client.authenticate
         commit_id = @code_manager.update
 
+        latest_submodule = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)[:latest_submodule] || true
+        @code_manager.update_submodule(latest_submodule)
+
         @deploy_job.update_status_provisioning(commit_id)
       end
 
