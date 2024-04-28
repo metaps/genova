@@ -36,7 +36,7 @@ module Genova
             let(:type) { 'service' }
             let(:resources) { ['resource'] }
 
-            it 'shuold be not error' do
+            it 'should not error' do
               expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
             end
           end
@@ -45,7 +45,7 @@ module Genova
             let(:type) { 'run_task' }
             let(:resources) { ['resource'] }
 
-            it 'shuold be not error' do
+            it 'should not error' do
               expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
             end
           end
@@ -54,7 +54,7 @@ module Genova
             let(:type) { 'scheduled_task' }
             let(:resources) { ['resource1:resource2'] }
 
-            it 'shuold be not error' do
+            it 'should not error' do
               expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
             end
           end

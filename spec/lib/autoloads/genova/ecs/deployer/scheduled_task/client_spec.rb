@@ -24,14 +24,14 @@ module Genova
 
         describe 'exist_rule?' do
           context 'when rule exist' do
-            it 'shuold be return true' do
+            it 'should return true' do
               allow(eventbridge).to receive(:list_rules).and_return(rules: ['rule'])
               expect(client.exist_rule?('rule')).to eq(true)
             end
           end
 
           context 'when rule does not exist' do
-            it 'shuold be return false' do
+            it 'should return false' do
               allow(eventbridge).to receive(:list_rules).and_return(rules: [])
               expect(client.exist_rule?('rule')).to eq(false)
             end
@@ -43,7 +43,7 @@ module Genova
           let(:list_targets_rule_response) { double(Aws::EventBridge::Types::ListTargetsByRuleResponse) }
 
           context 'when target exist' do
-            it 'shuold be return true' do
+            it 'should return true' do
               allow(target).to receive(:id).and_return('target')
               allow(list_targets_rule_response).to receive(:targets).and_return([target])
               allow(eventbridge).to receive(:list_targets_by_rule).and_return(list_targets_rule_response)
@@ -52,7 +52,7 @@ module Genova
           end
 
           context 'when target does not exist' do
-            it 'shuold be return false' do
+            it 'should return false' do
               allow(target).to receive(:id).and_return('not_target')
               allow(list_targets_rule_response).to receive(:targets).and_return([target])
               allow(eventbridge).to receive(:list_targets_by_rule).and_return(list_targets_rule_response)
