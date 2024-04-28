@@ -116,14 +116,7 @@ module Genova
         @ecr_client.authenticate
         commit_id = @code_manager.update
 
-        latest_submodule = case type
-                           when :run_task
-                             @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)[:latest_submodule]
-                           when :service
-                             @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)[:latest_submodule]
-                           when :scheduled_task
-                             @code_manager.deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)[:latest_submodule]
-                           end || true
+        latest_submodule = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)[:latest_submodule] || true
 
         @code_manager.update_submodule(latest_submodule)
         @deploy_job.update_status_provisioning(commit_id)
