@@ -25,11 +25,11 @@ module Genova
 
         base_command = build_base_command(repository_name, docker_file_path)
 
-        command = "#{base_command}#{build[:build_args_string]} ."
-        filtered_command = "#{base_command}#{build[:build_args_filtered_string]} ."
+        command = "#{base_command}#{build[:build_args_string]} #{docker_base_path}"
+        filtered_command = "#{base_command}#{build[:build_args_filtered_string]} #{docker_base_path}"
 
         start_time = Time.now
-        exit_code = Genova::Command::Executor.call(command, @logger, work_dir: docker_base_path, filtered_command:)
+        exit_code = Genova::Command::Executor.call(command, @logger, filtered_command:)
 
         raise Exceptions::ImageBuildError, "Image #{repository_name} build failed. Please check build log for details." unless exit_code.zero?
 
