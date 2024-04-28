@@ -4,8 +4,8 @@ module Git
       lib.remote_show_origin
     end
 
-    def submodule_update
-      lib.submodule_update
+    def submodule_update(latest_submodule)
+      lib.submodule_update(latest_submodule)
     end
   end
 
@@ -37,9 +37,14 @@ module Git
       arr
     end
 
-    def submodule_update
+    def submodule_update(latest_submodule)
       command('-C', @git_work_dir, 'submodule', 'update', '--init')
-      command('-C', @git_work_dir, 'submodule', 'update', '--remote')
+
+      if latest_submodule
+        command('-C', @git_work_dir, 'submodule', 'update', '--remote')
+      else
+        command('-C', @git_work_dir, 'submodule', 'update')
+      end
     end
 
     def remote_show_origin

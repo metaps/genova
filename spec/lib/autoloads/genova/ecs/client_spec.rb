@@ -29,9 +29,12 @@ module Genova
           allow(docker_client).to receive(:build_image).and_return(0.0)
           allow(Genova::Docker::Client).to receive(:new).and_return(docker_client)
 
+          allow(deploy_config).to receive(:find_service).and_return({})
+
           allow(code_manager).to receive(:deploy_config).and_return(deploy_config)
           allow(code_manager).to receive(:task_definition_config_path).and_return('task_definition_path')
           allow(code_manager).to receive(:update)
+          allow(code_manager).to receive(:update_submodule)
           allow(CodeManager::Git).to receive(:new).and_return(code_manager)
 
           allow(task_definition).to receive(:[]).with(:container_definitions).and_return(
@@ -53,7 +56,7 @@ module Genova
         describe 'deploy_run_task' do
           let(:run_task_client) { double(Ecs::Deployer::RunTask::Client) }
 
-          it 'shuold be not error' do
+          it 'should not error' do
             allow(deploy_config).to receive(:find_run_task).and_return(
               containers: [
                 name: 'web',
@@ -71,7 +74,7 @@ module Genova
         describe 'deploy_service' do
           let(:service_client) { double(Ecs::Deployer::Service::Client) }
 
-          it 'shuold be not error' do
+          it 'should not error' do
             allow(deploy_config).to receive(:find_service).and_return(
               containers: [
                 name: 'web'

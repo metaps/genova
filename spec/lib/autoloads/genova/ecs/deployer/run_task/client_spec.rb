@@ -25,7 +25,7 @@ module Genova
           end
 
           describe 'execute' do
-            it 'shuold be not error' do
+            it 'should not error' do
               allow(ecs_client).to receive(:run_task).and_return(
                 tasks: [{
                   task_arn: 'task_arn'

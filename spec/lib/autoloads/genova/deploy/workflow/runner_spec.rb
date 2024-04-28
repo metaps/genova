@@ -5,7 +5,7 @@ module Genova
     module Workflow
       describe Runner do
         describe 'call' do
-          it 'shuold be not error' do
+          it 'should not error' do
             allow(Settings).to receive(:workflows).and_return([
                                                                 name: 'name'
                                                               ])
