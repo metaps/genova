@@ -42,7 +42,6 @@ module Genova
           @logger.info("Execute command. [#{@options[:filtered_command].presence || command}]")
 
           exit_status = nil
-          Dir.chdir(@options[:work_dir]) if @options[:work_dir].present?
 
           Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
             handle_io(stdin, stdout, stderr)

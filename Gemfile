@@ -16,12 +16,7 @@ gem 'config', '~> 5.1.0'
 gem 'deep_merge', require: 'deep_merge/rails_compat'
 gem 'docker-api'
 gem 'enumerize'
-
-# When using git with Sidekiq, errors may occur because it is not thread safe.
-# Until the issue is fixed, the policy is to use the thread-safe fork version.
-# https://github.com/metaps/genova/issues/369
-gem 'git', git: 'https://github.com/fxposter/ruby-git', branch: 'remove-chdir'
-
+gem 'git'
 gem 'grape'
 gem 'grape_logging'
 gem 'hash_validator'
