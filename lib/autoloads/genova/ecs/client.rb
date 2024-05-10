@@ -123,7 +123,8 @@ module Genova
                              @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)[:latest_submodule]
                            when :scheduled_task
                              @code_manager.deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)[:latest_submodule]
-                           end || true
+                           end
+        latest_submodule = true if latest_submodule.nil?
 
         @code_manager.update_submodule(latest_submodule)
         @deploy_job.update_status_provisioning(commit_id)
