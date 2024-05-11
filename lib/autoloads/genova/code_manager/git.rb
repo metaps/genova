@@ -41,12 +41,15 @@ module Genova
         git.clean(force: true, d: true)
         git.checkout(checkout)
         git.reset_hard(reset_hard)
-        git.submodule_update
 
         commit_id = git.log(1).to_s
         @logger.info("Latest commit ID: #{commit_id}")
 
         commit_id
+      end
+
+      def update_submodule(latest_submodule)
+        client.submodule_update(latest_submodule)
       end
 
       def deploy_config

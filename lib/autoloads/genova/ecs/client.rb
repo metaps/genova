@@ -22,7 +22,7 @@ module Genova
 
       def deploy_run_task
         @logger.info('Start run task.')
-        ready
+        ready(:run_task)
 
         run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
 
@@ -58,7 +58,7 @@ module Genova
 
       def deploy_service
         @logger.info('Start deploy service.')
-        ready
+        ready(:service)
 
         service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
@@ -83,7 +83,7 @@ module Genova
 
       def deploy_scheduled_task
         @logger.info('Start deploy scheduled task.')
-        ready
+        ready(:scheduled_task)
 
         deploy_config = @code_manager.deploy_config
         target_config = deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
@@ -110,12 +110,23 @@ module Genova
 
       private
 
-      def ready
+      def ready(type)
         @logger.info('Authenticate to ECR.')
 
         @ecr_client.authenticate
         commit_id = @code_manager.update
 
+        latest_submodule = case type
+                           when :run_task
+                             @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)[:latest_submodule]
+                           when :service
+                             @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)[:latest_submodule]
+                           when :scheduled_task
+                             @code_manager.deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)[:latest_submodule]
+                           end
+        latest_submodule = true if latest_submodule.nil?
+
+        @code_manager.update_submodule(latest_submodule)
         @deploy_job.update_status_provisioning(commit_id)
       end
 

@@ -139,17 +139,17 @@ module Genova
             allow(cipher).to receive(:decrypt).and_return('decrypted_value')
           end
 
-          it 'shuold be return string value' do
+          it 'should return string value' do
             task_client.send(:decrypt_environment_variables!, variables)
             expect(variables[:container_definitions][0][:environment][0][:value]).to eq('VALUE')
           end
 
-          it 'shuold be return numeric value' do
+          it 'should return numeric value' do
             task_client.send(:decrypt_environment_variables!, variables)
             expect(variables[:container_definitions][0][:environment][1][:value]).to eq('1')
           end
 
-          it 'shuold be return decrypted value' do
+          it 'should return decrypted value' do
             task_client.send(:decrypt_environment_variables!, variables)
             expect(variables[:container_definitions][0][:environment][2][:value]).to eq('decrypted_value')
           end

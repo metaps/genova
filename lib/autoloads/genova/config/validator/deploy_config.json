@@ -45,17 +45,17 @@
         "properties": {
           "branch": { "type": "string" },
           "steps": {
-	    "type": "array",
-	    "items": {
+	          "type": "array",
+	          "items": {
               "type": "object",
               "required": ["type", "cluster", "resources"],
-	      "properties": {
+	            "properties": {
                 "type": { "type": "string" },
                 "cluster": { "type": "string" },
-		"resources": { "type" :"array" }
-	      }
-	    }
-	  }
+		            "resources": { "type" :"array" }
+              }
+            }
+          }
         }
       }
     },
@@ -92,7 +92,8 @@
                         "assign_public_ip": { "type": "string" }
                       }
                     }
-                  }
+                  },
+                  "latest_submodule": { "type": "boolean" }
                 }
               }
             }
@@ -111,7 +112,8 @@
                   "force_new_deployment": { "type": "boolean" },
                   "health_check_grace_period_seconds": { "type": "number" },
                   "minimum_healthy_percent": { "type": "number" },
-                  "maximum_percent": { "type": "number" }
+                  "maximum_percent": { "type": "number" },
+                  "latest_submodule": { "type": "boolean" }
                 }
               }
             }
@@ -145,7 +147,7 @@
                           }
                         }
                       },
-		      "name": { "type": "string" },
+		                  "name": { "type": "string" },
                       "task_role": { "type": "string" },
                       "cloudwatch_event_iam_role": { "type": "string" },
                       "depend_service": { "type": "string" },
@@ -165,7 +167,8 @@
                           }
                         }
                       },
-                      "containers": { "$ref": "#/definitions/containers" }
+                      "containers": { "$ref": "#/definitions/containers" },
+                      "latest_submodule": { "type": "boolean" }
                     }
                   }
                 }
