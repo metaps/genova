@@ -144,6 +144,8 @@ module Genova
       def client
         clone
 
+        @logger.info("Git open: #{@repos_path}")
+
         ::Git.open(@repos_path, log: @logger)
       end
     end
