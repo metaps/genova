@@ -103,7 +103,7 @@ module Genova
         git = client
         git.fetch(prune: true)
         git.tag(tag).sha
-      rescue ::Git::GitTagNameDoesNotExist
+      rescue StandardError
         nil
       end
 
