@@ -33,7 +33,7 @@ module Genova
             docker_client.build_image(container_config, 'web')
 
             expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
-              base_pattern = 'docker build -t web:latest -f /app/config/Dockerfile --label com.metaps.genova.build_key='
+              base_pattern = "docker build -t web:latest -f #{Rails.root}/config/Dockerfile --label com.metaps.genova.build_key="
               key_pattern = '\\w{8}'
               tail_pattern = ' --no-cache /app/config'
               pattern = Regexp.new(Regexp.escape(base_pattern) + key_pattern + Regexp.escape(tail_pattern))
