@@ -103,7 +103,7 @@ module Genova
               raw_value = ssm.get_parameter(name: value, with_decryption: true).parameter.value
             end
 
-            result[:build_args_string] += " --buid-arg #{key}='#{raw_value}'"
+            result[:build_args_string] += " --build-arg #{key}='#{raw_value}'"
             result[:build_args_filtered_string] += " --build-arg #{key}='{FILTERD}'"
           end
         end
