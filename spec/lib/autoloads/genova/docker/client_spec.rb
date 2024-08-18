@@ -35,7 +35,7 @@ module Genova
             expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
               base_pattern = "docker build -t web:latest -f #{Rails.root}/config/Dockerfile --label com.metaps.genova.build_key="
               key_pattern = '\\w{8}'
-              tail_pattern = ' --no-cache /app/config'
+              tail_pattern = " --no-cache #{Rails.root}/config"
               pattern = Regexp.new(Regexp.escape(base_pattern) + key_pattern + Regexp.escape(tail_pattern))
 
               expect(command).to match(pattern)
