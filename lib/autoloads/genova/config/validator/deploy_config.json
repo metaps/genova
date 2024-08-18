@@ -26,6 +26,16 @@
                       }
                     }
                   },
+                  "secret_args": {
+                    "type": "object",
+                    "patternProperties": {
+                      ".+": {
+                        "oneOf": [
+                          { "type": "string" }
+                        ]
+                      }
+                    }
+                  },
                   "target": { "type": "string" }
                 }
               }
