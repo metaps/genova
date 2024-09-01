@@ -11,6 +11,8 @@ gem 'aws-sdk-ecs'
 gem 'aws-sdk-eventbridge'
 gem 'aws-sdk-iam'
 gem 'aws-sdk-kms'
+gem 'aws-sdk-secretsmanager'
+gem 'aws-sdk-ssm'
 gem 'bootsnap', require: false
 gem 'config', '~> 5.1.0'
 gem 'deep_merge', require: 'deep_merge/rails_compat'

@@ -19,24 +19,27 @@ module Genova
         end
 
         context 'when build is string' do
-          container_config = {
-            name: 'web',
-            build: '.'
+          let(:container_config) {
+            {
+              name: 'web',
+              build: '.'
+            }
           }
 
           it 'should return docker build time' do
             expect(docker_client.build_image(container_config, 'web')).to eq(0.0)
           end
 
-          it 'should return docker build time when --no-cache is specified' do
+          it 'should return valid command' do
             docker_client.no_cache = true
             docker_client.build_image(container_config, 'web')
 
             expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
-              base_pattern = "docker build -t web:latest -f #{Rails.root}/config/Dockerfile --label com.metaps.genova.build_key="
-              key_pattern = '\\w{8}'
-              tail_pattern = " --no-cache #{Rails.root}/config"
-              pattern = Regexp.new(Regexp.escape(base_pattern) + key_pattern + Regexp.escape(tail_pattern))
+              pattern = 'docker build ' +
+                '-t web:latest ' +
+                "-f #{Rails.root}/config/Dockerfile " +
+                '--label com.metaps.genova.build_key=\\w{8} ' +
+                "--no-cache #{Rails.root}/config"
 
               expect(command).to match(pattern)
             end
@@ -44,22 +47,60 @@ module Genova
         end
 
         context 'when build is hash' do
-          it 'should return repository name' do
-            container_config = {
-              name: 'web',
-              build: {
-                context: '.',
-                args: {
-                  FOO: 'foo',
-                  BAR: 'bar'
+          context 'when args is specified' do
+            let(:container_config) {
+              {
+                name: 'web',
+                build: {
+                  context: '.',
+                  args: {
+                    FOO: 'foo',
+                    BAR: 'bar'
+                  }
                 }
               }
             }
 
-            allow(cipher).to receive(:encrypt_format?).and_return(true, false)
-            allow(cipher).to receive(:decrypt).and_return('foo', 'bar')
+            it 'should return docker build time' do
+              allow(cipher).to receive(:encrypt_format?).and_return(true, false)
+              allow(cipher).to receive(:decrypt).and_return('foo', 'bar')
 
-            expect(docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')).to eq(0.0)
+              expect(docker_client.build_image(container_config, 'account_id.dkr.ecr.ap-northeast-1.amazonaws.com/web:latest')).to eq(0.0)
+            end
+          end
+
+          context 'when secret_args is specified' do
+            let(:container_config) {
+              {
+                name: 'web',
+                build: {
+                  context: '.',
+                  secret_args: {
+                    # Secrets Manager
+                    FOO: 'arn:aws:secretsmanager:ap-northeast-1:000000000000:secret:baz',
+
+                    # Parameter Store
+                    BAR: 'arn:aws:ssm:ap-northeast-1:000000000000:secret:QUZ',
+                    BAZ: 'quux'
+                  }
+                }
+              }
+            }
+
+            it 'should return valid command' do
+              docker_client.build_image(container_config, 'web')
+
+              expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
+                pattern = 'docker build ' +
+                    '-t web:latest ' +
+                    "-f #{Rails.root}/config/Dockerfile " +
+                    '--label com.metaps.genova.build_key=\\w{8} ' +
+                    "--build-arg FOO='SecretStringType' --build-arg BAR='PSParameterValue' --build-arg BAZ='PSParameterValue' "
+                    "#{Rails.root}/config"
+
+                expect(command).to match(pattern)
+              end
+            end
           end
         end
       end
