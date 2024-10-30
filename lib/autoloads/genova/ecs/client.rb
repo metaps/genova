@@ -172,12 +172,14 @@ module Genova
       def create_task(params)
         task_client = Ecs::Task::Client.new(@logger)
 
-        @task_definitions[params[:task_definition_path]] = task_client.register(
-          task_definition_path: params[:task_definition_path],
-          family_suffix: params[:family_suffix],
-          task_overrides: params[:task_overrides],
-          replace_holders: { tag: params[:tag]}
-        ) unless @task_definitions.include?(params[:task_definition_path])
+        unless @task_definitions.include?(params[:task_definition_path])
+          @task_definitions[params[:task_definition_path]] = task_client.register(
+            task_definition_path: params[:task_definition_path],
+            family_suffix: params[:family_suffix],
+            task_overrides: params[:task_overrides],
+            replace_holders: { tag: params[:tag] }
+          )
+        end
 
         @task_definitions[params[:task_definition_path]]
       end

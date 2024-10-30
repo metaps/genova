@@ -29,7 +29,10 @@ module Genova
             allow(register_task_definition_response).to receive(:[]).with(:task_definition).and_return(task_definition)
             allow(ecs_client).to receive(:register_task_definition).and_return(register_task_definition_response)
 
-            expect(task_client.register(any_args)).to be_a(task_definition.class)
+            expect(task_client.register(
+                     task_definition_path: 'task_definition_path',
+                     replace_holders: { tag: 'tag' }
+                   )).to be_a(task_definition.class)
           end
         end
 

@@ -82,7 +82,6 @@
                 "type": "object",
                 "required": ["path", "containers"],
                 "properties": {
-                  "_family_suffix": { "type": "boolean" },
                   "family_suffix": { "type": "string" },
                   "launch_type": { "type": "string" },
                   "desired_count": { "type": "number" },
