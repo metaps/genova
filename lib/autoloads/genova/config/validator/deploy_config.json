@@ -82,6 +82,8 @@
                 "type": "object",
                 "required": ["path", "containers"],
                 "properties": {
+                  "_family_suffix": { "type": "boolean" },
+                  "family_suffix": { "type": "string" },
                   "launch_type": { "type": "string" },
                   "desired_count": { "type": "number" },
                   "group": { "type": "string" },
@@ -115,6 +117,7 @@
                 "type": "object",
                 "required": ["path", "containers"],
                 "properties": {
+                  "family_suffix": { "type": "string" },
                   "path": { "type": "string" },
                   "task_overrides": { "type": "object" },
                   "containers": { "$ref": "#/definitions/containers" },
@@ -143,6 +146,7 @@
                     "type": "object",
                     "required": ["name", "containers", "path"],
                     "properties": {
+                      "family_suffix": { "type": "string" },
                       "launch_type": { "type": "string" },
                       "network_configuration": {
                         "type": "object",

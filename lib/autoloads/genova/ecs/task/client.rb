@@ -10,19 +10,20 @@ module Genova
           @logger = logger
         end
 
-        def register(path, task_overrides = {}, params = {})
-          raise IOError, "File does not exist. [#{path}]" unless File.file?(path)
+        def register(params)
+          raise IOError, "File does not exist. [#{params[:task_definition_path]}]" unless File.file?(params[:task_definition_path])
 
-          yaml = YAML.unsafe_load(File.read(path))
+          yaml = YAML.unsafe_load(File.read(params[:task_definition_path]))
           task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)
-          merge_task_parameters!(task_definition, task_overrides) if task_overrides.present?
+          merge_task_parameters!(task_definition, params[:task_overrides]) if params[:task_overrides].present?
 
-          replace_parameter_variables!(task_definition, params)
+          replace_parameter_variables!(task_definition, params[:replace_holders])
           decrypt_environment_variables!(task_definition)
 
+          task_definition[:family] = "#{task_definition[:family]}#{Settings.ecs.task_family_suffix_separator}#{params[:family_suffix]}" if params[:family_suffix].present?
           task_definition[:tags] = [] if task_definition[:tags].nil?
           task_definition[:tags] << { key: 'genova.version', value: Version::STRING }
-          task_definition[:tags] << { key: 'genova.build', value: params[:tag] }
+          task_definition[:tags] << { key: 'genova.build', value: params[:replace_holders][:tag] }
 
           result = @ecs_client.register_task_definition(task_definition)
 

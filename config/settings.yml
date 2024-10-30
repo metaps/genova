@@ -46,6 +46,9 @@ ecs:
   wait_timeout: 900
   polling_interval: 5
 
+  # Separator for extending the family name with the `family_suffix` parameter.
+  task_family_suffix_separator: '-'
+
 ecr:
   read_timeout: 900
 

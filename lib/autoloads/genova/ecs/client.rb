@@ -36,7 +36,12 @@ module Genova
         end
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{run_task_config[:path]}")
-        task_definition = create_task(task_definition_path, run_task_config[:task_overrides], @deploy_job.label)
+        task_definition = create_task(
+          task_definition_path:,
+          family_suffix: run_task_config[:family_suffix],
+          task_overrides: run_task_config[:task_overrides],
+          tag: @deploy_job.label
+        )
 
         push_image(run_task_config[:containers], task_definition, @deploy_job.label)
 
@@ -62,7 +67,13 @@ module Genova
 
         service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
-        task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
+
+        task_definition = create_task(
+          task_definition_path:,
+          family_suffix: service_config[:family_suffix],
+          task_overrides: service_config[:task_overrides],
+          tag: @deploy_job.label
+        )
 
         push_image(service_config[:containers], task_definition, @deploy_job.label)
         service_client = Deployer::Service::Client.new(@deploy_job, @logger, async_wait: @options[:async_wait])
@@ -89,7 +100,12 @@ module Genova
         target_config = deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
-        task_definition = create_task(task_definition_path, target_config[:task_overrides], @deploy_job.label)
+        task_definition = create_task(
+          task_definition_path:,
+          family_suffix: target_config[:family_suffix],
+          task_overrides: target_config[:task_overrides],
+          tag: @deploy_job.label
+        )
         @deploy_job.task_definition_arn = task_definition.task_definition_arn
 
         push_image(target_config[:containers], task_definition, @deploy_job.label)
@@ -153,11 +169,17 @@ module Genova
 
       def deploy_scheduled_tasks(tag, params); end
 
-      def create_task(task_definition_path, task_overrides, tag)
+      def create_task(params)
         task_client = Ecs::Task::Client.new(@logger)
 
-        @task_definitions[task_definition_path] = task_client.register(task_definition_path, task_overrides, tag:) unless @task_definitions.include?(task_definition_path)
-        @task_definitions[task_definition_path]
+        @task_definitions[params[:task_definition_path]] = task_client.register(
+          task_definition_path: params[:task_definition_path],
+          family_suffix: params[:family_suffix],
+          task_overrides: params[:task_overrides],
+          replace_holders: { tag: params[:tag]}
+        ) unless @task_definitions.include?(params[:task_definition_path])
+
+        @task_definitions[params[:task_definition_path]]
       end
 
       def deploy_pre_hook
