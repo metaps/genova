@@ -104,6 +104,12 @@ GEM
     aws-sdk-kms (1.64.0)
       aws-sdk-core (~> 3, >= 3.165.0)
       aws-sigv4 (~> 1.1)
+    aws-sdk-secretsmanager (1.75.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sigv4 (~> 1.1)
+    aws-sdk-ssm (1.150.0)
+      aws-sdk-core (~> 3, >= 3.165.0)
+      aws-sigv4 (~> 1.1)
     aws-sigv4 (1.5.2)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.2.0)
@@ -383,8 +389,8 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rexml (3.2.8)
-      strscan (>= 3.0.9)
+    rexml (3.3.6)
+      strscan
     roar (1.1.1)
       representable (~> 3.0)
     rouge (4.1.1)
@@ -522,6 +528,8 @@ DEPENDENCIES
   aws-sdk-eventbridge
   aws-sdk-iam
   aws-sdk-kms
+  aws-sdk-secretsmanager
+  aws-sdk-ssm
   better_errors
   binding_of_caller
   bootsnap
