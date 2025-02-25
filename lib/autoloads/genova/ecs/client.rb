@@ -14,6 +14,8 @@ module Genova
         @logger = logger
         @task_definitions = {}
 
+        exit
+
         @docker_client = Genova::Docker::Client.new(@code_manager, logger)
         @docker_client.no_cache = @options[:no_cache] if @options[:no_cache].present?
 
