@@ -10,6 +10,12 @@ timezone: UTC
 
 docker:
   retention_days: 20
+  registry:
+    # Private registry (e.g. dhi.io). Credentials are taken from DOCKER_REGISTRY_USER/PASSWORD if set.
+    url:
+    username:
+    password:
+    pull_images: []
   # build:
   #   # Memory usage allowed at build time. For example `1024m`.
   #   # This option maps to `docker build --memory`.

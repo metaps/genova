@@ -16,6 +16,7 @@ module Genova
 
         @docker_client = Genova::Docker::Client.new(@code_manager, logger)
         @docker_client.no_cache = @options[:no_cache] if @options[:no_cache].present?
+        @docker_registry = Genova::Docker::Registry.new(logger)
 
         @ecr_client = Genova::Ecr::Client.new(logger)
       end
@@ -122,6 +123,7 @@ module Genova
       private
 
       def ready(type)
+        @docker_registry.login_and_pull
         @logger.info('Authenticate to ECR.')
 
         @ecr_client.authenticate
