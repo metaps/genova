@@ -106,11 +106,18 @@ module Genova
         end
 
         def load_container_environment_from_files!(container_definition, base_dir)
-          environment_file_paths = Array(container_definition.delete(:environment_from_files)).compact
+          environment_file_paths = Array(container_definition.delete(:environment_from_files))
           return if environment_file_paths.empty?
 
+          container_identifier = container_definition[:name] || container_definition['name'] || '(unknown)'
           file_environments = environment_file_paths.each_with_object([]) do |environment_file_path, environments|
-            resolved_path = File.expand_path(environment_file_path, base_dir)
+            resolved_environment_file_path = environment_file_path.respond_to?(:to_str) ? environment_file_path.to_str : environment_file_path
+            unless resolved_environment_file_path.is_a?(String) && resolved_environment_file_path.present?
+              raise Exceptions::TaskDefinitionValidationError,
+                    "Invalid environment file path for container '#{container_identifier}'. [#{environment_file_path.inspect}]"
+            end
+
+            resolved_path = File.expand_path(resolved_environment_file_path, base_dir)
             current_environments = read_environment_file(resolved_path)
             merge_container_environment!({ environment: environments }, { environment: current_environments })
             environments.concat(current_environments)

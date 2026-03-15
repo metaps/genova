@@ -266,6 +266,36 @@ module Genova
               task_client.send(:load_environment_from_files!, variables, task_definition_path)
             end.to raise_error(Exceptions::TaskDefinitionValidationError, 'Environment file does not exist. [/repo/config/deploy/missing.env]')
           end
+
+          it 'should raise error when environment file path is nil' do
+            variables = {
+              container_definitions: [
+                {
+                  name: 'app',
+                  environment_from_files: [nil]
+                }
+              ]
+            }
+
+            expect do
+              task_client.send(:load_environment_from_files!, variables, task_definition_path)
+            end.to raise_error(Exceptions::TaskDefinitionValidationError, "Invalid environment file path for container 'app'. [nil]")
+          end
+
+          it 'should raise error when environment file path is empty' do
+            variables = {
+              container_definitions: [
+                {
+                  name: 'app',
+                  environment_from_files: ['']
+                }
+              ]
+            }
+
+            expect do
+              task_client.send(:load_environment_from_files!, variables, task_definition_path)
+            end.to raise_error(Exceptions::TaskDefinitionValidationError, "Invalid environment file path for container 'app'. [\"\"]")
+          end
         end
       end
     end
