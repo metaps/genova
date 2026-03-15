@@ -75,22 +75,22 @@ module Genova
             allow(cipher).to receive(:encrypt_format?).and_return(false)
             allow(task_definition).to receive(:[]).with(:task_definition_arn)
             allow(register_task_definition_response).to receive(:[]).with(:task_definition).and_return(task_definition)
-            expect(ecs_client).to receive(:register_task_definition).with(
-              hash_including(
-                container_definitions: [
-                  hash_including(
-                    name: 'app',
-                    environment: [
-                      { name: 'DOTENV_KEY', value: 'dotenv' },
-                      { name: 'FILE_OVERRIDE', value: 'yaml' },
-                      { name: 'YAML_KEY', value: '1' },
-                      { name: 'INLINE_ONLY', value: 'inline' },
-                      { name: 'SHARED_KEY', value: 'inline_override' }
-                    ]
-                  )
-                ]
+            expect(ecs_client).to receive(:register_task_definition) do |params|
+              container_definition = params[:container_definitions].find { |definition| definition[:name] == 'app' }
+
+              expect(container_definition).to include(name: 'app')
+              expect(
+                container_definition[:environment].to_h { |environment| [environment[:name], environment[:value]] }
+              ).to eq(
+                'DOTENV_KEY' => 'dotenv',
+                'FILE_OVERRIDE' => 'yaml',
+                'YAML_KEY' => '1',
+                'INLINE_ONLY' => 'inline',
+                'SHARED_KEY' => 'inline_override'
               )
-            ).and_return(register_task_definition_response)
+
+              register_task_definition_response
+            end
 
             expect(task_client.register(task_definition_path)).to be_a(task_definition.class)
           end
