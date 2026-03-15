@@ -31,6 +31,69 @@ module Genova
 
             expect(task_client.register(any_args)).to be_a(task_definition.class)
           end
+
+          it 'should load environment from external files' do
+            task_definition_path = '/repo/config/deploy/web.yml'
+            env_file_path = '/repo/config/deploy/app.env'
+            yaml_file_path = '/repo/config/deploy/shared.yml'
+
+            allow(File).to receive(:file?).with(task_definition_path).and_return(true)
+            allow(File).to receive(:file?).with(env_file_path).and_return(true)
+            allow(File).to receive(:file?).with(yaml_file_path).and_return(true)
+            allow(File).to receive(:read).with(task_definition_path).and_return(
+              {
+                container_definitions: [
+                  {
+                    name: 'app',
+                    environment_from_files: [
+                      './app.env',
+                      './shared.yml'
+                    ],
+                    environment: [
+                      {
+                        name: 'INLINE_ONLY',
+                        value: 'inline'
+                      },
+                      {
+                        name: 'SHARED_KEY',
+                        value: 'inline_override'
+                      }
+                    ]
+                  }
+                ]
+              }.to_yaml
+            )
+            allow(File).to receive(:read).with(env_file_path).and_return("DOTENV_KEY=dotenv\nFILE_OVERRIDE=dotenv\nSHARED_KEY=dotenv\n")
+            allow(File).to receive(:read).with(yaml_file_path).and_return(
+              {
+                'YAML_KEY' => 1,
+                'FILE_OVERRIDE' => 'yaml',
+                'SHARED_KEY' => 'yaml'
+              }.to_yaml
+            )
+
+            allow(cipher).to receive(:encrypt_format?).and_return(false)
+            allow(task_definition).to receive(:[]).with(:task_definition_arn)
+            allow(register_task_definition_response).to receive(:[]).with(:task_definition).and_return(task_definition)
+            expect(ecs_client).to receive(:register_task_definition).with(
+              hash_including(
+                container_definitions: [
+                  hash_including(
+                    name: 'app',
+                    environment: [
+                      { name: 'DOTENV_KEY', value: 'dotenv' },
+                      { name: 'FILE_OVERRIDE', value: 'yaml' },
+                      { name: 'YAML_KEY', value: '1' },
+                      { name: 'INLINE_ONLY', value: 'inline' },
+                      { name: 'SHARED_KEY', value: 'inline_override' }
+                    ]
+                  )
+                ]
+              )
+            ).and_return(register_task_definition_response)
+
+            expect(task_client.register(task_definition_path)).to be_a(task_definition.class)
+          end
         end
 
         describe 'merge_task_parameters!' do
@@ -152,6 +215,26 @@ module Genova
           it 'should return decrypted value' do
             task_client.send(:decrypt_environment_variables!, variables)
             expect(variables[:container_definitions][0][:environment][2][:value]).to eq('decrypted_value')
+          end
+        end
+
+        describe 'load_environment_from_files!' do
+          let(:task_definition_path) { '/repo/config/deploy/web.yml' }
+
+          it 'should raise error when environment file does not exist' do
+            variables = {
+              container_definitions: [
+                {
+                  environment_from_files: ['./missing.env']
+                }
+              ]
+            }
+
+            allow(File).to receive(:file?).with('/repo/config/deploy/missing.env').and_return(false)
+
+            expect do
+              task_client.send(:load_environment_from_files!, variables, task_definition_path)
+            end.to raise_error(Exceptions::TaskDefinitionValidationError, 'Environment file does not exist. [/repo/config/deploy/missing.env]')
           end
         end
       end

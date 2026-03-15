@@ -15,6 +15,7 @@ module Genova
 
           yaml = YAML.unsafe_load(File.read(path))
           task_definition = Oj.load(Oj.dump(yaml), symbol_keys: true)
+          load_environment_from_files!(task_definition, path)
           merge_task_parameters!(task_definition, task_overrides) if task_overrides.present?
 
           replace_parameter_variables!(task_definition, params)
@@ -85,6 +86,81 @@ module Genova
           override_container_definition[:environment].each do |environment|
             container_definition[:environment].delete_if { |k, _v| k[:name] == environment[:name] }
           end
+        end
+
+        def load_environment_from_files!(task_definition, task_definition_path)
+          raise Exceptions::TaskDefinitionValidationError, '\'container_definitions\' is undefined.' unless task_definition.key?(:container_definitions)
+
+          base_dir = Pathname(task_definition_path).dirname
+
+          task_definition[:container_definitions].each do |container_definition|
+            load_container_environment_from_files!(container_definition, base_dir)
+          end
+        end
+
+        def load_container_environment_from_files!(container_definition, base_dir)
+          environment_file_paths = Array(container_definition.delete(:environment_from_files)).compact
+          return if environment_file_paths.empty?
+
+          file_environments = environment_file_paths.each_with_object([]) do |environment_file_path, environments|
+            resolved_path = File.expand_path(environment_file_path, base_dir)
+            current_environments = read_environment_file(resolved_path)
+            merge_container_environment!({ environment: environments }, { environment: current_environments })
+            environments.concat(current_environments)
+          end
+
+          container_definition[:environment] ||= []
+          merge_container_environment!({ environment: file_environments }, container_definition)
+          container_definition[:environment] = file_environments + container_definition[:environment]
+        end
+
+        def read_environment_file(path)
+          raise Exceptions::TaskDefinitionValidationError, "Environment file does not exist. [#{path}]" unless File.file?(path)
+
+          case File.extname(path)
+          when '.yml', '.yaml'
+            parse_yaml_environment_file(path)
+          else
+            parse_dotenv_environment_file(path)
+          end
+        end
+
+        def parse_yaml_environment_file(path)
+          yaml = YAML.unsafe_load(File.read(path))
+
+          case yaml
+          when Hash
+            yaml.map { |name, value| { name: name.to_s, value: value } }
+          when Array
+            yaml.map do |environment|
+              has_string_keys = environment.is_a?(Hash) && environment.key?('name') && environment.key?('value')
+              has_symbol_keys = environment.is_a?(Hash) && environment.key?(:name) && environment.key?(:value)
+              raise Exceptions::TaskDefinitionValidationError, "Invalid environment entry. [#{path}]" unless has_string_keys || has_symbol_keys
+
+              {
+                name: environment.key?('name') ? environment['name'] : environment[:name],
+                value: environment.key?('value') ? environment['value'] : environment[:value]
+              }
+            end
+          else
+            raise Exceptions::TaskDefinitionValidationError, "Environment file must be a hash or array. [#{path}]"
+          end
+        end
+
+        def parse_dotenv_environment_file(path)
+          environments = []
+
+          File.read(path).each_line do |line|
+            line = line.strip
+            next if line.blank? || line.start_with?('#')
+
+            name, value = line.split('=', 2)
+            raise Exceptions::TaskDefinitionValidationError, "Invalid environment line. [#{path}]" if name.blank?
+
+            environments << { name: name, value: value.to_s }
+          end
+
+          environments
         end
 
         def replace_parameter_variables!(variables, params = {})
