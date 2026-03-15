@@ -95,13 +95,7 @@ module Genova
 
         if build[:secret_args].is_a?(Hash)
           build[:secret_args].each do |key, value|
-            if value.start_with?('arn:aws:secretsmanager:')
-              secrets_manager = Aws::SecretsManager::Client.new
-              raw_value = secrets_manager.get_secret_value(secret_id: value).secret_string
-            else
-              ssm = Aws::SSM::Client.new
-              raw_value = ssm.get_parameter(name: value, with_decryption: true).parameter.value
-            end
+            raw_value = Genova::Utils::SecretFetcher.call(value)
 
             result[:build_args_string] += " --build-arg #{key}='#{raw_value}'"
             result[:build_args_filtered_string] += " --build-arg #{key}='{FILTERD}'"

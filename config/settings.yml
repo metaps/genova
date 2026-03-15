@@ -15,6 +15,9 @@ docker:
     url:
     username:
     password:
+    # If specified, ARN uses Secrets Manager; otherwise SSM Parameter Store is used.
+    username_secret:
+    password_secret:
     pull_images: []
   # build:
   #   # Memory usage allowed at build time. For example `1024m`.
