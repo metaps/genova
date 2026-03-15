@@ -221,6 +221,36 @@ module Genova
         describe 'load_environment_from_files!' do
           let(:task_definition_path) { '/repo/config/deploy/web.yml' }
 
+          it 'should raise error when container_definitions is nil' do
+            variables = {
+              container_definitions: nil
+            }
+
+            expect do
+              task_client.send(:load_environment_from_files!, variables, task_definition_path)
+            end.to raise_error(Exceptions::TaskDefinitionValidationError, "'container_definitions' must be an array.")
+          end
+
+          it 'should raise error when container_definitions is not an array' do
+            variables = {
+              container_definitions: {}
+            }
+
+            expect do
+              task_client.send(:load_environment_from_files!, variables, task_definition_path)
+            end.to raise_error(Exceptions::TaskDefinitionValidationError, "'container_definitions' must be an array.")
+          end
+
+          it 'should raise error when container_definition is not a hash' do
+            variables = {
+              container_definitions: ['invalid']
+            }
+
+            expect do
+              task_client.send(:load_environment_from_files!, variables, task_definition_path)
+            end.to raise_error(Exceptions::TaskDefinitionValidationError, "Each entry in 'container_definitions' must be a hash.")
+          end
+
           it 'should raise error when environment file does not exist' do
             variables = {
               container_definitions: [

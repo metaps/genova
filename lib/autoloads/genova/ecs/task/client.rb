@@ -90,10 +90,17 @@ module Genova
 
         def load_environment_from_files!(task_definition, task_definition_path)
           raise Exceptions::TaskDefinitionValidationError, '\'container_definitions\' is undefined.' unless task_definition.key?(:container_definitions)
+          unless task_definition[:container_definitions].is_a?(Array)
+            raise Exceptions::TaskDefinitionValidationError, '\'container_definitions\' must be an array.'
+          end
 
           base_dir = Pathname(task_definition_path).dirname
 
           task_definition[:container_definitions].each do |container_definition|
+            unless container_definition.is_a?(Hash)
+              raise Exceptions::TaskDefinitionValidationError, 'Each entry in \'container_definitions\' must be a hash.'
+            end
+
             load_container_environment_from_files!(container_definition, base_dir)
           end
         end
