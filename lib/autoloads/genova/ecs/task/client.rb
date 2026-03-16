@@ -142,7 +142,7 @@ module Genova
         end
 
         def parse_yaml_environment_file(path)
-          yaml = YAML.unsafe_load(File.read(path))
+          yaml = YAML.safe_load(File.read(path), permitted_classes: [], permitted_symbols: %i[name value], aliases: false)
 
           case yaml
           when Hash
