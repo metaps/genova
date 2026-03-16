@@ -134,8 +134,10 @@ module Genova
           case File.extname(path)
           when '.yml', '.yaml'
             parse_yaml_environment_file(path)
-          else
+          when '.env', '.dotenv'
             parse_dotenv_environment_file(path)
+          else
+            raise ArgumentError, "Unsupported environment file extension: #{File.extname(path)} [#{path}]"
           end
         end
 
