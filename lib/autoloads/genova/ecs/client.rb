@@ -24,7 +24,8 @@ module Genova
         @logger.info('Start run task.')
         ready(:run_task)
 
-        run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
+        run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task).deep_dup
+        resolve_container_overrides!(run_task_config)
 
         if @deploy_job.override_container.present?
           run_task_config[:container_overrides] = [
@@ -86,7 +87,12 @@ module Genova
         ready(:scheduled_task)
 
         deploy_config = @code_manager.deploy_config
-        target_config = deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
+        target_config = deploy_config.find_scheduled_task_target(
+          @deploy_job.cluster,
+          @deploy_job.scheduled_task_rule,
+          @deploy_job.scheduled_task_target
+        ).deep_dup
+        resolve_container_overrides!(target_config)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
         task_definition = create_task(task_definition_path, target_config[:task_overrides], @deploy_job.label)
@@ -165,6 +171,20 @@ module Genova
         raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
 
         @deploy_job.update_status_deploying
+      end
+
+      def resolve_container_overrides!(config)
+        container_overrides_config = config[:container_overrides] || config[:overrides]
+        return unless container_overrides_config.present?
+
+        config[:container_overrides] = Ecs::ContainerOverrideBuilder.build(
+          container_overrides_config,
+          base_dir: deploy_config_base_dir
+        )
+      end
+
+      def deploy_config_base_dir
+        File.expand_path(Pathname(@code_manager.base_path).join('config').to_s)
       end
     end
   end

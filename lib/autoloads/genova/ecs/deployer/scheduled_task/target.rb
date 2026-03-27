@@ -14,13 +14,12 @@ module Genova
               clusters = ecs.describe_clusters(clusters: [deploy_job.cluster]).clusters
               raise Exceptions::NotFoundError, "Cluster does not eixst. [#{deploy_job.cluster}]" if clusters.count.zero?
 
-              container_overrides_config = target_config[:overrides] || target_config[:container_overrides]
+              container_overrides_config = target_config[:container_overrides] || target_config[:overrides]
               container_overrides = []
 
               if container_overrides_config.present?
                 container_overrides_config.each do |container_override_config|
-                  override_environment = container_override_config[:environment] || []
-                  container_overrides << override_container(container_override_config[:name], container_override_config[:command], override_environment)
+                  container_overrides << override_container(container_override_config)
                 end
               end
 
@@ -45,23 +44,33 @@ module Genova
 
             private
 
-            def override_container(name, command = nil, environments = {})
-              environment_overrides = []
-              environments.each do |environment|
+            def override_container(container_override_config)
+              container_override = container_override_config.deep_dup.deep_symbolize_keys.except(:environment_from_files)
+              environment_overrides = normalize_environment(container_override[:environment])
+              container_override[:environment] = environment_overrides if environment_overrides.count.positive?
+              container_override.delete(:environment) if environment_overrides.empty?
+              container_override
+            end
+
+            def normalize_environment(environments)
+              Array(environments).each_with_object([]) do |environment, normalized|
+                environment = environment.deep_symbolize_keys
+
+                if environment.keys.sort == %i[name value]
+                  normalized << {
+                    name: environment[:name],
+                    value: environment[:value]
+                  }
+                  next
+                end
+
                 environment.each do |env_name, env_value|
-                  environment_overrides << {
+                  normalized << {
                     name: env_name,
                     value: env_value
                   }
                 end
               end
-
-              container_override = {
-                name:,
-                command:
-              }
-              container_override[:environment] = environment_overrides if environment_overrides.count.positive?
-              container_override
             end
           end
         end
