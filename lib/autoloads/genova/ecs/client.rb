@@ -194,9 +194,7 @@ module Genova
         return if config[:container_overrides].blank?
 
         task_overrides = (config[:task_overrides] || {}).deep_dup.deep_symbolize_keys
-        task_overrides[:container_definitions] = Array(task_overrides[:container_definitions]).map do |container_definition|
-          container_definition.deep_dup.deep_symbolize_keys
-        end
+        task_overrides[:container_definitions] = Array(task_overrides[:container_definitions])
 
         config[:container_overrides].each do |container_override|
           apply_container_override_to_task_overrides!(task_overrides, container_override)
@@ -212,19 +210,28 @@ module Genova
         end
 
         if container_definition.present?
-          merge_container_override_environment!(container_definition, override_container_definition)
-          container_definition.deep_merge!(override_container_definition)
+          merged_environment = merge_task_override_environments(
+            container_definition[:environment],
+            override_container_definition[:environment]
+          )
+          container_definition.deep_merge!(override_container_definition.except(:environment))
+          if merged_environment.present?
+            container_definition[:environment] = merged_environment
+          else
+            container_definition.delete(:environment)
+          end
         else
           task_overrides[:container_definitions] << override_container_definition
         end
       end
 
-      def merge_container_override_environment!(container_definition, override_container_definition)
-        return unless container_definition[:environment].present? && override_container_definition[:environment].present?
-
-        override_container_definition[:environment].each do |environment|
-          container_definition[:environment].delete_if { |current_environment| current_environment[:name] == environment[:name] }
+      def merge_task_override_environments(base_environment, override_environment)
+        result = Array(base_environment).deep_dup
+        Array(override_environment).each do |env|
+          result.delete_if { |existing| existing[:name] == env[:name] }
+          result << env
         end
+        result
       end
     end
   end
