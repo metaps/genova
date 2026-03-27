@@ -152,6 +152,7 @@
                   "path": { "type": "string" },
                   "task_overrides": { "type": "object" },
                   "containers": { "$ref": "#/definitions/containers" },
+                  "container_overrides": { "$ref": "#/definitions/container_overrides" },
                   "desired_count": { "type": "number" },
                   "force_new_deployment": { "type": "boolean" },
                   "health_check_grace_period_seconds": { "type": "number" },

@@ -61,7 +61,10 @@ module Genova
         @logger.info('Start deploy service.')
         ready(:service)
 
-        service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
+        service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service).deep_dup
+        resolve_container_overrides!(service_config)
+        merge_container_overrides_into_task_overrides!(service_config)
+
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
@@ -185,6 +188,43 @@ module Genova
 
       def deploy_config_base_dir
         File.expand_path(Pathname(@code_manager.base_path).join('config').to_s)
+      end
+
+      def merge_container_overrides_into_task_overrides!(config)
+        return if config[:container_overrides].blank?
+
+        task_overrides = (config[:task_overrides] || {}).deep_dup.deep_symbolize_keys
+        task_overrides[:container_definitions] = Array(task_overrides[:container_definitions]).map do |container_definition|
+          container_definition.deep_dup.deep_symbolize_keys
+        end
+
+        config[:container_overrides].each do |container_override|
+          apply_container_override_to_task_overrides!(task_overrides, container_override)
+        end
+
+        config[:task_overrides] = task_overrides
+      end
+
+      def apply_container_override_to_task_overrides!(task_overrides, container_override)
+        override_container_definition = container_override.deep_dup.deep_symbolize_keys.except(:environment_from_files)
+        container_definition = task_overrides[:container_definitions].find do |current_container_definition|
+          current_container_definition[:name] == override_container_definition[:name]
+        end
+
+        if container_definition.present?
+          merge_container_override_environment!(container_definition, override_container_definition)
+          container_definition.deep_merge!(override_container_definition)
+        else
+          task_overrides[:container_definitions] << override_container_definition
+        end
+      end
+
+      def merge_container_override_environment!(container_definition, override_container_definition)
+        return unless container_definition[:environment].present? && override_container_definition[:environment].present?
+
+        override_container_definition[:environment].each do |environment|
+          container_definition[:environment].delete_if { |current_environment| current_environment[:name] == environment[:name] }
+        end
       end
     end
   end
