@@ -40,13 +40,12 @@ module Genova
 
         def load_environment_from_files!(environment_file_paths, base_dir, container_identifier)
           Array(environment_file_paths).each_with_object([]) do |environment_file_path, environments|
-            resolved_environment_file_path = environment_file_path.respond_to?(:to_str) ? environment_file_path.to_str : environment_file_path
-            unless resolved_environment_file_path.is_a?(String) && resolved_environment_file_path.present?
+            unless environment_file_path.is_a?(String) && environment_file_path.present?
               raise Exceptions::ValidationError,
                     "Invalid environment file path for container override '#{container_identifier}'. [#{environment_file_path.inspect}]"
             end
 
-            resolved_path = File.expand_path(resolved_environment_file_path, base_dir)
+            resolved_path = File.expand_path(environment_file_path, base_dir)
             current_environments = read_environment_file(resolved_path)
             environments.replace(merge_environments(environments, current_environments))
           end
@@ -129,9 +128,13 @@ module Genova
             next if line.blank? || line.start_with?('#')
 
             name, value = line.split('=', 2)
+            name = name.strip
             raise Exceptions::ValidationError, "Invalid environment line. [#{path}]" if name.blank?
 
-            environments << { name:, value: value.to_s }
+            value = value.to_s.strip
+            value = value[1..-2] if value.length >= 2 && ((value.start_with?('"') && value.end_with?('"')) || (value.start_with?("'") && value.end_with?("'")))
+
+            environments << { name:, value: }
           end
         end
 

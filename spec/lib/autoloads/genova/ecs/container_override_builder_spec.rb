@@ -52,6 +52,29 @@ module Genova
           )
         end
 
+        it 'strips whitespace around name/value and handles quoted values in dotenv files' do
+          env_file_path = '/repo/config/app.env'
+
+          allow(File).to receive(:file?).with(env_file_path).and_return(true)
+          allow(File).to receive(:read).with(env_file_path).and_return(
+            "PLAIN=value\nDOUBLE_QUOTED=\"quoted value\"\nSINGLE_QUOTED='single quoted'\nSPACED = spaced value\n"
+          )
+
+          container_overrides = described_class.build(
+            [{ name: 'app', environment_from_files: ['./app.env'] }],
+            base_dir:
+          )
+
+          expect(
+            container_overrides[0][:environment].to_h { |e| [e[:name], e[:value]] }
+          ).to eq(
+            'PLAIN' => 'value',
+            'DOUBLE_QUOTED' => 'quoted value',
+            'SINGLE_QUOTED' => 'single quoted',
+            'SPACED' => 'spaced value'
+          )
+        end
+
         it 'raises error when environment file path is invalid' do
           expect do
             described_class.build(
