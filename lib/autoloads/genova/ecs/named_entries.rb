@@ -132,7 +132,7 @@ module Genova
           name = name.strip
           raise Exceptions::ValidationError, "Invalid #{file_label} line. [#{path}]" if name.blank?
 
-          entries << build_entry(name, strip_wrapping_quotes(value.to_s.strip), value_key:, value_transform:)
+          entries << build_entry(name, strip_wrapping_quotes(strip_inline_comment(value.to_s).strip), value_key:, value_transform:)
         end
       end
 
@@ -156,6 +156,25 @@ module Genova
         end
       end
       private_class_method :invalid_entry_message
+
+      def strip_inline_comment(value)
+        in_single_quote = false
+        in_double_quote = false
+
+        value.each_char.with_index do |char, i|
+          case char
+          when "'"
+            in_single_quote = !in_single_quote unless in_double_quote
+          when '"'
+            in_double_quote = !in_double_quote unless in_single_quote
+          when '#'
+            return value[0, i] unless in_single_quote || in_double_quote
+          end
+        end
+
+        value
+      end
+      private_class_method :strip_inline_comment
 
       def strip_wrapping_quotes(value)
         return value unless value.length >= 2
