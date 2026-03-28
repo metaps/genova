@@ -68,6 +68,7 @@ module Genova
           end
 
           resolved_path = File.expand_path(file_path, base_dir)
+          validate_within_base_dir!(resolved_path, base_dir, file_label, container_identifier)
           current_entries = read_file(
             resolved_path,
             file_label:,
@@ -158,6 +159,21 @@ module Genova
         value
       end
       private_class_method :strip_wrapping_quotes
+
+      def validate_within_base_dir!(resolved_path, base_dir, file_label, container_identifier)
+        base_real = File.realpath(base_dir)
+        path_real = begin
+          File.realpath(resolved_path)
+        rescue Errno::ENOENT
+          resolved_path
+        end
+
+        return if path_real == base_real || path_real.start_with?(base_real + File::SEPARATOR)
+
+        raise Exceptions::ValidationError,
+              "#{file_label.capitalize} file path for container override '#{container_identifier}' is outside the base directory. [#{resolved_path}]"
+      end
+      private_class_method :validate_within_base_dir!
     end
   end
 end
