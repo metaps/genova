@@ -130,7 +130,7 @@ module Genova
 
           name, value = line.split('=', 2)
           name = name.strip
-          raise Exceptions::ValidationError, "Invalid #{file_label} line. [#{path}]" if name.blank?
+          raise Exceptions::ValidationError, "Invalid #{file_label} line. [#{path}]" if name.blank? || value.nil?
 
           entries << build_entry(name, strip_wrapping_quotes(strip_inline_comment(value.to_s).strip), value_key:, value_transform:)
         end
