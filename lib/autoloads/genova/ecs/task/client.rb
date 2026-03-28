@@ -75,6 +75,7 @@ module Genova
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
 
             merge_container_environment!(container_definition, override_container_definition)
+            merge_container_secrets!(container_definition, override_container_definition)
             container_definition.deeper_merge!(override_container_definition)
           end
         end
@@ -84,6 +85,14 @@ module Genova
 
           override_container_definition[:environment].each do |environment|
             container_definition[:environment].delete_if { |k, _v| k[:name] == environment[:name] }
+          end
+        end
+
+        def merge_container_secrets!(container_definition, override_container_definition)
+          return unless container_definition[:secrets].present? && override_container_definition[:secrets].present?
+
+          override_container_definition[:secrets].each do |secret|
+            container_definition[:secrets].delete_if { |k, _v| k[:name] == secret[:name] }
           end
         end
 

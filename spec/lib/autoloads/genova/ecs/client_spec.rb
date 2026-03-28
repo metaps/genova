@@ -118,6 +118,59 @@ module Genova
 
             expect { client.deploy_run_task }.to_not raise_error
           end
+
+          it 'resolves secrets_from_files in container_overrides' do
+            allow(File).to receive(:file?).with('/repo/config/secrets.env').and_return(true)
+            allow(File).to receive(:file?).with('/repo/config/shared-secrets.yml').and_return(true)
+            allow(File).to receive(:read).with('/repo/config/secrets.env').and_return("DOTENV_SECRET=/dotenv\nFILE_OVERRIDE=/dotenv-override\nSHARED_SECRET=/dotenv-shared\n")
+            allow(File).to receive(:read).with('/repo/config/shared-secrets.yml').and_return(
+              {
+                'FILE_OVERRIDE' => '/yaml-override',
+                'YAML_SECRET' => '/yaml',
+                'SHARED_SECRET' => '/yaml-shared'
+              }.to_yaml
+            )
+
+            allow(deploy_config).to receive(:find_run_task).and_return(
+              containers: [
+                name: 'web',
+                image: ' xxx.dkr.ecr.ap-northeast-1.amazonaws.com/xxx:latest'
+              ],
+              container_overrides: [
+                {
+                  name: 'web',
+                  secrets_from_files: [
+                    './secrets.env',
+                    './shared-secrets.yml'
+                  ],
+                  secrets: [
+                    { 'INLINE_SECRET' => '/inline' },
+                    { 'SHARED_SECRET' => '/inline-override' }
+                  ]
+                }
+              ]
+            )
+
+            expect(task_client).to receive(:register) do |_task_definition_path, task_overrides, tag:|
+              expect(tag).to eq(deploy_job.label)
+              expect(
+                task_overrides[:container_definitions][0][:secrets].to_h { |secret| [secret[:name], secret[:value_from]] }
+              ).to eq(
+                'DOTENV_SECRET' => '/dotenv',
+                'FILE_OVERRIDE' => '/yaml-override',
+                'YAML_SECRET' => '/yaml',
+                'INLINE_SECRET' => '/inline',
+                'SHARED_SECRET' => '/inline-override'
+              )
+              task_definition
+            end
+            expect(run_task_client).to receive(:execute) do |_task_definition_arn, options|
+              expect(options[:container_overrides]).to eq([])
+            end
+            allow(Ecs::Deployer::RunTask::Client).to receive(:new).and_return(run_task_client)
+
+            expect { client.deploy_run_task }.to_not raise_error
+          end
         end
 
         describe 'deploy_service' do
@@ -201,6 +254,70 @@ module Genova
 
             expect { client.deploy_service }.to_not raise_error
           end
+
+          it 'resolves secrets_from_files in container_overrides and applies them to task_overrides' do
+            allow(File).to receive(:file?).with('/repo/config/secrets.env').and_return(true)
+            allow(File).to receive(:file?).with('/repo/config/shared-secrets.yml').and_return(true)
+            allow(File).to receive(:read).with('/repo/config/secrets.env').and_return("DOTENV_SECRET=/dotenv\nFILE_OVERRIDE=/dotenv-override\nSHARED_SECRET=/dotenv-shared\n")
+            allow(File).to receive(:read).with('/repo/config/shared-secrets.yml').and_return(
+              {
+                'FILE_OVERRIDE' => '/yaml-override',
+                'YAML_SECRET' => '/yaml',
+                'SHARED_SECRET' => '/yaml-shared'
+              }.to_yaml
+            )
+
+            allow(deploy_config).to receive(:find_service).and_return(
+              path: 'service.yml',
+              containers: [
+                name: 'web'
+              ],
+              task_overrides: {
+                container_definitions: [
+                  {
+                    name: 'web',
+                    secrets: [
+                      { name: 'EXISTING_SECRET', value_from: '/existing' },
+                      { name: 'SHARED_SECRET', value_from: '/task-override' }
+                    ]
+                  }
+                ]
+              },
+              container_overrides: [
+                {
+                  name: 'web',
+                  secrets_from_files: [
+                    './secrets.env',
+                    './shared-secrets.yml'
+                  ],
+                  secrets: [
+                    { 'INLINE_SECRET' => '/inline' },
+                    { 'SHARED_SECRET' => '/inline-override' }
+                  ]
+                }
+              ]
+            )
+
+            expect(task_client).to receive(:register) do |_task_definition_path, task_overrides, tag:|
+              expect(tag).to eq(deploy_job.label)
+              expect(
+                task_overrides[:container_definitions][0][:secrets].to_h { |secret| [secret[:name], secret[:value_from]] }
+              ).to eq(
+                'EXISTING_SECRET' => '/existing',
+                'DOTENV_SECRET' => '/dotenv',
+                'FILE_OVERRIDE' => '/yaml-override',
+                'YAML_SECRET' => '/yaml',
+                'INLINE_SECRET' => '/inline',
+                'SHARED_SECRET' => '/inline-override'
+              )
+              task_definition
+            end
+            allow(service_client).to receive(:update)
+            allow(service_client).to receive(:exist?).and_return(true)
+            allow(Ecs::Deployer::Service::Client).to receive(:new).and_return(service_client)
+
+            expect { client.deploy_service }.to_not raise_error
+          end
         end
 
         describe 'deploy_scheduled_task' do
@@ -257,6 +374,80 @@ module Genova
                 'YAML_KEY' => '1',
                 'INLINE_ONLY' => 'inline',
                 'SHARED_KEY' => 'inline_override'
+              )
+              { ecs_parameters: { task_definition_arn: 'task_definition_arn' } }
+            end
+            allow(scheduled_task_client).to receive(:update)
+            allow(Ecs::Deployer::ScheduledTask::Client).to receive(:new).and_return(scheduled_task_client)
+
+            expect { client.deploy_scheduled_task }.to_not raise_error
+          end
+
+          it 'resolves secrets_from_files in container_overrides' do
+            allow(File).to receive(:file?).with('/repo/config/secrets.env').and_return(true)
+            allow(File).to receive(:file?).with('/repo/config/shared-secrets.yml').and_return(true)
+            allow(File).to receive(:read).with('/repo/config/secrets.env').and_return("DOTENV_SECRET=/dotenv\nFILE_OVERRIDE=/dotenv-override\nSHARED_SECRET=/dotenv-shared\n")
+            allow(File).to receive(:read).with('/repo/config/shared-secrets.yml').and_return(
+              {
+                'FILE_OVERRIDE' => '/yaml-override',
+                'YAML_SECRET' => '/yaml',
+                'SHARED_SECRET' => '/yaml-shared'
+              }.to_yaml
+            )
+
+            allow(deploy_config).to receive(:find_scheduled_task_rule).and_return(
+              rule: 'nightly',
+              expression: 'cron(0 0 * * ? *)',
+              containers: [
+                name: 'web',
+                image: ' xxx.dkr.ecr.ap-northeast-1.amazonaws.com/xxx:latest'
+              ]
+            )
+            allow(deploy_config).to receive(:find_scheduled_task_target).and_return(
+              name: 'job',
+              path: 'task.yml',
+              containers: [
+                name: 'web',
+                image: ' xxx.dkr.ecr.ap-northeast-1.amazonaws.com/xxx:latest'
+              ],
+              container_overrides: [
+                {
+                  name: 'web',
+                  secrets_from_files: [
+                    './secrets.env',
+                    './shared-secrets.yml'
+                  ],
+                  secrets: [
+                    { 'INLINE_SECRET' => '/inline' },
+                    { 'SHARED_SECRET' => '/inline-override' }
+                  ]
+                }
+              ]
+            )
+
+            expect(task_client).to receive(:register) do |_task_definition_path, task_overrides, tag:|
+              expect(tag).to eq(deploy_job.label)
+              expect(
+                task_overrides[:container_definitions][0][:secrets].to_h { |secret| [secret[:name], secret[:value_from]] }
+              ).to eq(
+                'DOTENV_SECRET' => '/dotenv',
+                'FILE_OVERRIDE' => '/yaml-override',
+                'YAML_SECRET' => '/yaml',
+                'INLINE_SECRET' => '/inline',
+                'SHARED_SECRET' => '/inline-override'
+              )
+              task_definition
+            end
+            expect(Ecs::Deployer::ScheduledTask::Target).to receive(:build) do |_deploy_job, _task_definition_arn, target_config, _logger|
+              expect(target_config[:container_overrides][0]).to eq(
+                name: 'web',
+                secrets: [
+                  { name: 'DOTENV_SECRET', value_from: '/dotenv' },
+                  { name: 'FILE_OVERRIDE', value_from: '/yaml-override' },
+                  { name: 'YAML_SECRET', value_from: '/yaml' },
+                  { name: 'INLINE_SECRET', value_from: '/inline' },
+                  { name: 'SHARED_SECRET', value_from: '/inline-override' }
+                ]
               )
               { ecs_parameters: { task_definition_arn: 'task_definition_arn' } }
             end

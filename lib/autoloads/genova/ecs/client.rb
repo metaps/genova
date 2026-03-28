@@ -26,6 +26,7 @@ module Genova
 
         run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task).deep_dup
         resolve_container_overrides!(run_task_config)
+        merge_container_overrides_into_task_overrides!(run_task_config)
 
         if @deploy_job.override_container.present?
           run_task_config[:container_overrides] = [
@@ -44,7 +45,7 @@ module Genova
         options = {
           desired_count: run_task_config[:desired_count],
           group: run_task_config[:group],
-          container_overrides: run_task_config[:container_overrides],
+          container_overrides: runtime_container_overrides(run_task_config[:container_overrides]),
           network_configuration: run_task_config[:network_configuration]
         }
         options[:launch_type] = run_task_config[:launch_type] if run_task_config[:launch_type].present?
@@ -96,6 +97,7 @@ module Genova
           @deploy_job.scheduled_task_target
         ).deep_dup
         resolve_container_overrides!(target_config)
+        merge_container_overrides_into_task_overrides!(target_config)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
         task_definition = create_task(task_definition_path, target_config[:task_overrides], @deploy_job.label)
@@ -204,7 +206,7 @@ module Genova
       end
 
       def apply_container_override_to_task_overrides!(task_overrides, container_override)
-        override_container_definition = container_override.deep_dup.deep_symbolize_keys.except(:environment_from_files)
+        override_container_definition = container_override.deep_dup.deep_symbolize_keys.except(:environment_from_files, :secrets_from_files)
         container_definition = task_overrides[:container_definitions].find do |current_container_definition|
           current_container_definition[:name] == override_container_definition[:name]
         end
@@ -214,11 +216,20 @@ module Genova
             container_definition[:environment],
             override_container_definition[:environment]
           )
-          container_definition.deep_merge!(override_container_definition.except(:environment))
+          merged_secrets = merge_task_override_named_entries(
+            container_definition[:secrets],
+            override_container_definition[:secrets]
+          )
+          container_definition.deep_merge!(override_container_definition.except(:environment, :secrets))
           if merged_environment.present?
             container_definition[:environment] = merged_environment
           else
             container_definition.delete(:environment)
+          end
+          if merged_secrets.present?
+            container_definition[:secrets] = merged_secrets
+          else
+            container_definition.delete(:secrets)
           end
         else
           task_overrides[:container_definitions] << override_container_definition
@@ -226,12 +237,22 @@ module Genova
       end
 
       def merge_task_override_environments(base_environment, override_environment)
-        result = Array(base_environment).deep_dup
-        Array(override_environment).each do |env|
-          result.delete_if { |existing| existing[:name] == env[:name] }
-          result << env
+        merge_task_override_named_entries(base_environment, override_environment)
+      end
+
+      def merge_task_override_named_entries(base_entries, override_entries)
+        result = Array(base_entries).deep_dup
+        Array(override_entries).each do |entry|
+          result.delete_if { |existing| existing[:name] == entry[:name] }
+          result << entry
         end
         result
+      end
+
+      def runtime_container_overrides(container_overrides)
+        Array(container_overrides).map do |container_override|
+          container_override.deep_dup.deep_symbolize_keys.except(:secrets, :secrets_from_files)
+        end.reject { |container_override| container_override.except(:name).blank? }
       end
     end
   end

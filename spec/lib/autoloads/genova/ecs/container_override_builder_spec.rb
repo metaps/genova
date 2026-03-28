@@ -52,6 +52,49 @@ module Genova
           )
         end
 
+        it 'loads secrets from files and allows inline secrets to override it' do
+          env_file_path = '/repo/config/secrets.env'
+          yaml_file_path = '/repo/config/shared-secrets.yml'
+
+          allow(File).to receive(:file?).with(env_file_path).and_return(true)
+          allow(File).to receive(:file?).with(yaml_file_path).and_return(true)
+          allow(File).to receive(:read).with(env_file_path).and_return("DOTENV_SECRET=/dotenv\nFILE_OVERRIDE=/dotenv-override\nSHARED_SECRET=/dotenv-shared\n")
+          allow(File).to receive(:read).with(yaml_file_path).and_return(
+            {
+              'YAML_SECRET' => '/yaml',
+              'FILE_OVERRIDE' => '/yaml-override',
+              'SHARED_SECRET' => '/yaml-shared'
+            }.to_yaml
+          )
+
+          container_overrides = described_class.build(
+            [
+              {
+                name: 'app',
+                secrets_from_files: [
+                  './secrets.env',
+                  './shared-secrets.yml'
+                ],
+                secrets: [
+                  { 'INLINE_SECRET' => '/inline' },
+                  { 'SHARED_SECRET' => '/inline-override' }
+                ]
+              }
+            ],
+            base_dir:
+          )
+
+          expect(
+            container_overrides[0][:secrets].to_h { |secret| [secret[:name], secret[:value_from]] }
+          ).to eq(
+            'DOTENV_SECRET' => '/dotenv',
+            'FILE_OVERRIDE' => '/yaml-override',
+            'YAML_SECRET' => '/yaml',
+            'INLINE_SECRET' => '/inline',
+            'SHARED_SECRET' => '/inline-override'
+          )
+        end
+
         it 'strips whitespace around name/value and handles quoted values in dotenv files' do
           env_file_path = '/repo/config/app.env'
 
@@ -72,6 +115,29 @@ module Genova
             'DOUBLE_QUOTED' => 'quoted value',
             'SINGLE_QUOTED' => 'single quoted',
             'SPACED' => 'spaced value'
+          )
+        end
+
+        it 'strips whitespace around name/value_from and handles quoted values in secrets dotenv files' do
+          env_file_path = '/repo/config/secrets.env'
+
+          allow(File).to receive(:file?).with(env_file_path).and_return(true)
+          allow(File).to receive(:read).with(env_file_path).and_return(
+            "PLAIN=/path/plain\nDOUBLE_QUOTED=\"/path/quoted value\"\nSINGLE_QUOTED='/path/single quoted'\nSPACED = /path/spaced value\n"
+          )
+
+          container_overrides = described_class.build(
+            [{ name: 'app', secrets_from_files: ['./secrets.env'] }],
+            base_dir:
+          )
+
+          expect(
+            container_overrides[0][:secrets].to_h { |secret| [secret[:name], secret[:value_from]] }
+          ).to eq(
+            'PLAIN' => '/path/plain',
+            'DOUBLE_QUOTED' => '/path/quoted value',
+            'SINGLE_QUOTED' => '/path/single quoted',
+            'SPACED' => '/path/spaced value'
           )
         end
 
@@ -103,6 +169,36 @@ module Genova
               base_dir:
             )
           end.to raise_error(Exceptions::ValidationError, 'Environment file does not exist. [/repo/config/missing.env]')
+        end
+
+        it 'raises error when secrets file path is invalid' do
+          expect do
+            described_class.build(
+              [
+                {
+                  name: 'app',
+                  secrets_from_files: [nil]
+                }
+              ],
+              base_dir:
+            )
+          end.to raise_error(Exceptions::ValidationError, "Invalid secrets file path for container override 'app'. [nil]")
+        end
+
+        it 'raises error when secrets file does not exist' do
+          allow(File).to receive(:file?).with('/repo/config/missing-secrets.env').and_return(false)
+
+          expect do
+            described_class.build(
+              [
+                {
+                  name: 'app',
+                  secrets_from_files: ['./missing-secrets.env']
+                }
+              ],
+              base_dir:
+            )
+          end.to raise_error(Exceptions::ValidationError, 'Secrets file does not exist. [/repo/config/missing-secrets.env]')
         end
       end
     end

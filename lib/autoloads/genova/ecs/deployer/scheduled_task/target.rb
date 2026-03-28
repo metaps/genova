@@ -19,7 +19,8 @@ module Genova
 
               if container_overrides_config.present?
                 container_overrides_config.each do |container_override_config|
-                  container_overrides << override_container(container_override_config)
+                  container_override = override_container(container_override_config)
+                  container_overrides << container_override if container_override.present?
                 end
               end
 
@@ -45,10 +46,12 @@ module Genova
             private
 
             def override_container(container_override_config)
-              container_override = container_override_config.deep_dup.deep_symbolize_keys.except(:environment_from_files)
+              container_override = container_override_config.deep_dup.deep_symbolize_keys.except(:environment_from_files, :secrets_from_files, :secrets)
               environment_overrides = normalize_environment(container_override[:environment])
               container_override[:environment] = environment_overrides if environment_overrides.count.positive?
               container_override.delete(:environment) if environment_overrides.empty?
+              return if container_override.except(:name).blank?
+
               container_override
             end
 
@@ -72,6 +75,7 @@ module Genova
                 end
               end
             end
+
           end
         end
       end

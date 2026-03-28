@@ -59,6 +59,17 @@
         }
       }
     },
+    "container_override_secrets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "patternProperties": {
+          ".+": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "container_overrides": {
       "type": "array",
       "items": {
@@ -70,7 +81,12 @@
             "items": { "type": "string" }
           },
           "environment": { "$ref": "#/definitions/container_override_environment" },
+          "secrets": { "$ref": "#/definitions/container_override_secrets" },
           "environment_from_files": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "secrets_from_files": {
             "type": "array",
             "items": { "type": "string" }
           }
