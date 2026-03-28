@@ -60,7 +60,7 @@ module Genova
 
         def override_container_definitions!(task_definition, task_overrides)
           (task_overrides[:container_definitions] || []).each_with_index do |override_container_definition, index|
-            container_definition = task_definition[:container_definitions].find { |k, _v| k[:name] == override_container_definition[:name] }
+            container_definition = task_definition[:container_definitions].find { |k| k[:name] == override_container_definition[:name] }
 
             next unless container_definition.present?
 
@@ -84,7 +84,7 @@ module Genova
           return unless container_definition[:environment].present? && override_container_definition[:environment].present?
 
           override_container_definition[:environment].each do |environment|
-            container_definition[:environment].delete_if { |k, _v| k[:name] == environment[:name] }
+            container_definition[:environment].delete_if { |current_environment| current_environment[:name] == environment[:name] }
           end
         end
 
@@ -92,7 +92,7 @@ module Genova
           return unless container_definition[:secrets].present? && override_container_definition[:secrets].present?
 
           override_container_definition[:secrets].each do |secret|
-            container_definition[:secrets].delete_if { |k, _v| k[:name] == secret[:name] }
+            container_definition[:secrets].delete_if { |current_secret| current_secret[:name] == secret[:name] }
           end
         end
 
