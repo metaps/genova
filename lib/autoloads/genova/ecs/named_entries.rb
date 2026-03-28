@@ -41,7 +41,13 @@ module Genova
           end
 
           entry_hash = entry.deep_symbolize_keys
-          if entry_hash.keys.sort == [:name, value_key].sort
+          canonical_keys = %i[name value value_from]
+
+          if (entry_hash.keys & canonical_keys).any?
+            unless entry_hash.keys.sort == [:name, value_key].sort
+              raise Exceptions::ValidationError, invalid_entry_message(entry_label, entry, container_identifier)
+            end
+
             normalized << build_entry(entry_hash[:name], entry_hash[value_key], value_key:, value_transform:)
             next
           end
