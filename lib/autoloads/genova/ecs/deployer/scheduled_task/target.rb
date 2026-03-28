@@ -50,8 +50,7 @@ module Genova
               environment_overrides = Ecs::NamedEntries.normalize(
                 container_override[:environment],
                 value_key: :value,
-                entry_label: 'environment',
-                value_transform: ->(value) { value }
+                entry_label: 'environment'
               )
               container_override[:environment] = environment_overrides if environment_overrides.count.positive?
               container_override.delete(:environment) if environment_overrides.empty?

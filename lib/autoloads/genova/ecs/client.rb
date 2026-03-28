@@ -212,25 +212,9 @@ module Genova
         end
 
         if container_definition.present?
-          merged_environment = Ecs::NamedEntries.merge(
-            container_definition[:environment],
-            override_container_definition[:environment]
-          )
-          merged_secrets = Ecs::NamedEntries.merge(
-            container_definition[:secrets],
-            override_container_definition[:secrets]
-          )
-          container_definition.deep_merge!(override_container_definition.except(:environment, :secrets))
-          if merged_environment.present?
-            container_definition[:environment] = merged_environment
-          else
-            container_definition.delete(:environment)
-          end
-          if merged_secrets.present?
-            container_definition[:secrets] = merged_secrets
-          else
-            container_definition.delete(:secrets)
-          end
+          merged = Ecs::NamedEntries.merge_container_entries(container_definition, override_container_definition)
+          container_definition.deep_merge!(override_container_definition.except(*merged.keys))
+          Ecs::NamedEntries.assign_container_entries!(container_definition, merged)
         else
           task_overrides[:container_definitions] << override_container_definition
         end

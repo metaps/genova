@@ -3,6 +3,26 @@ module Genova
     module NamedEntries
       module_function
 
+      CONTAINER_ENTRY_KEYS = %i[environment secrets].freeze
+
+      def merge_container_entries(base_definition, override_definition)
+        CONTAINER_ENTRY_KEYS.each_with_object({}) do |entry_key, merged|
+          next unless override_definition[entry_key].present?
+
+          merged[entry_key] = merge(base_definition[entry_key], override_definition[entry_key])
+        end
+      end
+
+      def assign_container_entries!(container_definition, named_entries)
+        named_entries.each do |entry_key, entries|
+          if entries.present?
+            container_definition[entry_key] = entries
+          else
+            container_definition.delete(entry_key)
+          end
+        end
+      end
+
       def merge(base_entries, override_entries)
         result = Array(base_entries).deep_dup
 
