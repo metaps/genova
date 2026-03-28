@@ -47,35 +47,18 @@ module Genova
 
             def override_container(container_override_config)
               container_override = container_override_config.deep_dup.deep_symbolize_keys.except(:environment_from_files, :secrets_from_files, :secrets)
-              environment_overrides = normalize_environment(container_override[:environment])
+              environment_overrides = Ecs::NamedEntries.normalize(
+                container_override[:environment],
+                value_key: :value,
+                entry_label: 'environment',
+                value_transform: ->(value) { value }
+              )
               container_override[:environment] = environment_overrides if environment_overrides.count.positive?
               container_override.delete(:environment) if environment_overrides.empty?
               return if container_override.except(:name).blank?
 
               container_override
             end
-
-            def normalize_environment(environments)
-              Array(environments).each_with_object([]) do |environment, normalized|
-                environment = environment.deep_symbolize_keys
-
-                if environment.keys.sort == %i[name value]
-                  normalized << {
-                    name: environment[:name],
-                    value: environment[:value]
-                  }
-                  next
-                end
-
-                environment.each do |env_name, env_value|
-                  normalized << {
-                    name: env_name,
-                    value: env_value
-                  }
-                end
-              end
-            end
-
           end
         end
       end

@@ -74,25 +74,30 @@ module Genova
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
 
-            merge_container_environment!(container_definition, override_container_definition)
-            merge_container_secrets!(container_definition, override_container_definition)
-            container_definition.deeper_merge!(override_container_definition)
+            merged_named_entries = merged_container_named_entries(container_definition, override_container_definition)
+            container_definition.deeper_merge!(override_container_definition.except(*merged_named_entries.keys))
+            apply_merged_container_named_entries!(container_definition, merged_named_entries)
           end
         end
 
-        def merge_container_environment!(container_definition, override_container_definition)
-          return unless container_definition[:environment].present? && override_container_definition[:environment].present?
+        def merged_container_named_entries(container_definition, override_container_definition)
+          %i[environment secrets].each_with_object({}) do |entry_key, merged_entries|
+            next unless override_container_definition[entry_key].present?
 
-          override_container_definition[:environment].each do |environment|
-            container_definition[:environment].delete_if { |current_environment| current_environment[:name] == environment[:name] }
+            merged_entries[entry_key] = Ecs::NamedEntries.merge(
+              container_definition[entry_key],
+              override_container_definition[entry_key]
+            )
           end
         end
 
-        def merge_container_secrets!(container_definition, override_container_definition)
-          return unless container_definition[:secrets].present? && override_container_definition[:secrets].present?
-
-          override_container_definition[:secrets].each do |secret|
-            container_definition[:secrets].delete_if { |current_secret| current_secret[:name] == secret[:name] }
+        def apply_merged_container_named_entries!(container_definition, merged_named_entries)
+          merged_named_entries.each do |entry_key, entries|
+            if entries.present?
+              container_definition[entry_key] = entries
+            else
+              container_definition.delete(entry_key)
+            end
           end
         end
 

@@ -212,11 +212,11 @@ module Genova
         end
 
         if container_definition.present?
-          merged_environment = merge_task_override_environments(
+          merged_environment = Ecs::NamedEntries.merge(
             container_definition[:environment],
             override_container_definition[:environment]
           )
-          merged_secrets = merge_task_override_named_entries(
+          merged_secrets = Ecs::NamedEntries.merge(
             container_definition[:secrets],
             override_container_definition[:secrets]
           )
@@ -234,19 +234,6 @@ module Genova
         else
           task_overrides[:container_definitions] << override_container_definition
         end
-      end
-
-      def merge_task_override_environments(base_environment, override_environment)
-        merge_task_override_named_entries(base_environment, override_environment)
-      end
-
-      def merge_task_override_named_entries(base_entries, override_entries)
-        result = Array(base_entries).deep_dup
-        Array(override_entries).each do |entry|
-          result.delete_if { |existing| existing[:name] == entry[:name] }
-          result << entry
-        end
-        result
       end
 
       def runtime_container_overrides(container_overrides)
