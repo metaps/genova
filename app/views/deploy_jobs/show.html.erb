@@ -98,7 +98,13 @@
       <% if @deploy_job.generic_text.present? %>
         <div class="columns">
           <dt class="column is-2">Generic text</dt>
-          <dd class="column is-4"><%= @deploy_job.generic_text %></dd>
+          <dd class="column is-4">
+            <% if @deploy_job.generic_text.match?(/\Ahttps?:\/\//) %>
+              <%= link_to @deploy_job.generic_text, @deploy_job.generic_text, target: '_blank', rel: 'noopener noreferrer' %>
+            <% else %>
+              <%= @deploy_job.generic_text %>
+            <% end %>
+          </dd>
         </div>
       <% end %>
       <% if @deploy_job.task_definition_arn.present? %>
