@@ -95,6 +95,12 @@
           <dd class="column is-4"><%= @deploy_job.slack_user_name %></dd>
         </div>
       <% end %>
+      <% if @deploy_job.generic_text.present? %>
+        <div class="columns">
+          <dt class="column is-2">Generic text</dt>
+          <dd class="column is-4"><%= @deploy_job.generic_text %></dd>
+        </div>
+      <% end %>
       <% if @deploy_job.task_definition_arn.present? %>
         <div class="columns">
           <dt class="column is-2">Task definition ARN</dt>
