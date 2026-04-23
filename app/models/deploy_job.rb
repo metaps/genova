@@ -36,7 +36,7 @@ class DeployJob
   field :docker_build_time, type: Float
   field :execution_time, type: Float
   field :deployment_tag, type: String
-  field :text, type: String
+  field :generic_text, type: String
 
   validates :mode, :account, :repository, :cluster, presence: true
   validate :check_type

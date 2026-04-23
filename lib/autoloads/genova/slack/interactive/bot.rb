@@ -130,7 +130,7 @@ module Genova
           blocks = []
           blocks << BlockKit::Helper.section('Ready to deploy!')
           blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:type] == DeployJob.type.find_value(:run_task)
-          blocks << BlockKit::Helper.plain_text_input('submit_deploy_text', 'Text (optional)', placeholder: 'Input any text', block_id: 'deploy_text')
+          blocks << BlockKit::Helper.plain_text_input('submit_deploy_generic_text', 'Generic text (optional)', placeholder: 'Input any text', block_id: 'deploy_generic_text')
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'submit_deploy'),
                                                BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')

@@ -28,7 +28,7 @@ module Slack
                                      service: params[:service],
                                      scheduled_task_rule: params[:scheduled_task_rule],
                                      scheduled_task_target: params[:scheduled_task_target],
-                                     text: params[:text])
+                                     generic_text: params[:generic_text])
 
       history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)

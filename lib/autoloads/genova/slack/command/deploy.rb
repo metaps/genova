@@ -28,7 +28,7 @@ module Genova
               service: result[:service],
               scheduled_task_rule: result[:scheduled_task_rule],
               scheduled_task_target: result[:scheduled_task_target],
-              text: result[:text]
+              generic_text: result[:generic_text]
             }
 
             session_store.merge(params)
