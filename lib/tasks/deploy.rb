@@ -7,7 +7,7 @@ module GenovaCli
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
     class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Show confirmation message before deploying.'
     class_option :tag, desc: 'Tag to deploy.'
-    class_option :generic_text, desc: 'Arbitrary text to attach to the deploy job.'
+    class_option :memo, desc: 'Arbitrary text to attach to the deploy job.'
     class_option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Outputting detailed logs.'
 
     no_commands do
@@ -46,7 +46,7 @@ module GenovaCli
           run_task: options[:run_task],
           override_container: options[:override_container],
           override_command: options[:override_command],
-          generic_text: options[:generic_text]
+          memo: options[:memo]
         )
 
         raise ::Genova::Exceptions::ValidationError, deploy_job.errors.full_messages[0] unless deploy_job.save

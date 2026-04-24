@@ -158,8 +158,8 @@ module Genova
           permission = Interactive::Permission.new(@payload[:user][:id])
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
 
-          generic_text = @payload.dig(:state, :values, :deploy_generic_text, :submit_deploy_generic_text, :value)
-          @session_store.merge({ generic_text: generic_text }) if generic_text.present?
+          memo = @payload.dig(:state, :values, :deploy_memo, :submit_deploy_memo, :value)
+          @session_store.merge({ memo: memo }) if memo.present?
 
           ::Slack::DeployWorker.perform_async(@thread_ts)
 
