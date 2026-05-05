@@ -47,6 +47,21 @@ module Genova
             )
           end.to raise_error(Exceptions::ValidationError, "Invalid environment entry. [#{path}]")
         end
+
+        it 'rejects array entries with mixed key styles' do
+          path = '/repo/config/app.yml'
+          allow(File).to receive(:read).with(path).and_return('yaml')
+          allow(YAML).to receive(:safe_load).and_return([{ 'name' => 'FOO', value: '1' }])
+
+          expect do
+            described_class.parse_yaml_file(
+              path,
+              file_label: 'environment',
+              entry_label: 'environment',
+              value_key: :value
+            )
+          end.to raise_error(Exceptions::ValidationError, "Invalid environment entry. [#{path}]")
+        end
       end
 
       describe '.parse_dotenv_file' do

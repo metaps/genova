@@ -104,9 +104,10 @@ module Genova
           yaml.map do |entry|
             raise Exceptions::ValidationError, "Invalid #{entry_label} entry. [#{path}]" unless valid_yaml_array_entry?(entry, value_key)
 
+            entry_hash = entry.deep_symbolize_keys
             build_entry(
-              entry.key?('name') ? entry['name'] : entry[:name],
-              entry.key?(value_key.to_s) ? entry[value_key.to_s] : entry[value_key],
+              entry_hash[:name],
+              entry_hash[value_key],
               value_key:,
               value_transform:
             )
@@ -119,17 +120,17 @@ module Genova
       def valid_yaml_array_entry?(entry, value_key)
         return false unless entry.is_a?(Hash)
 
-        has_string_keys = entry.key?('name') && entry.key?(value_key.to_s)
-        has_symbol_keys = entry.key?(:name) && entry.key?(value_key)
+        string_keys = ['name', value_key.to_s]
+        symbol_keys = [:name, value_key]
 
-        (entry.keys - allowed_yaml_array_entry_keys(value_key)).empty? && (has_string_keys || has_symbol_keys)
+        same_keys?(entry.keys, string_keys) || same_keys?(entry.keys, symbol_keys)
       end
       private_class_method :valid_yaml_array_entry?
 
-      def allowed_yaml_array_entry_keys(value_key)
-        ['name', value_key.to_s, :name, value_key]
+      def same_keys?(actual_keys, expected_keys)
+        (actual_keys - expected_keys).empty? && (expected_keys - actual_keys).empty?
       end
-      private_class_method :allowed_yaml_array_entry_keys
+      private_class_method :same_keys?
 
       def parse_dotenv_file(path, file_label:, value_key:, value_transform: method(:stringify_value))
         File.read(path).each_line.each_with_object([]) do |line, entries|
