@@ -19,12 +19,12 @@ module Genova
         end
 
         context 'when build is string' do
-          let(:container_config) {
+          let(:container_config) do
             {
               name: 'web',
               build: '.'
             }
-          }
+          end
 
           it 'should return docker build time' do
             expect(docker_client.build_image(container_config, 'web')).to eq(0.0)
@@ -36,10 +36,10 @@ module Genova
 
             expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
               pattern = 'docker build ' +
-                '-t web:latest ' +
-                "-f #{Rails.root}/config/Dockerfile " +
-                '--label com.metaps.genova.build_key=\\w{8} ' +
-                "--no-cache #{Rails.root}/config"
+                        '-t web:latest ' +
+                        "-f #{Rails.root}/config/Dockerfile " +
+                        '--label com.metaps.genova.build_key=\\w{8} ' +
+                        "--no-cache #{Rails.root}/config"
 
               expect(command).to match(pattern)
             end
@@ -48,7 +48,7 @@ module Genova
 
         context 'when build is hash' do
           context 'when args is specified' do
-            let(:container_config) {
+            let(:container_config) do
               {
                 name: 'web',
                 build: {
@@ -59,7 +59,7 @@ module Genova
                   }
                 }
               }
-            }
+            end
 
             it 'should return docker build time' do
               allow(cipher).to receive(:encrypt_format?).and_return(true, false)
@@ -70,7 +70,7 @@ module Genova
           end
 
           context 'when secret_args is specified' do
-            let(:container_config) {
+            let(:container_config) do
               {
                 name: 'web',
                 build: {
@@ -85,18 +85,17 @@ module Genova
                   }
                 }
               }
-            }
+            end
 
             it 'should return valid command' do
               docker_client.build_image(container_config, 'web')
 
               expect(Genova::Command::Executor).to have_received(:call) do |command, _, _|
                 pattern = 'docker build ' +
-                    '-t web:latest ' +
-                    "-f #{Rails.root}/config/Dockerfile " +
-                    '--label com.metaps.genova.build_key=\\w{8} ' +
-                    "--build-arg FOO='SecretStringType' --build-arg BAR='PSParameterValue' --build-arg BAZ='PSParameterValue' "
-                    "#{Rails.root}/config"
+                          '-t web:latest ' +
+                          "-f #{Rails.root}/config/Dockerfile " +
+                          '--label com.metaps.genova.build_key=\\w{8} ' +
+                          "--build-arg FOO='SecretStringType' --build-arg BAR='PSParameterValue' --build-arg BAZ='PSParameterValue' "
 
                 expect(command).to match(pattern)
               end

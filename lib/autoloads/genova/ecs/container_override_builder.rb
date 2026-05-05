@@ -29,9 +29,7 @@ module Genova
         private
 
         def build_container_override(container_override_config, base_dir)
-          unless container_override_config.is_a?(Hash)
-            raise Exceptions::ValidationError, "Each entry in 'container_overrides' must be a hash. [#{container_override_config.inspect}]"
-          end
+          raise Exceptions::ValidationError, "Each entry in 'container_overrides' must be a hash. [#{container_override_config.inspect}]" unless container_override_config.is_a?(Hash)
 
           container_override = container_override_config.deep_dup.deep_symbolize_keys
           container_identifier = container_override[:name] || '(unknown)'

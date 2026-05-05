@@ -36,17 +36,13 @@ module Genova
 
       def normalize(entries, value_key:, entry_label:, container_identifier: nil, value_transform: method(:stringify_value))
         Array(entries).each_with_object([]) do |entry, normalized|
-          unless entry.is_a?(Hash)
-            raise Exceptions::ValidationError, invalid_entry_message(entry_label, entry, container_identifier)
-          end
+          raise Exceptions::ValidationError, invalid_entry_message(entry_label, entry, container_identifier) unless entry.is_a?(Hash)
 
           entry_hash = entry.deep_symbolize_keys
           canonical_keys = %i[name value value_from]
 
           if (entry_hash.keys & canonical_keys).any?
-            unless entry_hash.keys.sort == [:name, value_key].sort
-              raise Exceptions::ValidationError, invalid_entry_message(entry_label, entry, container_identifier)
-            end
+            raise Exceptions::ValidationError, invalid_entry_message(entry_label, entry, container_identifier) unless entry_hash.keys.sort == [:name, value_key].sort
 
             normalized << build_entry(entry_hash[:name], entry_hash[value_key], value_key:, value_transform:)
             next
@@ -107,9 +103,7 @@ module Genova
           yaml.map { |name, value| build_entry(name, value, value_key:, value_transform:) }
         when Array
           yaml.map do |entry|
-            has_string_keys = entry.is_a?(Hash) && entry.key?('name') && entry.key?(value_key.to_s)
-            has_symbol_keys = entry.is_a?(Hash) && entry.key?(:name) && entry.key?(value_key)
-            raise Exceptions::ValidationError, "Invalid #{entry_label} entry. [#{path}]" unless has_string_keys || has_symbol_keys
+            raise Exceptions::ValidationError, "Invalid #{entry_label} entry. [#{path}]" unless valid_yaml_array_entry?(entry, value_key)
 
             build_entry(
               entry.key?('name') ? entry['name'] : entry[:name],
@@ -122,6 +116,21 @@ module Genova
           raise Exceptions::ValidationError, "#{file_label.capitalize} file must be a hash or array. [#{path}]"
         end
       end
+
+      def valid_yaml_array_entry?(entry, value_key)
+        return false unless entry.is_a?(Hash)
+
+        has_string_keys = entry.key?('name') && entry.key?(value_key.to_s)
+        has_symbol_keys = entry.key?(:name) && entry.key?(value_key)
+
+        (entry.keys - allowed_yaml_array_entry_keys(value_key)).empty? && (has_string_keys || has_symbol_keys)
+      end
+      private_class_method :valid_yaml_array_entry?
+
+      def allowed_yaml_array_entry_keys(value_key)
+        ['name', value_key.to_s, :name, value_key]
+      end
+      private_class_method :allowed_yaml_array_entry_keys
 
       def parse_dotenv_file(path, file_label:, value_key:, value_transform: method(:stringify_value))
         File.read(path).each_line.each_with_object([]) do |line, entries|
@@ -141,21 +150,37 @@ module Genova
       end
 
       def build_entry(name, value, value_key:, value_transform:)
+        raise Exceptions::ValidationError, 'Entry name must be present.' if name.nil?
+
+        normalized_name = name.to_s
+        raise Exceptions::ValidationError, 'Entry name must be present.' if normalized_name.strip.empty?
+
         {
-          name: name.to_s,
+          name: normalized_name,
           value_key => value_transform.call(value)
         }
       end
       private_class_method :build_entry
 
       def invalid_entry_message(entry_label, entry, container_identifier)
+        sanitized_entry = sanitize_entry_for_message(entry)
+
         if container_identifier.present?
-          "Invalid #{entry_label} entry for container override '#{container_identifier}'. [#{entry.inspect}]"
+          "Invalid #{entry_label} entry for container override '#{container_identifier}'. [#{sanitized_entry}]"
         else
-          "Invalid #{entry_label} entry. [#{entry.inspect}]"
+          "Invalid #{entry_label} entry. [#{sanitized_entry}]"
         end
       end
       private_class_method :invalid_entry_message
+
+      def sanitize_entry_for_message(entry)
+        return "Hash(size: #{entry.size}, keys: #{entry.keys.inspect})" if entry.is_a?(Hash)
+        return "Array(size: #{entry.size})" if entry.is_a?(Array)
+        return "String(size: #{entry.size})" if entry.is_a?(String)
+
+        entry.inspect
+      end
+      private_class_method :sanitize_entry_for_message
 
       def strip_inline_comment(value)
         in_single_quote = false
@@ -168,13 +193,20 @@ module Genova
           when '"'
             in_double_quote = !in_double_quote unless in_single_quote
           when '#'
-            return value[0, i] unless in_single_quote || in_double_quote
+            return value[0, i] if inline_comment_start?(value, i, in_single_quote, in_double_quote)
           end
         end
 
         value
       end
       private_class_method :strip_inline_comment
+
+      def inline_comment_start?(value, index, in_single_quote, in_double_quote)
+        return false if in_single_quote || in_double_quote
+
+        index.zero? || value[index - 1].match?(/\s/)
+      end
+      private_class_method :inline_comment_start?
 
       def strip_wrapping_quotes(value)
         return value unless value.length >= 2

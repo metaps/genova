@@ -103,11 +103,11 @@ module Genova
                       'date'
                     ],
                     essential: true,
-                  environment: [
-                    {
-                      name: 'KEY1',
-                      value: 'value1'
-                    },
+                    environment: [
+                      {
+                        name: 'KEY1',
+                        value: 'value1'
+                      },
                       {
                         name: 'KEY2',
                         value: 'value2_override'
