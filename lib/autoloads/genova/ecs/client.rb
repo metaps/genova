@@ -221,9 +221,11 @@ module Genova
       end
 
       def runtime_container_overrides(container_overrides)
-        Array(container_overrides).map do |container_override|
+        normalized_overrides = Array(container_overrides).map do |container_override|
           container_override.deep_dup.deep_symbolize_keys.except(:secrets, :secrets_from_files)
-        end.reject { |container_override| container_override.except(:name).blank? }
+        end
+
+        normalized_overrides.reject { |container_override| container_override.except(:name).blank? }
       end
     end
   end

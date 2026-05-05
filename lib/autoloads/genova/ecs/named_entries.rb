@@ -54,15 +54,14 @@ module Genova
         end
       end
 
-      def load_from_files!(
-        file_paths,
-        base_dir:,
-        container_identifier:,
-        file_label:,
-        entry_label:,
-        value_key:,
-        value_transform: method(:stringify_value)
-      )
+      def load_from_files!(file_paths, options = {})
+        base_dir = options.fetch(:base_dir)
+        container_identifier = options.fetch(:container_identifier)
+        file_label = options.fetch(:file_label)
+        entry_label = options.fetch(:entry_label)
+        value_key = options.fetch(:value_key)
+        value_transform = options.fetch(:value_transform, method(:stringify_value))
+
         Array(file_paths).each_with_object([]) do |file_path, entries|
           unless file_path.is_a?(String) && file_path.present?
             raise Exceptions::ValidationError,
