@@ -95,7 +95,8 @@ module Genova
                           '-t web:latest ' +
                           "-f #{Rails.root}/config/Dockerfile " +
                           '--label com.metaps.genova.build_key=\\w{8} ' +
-                          "--build-arg FOO='SecretStringType' --build-arg BAR='PSParameterValue' --build-arg BAZ='PSParameterValue' "
+                          "--build-arg FOO='SecretStringType' --build-arg BAR='PSParameterValue' --build-arg BAZ='PSParameterValue' " +
+                          "#{Rails.root}/config"
 
                 expect(command).to match(pattern)
               end
