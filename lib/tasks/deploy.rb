@@ -113,7 +113,8 @@ module GenovaCli
         options[:name],
         ::Genova::Deploy::Step::StdoutHook.new,
         mode: DeployJob.mode.find_value(:manual),
-        force: options[:force]
+        force: options[:force],
+        memo: options[:memo]
       )
     end
   end

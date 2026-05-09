@@ -39,6 +39,12 @@ module Genova
             it 'should not error' do
               expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
             end
+
+            it 'stores memo in deploy job' do
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym, memo: 'memo')
+
+              expect(DeployJob.last.memo).to eq('memo')
+            end
           end
 
           context 'when update run task' do
