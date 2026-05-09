@@ -37,7 +37,7 @@ module V2
             when 'text' then e[:text]
             when 'link' then e[:url]
             end
-          end.join.strip.delete(" ")
+          end.join.strip.delete(' ')
 
           key = "event_ts:#{params[:event][:event_ts]}"
           id = Genova::Sidekiq::JobStore.create(key, {
