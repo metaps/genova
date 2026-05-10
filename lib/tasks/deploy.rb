@@ -7,7 +7,7 @@ module GenovaCli
     class_option :force, default: false, type: :boolean, aliases: :f, desc: 'If true is specified, it forces a deployment.'
     class_option :interactive, default: false, type: :boolean, aliases: :i, desc: 'Show confirmation message before deploying.'
     class_option :tag, desc: 'Tag to deploy.'
-    class_option :memo, desc: 'Arbitrary text to attach to the deploy job.'
+    class_option :memo, aliases: :m, desc: 'Arbitrary text to attach to the deploy job.'
     class_option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Outputting detailed logs.'
 
     no_commands do
