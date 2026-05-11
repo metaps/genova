@@ -7,6 +7,16 @@ module Genova
             steps.each.with_index(1) do |step, i|
               callback.start_step(index: i)
 
+              alias_name = options[:alias] || step[:alias]
+              repository_name = if alias_name.present?
+                                  config = Genova::Config::SettingsHelper.find_repository(alias_name)
+                                  raise Exceptions::ValidationError, "Alias is undefined. [#{alias_name}]" if config.nil?
+
+                                  config[:name]
+                                else
+                                  options[:repository] || step[:repository]
+                                end
+
               step[:resources].each do |resource|
                 service, run_task, scheduled_task = extract_resources(step[:type], resource)
                 scheduled_task_rule, scheduled_task_target = extract_scheduled_task(scheduled_task) if scheduled_task.present?
@@ -20,7 +30,8 @@ module Genova
                   slack_user_name: options[:slack_user_name],
                   slack_timestamp: options[:slack_timestamp],
                   account: Settings.github.account,
-                  repository: options[:repository] || step[:repository],
+                  repository: repository_name,
+                  alias: alias_name,
                   branch: options[:branch] || step[:branch],
                   cluster: step[:cluster],
                   service:,
