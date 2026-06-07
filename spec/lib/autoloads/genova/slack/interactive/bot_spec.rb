@@ -144,6 +144,27 @@ module Genova
 
             bot.ask_confirm_deploy(params.merge(note: "line1\nline2"), show_target: false)
           end
+
+          it 'escapes mrkdwn in note before sending to Slack' do
+            allow(code_manager).to receive(:origin_last_commit).and_return('xxx')
+            allow(code_manager).to receive(:find_commit).and_return('yyy')
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
+            allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client)
+            allow(describe_services_response).to receive(:services).and_return([service])
+            allow(ecs_client).to receive(:describe_services).and_return(describe_services_response)
+            allow(service).to receive(:task_definition)
+            allow(describe_task_definition_response).to receive(:[]).with(:tags).and_return([{ key: 'genova.build' }])
+            allow(ecs_client).to receive(:describe_task_definition).and_return(describe_task_definition_response)
+
+            expect(client).to receive(:chat_postMessage) do |data|
+              note_block = data[:blocks].find do |block|
+                block[:type] == 'section' && block.dig(:text, :text)&.include?('*Note:*')
+              end
+              expect(note_block.dig(:text, :text)).to include('&lt;img src="test"&gt;')
+            end
+
+            bot.ask_confirm_deploy(params.merge(note: '<img src="test">'), show_target: false)
+          end
         end
 
         describe 'detect_auto_deploy' do

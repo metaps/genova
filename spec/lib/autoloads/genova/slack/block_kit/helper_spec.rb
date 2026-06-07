@@ -12,6 +12,14 @@ module Genova
           end
         end
 
+        describe 'escape_mrkdwn' do
+          it 'escapes reserved mrkdwn characters' do
+            text = '<img src="test">&text'
+
+            expect(Genova::Slack::BlockKit::Helper.escape_mrkdwn(text)).to eq('&lt;img src="test"&gt;&amp;text')
+          end
+        end
+
         describe 'escape_emoji' do
           it 'should escape string' do
             expect(Genova::Slack::BlockKit::Helper.send(:escape_emoji, ':test:')).to eq(":\u00ADtest\u00AD:")
