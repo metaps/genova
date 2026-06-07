@@ -36,6 +36,7 @@ module V2
             case e[:type]
             when 'text' then e[:text]
             when 'link' then e[:url]
+            else nil
             end
           end.join.strip.delete(' ')
 
