@@ -40,10 +40,10 @@ module Genova
               expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
             end
 
-            it 'stores memo in deploy job' do
-              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym, memo: 'memo')
+            it 'stores note in deploy job' do
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym, note: 'note')
 
-              expect(DeployJob.last.memo).to eq('memo')
+              expect(DeployJob.last.note).to eq('note')
             end
           end
 

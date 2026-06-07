@@ -95,14 +95,14 @@
           <dd class="column is-4"><%= @deploy_job.slack_user_name %></dd>
         </div>
       <% end %>
-      <% if @deploy_job.memo.present? %>
+      <% if @deploy_job.note.present? %>
         <div class="columns">
-          <dt class="column is-2">Memo</dt>
+          <dt class="column is-2">Note</dt>
           <dd class="column is-4">
-            <% if @deploy_job.memo.match?(/\Ahttps?:\/\//) %>
-              <%= link_to @deploy_job.memo, @deploy_job.memo, target: '_blank', rel: 'noopener noreferrer' %>
+            <% if @deploy_job.note.match?(/\Ahttps?:\/\//) %>
+              <%= link_to @deploy_job.note, @deploy_job.note, target: '_blank', rel: 'noopener noreferrer' %>
             <% else %>
-              <%= @deploy_job.memo %>
+              <%= @deploy_job.note %>
             <% end %>
           </dd>
         </div>
