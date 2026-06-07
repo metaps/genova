@@ -169,10 +169,6 @@ module Genova
           def escape_emoji(string)
             string.gsub(/:(\w+):/, ":\u00AD\\1\u00AD:")
           end
-
-          def escape_mrkdwn(string)
-            string.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
-          end
         end
       end
     end
