@@ -95,7 +95,7 @@ module V2
                     {
                       elements: [
                         { type: 'user', user_id: 'mention_user' },
-                        { type: 'text', text: 'deploy:service ' },
+                        { type: 'text', text: "deploy:service\u00A0" },
                         { type: 'emoji', name: 'rocket' },
                         { type: 'link', url: 'https://example.com' }
                       ]

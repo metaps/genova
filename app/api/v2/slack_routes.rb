@@ -38,7 +38,7 @@ module V2
             when 'link' then e[:url]
             else nil
             end
-          end.join.strip.delete(' ')
+          end.join.strip.delete("\u00A0")
 
           key = "event_ts:#{params[:event][:event_ts]}"
           id = Genova::Sidekiq::JobStore.create(key, {
