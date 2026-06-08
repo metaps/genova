@@ -102,7 +102,7 @@
             <% if @deploy_job.note.match?(/\Ahttps?:\/\//) %>
               <%= link_to @deploy_job.note, @deploy_job.note, target: '_blank', rel: 'noopener noreferrer' %>
             <% else %>
-              <%= @deploy_job.note %>
+              <%= safe_join(@deploy_job.note.split(/\r?\n/).map { |line| h(line) }, tag.br) %>
             <% end %>
           </dd>
         </div>
