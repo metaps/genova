@@ -4,6 +4,8 @@ class DeployJob
 
   extend Enumerize
 
+  NOTE_MAX_LENGTH = 3000
+
   enumerize :type, in: %i[run_task service scheduled_task]
   enumerize :status, in: %i[initial provisioning deploying success failure reserved_cancel cancel]
   enumerize :mode, in: %i[manual auto slack]
@@ -39,7 +41,10 @@ class DeployJob
   field :note, type: String
 
   validates :mode, :account, :repository, :cluster, presence: true
+  validates :note, length: { maximum: NOTE_MAX_LENGTH }, allow_blank: true
   validate :check_type
+
+  before_validation :truncate_note
 
   def self.generate_id
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
@@ -194,5 +199,9 @@ class DeployJob
 
   def check_type
     errors[:base] << 'Please specify deploy type.' unless type.present?
+  end
+
+  def truncate_note
+    self.note = note.to_s.truncate(NOTE_MAX_LENGTH, omission: '') if note.present?
   end
 end

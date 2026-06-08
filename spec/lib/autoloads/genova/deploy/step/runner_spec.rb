@@ -45,6 +45,17 @@ module Genova
 
               expect(DeployJob.last.note).to eq('note')
             end
+
+            it 'truncates too long note before storing in deploy job' do
+              Runner.call(
+                steps,
+                StdoutHook.new,
+                mode: DeployJob.mode.find_value(:manual).to_sym,
+                note: 'a' * (DeployJob::NOTE_MAX_LENGTH + 1)
+              )
+
+              expect(DeployJob.last.note.length).to eq(DeployJob::NOTE_MAX_LENGTH)
+            end
           end
 
           context 'when update run task' do
