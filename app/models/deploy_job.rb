@@ -4,7 +4,7 @@ class DeployJob
 
   extend Enumerize
 
-  NOTE_MAX_LENGTH = 3000
+  NOTE_MAX_LENGTH = 1000
 
   enumerize :type, in: %i[run_task service scheduled_task]
   enumerize :status, in: %i[initial provisioning deploying success failure reserved_cancel cancel]
