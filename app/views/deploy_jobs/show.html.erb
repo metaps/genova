@@ -99,11 +99,9 @@
         <div class="columns">
           <dt class="column is-2">Note</dt>
           <dd class="column is-4">
-            <% if @deploy_job.note.match?(/\Ahttps?:\/\//) %>
-              <%= link_to @deploy_job.note, @deploy_job.note, target: '_blank', rel: 'noopener noreferrer' %>
-            <% else %>
-              <%= safe_join(@deploy_job.note.split(/\r?\n/).map { |line| h(line) }, tag.br) %>
-            <% end %>
+            <%= safe_join(@deploy_job.note.split(/\r?\n/).map { |line|
+                  line.match?(/\Ahttps?:\/\/\S+\z/) ? link_to(line, line, target: '_blank', rel: 'noopener noreferrer') : h(line)
+                }, tag.br) %>
           </dd>
         </div>
       <% end %>
