@@ -1,46 +1,47 @@
 {
   "definitions": {
+    "docker_build": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "properties": {
+            "context": { "type": "string" },
+            "dockerfile": { "type": "string" },
+            "args": {
+              "type": "object",
+              "patternProperties": {
+                ".+": {
+                  "oneOf": [
+                    { "type": "number" },
+                    { "type": "string" },
+                    { "type": "boolean" }
+                  ]
+                }
+              }
+            },
+            "secret_args": {
+              "type": "object",
+              "patternProperties": {
+                ".+": {
+                  "oneOf": [
+                    { "type": "string" }
+                  ]
+                }
+              }
+            },
+            "target": { "type": "string" }
+          }
+        }
+      ]
+    },
     "containers": {
       "type": "array",
       "items": {
         "required": ["name", "build"],
         "properties": {
           "name": { "type": "string" },
-          "build": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "object",
-                "properties": {
-                  "context": { "type": "string" },
-                  "dockerfile": { "type": "string" },
-                  "args": {
-                    "type": "object",
-                    "patternProperties": {
-                      ".+": {
-                        "oneOf": [
-                          { "type": "number" },
-                          { "type": "string" },
-                          { "type": "boolean" }
-                        ]
-                      }
-                    }
-                  },
-                  "secret_args": {
-                    "type": "object",
-                    "patternProperties": {
-                      ".+": {
-                        "oneOf": [
-                          { "type": "string" }
-                        ]
-                      }
-                    }
-                  },
-                  "target": { "type": "string" }
-                }
-              }
-            ]
-          }
+          "build": { "$ref": "#/definitions/docker_build" }
         }
       }
     },
@@ -75,6 +76,7 @@
       "items": {
         "type": "object",
         "required": ["name"],
+        "additionalProperties": false,
         "properties": {
           "name": { "type": "string" },
           "command": {
@@ -83,6 +85,7 @@
           },
           "environment": { "$ref": "#/definitions/container_override_environment" },
           "secrets": { "$ref": "#/definitions/container_override_secrets" },
+          "build": { "$ref": "#/definitions/docker_build" },
           "environment_from_files": {
             "type": "array",
             "items": { "type": "string" }

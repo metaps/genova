@@ -457,6 +457,75 @@ module Genova
             expect { client.deploy_scheduled_task }.to_not raise_error
           end
         end
+
+        describe 'runtime_container_overrides' do
+          it 'ignores build in container_overrides' do
+            overrides = client.send(
+              :runtime_container_overrides,
+              [
+                {
+                  name: 'web',
+                  build: {
+                    context: '..'
+                  },
+                  command: %w[bundle exec puma],
+                  environment: [
+                    { name: 'RAILS_ENV', value: 'production' }
+                  ]
+                }
+              ]
+            )
+
+            expect(overrides).to eq(
+              [
+                {
+                  name: 'web',
+                  command: %w[bundle exec puma],
+                  environment: [
+                    { name: 'RAILS_ENV', value: 'production' }
+                  ]
+                }
+              ]
+            )
+          end
+        end
+
+        describe 'apply_container_override_to_task_overrides!' do
+          it 'ignores build when merging container_overrides into task_overrides' do
+            task_overrides = {
+              container_definitions: [
+                {
+                  name: 'web',
+                  image: 'example/web:latest'
+                }
+              ]
+            }
+
+            client.send(
+              :apply_container_override_to_task_overrides!,
+              task_overrides,
+              {
+                name: 'web',
+                build: {
+                  context: '..'
+                },
+                command: %w[bundle exec puma]
+              }
+            )
+
+            expect(task_overrides).to eq(
+              {
+                container_definitions: [
+                  {
+                    name: 'web',
+                    image: 'example/web:latest',
+                    command: %w[bundle exec puma]
+                  }
+                ]
+              }
+            )
+          end
+        end
       end
     end
   end

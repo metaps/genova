@@ -5,6 +5,7 @@ module Genova
     describe ContainerOverrideBuilder do
       describe 'build' do
         let(:base_dir) { '/repo/config' }
+        let(:logger) { instance_double(Logger, warn: nil) }
 
         it 'loads environment from files and allows inline environment to override it' do
           env_file_path = '/repo/config/app.env'
@@ -199,6 +200,53 @@ module Genova
               base_dir:
             )
           end.to raise_error(Exceptions::ValidationError, 'Secrets file does not exist. [/repo/config/missing-secrets.env]')
+        end
+
+        it 'warns and ignores build key' do
+          expect(logger).to receive(:warn).with(
+            "Ignore 'build' key in container override 'app'."
+          )
+
+          container_overrides = described_class.build(
+            [
+              {
+                name: 'app',
+                command: %w[bundle exec rake],
+                build: {
+                  context: '..'
+                }
+              }
+            ],
+            base_dir:,
+            logger:
+          )
+
+          expect(container_overrides).to eq(
+            [
+              {
+                name: 'app',
+                command: %w[bundle exec rake]
+              }
+            ]
+          )
+        end
+
+        it 'raises error when unsupported keys are defined' do
+          expect do
+            described_class.build(
+              [
+                {
+                  name: 'app',
+                  unsupported: 'value'
+                }
+              ],
+              base_dir:,
+              logger:
+            )
+          end.to raise_error(
+            Exceptions::ValidationError,
+            "Unsupported keys in container override 'app'. [unsupported]"
+          )
         end
       end
     end

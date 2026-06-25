@@ -1,6 +1,8 @@
 module Genova
   module Ecs
     class ContainerOverrideBuilder
+      SUPPORTED_KEYS = %i[name command environment secrets environment_from_files secrets_from_files build].freeze
+
       ENTRY_TYPES = {
         environment: {
           file_key: :environment_from_files,
@@ -17,27 +19,44 @@ module Genova
       }.freeze
 
       class << self
-        def build(container_overrides_config, base_dir:)
+        def build(container_overrides_config, base_dir:, logger: nil)
           return [] if container_overrides_config.blank?
           raise Exceptions::ValidationError, "'container_overrides' must be an array." unless container_overrides_config.is_a?(Array)
 
           container_overrides_config.map do |container_override_config|
-            build_container_override(container_override_config, base_dir)
+            build_container_override(container_override_config, base_dir, logger)
           end
         end
 
         private
 
-        def build_container_override(container_override_config, base_dir)
+        def build_container_override(container_override_config, base_dir, logger)
           raise Exceptions::ValidationError, "Each entry in 'container_overrides' must be a hash. [#{container_override_config.inspect}]" unless container_override_config.is_a?(Hash)
 
           container_override = container_override_config.deep_dup.deep_symbolize_keys
           container_identifier = container_override[:name] || '(unknown)'
+          warn_and_remove_build_key!(container_override, container_identifier, logger)
+          validate_supported_keys!(container_override, container_identifier)
           ENTRY_TYPES.each_key do |entry_type|
             assign_named_entries!(container_override, entry_type, base_dir, container_identifier)
           end
 
           container_override
+        end
+
+        def warn_and_remove_build_key!(container_override, container_identifier, logger)
+          return unless container_override.key?(:build)
+
+          logger&.warn("Ignore 'build' key in container override '#{container_identifier}'.")
+          container_override.delete(:build)
+        end
+
+        def validate_supported_keys!(container_override, container_identifier)
+          unsupported_keys = container_override.keys - (SUPPORTED_KEYS - [:build])
+          return if unsupported_keys.empty?
+
+          raise Exceptions::ValidationError,
+                "Unsupported keys in container override '#{container_identifier}'. [#{unsupported_keys.sort.join(', ')}]"
         end
 
         def assign_named_entries!(container_override, entry_type, base_dir, container_identifier)

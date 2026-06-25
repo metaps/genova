@@ -46,7 +46,12 @@ module Genova
             private
 
             def override_container(container_override_config)
-              container_override = container_override_config.deep_dup.deep_symbolize_keys.except(:environment_from_files, :secrets_from_files, :secrets)
+              container_override = container_override_config.deep_dup.deep_symbolize_keys.except(
+                :environment_from_files,
+                :secrets_from_files,
+                :secrets,
+                :build
+              )
               environment_overrides = Ecs::NamedEntries.normalize(
                 container_override[:environment],
                 value_key: :value,

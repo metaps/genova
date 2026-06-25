@@ -1,6 +1,8 @@
 module Genova
   module Ecs
     class Client
+      IGNORED_CONTAINER_OVERRIDE_KEYS = %i[environment_from_files secrets_from_files build].freeze
+
       def initialize(deploy_job, options, logger)
         @deploy_job = deploy_job
         @code_manager = CodeManager::Git.new(
@@ -184,7 +186,8 @@ module Genova
 
         config[:container_overrides] = Ecs::ContainerOverrideBuilder.build(
           container_overrides_config,
-          base_dir: deploy_config_base_dir
+          base_dir: deploy_config_base_dir,
+          logger: @logger
         )
       end
 
@@ -206,7 +209,7 @@ module Genova
       end
 
       def apply_container_override_to_task_overrides!(task_overrides, container_override)
-        override_container_definition = container_override.deep_dup.deep_symbolize_keys.except(:environment_from_files, :secrets_from_files)
+        override_container_definition = sanitize_container_override(container_override)
         container_definition = task_overrides[:container_definitions].find do |current_container_definition|
           current_container_definition[:name] == override_container_definition[:name]
         end
@@ -222,10 +225,14 @@ module Genova
 
       def runtime_container_overrides(container_overrides)
         normalized_overrides = Array(container_overrides).map do |container_override|
-          container_override.deep_dup.deep_symbolize_keys.except(:secrets, :secrets_from_files)
+          sanitize_container_override(container_override).except(:secrets)
         end
 
         normalized_overrides.reject { |container_override| container_override.except(:name).blank? }
+      end
+
+      def sanitize_container_override(container_override)
+        container_override.deep_dup.deep_symbolize_keys.except(*IGNORED_CONTAINER_OVERRIDE_KEYS)
       end
     end
   end
