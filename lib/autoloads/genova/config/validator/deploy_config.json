@@ -5,6 +5,7 @@
         { "type": "string" },
         {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "context": { "type": "string" },
             "dockerfile": { "type": "string" },

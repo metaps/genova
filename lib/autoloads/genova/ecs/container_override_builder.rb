@@ -46,10 +46,13 @@ module Genova
         end
 
         def warn_and_remove_build_key!(container_override, container_identifier, logger)
-          return unless (container_override.keys & IGNORED_KEYS).include?(:build)
+          ignored_keys = container_override.keys & IGNORED_KEYS
+          return if ignored_keys.empty?
 
-          logger&.warn("Ignore 'build' key in container override '#{container_identifier}'.")
-          container_override.delete(:build)
+          ignored_keys.each do |ignored_key|
+            logger&.warn("Ignore '#{ignored_key}' key in container override '#{container_identifier}'.")
+            container_override.delete(ignored_key)
+          end
         end
 
         def validate_supported_keys!(container_override, container_identifier)
