@@ -1,7 +1,8 @@
 module Genova
   module Ecs
     class ContainerOverrideBuilder
-      SUPPORTED_KEYS = %i[name command environment secrets environment_from_files secrets_from_files build].freeze
+      SUPPORTED_KEYS = %i[name command environment secrets environment_from_files secrets_from_files].freeze
+      IGNORED_KEYS = %i[build].freeze
 
       ENTRY_TYPES = {
         environment: {
@@ -45,14 +46,14 @@ module Genova
         end
 
         def warn_and_remove_build_key!(container_override, container_identifier, logger)
-          return unless container_override.key?(:build)
+          return unless (container_override.keys & IGNORED_KEYS).include?(:build)
 
           logger&.warn("Ignore 'build' key in container override '#{container_identifier}'.")
           container_override.delete(:build)
         end
 
         def validate_supported_keys!(container_override, container_identifier)
-          unsupported_keys = container_override.keys - (SUPPORTED_KEYS - [:build])
+          unsupported_keys = container_override.keys - SUPPORTED_KEYS
           return if unsupported_keys.empty?
 
           raise Exceptions::ValidationError,
