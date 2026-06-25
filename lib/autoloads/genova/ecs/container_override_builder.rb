@@ -25,13 +25,13 @@ module Genova
           raise Exceptions::ValidationError, "'container_overrides' must be an array." unless container_overrides_config.is_a?(Array)
 
           container_overrides_config.map do |container_override_config|
-            build_container_override(container_override_config, base_dir, logger)
+            build_container_override(container_override_config, base_dir:, logger:)
           end
         end
 
         private
 
-        def build_container_override(container_override_config, base_dir, logger)
+        def build_container_override(container_override_config, base_dir:, logger:)
           raise Exceptions::ValidationError, "Each entry in 'container_overrides' must be a hash. [#{container_override_config.inspect}]" unless container_override_config.is_a?(Hash)
 
           container_override = container_override_config.deep_dup.deep_symbolize_keys
