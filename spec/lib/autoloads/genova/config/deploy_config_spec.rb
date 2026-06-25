@@ -3,7 +3,7 @@ require 'rails_helper'
 module Genova
   module Config
     describe DeployConfig do
-      describe 'validate!' do
+      describe '.new' do
         let(:base_config) do
           {
             clusters: [
