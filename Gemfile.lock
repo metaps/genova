@@ -190,9 +190,10 @@ GEM
     erubi (1.13.0)
     excon (1.5.0)
       logger
-    faraday (2.7.5)
-      faraday-net_http (>= 2.0, < 3.1)
-      ruby2_keywords (>= 0.0.4)
+    faraday (2.14.3)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
     faraday-mashify (0.1.1)
       faraday (~> 2.0)
       hashie
@@ -313,7 +314,7 @@ GEM
     net-smtp (0.5.0)
       net-protocol
     netrc (0.11.0)
-    nio4r (2.7.0)
+    nio4r (2.7.5)
     nokogiri (1.19.4)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
@@ -328,7 +329,7 @@ GEM
     psych (5.1.2)
       stringio
     public_suffix (5.0.5)
-    puma (6.4.3)
+    puma (7.2.1)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (2.2.10)
@@ -531,7 +532,6 @@ GEM
     zeitwerk (2.6.13)
 
 PLATFORMS
-  ruby
 
 DEPENDENCIES
   aws-sdk-core
