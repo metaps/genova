@@ -189,15 +189,17 @@ GEM
       activesupport (>= 3.2)
     erubi (1.13.0)
     excon (0.99.0)
-    faraday (2.7.5)
-      faraday-net_http (>= 2.0, < 3.1)
-      ruby2_keywords (>= 0.0.4)
+    faraday (2.14.3)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
     faraday-mashify (0.1.1)
       faraday (~> 2.0)
       hashie
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
-    faraday-net_http (3.0.2)
+    faraday-net_http (3.4.4)
+      net-http (~> 0.5)
     ffi (1.15.5)
     fiber-local (1.0.0)
     foreman (0.87.2)
@@ -299,6 +301,8 @@ GEM
     mustermann-grape (1.0.2)
       mustermann (>= 1.0.0)
     mutex_m (0.3.0)
+    net-http (0.9.1)
+      uri (>= 0.11.1)
     net-imap (0.4.10)
       date
       net-protocol
@@ -504,6 +508,7 @@ GEM
       unf_ext
     unf_ext (0.0.8.2)
     unicode-display_width (2.4.2)
+    uri (1.1.1)
     vcr (6.1.0)
     vite_rails (3.0.14)
       railties (>= 5.1, < 8)
