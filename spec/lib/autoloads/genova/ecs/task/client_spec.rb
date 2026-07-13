@@ -76,6 +76,16 @@ module Genova
                       name: 'KEY3',
                       value: 'value3'
                     }
+                  ],
+                  secrets: [
+                    {
+                      name: 'SECRET2',
+                      value_from: '/secret2_override'
+                    },
+                    {
+                      name: 'SECRET3',
+                      value_from: '/secret3'
+                    }
                   ]
                 }
               ]
@@ -105,6 +115,77 @@ module Genova
                       {
                         name: 'KEY3',
                         value: 'value3'
+                      }
+                    ],
+                    secrets: [
+                      {
+                        name: 'SECRET2',
+                        value_from: '/secret2_override'
+                      },
+                      {
+                        name: 'SECRET3',
+                        value_from: '/secret3'
+                      }
+                    ]
+                  }
+                ]
+              }
+            )
+          end
+
+          it 'overrides secrets with the same name when merging parameters' do
+            definition = {
+              container_definitions: [
+                {
+                  name: 'app',
+                  secrets: [
+                    {
+                      name: 'SECRET1',
+                      value_from: '/secret1'
+                    },
+                    {
+                      name: 'SECRET2',
+                      value_from: '/secret2'
+                    }
+                  ]
+                }
+              ]
+            }
+            overrides = {
+              container_definitions: [
+                {
+                  name: 'app',
+                  secrets: [
+                    {
+                      name: 'SECRET2',
+                      value_from: '/secret2_override'
+                    },
+                    {
+                      name: 'SECRET3',
+                      value_from: '/secret3'
+                    }
+                  ]
+                }
+              ]
+            }
+
+            expect(task_client.send(:merge_task_parameters!, definition, overrides)).to eq(
+              {
+                container_definitions: [
+                  {
+                    name: 'app',
+                    secrets: [
+                      {
+                        name: 'SECRET1',
+                        value_from: '/secret1'
+                      },
+                      {
+                        name: 'SECRET2',
+                        value_from: '/secret2_override'
+                      },
+                      {
+                        name: 'SECRET3',
+                        value_from: '/secret3'
                       }
                     ]
                   }
