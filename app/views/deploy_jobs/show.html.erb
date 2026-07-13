@@ -95,6 +95,16 @@
           <dd class="column is-4"><%= @deploy_job.slack_user_name %></dd>
         </div>
       <% end %>
+      <% if @deploy_job.note.present? %>
+        <div class="columns">
+          <dt class="column is-2">Note</dt>
+          <dd class="column is-4">
+            <%= safe_join(@deploy_job.note.split(/\r?\n/).map { |line|
+                  line.match?(/\Ahttps?:\/\/\S+\z/) ? link_to(line, line, target: '_blank', rel: 'noopener noreferrer') : h(line)
+                }, tag.br) %>
+          </dd>
+        </div>
+      <% end %>
       <% if @deploy_job.task_definition_arn.present? %>
         <div class="columns">
           <dt class="column is-2">Task definition ARN</dt>

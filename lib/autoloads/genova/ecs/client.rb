@@ -24,7 +24,9 @@ module Genova
         @logger.info('Start run task.')
         ready(:run_task)
 
-        run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task)
+        run_task_config = @code_manager.deploy_config.find_run_task(@deploy_job.cluster, @deploy_job.run_task).deep_dup
+        resolve_container_overrides!(run_task_config)
+        merge_container_overrides_into_task_overrides!(run_task_config)
 
         if @deploy_job.override_container.present?
           run_task_config[:container_overrides] = [
@@ -43,7 +45,7 @@ module Genova
         options = {
           desired_count: run_task_config[:desired_count],
           group: run_task_config[:group],
-          container_overrides: run_task_config[:container_overrides],
+          container_overrides: runtime_container_overrides(run_task_config[:container_overrides]),
           network_configuration: run_task_config[:network_configuration]
         }
         options[:launch_type] = run_task_config[:launch_type] if run_task_config[:launch_type].present?
@@ -60,7 +62,10 @@ module Genova
         @logger.info('Start deploy service.')
         ready(:service)
 
-        service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service)
+        service_config = @code_manager.deploy_config.find_service(@deploy_job.cluster, @deploy_job.service).deep_dup
+        resolve_container_overrides!(service_config)
+        merge_container_overrides_into_task_overrides!(service_config)
+
         task_definition_path = @code_manager.task_definition_config_path("config/#{service_config[:path]}")
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
@@ -86,7 +91,13 @@ module Genova
         ready(:scheduled_task)
 
         deploy_config = @code_manager.deploy_config
-        target_config = deploy_config.find_scheduled_task_target(@deploy_job.cluster, @deploy_job.scheduled_task_rule, @deploy_job.scheduled_task_target)
+        target_config = deploy_config.find_scheduled_task_target(
+          @deploy_job.cluster,
+          @deploy_job.scheduled_task_rule,
+          @deploy_job.scheduled_task_target
+        ).deep_dup
+        resolve_container_overrides!(target_config)
+        merge_container_overrides_into_task_overrides!(target_config)
 
         task_definition_path = @code_manager.task_definition_config_path("config/#{target_config[:path]}")
         task_definition = create_task(task_definition_path, target_config[:task_overrides], @deploy_job.label)
@@ -165,6 +176,59 @@ module Genova
         raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
 
         @deploy_job.update_status_deploying
+      end
+
+      def resolve_container_overrides!(config)
+        container_overrides_config = config[:container_overrides] || config[:overrides]
+        return unless container_overrides_config.present?
+
+        config[:container_overrides] = Ecs::ContainerOverrideBuilder.build(
+          container_overrides_config,
+          base_dir: deploy_config_base_dir
+        ).map do |container_override|
+            @logger.warn(%("build" in container_overrides is ignored for "#{container_override[:name]}". Use top-level "containers" for image build settings.)) if container_override.include?(:build)
+          container_override.except(:build)
+        end
+      end
+
+      def deploy_config_base_dir
+        File.expand_path(Pathname(@code_manager.base_path).join('config').to_s)
+      end
+
+      def merge_container_overrides_into_task_overrides!(config)
+        return if config[:container_overrides].blank?
+
+        task_overrides = (config[:task_overrides] || {}).deep_dup.deep_symbolize_keys
+        task_overrides[:container_definitions] = Array(task_overrides[:container_definitions])
+
+        config[:container_overrides].each do |container_override|
+          apply_container_override_to_task_overrides!(task_overrides, container_override)
+        end
+
+        config[:task_overrides] = task_overrides
+      end
+
+      def apply_container_override_to_task_overrides!(task_overrides, container_override)
+        override_container_definition = container_override.deep_dup.deep_symbolize_keys.except(:environment_from_files, :secrets_from_files)
+        container_definition = task_overrides[:container_definitions].find do |current_container_definition|
+          current_container_definition[:name] == override_container_definition[:name]
+        end
+
+        if container_definition.present?
+          merged = Ecs::NamedEntries.merge_container_entries(container_definition, override_container_definition)
+          container_definition.deep_merge!(override_container_definition.except(*merged.keys))
+          Ecs::NamedEntries.assign_container_entries!(container_definition, merged)
+        else
+          task_overrides[:container_definitions] << override_container_definition
+        end
+      end
+
+      def runtime_container_overrides(container_overrides)
+        normalized_overrides = Array(container_overrides).map do |container_override|
+          container_override.deep_dup.deep_symbolize_keys.except(:secrets, :secrets_from_files)
+        end
+
+        normalized_overrides.reject { |container_override| container_override.except(:name).blank? }
       end
     end
   end

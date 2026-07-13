@@ -24,7 +24,7 @@ module Slack
       if statement.size > 1
         params = statement.slice(1..)
         params.each do |param|
-          element = param.split('=')
+          element = param.split('=', 2)
           key = element[0].tr('-', '_').to_sym
           statements[:params][key] = element[1]
         end
