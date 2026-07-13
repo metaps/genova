@@ -27,7 +27,8 @@ module Slack
                                      override_command: params[:override_command],
                                      service: params[:service],
                                      scheduled_task_rule: params[:scheduled_task_rule],
-                                     scheduled_task_target: params[:scheduled_task_target])
+                                     scheduled_task_target: params[:scheduled_task_target],
+                                     note: params[:note])
 
       history = Genova::Slack::Interactive::History.new(deploy_job.slack_user_id)
       history.add(deploy_job)

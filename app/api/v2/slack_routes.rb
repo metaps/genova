@@ -32,9 +32,13 @@ module V2
           elements = params.dig(:event, :blocks, 0, :elements, 0, :elements)
 
           user = elements.find { |k, _v| k[:type] == 'user' }
-          element = elements.find { |k, _v| k[:type] == 'text' }
-
-          statement = element.present? ? element[:text].strip.delete("\u00A0") : ''
+          statement = elements.drop_while { |e| e[:type] != 'user' }.drop(1).filter_map do |e|
+            case e[:type]
+            when 'text' then e[:text]
+            when 'link' then e[:url]
+            else nil
+            end
+          end.join.strip.delete("\u00A0")
 
           key = "event_ts:#{params[:event][:event_ts]}"
           id = Genova::Sidekiq::JobStore.create(key, {
