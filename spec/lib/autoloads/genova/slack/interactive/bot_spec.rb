@@ -103,6 +103,47 @@ module Genova
 
             expect { bot.ask_confirm_deploy(params, show_target: true) }.not_to raise_error
           end
+
+          it 'uses multiline note input when note is absent' do
+            allow(code_manager).to receive(:origin_last_commit).and_return('xxx')
+            allow(code_manager).to receive(:find_commit).and_return('yyy')
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
+            allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client)
+            allow(describe_services_response).to receive(:services).and_return([service])
+            allow(ecs_client).to receive(:describe_services).and_return(describe_services_response)
+            allow(service).to receive(:task_definition)
+            allow(describe_task_definition_response).to receive(:[]).with(:tags).and_return([{ key: 'genova.build' }])
+            allow(ecs_client).to receive(:describe_task_definition).and_return(describe_task_definition_response)
+
+            expect(client).to receive(:chat_postMessage) do |data|
+              note_block = data[:blocks].find { |block| block[:block_id] == 'deploy_note' }
+              expect(note_block[:element][:multiline]).to eq(true)
+            end
+
+            bot.ask_confirm_deploy(params, show_target: false)
+          end
+
+          it 'uses full-width section when note is present' do
+            allow(code_manager).to receive(:origin_last_commit).and_return('xxx')
+            allow(code_manager).to receive(:find_commit).and_return('yyy')
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
+            allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client)
+            allow(describe_services_response).to receive(:services).and_return([service])
+            allow(ecs_client).to receive(:describe_services).and_return(describe_services_response)
+            allow(service).to receive(:task_definition)
+            allow(describe_task_definition_response).to receive(:[]).with(:tags).and_return([{ key: 'genova.build' }])
+            allow(ecs_client).to receive(:describe_task_definition).and_return(describe_task_definition_response)
+
+            expect(client).to receive(:chat_postMessage) do |data|
+              note_block = data[:blocks].find do |block|
+                block[:type] == 'section' && block.dig(:text, :text)&.include?('*Note:*')
+              end
+              expect(note_block[:fields]).to be_nil
+              expect(note_block.dig(:text, :text)).to include("line1\nline2")
+            end
+
+            bot.ask_confirm_deploy(params.merge(note: "line1\nline2"), show_target: false)
+          end
         end
 
         describe 'detect_auto_deploy' do

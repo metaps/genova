@@ -60,7 +60,7 @@ module Genova
 
         def override_container_definitions!(task_definition, task_overrides)
           (task_overrides[:container_definitions] || []).each_with_index do |override_container_definition, index|
-            container_definition = task_definition[:container_definitions].find { |k, _v| k[:name] == override_container_definition[:name] }
+            container_definition = task_definition[:container_definitions].find { |k| k[:name] == override_container_definition[:name] }
 
             next unless container_definition.present?
 
@@ -74,16 +74,9 @@ module Genova
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :add)
             reset_array!(task_definition, task_overrides, :container_definitions, index, :linux_parameters, :capabilities, :drop)
 
-            merge_container_environment!(container_definition, override_container_definition)
-            container_definition.deeper_merge!(override_container_definition)
-          end
-        end
-
-        def merge_container_environment!(container_definition, override_container_definition)
-          return unless container_definition[:environment].present? && override_container_definition[:environment].present?
-
-          override_container_definition[:environment].each do |environment|
-            container_definition[:environment].delete_if { |k, _v| k[:name] == environment[:name] }
+            merged = Ecs::NamedEntries.merge_container_entries(container_definition, override_container_definition)
+            container_definition.deeper_merge!(override_container_definition.except(*merged.keys))
+            Ecs::NamedEntries.assign_container_entries!(container_definition, merged)
           end
         end
 
