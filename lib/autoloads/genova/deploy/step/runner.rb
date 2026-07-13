@@ -26,7 +26,8 @@ module Genova
                   service:,
                   scheduled_task_rule:,
                   scheduled_task_target:,
-                  run_task:
+                  run_task:,
+                  note: options[:note]
                 )
 
                 callback.start_deploy(deploy_job:)
