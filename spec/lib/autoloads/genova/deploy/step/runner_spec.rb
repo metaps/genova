@@ -39,6 +39,23 @@ module Genova
             it 'should not error' do
               expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
             end
+
+            it 'stores note in deploy job' do
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym, note: 'note')
+
+              expect(DeployJob.last.note).to eq('note')
+            end
+
+            it 'truncates too long note before storing in deploy job' do
+              Runner.call(
+                steps,
+                StdoutHook.new,
+                mode: DeployJob.mode.find_value(:manual).to_sym,
+                note: 'a' * (DeployJob::NOTE_MAX_LENGTH + 1)
+              )
+
+              expect(DeployJob.last.note.length).to eq(DeployJob::NOTE_MAX_LENGTH)
+            end
           end
 
           context 'when update run task' do

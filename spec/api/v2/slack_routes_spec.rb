@@ -80,6 +80,39 @@ module V2
           expect(response).to have_http_status :created
           expect(response.body).to eq('"challenge"')
         end
+
+        it 'ignores unsupported block elements when building statement' do
+          allow(Slack::CommandReceiveWorker).to receive(:perform_async)
+
+          post '/api/v2/slack/event', params: {
+            event: {
+              user: 'sender',
+              ts: 'parent_ts',
+              event_ts: 'event_ts',
+              blocks: [
+                {
+                  elements: [
+                    {
+                      elements: [
+                        { type: 'user', user_id: 'mention_user' },
+                        { type: 'text', text: "deploy:service\u00A0" },
+                        { type: 'emoji', name: 'rocket' },
+                        { type: 'link', url: 'https://example.com' }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+
+          key = Genova::Sidekiq::JobStore.send(:generate_key, 'event_ts:event_ts')
+          value = Genova::Sidekiq::JobStore.find(key)
+
+          expect(value[:statement]).to eq('deploy:service https://example.com')
+          expect(value[:mention_user]).to eq('mention_user')
+          expect(Slack::CommandReceiveWorker).to have_received(:perform_async).with(key)
+        end
       end
     end
   end
