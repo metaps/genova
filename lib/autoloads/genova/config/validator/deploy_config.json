@@ -43,6 +43,56 @@
           }
         }
       }
+    },
+    "container_override_environment": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "patternProperties": {
+          ".+": {
+            "oneOf": [
+              { "type": "number" },
+              { "type": "string" },
+              { "type": "boolean" }
+            ]
+          }
+        }
+      }
+    },
+    "container_override_secrets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "patternProperties": {
+          ".+": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "container_overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "command": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "environment": { "$ref": "#/definitions/container_override_environment" },
+          "secrets": { "$ref": "#/definitions/container_override_secrets" },
+          "environment_from_files": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "secrets_from_files": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
     }
   },
   "type": "object",
@@ -90,6 +140,7 @@
                   "task_role": { "type": "string" },
                   "task_execution_role": { "type": "string" },
                   "containers": { "$ref": "#/definitions/containers" },
+                  "container_overrides": { "$ref": "#/definitions/container_overrides" },
                   "network_configuration": {
                     "type": "object",
                     "required": ["awsvpc_configuration"],
@@ -118,6 +169,7 @@
                   "path": { "type": "string" },
                   "task_overrides": { "type": "object" },
                   "containers": { "$ref": "#/definitions/containers" },
+                  "container_overrides": { "$ref": "#/definitions/container_overrides" },
                   "desired_count": { "type": "number" },
                   "force_new_deployment": { "type": "boolean" },
                   "health_check_grace_period_seconds": { "type": "number" },
@@ -164,19 +216,7 @@
                       "path": { "type": "string" },
                       "task_overrides": { "type": "object" },
                       "desired_count": { "type": "number" },
-                      "container_overrides": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "name": { "type": "string" },
-                            "command": {
-                              "type": "array",
-                              "items": { "type": "string" }
-                            }
-                          }
-                        }
-                      },
+                      "container_overrides": { "$ref": "#/definitions/container_overrides" },
                       "containers": { "$ref": "#/definitions/containers" },
                       "latest_submodule": { "type": "boolean" }
                     }
