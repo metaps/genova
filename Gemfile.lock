@@ -293,7 +293,7 @@ GEM
       i18n
       mongoid (>= 3.0)
       mongoid-compatibility
-    msgpack (1.7.1)
+    msgpack (1.8.2)
     multi_json (1.15.0)
     multipart-post (2.3.0)
     mustermann (3.0.0)
