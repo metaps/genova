@@ -67,25 +67,25 @@ module Genova
                   type:,
                   resources:,
                   cluster: 'cluster',
-                  repository: 'reshine-profile',
+                  repository: 'repository-alias',
                   branch: 'branch'
                 }
               ]
             end
 
             before do
-              allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('reshine-profile').and_return(
-                name: 'reshine',
-                base_path: './profile',
-                alias: 'reshine-profile'
+              allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository-alias').and_return(
+                name: 'repository',
+                base_path: './base_path',
+                alias: 'repository-alias'
               )
             end
 
             it 'resolves real repository name and stores alias in deploy job' do
               Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym)
 
-              expect(DeployJob.last.repository).to eq('reshine')
-              expect(DeployJob.last.alias).to eq('reshine-profile')
+              expect(DeployJob.last.repository).to eq('repository')
+              expect(DeployJob.last.alias).to eq('repository-alias')
             end
           end
 
