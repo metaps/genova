@@ -58,6 +58,37 @@ module Genova
             end
           end
 
+          context 'when repository has alias' do
+            let(:type) { 'service' }
+            let(:resources) { ['resource'] }
+            let(:steps) do
+              [
+                {
+                  type:,
+                  resources:,
+                  cluster: 'cluster',
+                  repository: 'reshine-profile',
+                  branch: 'branch'
+                }
+              ]
+            end
+
+            before do
+              allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('reshine-profile').and_return(
+                name: 'reshine',
+                base_path: './profile',
+                alias: 'reshine-profile'
+              )
+            end
+
+            it 'resolves real repository name and stores alias in deploy job' do
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym)
+
+              expect(DeployJob.last.repository).to eq('reshine')
+              expect(DeployJob.last.alias).to eq('reshine-profile')
+            end
+          end
+
           context 'when update run task' do
             let(:type) { 'run_task' }
             let(:resources) { ['resource'] }
