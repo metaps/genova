@@ -1,6 +1,3 @@
-// Live-updates the deploy job show page (logs + status) via Server-Sent Events
-// while a deployment is in progress, so the console tails output like GitHub
-// Actions. Uses the native EventSource API (no extra dependency).
 const FINISHED_STATUSES = ['success', 'failure', 'cancel'];
 
 const STATUS_ICONS = {
