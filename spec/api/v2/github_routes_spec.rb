@@ -53,7 +53,7 @@ module V2
 
         context 'when branch is pushed' do
           let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, webhook_pushed_commit)}" }
-          let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
+          let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' } }
 
           it 'should return success' do
             allow(Github::DeployWorker).to receive(:perform_async)
@@ -64,7 +64,7 @@ module V2
 
         context 'when tag is pushed' do
           let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, webhook_pushed_tag)}" }
-          let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
+          let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' } }
 
           it 'should return error' do
             allow(Github::DeployWorker).to receive(:perform_async)
@@ -76,7 +76,7 @@ module V2
 
       context 'when invalid signature' do
         let(:signature) { 'sha1=invalid_signature' }
-        let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'HTTP_CONTENT_TYPE' => 'application/json' } }
+        let(:headers) { { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' } }
 
         it 'should return error' do
           post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
@@ -109,7 +109,7 @@ module V2
       end
 
       context 'when valid secret key' do
-        let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => Settings.github.secret_key } }
+        let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => Settings.github.secret_key, 'CONTENT_TYPE' => 'application/json' } }
 
         context 'when branch is pushed' do
           it 'should return success' do
@@ -129,7 +129,7 @@ module V2
       end
 
       context 'when invalid secret key' do
-        let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => 'invalid_secret_key' } }
+        let(:headers) { { 'HTTP_X_GITHUB_SECRET_KEY' => 'invalid_secret_key', 'CONTENT_TYPE' => 'application/json' } }
 
         it 'should return error' do
           allow(Github::DeployWorker).to receive(:perform_async)
