@@ -32,7 +32,7 @@ module Genova
                   slack_timestamp: options[:slack_timestamp],
                   account: Settings.github.account,
                   repository: repository_settings.present? ? repository_settings[:name] : repository_name,
-                  alias: alias_name.presence || (repository_settings.present? ? repository_settings[:alias] : nil),
+                  alias: alias_name || (repository_settings.present? ? repository_settings[:alias] : nil),
                   branch: options[:branch] || step[:branch],
                   cluster: step[:cluster],
                   service:,

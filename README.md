@@ -29,8 +29,10 @@ genova has the following features.
 
 genova requires you to build and run a server in your local environment or in an AWS environment.
 When a deployment is requested, the following steps will be taken to deploy the application.
+
 1. Acquire the repository (or alias) to be deployed.
-  - You can now specify an alias instead of a repository name. If an alias is provided, genova will resolve it to the corresponding repository automatically.
+
+    - You can now specify an alias instead of a repository name. If an alias is provided, genova will resolve it to the corresponding repository automatically.
 2. Obtain the Dockerfile and the deployment configuration file (`config/deploy.yml`) in the repository.
 3. Build the Dockerfile based on the deployment configuration file.
 4. Push the created image to AWS ECR.
