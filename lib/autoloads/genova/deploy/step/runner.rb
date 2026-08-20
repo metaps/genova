@@ -7,14 +7,14 @@ module Genova
             steps.each.with_index(1) do |step, i|
               callback.start_step(index: i)
 
-              alias_name = options[:alias] || step[:alias]
+              alias_name = options[:alias].presence || step[:alias]
               if alias_name.present?
                 repository_settings = Genova::Config::SettingsHelper.find_repository(alias_name)
                 raise Exceptions::ValidationError, "Alias is undefined. [#{alias_name}]" if repository_settings.nil?
 
                 repository_name = repository_settings[:name]
               else
-                repository_name = options[:repository] || step[:repository]
+                repository_name = options[:repository].presence || step[:repository]
                 repository_settings = Genova::Config::SettingsHelper.find_repository(repository_name)
               end
 

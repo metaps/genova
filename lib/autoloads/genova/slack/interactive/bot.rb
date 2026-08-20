@@ -154,7 +154,7 @@ module Genova
             blocks << BlockKit::Helper.header("Step ##{i}")
             blocks << BlockKit::Helper.section_short_fieldset(
               [
-                BlockKit::Helper.section_short_field('Repository', step[:alias] || step[:repository]),
+                BlockKit::Helper.section_short_field('Repository', step[:alias].presence || step[:repository]),
                 BlockKit::Helper.section_short_field('Branch', step[:branch]),
                 BlockKit::Helper.section_short_field('Cluster', step[:cluster]),
                 BlockKit::Helper.section_short_field('Type', step[:type]),
