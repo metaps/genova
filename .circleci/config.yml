@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.2-node
     working_directory: ~/genova
     environment:
       AWS_ACCESS_KEY: ""
@@ -18,7 +18,7 @@ jobs:
       MONGO_DB_TEST: test_slackbot
       MONGO_HOST: localhost
       MONGO_PORT: 27017
-      SECRET_KEY_BASE: ""
+      SECRET_KEY_BASE: dummy_secret_key_base_for_ci
     steps:
       - checkout
       - run:
@@ -27,7 +27,6 @@ jobs:
             mkdir -p ~/.ssh
             touch ~/.ssh/id_rsa
             sudo apt-get update --allow-releaseinfo-change
-            sudo apt-get install nodejs
       - restore_cache:
           key: bundle-{{ checksum "Gemfile.lock" }}
       - run:
@@ -37,6 +36,15 @@ jobs:
           key: bundle-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+      - restore_cache:
+          key: yarn-{{ checksum "yarn.lock" }}
+      - run:
+          name: yarn install
+          command: yarn install --frozen-lockfile
+      - save_cache:
+          key: yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
       - run:
           name: install redis
           command: |
@@ -57,8 +65,4 @@ jobs:
       - run:
           name: rspec test
           command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-            ./cc-test-reporter before-build
             bundle exec rspec
-            CC_TEST_REPORTER_ID=8bea1dba2c816186dc45b6cca733f7a4d861d6b48bca8f0ee474ab6461261235 ./cc-test-reporter after-build --exit-code $?

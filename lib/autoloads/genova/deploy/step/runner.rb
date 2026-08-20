@@ -8,14 +8,15 @@ module Genova
               callback.start_step(index: i)
 
               alias_name = options[:alias] || step[:alias]
-              repository_name = if alias_name.present?
-                                  config = Genova::Config::SettingsHelper.find_repository(alias_name)
-                                  raise Exceptions::ValidationError, "Alias is undefined. [#{alias_name}]" if config.nil?
+              if alias_name.present?
+                repository_settings = Genova::Config::SettingsHelper.find_repository(alias_name)
+                raise Exceptions::ValidationError, "Alias is undefined. [#{alias_name}]" if repository_settings.nil?
 
-                                  config[:name]
-                                else
-                                  options[:repository] || step[:repository]
-                                end
+                repository_name = repository_settings[:name]
+              else
+                repository_name = options[:repository] || step[:repository]
+                repository_settings = Genova::Config::SettingsHelper.find_repository(repository_name)
+              end
 
               step[:resources].each do |resource|
                 service, run_task, scheduled_task = extract_resources(step[:type], resource)
@@ -30,14 +31,15 @@ module Genova
                   slack_user_name: options[:slack_user_name],
                   slack_timestamp: options[:slack_timestamp],
                   account: Settings.github.account,
-                  repository: repository_name,
-                  alias: alias_name,
+                  repository: repository_settings.present? ? repository_settings[:name] : repository_name,
+                  alias: alias_name.presence || (repository_settings.present? ? repository_settings[:alias] : nil),
                   branch: options[:branch] || step[:branch],
                   cluster: step[:cluster],
                   service:,
                   scheduled_task_rule:,
                   scheduled_task_target:,
-                  run_task:
+                  run_task:,
+                  note: options[:note]
                 )
 
                 callback.start_deploy(deploy_job:)

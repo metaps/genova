@@ -15,7 +15,8 @@ module Slack
         mode: DeployJob.mode.find_value(:slack),
         slack_user_id: params[:user],
         slack_user_name: params[:user_name],
-        slack_timestamp: id
+        slack_timestamp: id,
+        note: params[:note]
       )
     rescue => e
       params.present? ? send_error(e, id, params[:user]) : send_error(e, id)

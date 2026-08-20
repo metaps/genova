@@ -39,6 +39,54 @@ module Genova
             it 'should not error' do
               expect { Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym) }.to_not raise_error
             end
+
+            it 'stores note in deploy job' do
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym, note: 'note')
+
+              expect(DeployJob.last.note).to eq('note')
+            end
+
+            it 'truncates too long note before storing in deploy job' do
+              Runner.call(
+                steps,
+                StdoutHook.new,
+                mode: DeployJob.mode.find_value(:manual).to_sym,
+                note: 'a' * (DeployJob::NOTE_MAX_LENGTH + 1)
+              )
+
+              expect(DeployJob.last.note.length).to eq(DeployJob::NOTE_MAX_LENGTH)
+            end
+          end
+
+          context 'when repository has alias' do
+            let(:type) { 'service' }
+            let(:resources) { ['resource'] }
+            let(:steps) do
+              [
+                {
+                  type:,
+                  resources:,
+                  cluster: 'cluster',
+                  repository: 'repository-alias',
+                  branch: 'branch'
+                }
+              ]
+            end
+
+            before do
+              allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository-alias').and_return(
+                name: 'repository',
+                base_path: './base_path',
+                alias: 'repository-alias'
+              )
+            end
+
+            it 'resolves real repository name and stores alias in deploy job' do
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym)
+
+              expect(DeployJob.last.repository).to eq('repository')
+              expect(DeployJob.last.alias).to eq('repository-alias')
+            end
           end
 
           context 'when update run task' do

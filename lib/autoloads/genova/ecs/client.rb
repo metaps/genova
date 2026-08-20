@@ -185,7 +185,10 @@ module Genova
         config[:container_overrides] = Ecs::ContainerOverrideBuilder.build(
           container_overrides_config,
           base_dir: deploy_config_base_dir
-        )
+        ).map do |container_override|
+            @logger.warn(%("build" in container_overrides is ignored for "#{container_override[:name]}". Use top-level "containers" for image build settings.)) if container_override.include?(:build)
+          container_override.except(:build)
+        end
       end
 
       def deploy_config_base_dir

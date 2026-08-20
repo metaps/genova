@@ -25,9 +25,21 @@ module Genova
           end
 
           logger.info('Deleted unused images.')
+
+          prune_build_cache(logger)
         end
 
         private
+
+        def prune_build_cache(logger)
+          retention_hours = (RETENTION_SEC / (60 * 60)).to_i
+          command = "docker builder prune --force --filter until=#{retention_hours}h"
+
+          Genova::Command::Executor.call(command, logger)
+          logger.info('Pruned build cache.')
+        rescue => e
+          logger.warn("Failed to prune build cache. #{e.message}")
+        end
 
         def using_images
           images = []

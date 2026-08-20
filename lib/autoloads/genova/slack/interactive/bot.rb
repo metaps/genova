@@ -130,6 +130,13 @@ module Genova
           blocks = []
           blocks << BlockKit::Helper.section('Ready to deploy!')
           blocks << BlockKit::Helper.section_short_fieldset([git_compare(params)]) unless params[:type] == DeployJob.type.find_value(:run_task)
+
+          blocks << if params[:note].present?
+                      BlockKit::Helper.section_fieldset([BlockKit::Helper.section_field('Note', params[:note])])
+                    else
+                      BlockKit::Helper.plain_text_input('submit_deploy_note', 'Note (optional)', placeholder: 'Input any text', block_id: 'deploy_note', multiline: true)
+                    end
+
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'submit_deploy'),
                                                BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')
@@ -155,6 +162,8 @@ module Genova
               ]
             )
           end
+
+          blocks << BlockKit::Helper.plain_text_input('submit_deploy_note', 'Note (optional)', placeholder: 'Input any text', block_id: 'deploy_note', multiline: true)
 
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'selected_workflow_deploy'),

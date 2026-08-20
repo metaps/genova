@@ -9,7 +9,7 @@ logger:
 timezone: UTC
 
 docker:
-  retention_days: 20
+  retention_days: 14
   # build:
   #   # Memory usage allowed at build time. For example `1024m`.
   #   # This option maps to `docker build --memory`.
