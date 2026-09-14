@@ -256,6 +256,37 @@ module Genova
 
             expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
+
+          context 'when note is required' do
+            before do
+              Settings.add_source!(deploy: { note_required: true })
+              Settings.reload!
+            end
+
+            it 'does not start deployment when note is blank' do
+              allow(::Slack::DeployWorker).to receive(:perform_async)
+
+              payload = {
+                container: {
+                  thread_ts: id
+                },
+                user: {
+                  id: 'user'
+                },
+                actions: [
+                  {
+                    action_id: 'submit_deploy'
+                  }
+                ]
+              }
+
+              expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(
+                Genova::Exceptions::ValidationError,
+                'Note must be specified.'
+              )
+              expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+            end
+          end
         end
       end
     end

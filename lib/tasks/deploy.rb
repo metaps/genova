@@ -25,6 +25,7 @@ module GenovaCli
       end
 
       def deploy(options)
+        validate_note!(options[:note])
         return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
 
         prepare(options)
@@ -58,6 +59,12 @@ module GenovaCli
         }
 
         ::Genova::Deploy::Runner.new(deploy_job, params).run
+      end
+
+      def validate_note!(note)
+        return unless DeployJob.note_required? && note.blank?
+
+        raise ::Genova::Exceptions::InvalidArgumentError, 'Note must be specified.'
       end
     end
 
@@ -109,6 +116,8 @@ module GenovaCli
     desc 'workflow', 'Execute step deployment using workflow.'
     option :name, requred: true, aliases: :n, desc: 'Workflow name to deploy.'
     def workflow
+      validate_note!(options[:note])
+
       ::Genova::Deploy::Workflow::Runner.call(
         options[:name],
         ::Genova::Deploy::Step::StdoutHook.new,

@@ -42,12 +42,17 @@ class DeployJob
 
   validates :mode, :account, :repository, :cluster, presence: true
   validates :note, length: { maximum: NOTE_MAX_LENGTH }, allow_blank: true
+  validate :note_must_be_present, if: :note_required?
   validate :check_type
 
   before_validation :truncate_note
 
   def self.generate_id
     Time.now.utc.strftime('%Y%m%d-%H%M%S')
+  end
+
+  def self.note_required?
+    Settings.deploy.note_required == true
   end
 
   def label
@@ -199,6 +204,14 @@ class DeployJob
 
   def check_type
     errors[:base] << 'Please specify deploy type.' unless type.present?
+  end
+
+  def note_required?
+    self.class.note_required? && mode != DeployJob.mode.find_value(:auto)
+  end
+
+  def note_must_be_present
+    errors.add(:note, :blank)
   end
 
   def truncate_note
