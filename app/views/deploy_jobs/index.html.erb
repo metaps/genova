@@ -51,8 +51,10 @@
             <td>
               <% if deploy_job.branch.present? %>
                 <%= deploy_job.branch.truncate(20) %>
-              <% else %>
+              <% elsif deploy_job.tag.present? %>
                 refs/tags/<%= deploy_job.tag.truncate(20) %>
+              <% else %>
+                -
               <% end %>
             </td>
             <td>

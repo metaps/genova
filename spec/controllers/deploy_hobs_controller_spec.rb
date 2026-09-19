@@ -19,6 +19,18 @@ RSpec.describe DeployJobsController, type: :controller do
       get :index
       expect(response).to have_http_status(:ok)
     end
+
+    context 'when DeployJob has neither branch nor tag' do
+      render_views
+
+      it 'should render successfully' do
+        deploy_job
+
+        expect { get :index }.not_to raise_error
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match(/>\s*-\s*<\/td>/)
+      end
+    end
   end
 
   describe 'GET #show' do
