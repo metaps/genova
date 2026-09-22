@@ -5,7 +5,7 @@ module V2
     # /api/v2/github
     resource :github do
       before do
-        @payload = request.body.read
+        @payload = env[Grape::Env::API_REQUEST_INPUT]
         @data = Oj.load(@payload, symbol_keys: true)
       end
 

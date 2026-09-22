@@ -9,7 +9,7 @@ logger:
 timezone: UTC
 
 docker:
-  retention_days: 20
+  retention_days: 14
   registry:
     # Private registry (e.g. dhi.io). Credentials are taken from DOCKER_REGISTRY_USER/PASSWORD if set.
     url:

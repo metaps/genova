@@ -3,20 +3,22 @@
 
   <% if @deploy_job.present? %>
     <% github_client = Genova::Github::Client.new(@deploy_job.repository) %>
-    <dl class="meta">
+    <dl class="meta" data-deploy-job-id="<%= @deploy_job.id %>" data-status="<%= @deploy_job.status %>">
       <div class="columns">
         <dt class="column is-2">Status</dt>
         <dd class="column is-4">
-          <% if @deploy_job.status == 'success' %>
-            <i class="fa fa-check-circle"></i>
-          <% elsif ['initial', 'provisioning', 'deploying', 'reserved_cancel'].include?(@deploy_job.status) %>
-            <i class="fa fa-spinner fa-spin"></i>
-          <% elsif @deploy_job.status == 'failure' %>
-            <i class="fa fa-exclamation-triangle"></i>
-          <% elsif @deploy_job.status == 'cancel' %>
-            <i class="fa fa-times-circle"></i>
-          <% end %>
-          <%= @deploy_job.status %>
+          <span id="deploy-status">
+            <% if @deploy_job.status == 'success' %>
+              <i class="fa fa-check-circle"></i>
+            <% elsif ['initial', 'provisioning', 'deploying', 'reserved_cancel'].include?(@deploy_job.status) %>
+              <i class="fa fa-spinner fa-spin"></i>
+            <% elsif @deploy_job.status == 'failure' %>
+              <i class="fa fa-exclamation-triangle"></i>
+            <% elsif @deploy_job.status == 'cancel' %>
+              <i class="fa fa-times-circle"></i>
+            <% end %>
+            <%= @deploy_job.status %>
+          </span>
         </dd>
         <dt class="column is-2">Account</dt>
         <dd class="column is-4"><%= @deploy_job.account %></dd>
@@ -159,15 +161,21 @@
           <span>Download</span>
         <% end %>
       </div>
-      <div class="logs">
+    <% end %>
+    <div class="logs">
+      <% if @deploy_job.logs.present? %>
         <% @deploy_job.logs.each do |log| %>
           <pre><%= log %></pre>
         <% end %>
-      </div>
-    <% else %>
-      <p>Log does not exist.</p>
-    <% end %>
+      <% else %>
+        <p data-logs-placeholder>Log does not exist.</p>
+      <% end %>
+    </div>
   <% else %>
    <p>No data found.</p>
   <% end %>
 </div>
+
+<% if @deploy_job.present? %>
+  <%= vite_javascript_tag 'deploy_job' %>
+<% end %>

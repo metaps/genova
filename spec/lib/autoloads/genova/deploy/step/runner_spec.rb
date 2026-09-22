@@ -58,6 +58,37 @@ module Genova
             end
           end
 
+          context 'when repository has alias' do
+            let(:type) { 'service' }
+            let(:resources) { ['resource'] }
+            let(:steps) do
+              [
+                {
+                  type:,
+                  resources:,
+                  cluster: 'cluster',
+                  repository: 'repository-alias',
+                  branch: 'branch'
+                }
+              ]
+            end
+
+            before do
+              allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository-alias').and_return(
+                name: 'repository',
+                base_path: './base_path',
+                alias: 'repository-alias'
+              )
+            end
+
+            it 'resolves real repository name and stores alias in deploy job' do
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym)
+
+              expect(DeployJob.last.repository).to eq('repository')
+              expect(DeployJob.last.alias).to eq('repository-alias')
+            end
+          end
+
           context 'when update run task' do
             let(:type) { 'run_task' }
             let(:resources) { ['resource'] }

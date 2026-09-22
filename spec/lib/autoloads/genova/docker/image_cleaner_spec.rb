@@ -14,6 +14,7 @@ module Genova
         allow(image).to receive(:id).and_return('id')
         allow(image).to receive(:remove)
         allow(::Docker::Image).to receive(:all).and_return([image])
+        allow(Genova::Command::Executor).to receive(:call)
       end
 
       let(:image) { double(::Docker::Image) }
@@ -44,6 +45,23 @@ module Genova
           it 'should return execute result' do
             expect { Genova::Docker::ImageCleaner.call }.not_to raise_error
             expect(image).to have_received(:remove).once
+          end
+        end
+
+        context 'build cache' do
+          it 'prunes build cache older than the retention period' do
+            Genova::Docker::ImageCleaner.call
+
+            expect(Genova::Command::Executor).to have_received(:call).with(
+              a_string_matching(/\Adocker builder prune --force --filter until=\d+h\z/),
+              anything
+            )
+          end
+
+          it 'does not abort when pruning fails' do
+            allow(Genova::Command::Executor).to receive(:call).and_raise(StandardError, 'boom')
+
+            expect { Genova::Docker::ImageCleaner.call }.not_to raise_error
           end
         end
       end

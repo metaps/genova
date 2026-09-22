@@ -163,6 +163,8 @@ module Genova
             )
           end
 
+          blocks << BlockKit::Helper.plain_text_input('submit_deploy_note', 'Note (optional)', placeholder: 'Input any text', block_id: 'deploy_note', multiline: true)
+
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'selected_workflow_deploy'),
                                                BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')

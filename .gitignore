@@ -22,6 +22,9 @@
 /public/assets/*
 /.ssh
 
+# Claude Code
+/.claude
+
 # Application files
 *.swp
 !.keep
