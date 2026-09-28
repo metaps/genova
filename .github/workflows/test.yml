@@ -1,0 +1,66 @@
+name: test
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+
+jobs:
+  rspec:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mongo:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongo --quiet --eval 'db.adminCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RAILS_ENV: test
+      # `Genova::Ecr::Client` and `Interactive::Bot` read this with `ENV.fetch` and no default.
+      AWS_REGION: ap-northeast-1
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      MONGO_HOST: localhost
+      MONGO_PORT: 27017
+      MONGO_DB_TEST: test_genova
+      SECRET_KEY_BASE: dummy_secret_key_base_for_ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+
+      # `config/vite.json` enables `autoBuild` for the test environment, and
+      # controller specs using `render_views` render `vite_javascript_tag`.
+      - name: Install JavaScript dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run RSpec
+        run: bundle exec rspec
