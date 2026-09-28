@@ -34,19 +34,15 @@ module Genova
         end
 
         context 'when invoke selected_repository' do
-          it 'should execute selected_repository' do
-            Settings.add_source!(
-              github: {
-                repositories: [{
-                  name: 'repository'
-                }]
-              }
-            )
-            Settings.reload!
+          let(:messages) { [] }
 
+          before do
             allow(::Github::RetrieveBranchWorker).to receive(:perform_async)
+            allow(RestClient).to receive(:post) { |_url, body, _options| messages << JSON.parse(body).dig('blocks', 0, 'text', 'text') }
+          end
 
-            payload = {
+          def payload(value)
+            {
               container: {
                 thread_ts: id
               },
@@ -57,13 +53,45 @@ module Genova
                 {
                   action_id: 'selected_repository',
                   selected_option: {
-                    value: 'repository'
+                    value:
                   }
                 }
               ]
             }
+          end
 
-            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
+          context 'when alias is not specified' do
+            it 'should show repository name' do
+              Settings.add_source!(
+                github: {
+                  repositories: [{
+                    name: 'repository'
+                  }]
+                }
+              )
+              Settings.reload!
+
+              expect { Genova::Slack::RequestHandler.call(payload('repository')) }.to_not raise_error
+              expect(messages.last).to eq("*Repository:*\nrepository\n")
+            end
+          end
+
+          context 'when alias is specified' do
+            it 'should show alias name' do
+              Settings.add_source!(
+                github: {
+                  repositories: [{
+                    name: 'repository',
+                    base_path: './backend',
+                    alias: 'repository - backend'
+                  }]
+                }
+              )
+              Settings.reload!
+
+              expect { Genova::Slack::RequestHandler.call(payload('repository - backend')) }.to_not raise_error
+              expect(messages.last).to eq("*Repository:*\nrepository - backend\n")
+            end
           end
         end
 

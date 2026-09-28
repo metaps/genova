@@ -51,7 +51,7 @@ module Genova
           @session_store.merge(params)
           ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
-          show_message(BlockKit::Helper.section_field('Repository', params[:repository]))
+          show_message(BlockKit::Helper.section_field('Repository', params[:alias].presence || params[:repository]))
         end
 
         def selected_workflow
