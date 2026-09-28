@@ -134,7 +134,7 @@ module Genova
           blocks << if params[:note].present?
                       BlockKit::Helper.section_fieldset([BlockKit::Helper.section_field('Note', params[:note])])
                     else
-                      BlockKit::Helper.plain_text_input('submit_deploy_note', 'Note (optional)', placeholder: 'Input any text', block_id: 'deploy_note', multiline: true)
+                      note_input
                     end
 
           blocks << BlockKit::Helper.actions([
@@ -163,7 +163,7 @@ module Genova
             )
           end
 
-          blocks << BlockKit::Helper.plain_text_input('submit_deploy_note', 'Note (optional)', placeholder: 'Input any text', block_id: 'deploy_note', multiline: true)
+          blocks << note_input
 
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'selected_workflow_deploy'),
@@ -300,6 +300,20 @@ module Genova
 
         def code(string)
           "```#{string.truncate(512)}```"
+        end
+
+        def note_input
+          required = DeployJob.note_required?
+          label = required ? 'Note' : 'Note (optional)'
+
+          BlockKit::Helper.plain_text_input(
+            'submit_deploy_note',
+            label,
+            placeholder: 'Input any text',
+            block_id: 'deploy_note',
+            multiline: true,
+            optional: !required
+          )
         end
 
         def confirm_command(params, mention)

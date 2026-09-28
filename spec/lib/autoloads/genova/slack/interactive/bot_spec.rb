@@ -118,9 +118,31 @@ module Genova
             expect(client).to receive(:chat_postMessage) do |data|
               note_block = data[:blocks].find { |block| block[:block_id] == 'deploy_note' }
               expect(note_block[:element][:multiline]).to eq(true)
+              expect(note_block[:optional]).to eq(true)
             end
 
             bot.ask_confirm_deploy(params, show_target: false)
+          end
+
+          context 'when note is required' do
+            before do
+              Settings.add_source!(deploy: { note_required: true })
+              Settings.reload!
+            end
+
+            after do
+              Settings.reload_from_files(Rails.root.join('config', 'settings.yml').to_s)
+            end
+
+            it 'uses a required note input' do
+              expect(client).to receive(:chat_postMessage) do |data|
+                note_block = data[:blocks].find { |block| block[:block_id] == 'deploy_note' }
+                expect(note_block[:label][:text]).to eq('Note')
+                expect(note_block[:optional]).to eq(false)
+              end
+
+              bot.ask_confirm_deploy(params, show_target: false)
+            end
           end
 
           it 'uses full-width section when note is present' do

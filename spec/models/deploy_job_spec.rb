@@ -24,5 +24,35 @@ RSpec.describe DeployJob, type: :model do
 
       expect(deploy_job).to be_valid
     end
+
+    context 'when note is required' do
+      before do
+        Settings.add_source!(deploy: { note_required: true })
+        Settings.reload!
+      end
+
+      after do
+        Settings.reload_from_files(Rails.root.join('config', 'settings.yml').to_s)
+      end
+
+      it 'is invalid when note is blank' do
+        deploy_job = DeployJob.new(base_params)
+
+        expect(deploy_job).not_to be_valid
+        expect(deploy_job.errors[:note]).to include("can't be blank")
+      end
+
+      it 'is valid when note is present' do
+        deploy_job = DeployJob.new(base_params.merge(note: 'note'))
+
+        expect(deploy_job).to be_valid
+      end
+
+      it 'does not require a note for automatic deployments' do
+        deploy_job = DeployJob.new(base_params.merge(mode: DeployJob.mode.find_value(:auto)))
+
+        expect(deploy_job).to be_valid
+      end
+    end
   end
 end

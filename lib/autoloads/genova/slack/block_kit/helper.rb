@@ -69,6 +69,7 @@ module Genova
             }
             block[:block_id] = options[:block_id] if options[:block_id].present?
             block[:element][:multiline] = options[:multiline] unless options[:multiline].nil?
+            block[:optional] = options[:optional] unless options[:optional].nil?
             block
           end
 

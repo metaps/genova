@@ -158,8 +158,7 @@ module Genova
           permission = Interactive::Permission.new(@payload[:user][:id])
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
 
-          note = @payload.dig(:state, :values, :deploy_note, :submit_deploy_note, :value)
-          @session_store.merge({ note: }) if note.present?
+          merge_note
 
           ::Slack::DeployWorker.perform_async(@thread_ts)
 
@@ -182,12 +181,20 @@ module Genova
           permission = Interactive::Permission.new(@payload[:user][:id])
           raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
 
-          note = @payload.dig(:state, :values, :deploy_note, :submit_deploy_note, :value)
-          @session_store.merge({ note: }) if note.present?
+          merge_note
 
           ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
 
           show_message('Workflow deployment started.')
+        end
+
+        def merge_note
+          note = @payload.dig(:state, :values, :deploy_note, :submit_deploy_note, :value)
+          note = @session_store.params[:note] if note.blank?
+
+          raise Genova::Exceptions::ValidationError, 'Note must be specified.' if DeployJob.note_required? && note.blank?
+
+          @session_store.merge({ note: }) if note.present?
         end
       end
     end
