@@ -59,6 +59,13 @@ workflows:
   # - name:
   #   steps:
   #     - repository:
+  #
+  #       # If the repository has multiple `base_path`, specify the alias name
+  #       # of `github.repositories` to identify which `deploy.yml` to use (Optional).
+  #       alias:
+  #
+  #       # Used as the default value of the branch select shown for this step
+  #       # before deploying from Slack.
   #       branch:
   #       cluster:
   #

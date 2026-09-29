@@ -1,6 +1,9 @@
 module Genova
   module Slack
     class RequestHandler
+      WORKFLOW_BRANCH_BLOCK_PREFIX = 'workflow_branch:'.freeze
+      WORKFLOW_BRANCH_ACTION_ID = 'workflow_branch'.freeze
+
       class << self
         def call(payload)
           @payload = payload
@@ -58,10 +61,18 @@ module Genova
           value = @payload.dig(:actions, 0, :selected_option, :value)
           @session_store.merge({ name: value })
 
+          show_message(BlockKit::Helper.section_field('Workflow', value))
+
           bot = Interactive::Bot.new(parent_message_ts: @thread_ts)
           bot.ask_confirm_workflow_deploy(name: value)
+        end
 
-          show_message(BlockKit::Helper.section_field('Workflow', value))
+        # Slack dispatches an action whenever a select changes, including one inside an input block.
+        # Every selection is read from the message state when Deploy is pressed, so nothing is
+        # stored here. The original message must not be updated either, or the confirmation would
+        # be replaced and its deploy button lost. Named after `WORKFLOW_BRANCH_ACTION_ID`.
+        def workflow_branch
+          nil
         end
 
         def selected_branch
@@ -180,14 +191,59 @@ module Genova
 
         def selected_workflow_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
-          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
+          name = @session_store.params[:name]
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(name)
 
+          branches = workflow_branches
+          authorize_branches(permission, name, branches)
+
+          params = { branches: }
           note = @payload.dig(:state, :values, :deploy_note, :submit_deploy_note, :value)
-          @session_store.merge({ note: }) if note.present?
+          params[:note] = note if note.present?
 
+          @session_store.merge(params)
           ::Slack::WorkflowDeployWorker.perform_async(@thread_ts)
 
           show_message('Workflow deployment started.')
+        end
+
+        # Running a workflow as configured needs the workflow policy alone, as it did while the
+        # branch of a step was fixed. Choosing another branch deploys code that the workflow was
+        # not reviewed with, so such a step is authorized the way a single deploy of it would be.
+        def authorize_branches(permission, name, branches)
+          workflow = (Settings.workflows || []).find { |k| k[:name] == name }
+          raise Genova::Exceptions::ValidationError, "Workflow is undefined. [#{name}]" if workflow.nil?
+
+          branches.each do |override|
+            step = workflow[:steps][override[:step] - 1]
+            next if step.nil? || step[:branch] == override[:branch] || allow_step?(permission, step)
+
+            raise Genova::Exceptions::SlackPermissionDeniedError,
+                  "User #{@payload[:user][:id]} does not have permission to deploy #{override[:branch]} to #{step[:cluster]}."
+          end
+        end
+
+        def allow_step?(permission, step)
+          permission.allow_cluster?(step[:cluster]) || permission.allow_repository?(step[:alias].presence || step[:repository])
+        end
+
+        # Branches are read from the message state rather than being stored each time a select
+        # changes. Storing them would race with this action, which runs as a separate Sidekiq job
+        # and could overwrite or miss the selection without raising an error.
+        def workflow_branches
+          values = @payload.dig(:state, :values) || {}
+
+          branches = values.filter_map do |block_id, elements|
+            next unless block_id.to_s.start_with?(WORKFLOW_BRANCH_BLOCK_PREFIX)
+
+            step = block_id.to_s.delete_prefix(WORKFLOW_BRANCH_BLOCK_PREFIX).to_i
+            branch = elements.dig(WORKFLOW_BRANCH_ACTION_ID.to_sym, :selected_option, :value)
+            next unless step.positive? && branch.present?
+
+            { step:, branch: }
+          end
+
+          branches.sort_by { |k| k[:step] }
         end
       end
     end

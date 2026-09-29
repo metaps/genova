@@ -44,11 +44,13 @@ module Genova
             }
           end
 
-          def section_short_fieldset(fields)
-            {
+          def section_short_fieldset(fields, text = nil)
+            block = {
               type: 'section',
               fields:
             }
+            block[:text] = { type: 'mrkdwn', text: } if text.present?
+            block
           end
 
           def plain_text_input(action_id, label, options = {})
@@ -93,6 +95,34 @@ module Genova
 
             element[:accessory][option_key] = options
             element
+          end
+
+          # Unlike `static_select`, which renders as a section accessory, an input block does not
+          # dispatch an action when it is changed. The selected value is read from the message
+          # state when the surrounding message is submitted.
+          def static_select_input(action_id, label, options, params = {})
+            block = {
+              type: 'input',
+              element: {
+                type: 'static_select',
+                action_id:,
+                placeholder: {
+                  type: 'plain_text',
+                  text: 'Select an item'
+                }
+              },
+              label: {
+                type: 'plain_text',
+                text: label
+              }
+            }
+
+            option_key = (params[:groups] ? 'option_groups' : 'options').to_sym
+
+            block[:element][option_key] = options
+            block[:element][:initial_option] = params[:initial_option] if params[:initial_option].present?
+            block[:block_id] = params[:block_id] if params[:block_id].present?
+            block
           end
 
           def radio_buttons(action_id, options)
