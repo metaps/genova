@@ -180,7 +180,7 @@ module Genova
 
         def selected_workflow_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
-          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:name])
 
           note = @payload.dig(:state, :values, :deploy_note, :submit_deploy_note, :value)
           @session_store.merge({ note: }) if note.present?
