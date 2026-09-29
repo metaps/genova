@@ -16,7 +16,12 @@ module V2
         error! 'Signature do not match.', 403 unless verify_signature?
 
         payload = payload_to_hash
-        id = "message_ts:#{payload[:message][:ts]}"
+
+        # A message holding several selects and a button, such as the workflow confirmation,
+        # dispatches an action per interaction. Keyed by `message_ts` alone they would share an
+        # entry, and the later payload would overwrite the earlier one before its worker reads it,
+        # leaving both workers to handle the same action.
+        id = "message_ts:#{payload[:message][:ts]}:#{payload.dig(:actions, 0, :action_ts)}"
 
         key = Genova::Sidekiq::JobStore.create(id, payload)
         Slack::InteractionWorker.perform_async(key)

@@ -4,11 +4,15 @@ module Genova
       class Runner
         class << self
           def call(steps, callback, options)
+            # Resolved up front so that a step defined with an unusable `alias` is rejected before
+            # any earlier step is deployed, instead of leaving the workflow half applied.
+            settings = steps.map { |step| find_repository_settings(step, options) }
+
             steps.each.with_index(1) do |step, i|
               callback.start_step(index: i)
 
               repository_name = options[:repository] || step[:repository]
-              repository_settings = Genova::Config::SettingsHelper.find_repository(repository_name)
+              repository_settings = settings[i - 1]
 
               step[:resources].each do |resource|
                 service, run_task, scheduled_task = extract_resources(step[:type], resource)
@@ -25,7 +29,7 @@ module Genova
                   account: Settings.github.account,
                   repository: repository_settings.present? ? repository_settings[:name] : repository_name,
                   alias: repository_settings.present? ? repository_settings[:alias] : nil,
-                  branch: options[:branch] || step[:branch],
+                  branch: find_branch(step, i, options),
                   cluster: step[:cluster],
                   service:,
                   scheduled_task_rule:,
@@ -47,6 +51,23 @@ module Genova
             end
 
             callback.complete_steps(user: options[:slack_user_id])
+          end
+
+          # `options[:repository]` is supplied by auto deploy and keeps taking precedence, so a step
+          # written in `deploy.yml` cannot redirect the deployment to another entry.
+          def find_repository_settings(step, options)
+            return Genova::Config::SettingsHelper.find_repository(options[:repository]) if options[:repository].present?
+
+            Genova::Config::SettingsHelper.find_step_repository(step)
+          end
+
+          # Priority is `options[:branch]` (whole workflow), `options[:branches]` (per step),
+          # then the branch defined in `settings.yml`.
+          def find_branch(step, index, options)
+            return options[:branch] if options[:branch].present?
+
+            override = (options[:branches] || []).find { |k| k[:step] == index }
+            override.present? && override[:branch].present? ? override[:branch] : step[:branch]
           end
 
           def extract_resources(type, resource)

@@ -263,6 +263,160 @@ module Genova
           end
         end
 
+        context 'when invoke workflow_branch' do
+          it 'should neither touch the session nor update the message' do
+            payload = {
+              container: { thread_ts: id },
+              user: { id: 'user' },
+              actions: [
+                {
+                  action_id: 'workflow_branch',
+                  block_id: 'workflow_branch:1',
+                  selected_option: { value: 'branch' }
+                }
+              ]
+            }
+
+            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
+            expect(session_store.params.key?(:branches)).to eq(false)
+            expect(RestClient).to_not have_received(:post)
+          end
+        end
+
+        context 'when invoke selected_workflow_deploy' do
+          before do
+            allow(::Slack::WorkflowDeployWorker).to receive(:perform_async)
+
+            Settings.add_source!(
+              workflows: [
+                {
+                  name: 'workflow',
+                  steps: [
+                    { repository: 'repository', branch: 'branch1', cluster: 'cluster', type: 'service', resources: ['resource'] },
+                    { repository: 'repository', branch: 'branch2', cluster: 'cluster', type: 'service', resources: ['resource'] }
+                  ]
+                }
+              ]
+            )
+            Settings.reload!
+
+            session_store.merge({ name: 'workflow' })
+          end
+
+          def payload(state_values)
+            {
+              container: {
+                thread_ts: id
+              },
+              user: {
+                id: 'user'
+              },
+              state: {
+                values: state_values
+              },
+              actions: [
+                {
+                  action_id: 'selected_workflow_deploy'
+                }
+              ]
+            }
+          end
+
+          def branch_value(branch)
+            { workflow_branch: { selected_option: { value: branch } } }
+          end
+
+          it 'should store branch of each step from message state' do
+            Genova::Slack::RequestHandler.call(
+              payload(
+                'workflow_branch:2': branch_value('branch2'),
+                'workflow_branch:1': branch_value('branch1')
+              )
+            )
+
+            expect(session_store.params[:branches]).to eq(
+              [
+                { step: 1, branch: 'branch1' },
+                { step: 2, branch: 'branch2' }
+              ]
+            )
+          end
+
+          it 'should ignore blocks that are not branch selects' do
+            Genova::Slack::RequestHandler.call(
+              payload(
+                'workflow_branch:1': branch_value('branch1'),
+                deploy_note: { submit_deploy_note: { value: 'note' } }
+              )
+            )
+
+            expect(session_store.params[:branches]).to eq([{ step: 1, branch: 'branch1' }])
+            expect(session_store.params[:note]).to eq('note')
+          end
+
+          it 'should store empty branches when state is missing' do
+            Genova::Slack::RequestHandler.call(payload({}))
+
+            expect(session_store.params[:branches]).to eq([])
+          end
+
+          context 'when permissions are configured' do
+            let(:permission) { instance_double(Genova::Slack::Interactive::Permission) }
+
+            before do
+              allow(Genova::Slack::Interactive::Permission).to receive(:new).and_return(permission)
+              allow(permission).to receive(:allow_workflow?).and_return(true)
+              allow(permission).to receive(:allow_cluster?).and_return(false)
+              allow(permission).to receive(:allow_repository?).and_return(false)
+            end
+
+            it 'should authorize the workflow stored in the session' do
+              Genova::Slack::RequestHandler.call(payload({}))
+
+              expect(permission).to have_received(:allow_workflow?).with('workflow')
+            end
+
+            it 'should deny a user the workflow policy does not allow' do
+              allow(permission).to receive(:allow_workflow?).and_return(false)
+
+              expect { Genova::Slack::RequestHandler.call(payload({})) }
+                .to raise_error(Genova::Exceptions::SlackPermissionDeniedError, /does not have execute permission/)
+            end
+
+            it 'should allow deploying the branches defined in settings' do
+              Genova::Slack::RequestHandler.call(
+                payload(
+                  'workflow_branch:1': branch_value('branch1'),
+                  'workflow_branch:2': branch_value('branch2')
+                )
+              )
+
+              expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
+            end
+
+            it 'should deny deploying another branch without cluster permission' do
+              expect { Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('hotfix'))) }
+                .to raise_error(Genova::Exceptions::SlackPermissionDeniedError, /does not have permission to deploy hotfix to cluster/)
+            end
+
+            it 'should allow deploying another branch with cluster permission' do
+              allow(permission).to receive(:allow_cluster?).with('cluster').and_return(true)
+
+              Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('hotfix')))
+
+              expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
+            end
+
+            it 'should allow deploying another branch with repository permission' do
+              allow(permission).to receive(:allow_repository?).with('repository').and_return(true)
+
+              Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('hotfix')))
+
+              expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
+            end
+          end
+        end
+
         context 'when invoke submit_deploy' do
           it 'should execute submit_deploy' do
             allow(DeployJob).to receive(:create)

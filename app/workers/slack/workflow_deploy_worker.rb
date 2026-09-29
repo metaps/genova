@@ -13,6 +13,7 @@ module Slack
         params[:name],
         Genova::Deploy::Step::SlackHook.new(id),
         mode: DeployJob.mode.find_value(:slack),
+        branches: params[:branches],
         slack_user_id: params[:user],
         slack_user_name: params[:user_name],
         slack_timestamp: id,
