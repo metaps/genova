@@ -139,6 +139,69 @@ module Genova
             end
           end
 
+          context 'when branch is overridden' do
+            let(:type) { 'service' }
+            let(:resources) { ['resource'] }
+            let(:steps) do
+              [
+                {
+                  type:,
+                  resources:,
+                  cluster: 'cluster',
+                  repository: 'repository',
+                  branch: 'branch'
+                },
+                {
+                  type:,
+                  resources:,
+                  cluster: 'cluster',
+                  repository: 'repository',
+                  branch: 'branch'
+                }
+              ]
+            end
+
+            before do
+              # `DeployJob.generate_id` is generated per second, so it is duplicated when deploying continuously in a spec.
+              ids = (1..steps.size).map { |i| "#{DeployJob.generate_id}-#{i}" }
+              allow(DeployJob).to receive(:generate_id).and_return(*ids)
+            end
+
+            it 'overrides branch of specified step only' do
+              Runner.call(
+                steps,
+                StdoutHook.new,
+                mode: DeployJob.mode.find_value(:manual).to_sym,
+                branches: [{ step: 2, branch: 'override' }]
+              )
+
+              expect(DeployJob.asc(:id).pluck(:branch)).to eq(%w[branch override])
+            end
+
+            it 'falls back to the configured branch when the override is blank' do
+              Runner.call(
+                steps,
+                StdoutHook.new,
+                mode: DeployJob.mode.find_value(:manual).to_sym,
+                branches: [{ step: 2, branch: nil }]
+              )
+
+              expect(DeployJob.asc(:id).pluck(:branch)).to eq(%w[branch branch])
+            end
+
+            it 'gives priority to branch option' do
+              Runner.call(
+                steps,
+                StdoutHook.new,
+                mode: DeployJob.mode.find_value(:manual).to_sym,
+                branch: 'priority',
+                branches: [{ step: 2, branch: 'override' }]
+              )
+
+              expect(DeployJob.where(branch: 'priority').count).to eq(2)
+            end
+          end
+
           context 'when update run task' do
             let(:type) { 'run_task' }
             let(:resources) { ['resource'] }

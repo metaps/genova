@@ -27,7 +27,7 @@ module Genova
                   account: Settings.github.account,
                   repository: repository_settings.present? ? repository_settings[:name] : repository_name,
                   alias: repository_settings.present? ? repository_settings[:alias] : nil,
-                  branch: options[:branch] || step[:branch],
+                  branch: find_branch(step, i, options),
                   cluster: step[:cluster],
                   service:,
                   scheduled_task_rule:,
@@ -63,6 +63,15 @@ module Genova
             return Genova::Config::SettingsHelper.find_repository(options[:repository]) if options[:repository].present?
 
             Genova::Config::SettingsHelper.find_step_repository(step)
+          end
+
+          # Priority is `options[:branch]` (whole workflow), `options[:branches]` (per step),
+          # then the branch defined in `settings.yml`.
+          def find_branch(step, index, options)
+            return options[:branch] if options[:branch].present?
+
+            override = (options[:branches] || []).find { |k| k[:step] == index }
+            override.present? && override[:branch].present? ? override[:branch] : step[:branch]
           end
 
           def extract_resources(type, resource)
