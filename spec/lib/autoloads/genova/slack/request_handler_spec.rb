@@ -284,6 +284,154 @@ module Genova
 
             expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
           end
+
+          context 'when permissions are configured' do
+            let(:payload) do
+              {
+                container: {
+                  thread_ts: id
+                },
+                user: {
+                  id: user
+                },
+                actions: [
+                  {
+                    action_id: 'submit_deploy'
+                  }
+                ]
+              }
+            end
+
+            before do
+              allow(::Slack::DeployWorker).to receive(:perform_async)
+              session_store.merge({ repository: 'genova', cluster: 'production' })
+            end
+
+            def add_permissions(*policies)
+              Settings.add_source!(
+                slack: {
+                  permissions: policies.map { |policy| { policy:, resources: ['*'], allow_users: ['allowed_user'] } }
+                }
+              )
+              Settings.reload!
+            end
+
+            context 'when only repository policy is configured' do
+              before { add_permissions('repository') }
+
+              context 'when user is allowed' do
+                let(:user) { 'allowed_user' }
+
+                it 'should execute deploy' do
+                  Genova::Slack::RequestHandler.call(payload)
+
+                  expect(::Slack::DeployWorker).to have_received(:perform_async)
+                end
+              end
+
+              context 'when user is not allowed' do
+                let(:user) { 'denied_user' }
+
+                it 'should raise error' do
+                  expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+                  expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+                end
+              end
+            end
+
+            context 'when only cluster policy is configured' do
+              before { add_permissions('cluster') }
+
+              context 'when user is allowed' do
+                let(:user) { 'allowed_user' }
+
+                it 'should execute deploy' do
+                  Genova::Slack::RequestHandler.call(payload)
+
+                  expect(::Slack::DeployWorker).to have_received(:perform_async)
+                end
+              end
+
+              context 'when user is not allowed' do
+                let(:user) { 'denied_user' }
+
+                it 'should raise error' do
+                  expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+                  expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+                end
+              end
+            end
+
+            context 'when user is allowed only by cluster policy' do
+              let(:user) { 'allowed_user' }
+
+              before do
+                Settings.add_source!(
+                  slack: {
+                    permissions: [
+                      { policy: 'repository', resources: ['*'], allow_users: ['other_user'] },
+                      { policy: 'cluster', resources: ['*'], allow_users: ['allowed_user'] }
+                    ]
+                  }
+                )
+                Settings.reload!
+              end
+
+              it 'should raise error' do
+                expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+                expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+              end
+            end
+          end
+        end
+
+        context 'when invoke selected_workflow_deploy' do
+          let(:payload) do
+            {
+              container: {
+                thread_ts: id
+              },
+              user: {
+                id: user
+              },
+              actions: [
+                {
+                  action_id: 'selected_workflow_deploy'
+                }
+              ]
+            }
+          end
+
+          before do
+            allow(::Slack::WorkflowDeployWorker).to receive(:perform_async)
+            session_store.merge({ name: 'production_release' })
+
+            Settings.add_source!(
+              slack: {
+                permissions: [{ policy: 'workflow', resources: ['production_release'], allow_users: ['allowed_user'] }]
+              }
+            )
+            Settings.reload!
+          end
+
+          context 'when user is allowed' do
+            let(:user) { 'allowed_user' }
+
+            it 'should execute workflow deploy' do
+              Genova::Slack::RequestHandler.call(payload)
+
+              expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
+            end
+          end
+
+          context 'when user is not allowed' do
+            let(:user) { 'denied_user' }
+
+            it 'should raise error' do
+              expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+              expect(::Slack::WorkflowDeployWorker).not_to have_received(:perform_async)
+            end
+          end
         end
       end
     end
