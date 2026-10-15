@@ -23,6 +23,8 @@ module V2
       end
 
       post :event do
+        error! 'Signature do not match.', 403 unless verify_signature?
+
         if headers['X-Slack-Retry-Num'].present?
           message = "#{headers['X-Slack-Retry-Reason']} (Count: #{headers['X-Slack-Retry-Num']})"
           raise Genova::Exceptions::SlackEventsAPIError, message
