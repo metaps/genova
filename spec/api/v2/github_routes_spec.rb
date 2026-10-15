@@ -5,39 +5,45 @@ module V2
     describe 'POST /api/v2/github/push' do
       let(:webhook_pushed_commit) do
         Oj.dump(
-          repository: {
-            name: 'repository',
-            owner: {
-              name: 'owner'
+          {
+            repository: {
+              name: 'repository',
+              owner: {
+                name: 'owner'
+              },
+              pushed_at: 'pushed_at'
             },
-            pushed_at: 'pushed_at'
-          },
-          ref: 'refs/heads/xxx',
-          head_commit: {
-            url: 'url',
-            author: {
-              username: 'username'
+            ref: 'refs/heads/xxx',
+            head_commit: {
+              url: 'url',
+              author: {
+                username: 'username'
+              }
             }
-          }
+          },
+          mode: :compat
         )
       end
 
       let(:webhook_pushed_tag) do
         Oj.dump(
-          repository: {
-            name: 'repository',
-            owner: {
-              name: 'owner'
+          {
+            repository: {
+              name: 'repository',
+              owner: {
+                name: 'owner'
+              },
+              pushed_at: 'pushed_at'
             },
-            pushed_at: 'pushed_at'
-          },
-          ref: 'refs/tags/xxx',
-          head_commit: {
-            url: 'url',
-            author: {
-              username: 'username'
+            ref: 'refs/tags/xxx',
+            head_commit: {
+              url: 'url',
+              author: {
+                username: 'username'
+              }
             }
-          }
+          },
+          mode: :compat
         )
       end
 
@@ -137,23 +143,29 @@ module V2
     describe 'POST /api/v2/github/actions/push' do
       let(:actions_pushed_commit) do
         Oj.dump(
-          account: 'account',
-          repository: 'repository',
-          ref: 'refs/heads/xxx',
-          commit_url: 'url',
-          author: 'author',
-          pushed_at: 'pushed_at'
+          {
+            account: 'account',
+            repository: 'repository',
+            ref: 'refs/heads/xxx',
+            commit_url: 'url',
+            author: 'author',
+            pushed_at: 'pushed_at'
+          },
+          mode: :compat
         )
       end
 
       let(:actions_pushed_tag) do
         Oj.dump(
-          account: 'account',
-          repository: 'repository',
-          ref: 'refs/tags/xxx',
-          commit_url: 'url',
-          author: 'author',
-          pushed_at: 'pushed_at'
+          {
+            account: 'account',
+            repository: 'repository',
+            ref: 'refs/tags/xxx',
+            commit_url: 'url',
+            author: 'author',
+            pushed_at: 'pushed_at'
+          },
+          mode: :compat
         )
       end
 
