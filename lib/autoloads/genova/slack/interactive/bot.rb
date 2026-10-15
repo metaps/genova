@@ -151,10 +151,14 @@ module Genova
 
           steps = Settings.workflows.find { |k| k[:name] == params[:name] }[:steps]
           steps.each.with_index(1) do |step, i|
+            # Raises when `alias` is unusable, so the mistake surfaces here rather than after the
+            # earlier steps of the workflow have already been deployed.
+            Genova::Config::SettingsHelper.find_step_repository(step)
+
             blocks << BlockKit::Helper.header("Step ##{i}")
             blocks << BlockKit::Helper.section_short_fieldset(
               [
-                BlockKit::Helper.section_short_field('Repository', step[:repository]),
+                BlockKit::Helper.section_short_field('Repository', step[:alias].presence || step[:repository]),
                 BlockKit::Helper.section_short_field('Branch', step[:branch]),
                 BlockKit::Helper.section_short_field('Cluster', step[:cluster]),
                 BlockKit::Helper.section_short_field('Type', step[:type]),

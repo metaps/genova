@@ -59,6 +59,11 @@ workflows:
   # - name:
   #   steps:
   #     - repository:
+  #
+  #       # If the repository has multiple `base_path`, specify the alias name
+  #       # of `github.repositories` to identify which `deploy.yml` to use (Optional).
+  #       alias:
+  #
   #       branch:
   #       cluster:
   #
