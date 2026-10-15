@@ -36,7 +36,7 @@ gem 'rails', '~> 8.1'
 gem 'redis'
 gem 'rest-client'
 gem 'sassc-rails'
-gem 'sidekiq'
+gem 'sidekiq', '~> 7.3.10'
 gem 'slack-ruby-bot-server-events'
 gem 'strings-truncation'
 
