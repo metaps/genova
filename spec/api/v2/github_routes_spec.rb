@@ -128,14 +128,17 @@ module V2
         end
         let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), Settings.github.secret_key, payload)}" }
 
-        it 'should parse them as plain hash' do
+        it 'should keep them as plain hash' do
           allow(Github::DeployWorker).to receive(:perform_async)
 
           post('/api/v2/github/push', params: payload, headers: { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' })
 
           expect(response).to have_http_status :created
+
           key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
-          expect(Genova::RedisPool.get.get(key)).to include('"author":{"^o":"Object"}')
+          value = Genova::Sidekiq::JobStore.find(key)
+
+          expect(value[:author]).to eq('^o': 'Object')
         end
       end
     end

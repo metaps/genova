@@ -18,7 +18,7 @@ module V2
         error! 'Invalid payload.', 400 unless data.is_a?(Hash)
 
         data
-      rescue Oj::ParseError, EncodingError
+      rescue Oj::ParseError
         error! 'Invalid payload.', 400
       end
 

@@ -20,7 +20,7 @@ module Genova
           values = Genova::RedisPool.get.get(key)
           raise Exceptions::NotFoundError, "Job #{key} not found." if values.nil?
 
-          Oj.load(values, symbol_keys: true)
+          Oj.load(values, mode: :strict, symbol_keys: true)
         end
 
         private

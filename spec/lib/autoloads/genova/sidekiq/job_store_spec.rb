@@ -24,6 +24,18 @@ module Genova
           expect(value).to be_a(Hash)
           expect(value[:key]).to eq('value')
         end
+
+        context 'when value contains Oj object mode keys' do
+          let(:params) { { key: { '^o' => 'Object' }, symbol: ':value' } }
+
+          it 'should return plain values' do
+            id = Genova::Sidekiq::JobStore.create('id', params)
+            value = Genova::Sidekiq::JobStore.find(id)
+
+            expect(value[:key]).to eq('^o': 'Object')
+            expect(value[:symbol]).to eq(':value')
+          end
+        end
       end
     end
   end
