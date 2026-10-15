@@ -146,6 +146,37 @@ module Genova
           end
         end
 
+        describe 'ask_confirm_workflow_deploy' do
+          let(:posted) { [] }
+
+          before do
+            allow(client).to receive(:chat_postMessage) { |params| posted << params }
+            allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository-alias').and_return(name: 'repository', alias: 'repository-alias')
+            allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('unknown-alias').and_return(nil)
+          end
+
+          def step(alias_name)
+            { repository: 'repository', alias: alias_name, branch: 'branch', cluster: 'cluster', type: 'service', resources: ['resource'] }
+          end
+
+          def ask(steps)
+            allow(Settings).to receive(:workflows).and_return([{ name: 'workflow', steps: }])
+            bot.ask_confirm_workflow_deploy(name: 'workflow')
+          end
+
+          it 'should show alias as repository' do
+            ask([step('repository-alias')])
+
+            expect(posted.last[:blocks].to_s).to include('repository-alias')
+          end
+
+          it 'should raise error before asking when an alias is unusable' do
+            expect { ask([step('repository-alias'), step('unknown-alias')]) }
+              .to raise_error(Genova::Exceptions::ValidationError, /Alias is undefined/)
+            expect(posted).to be_empty
+          end
+        end
+
         describe 'detect_auto_deploy' do
           let(:params) do
             {
