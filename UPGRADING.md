@@ -1,6 +1,6 @@
 # Upgrading
 
-## Upgrading from 5.3.0 to 5.3.1
+## Upgrading from 5.3 to 5.4
 
 The evaluation of `slack.permissions` has changed.
 Previously, a Slack deployment was allowed if the user was permitted by either the `repository` or the `cluster` policy. Now the user must be permitted by every configured policy. A policy that is not configured is not evaluated.
