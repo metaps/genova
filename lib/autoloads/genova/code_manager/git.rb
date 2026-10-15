@@ -3,7 +3,14 @@ module Genova
     class Git
       attr_reader :repos_path, :base_path
 
+      # GitHub repository names consist of alphanumerics, '-', '_' and '.', and cannot be '.' or '..'.
+      REPOSITORY_NAME_PATTERN = /\A(?!\.{1,2}\z)[A-Za-z0-9_.-]+\z/
+
       def initialize(repository, options = {})
+        raise Exceptions::InvalidArgumentError, "Invalid repository name. [#{repository}]" unless repository.to_s.match?(REPOSITORY_NAME_PATTERN)
+        raise Exceptions::InvalidArgumentError, "Invalid branch name. [#{options[:branch]}]" if options[:branch].to_s.start_with?('-')
+        raise Exceptions::InvalidArgumentError, "Invalid tag name. [#{options[:tag]}]" if options[:tag].to_s.start_with?('-')
+
         @account = Settings.github.account
         @branch = options[:branch]
         @tag = options[:tag]
