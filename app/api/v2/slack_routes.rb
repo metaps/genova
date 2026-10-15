@@ -14,6 +14,7 @@ module V2
       # /api/v2/slack/post
       post :post do
         error! 'Signature do not match.', 403 unless verify_signature?
+        error! 'Query parameters are not supported.', 400 if request.env['QUERY_STRING'].present?
 
         payload = payload_to_hash
         id = "message_ts:#{payload[:message][:ts]}"
@@ -23,6 +24,9 @@ module V2
       end
 
       post :event do
+        error! 'Signature do not match.', 403 unless verify_signature?
+        error! 'Query parameters are not supported.', 400 if request.env['QUERY_STRING'].present?
+
         if headers['X-Slack-Retry-Num'].present?
           message = "#{headers['X-Slack-Retry-Reason']} (Count: #{headers['X-Slack-Retry-Num']})"
           raise Genova::Exceptions::SlackEventsAPIError, message
