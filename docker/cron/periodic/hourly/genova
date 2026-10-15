@@ -2,9 +2,11 @@
 
 cd /app
 
+# su-exec drops the supplementary groups given by group_add, so use the group of docker.sock as the primary group.
+user="genova:$(stat -c %g /var/run/docker.sock)"
+
 echo 'thor genova:util:delete_invalid_jobs'
-thor genova:utils delete-invalid-jobs
+su-exec "$user" thor genova:utils delete-invalid-jobs
 
 echo 'thor genova:util:delete_old_images'
-thor genova:utils delete-old-images
-
+su-exec "$user" thor genova:utils delete-old-images

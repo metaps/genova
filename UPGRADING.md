@@ -1,5 +1,40 @@
 # Upgrading
 
+## Upgrading from 5.3 to 5.4
+
+All containers now run as the non-root user `genova` instead of `root`.
+
+Add the following parameters to `.env`.
+
+```shell
+# Owner of the genova directory
+APP_UID=1000
+APP_GID=1000
+
+# Group ID of the Docker socket on the host. The containers use it to build and push images.
+DOCKER_GID=999
+```
+
+You can check the values with the following commands.
+
+```shell
+$ id -u
+$ id -g
+$ stat -c %g /var/run/docker.sock
+```
+
+Files created by the previous root containers must be owned by the new user. Rebuild the images, change the owner of the genova directory and the Docker volumes, and then restart.
+
+```shell
+$ docker compose build base
+$ docker compose build
+$ sudo chown -R $(id -u):$(id -g) .
+$ docker compose run --rm --no-deps --user root --entrypoint chown rails -R genova:genova /app/tmp/repos /app/tmp/cache /app/public/assets /app/node_modules
+$ docker compose up -d
+```
+
+The `cron` container keeps running `crond` as root, and runs each job as the `genova` user.
+
 ## Upgrading from 5.3.0 to 5.3.1
 
 The evaluation of `slack.permissions` has changed.

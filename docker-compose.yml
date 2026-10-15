@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: docker/base/Dockerfile
+      args:
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
     image: base
     env_file: .env
     volumes:
@@ -19,6 +22,8 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - ${DOCKER_GID:?DOCKER_GID must be set to the group ID of /var/run/docker.sock}
     ports:
       - 3000:3000
     depends_on:
@@ -35,6 +40,8 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - ${DOCKER_GID:?DOCKER_GID must be set to the group ID of /var/run/docker.sock}
     depends_on:
       - mongo
       - redis
@@ -50,6 +57,8 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - ${DOCKER_GID:?DOCKER_GID must be set to the group ID of /var/run/docker.sock}
     depends_on:
       - mongo
       - redis
@@ -64,6 +73,8 @@ services:
       - cache:/app/tmp/cache
       - .:/app:cached
       - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - ${DOCKER_GID:?DOCKER_GID must be set to the group ID of /var/run/docker.sock}
     restart: ${DOCKER_RESTART}
     depends_on:
       - base
