@@ -5,10 +5,21 @@ module V2
 
       def verify_webhook_signature?(payload)
         return false unless request.env['HTTP_X_HUB_SIGNATURE']
+        return false if payload.blank?
 
         digest = OpenSSL::Digest.new('sha1')
         signature = "sha1=#{OpenSSL::HMAC.hexdigest(digest, Settings.github.secret_key, payload)}"
-        payload.present? && Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
+        Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
+      end
+
+      # Parse only after the request is verified, and in strict mode so that the payload cannot instantiate Ruby objects.
+      def parse_payload(payload)
+        data = Oj.load(payload.to_s, mode: :strict, symbol_keys: true)
+        error! 'Invalid payload.', 400 unless data.is_a?(Hash)
+
+        data
+      rescue Oj::ParseError, EncodingError
+        error! 'Invalid payload.', 400
       end
 
       def parse_webhook_data(data)

@@ -82,6 +82,55 @@ module V2
           post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden
         end
+
+        it 'should not parse payload' do
+          allow(Oj).to receive(:load).and_call_original
+
+          post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
+
+          expect(Oj).not_to have_received(:load)
+        end
+      end
+
+      context 'when signature header is missing' do
+        it 'should return error' do
+          post('/api/v2/github/push', params: webhook_pushed_commit, headers: { 'CONTENT_TYPE' => 'application/json' })
+          expect(response).to have_http_status :forbidden
+        end
+      end
+
+      context 'when payload is not an object' do
+        let(:payload) { '[]' }
+        let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), Settings.github.secret_key, payload)}" }
+
+        it 'should return error' do
+          post('/api/v2/github/push', params: payload, headers: { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' })
+          expect(response).to have_http_status :bad_request
+        end
+      end
+
+      context 'when payload contains Oj object mode keys' do
+        let(:payload) do
+          Oj.dump(
+            {
+              repository: { name: 'repository', owner: { name: 'owner' }, pushed_at: 'pushed_at' },
+              ref: 'refs/heads/xxx',
+              head_commit: { url: 'url', author: { username: { '^o' => 'Object' } } }
+            },
+            mode: :compat
+          )
+        end
+        let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), Settings.github.secret_key, payload)}" }
+
+        it 'should parse them as plain hash' do
+          allow(Github::DeployWorker).to receive(:perform_async)
+
+          post('/api/v2/github/push', params: payload, headers: { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' })
+
+          expect(response).to have_http_status :created
+          key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
+          expect(Genova::RedisPool.get.get(key)).to include('"author":{"^o":"Object"}')
+        end
       end
     end
 
@@ -135,6 +184,14 @@ module V2
           allow(Github::DeployWorker).to receive(:perform_async)
           post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden
+        end
+
+        it 'should not parse payload' do
+          allow(Oj).to receive(:load).and_call_original
+
+          post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
+
+          expect(Oj).not_to have_received(:load)
         end
       end
     end
