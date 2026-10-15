@@ -127,6 +127,18 @@ module V2
           expect(response).to have_http_status :forbidden
         end
       end
+
+      context 'when query parameters are given' do
+        it 'should return error' do
+          allow(Slack::InteractionWorker).to receive(:perform_async)
+
+          post '/api/v2/slack/post?payload=injected', params: body, headers: signed_headers(body, content_type:)
+
+          expect(response).to have_http_status :bad_request
+          expect(response.body).to be_json_eql('Query parameters are not supported.'.to_json).at_path('error')
+          expect(Slack::InteractionWorker).not_to have_received(:perform_async)
+        end
+      end
     end
 
     describe 'POST /event' do
@@ -183,6 +195,20 @@ module V2
           post '/api/v2/slack/event', params: body, headers: { 'CONTENT_TYPE' => 'application/json' }
 
           expect(response).to have_http_status :forbidden
+          expect(Slack::CommandReceiveWorker).not_to have_received(:perform_async)
+        end
+      end
+
+      context 'when query parameters are given' do
+        it 'should return error' do
+          allow(Slack::CommandReceiveWorker).to receive(:perform_async)
+
+          body = Oj.dump({ challenge: 'challenge' }, mode: :compat)
+          query = 'event[user]=sender&event[event_ts]=event_ts&event[blocks][][elements][][elements][][type]=user'
+          post "/api/v2/slack/event?#{query}", params: body, headers: signed_headers(body)
+
+          expect(response).to have_http_status :bad_request
+          expect(response.body).to be_json_eql('Query parameters are not supported.'.to_json).at_path('error')
           expect(Slack::CommandReceiveWorker).not_to have_received(:perform_async)
         end
       end
