@@ -108,11 +108,13 @@ module V2
 
       context 'when legacy verification token is sent without signature' do
         it 'should return error' do
-          legacy_body = URI.encode_www_form(payload: Oj.dump({ token: nil, message: { ts: 'message_ts' } }, mode: :compat))
+          allow(Slack::InteractionWorker).to receive(:perform_async)
+          legacy_body = URI.encode_www_form(payload: Oj.dump({ token: 'legacy_verification_token', message: { ts: 'message_ts' } }, mode: :compat))
 
           post '/api/v2/slack/post', params: legacy_body, headers: { 'CONTENT_TYPE' => content_type }
 
           expect(response).to have_http_status :forbidden
+          expect(Slack::InteractionWorker).not_to have_received(:perform_async)
         end
       end
 
