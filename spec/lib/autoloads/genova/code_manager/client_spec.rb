@@ -14,6 +14,35 @@ module Genova
 
       let(:code_manager) { CodeManager::Git.new('repository', branch: 'master') }
 
+      describe 'initialize' do
+        context 'when repository name is valid' do
+          it 'should not raise error' do
+            expect { CodeManager::Git.new('genova-api_v2.0', branch: 'feature/foo') }.not_to raise_error
+          end
+        end
+
+        context 'when repository name is invalid' do
+          ['../../..', '../../../../..', '..', '.', 'foo/bar', 'foo/../..', '', nil].each do |repository|
+            it "should raise error for #{repository.inspect}" do
+              expect { CodeManager::Git.new(repository, branch: 'master') }.to raise_error(Genova::Exceptions::InvalidArgumentError)
+              expect(FileUtils).not_to have_received(:rm_rf)
+            end
+          end
+        end
+
+        context 'when branch name starts with hyphen' do
+          it 'should raise error' do
+            expect { CodeManager::Git.new('repository', branch: '--orphan=foo') }.to raise_error(Genova::Exceptions::InvalidArgumentError)
+          end
+        end
+
+        context 'when tag name starts with hyphen' do
+          it 'should raise error' do
+            expect { CodeManager::Git.new('repository', tag: '-v1.0.0') }.to raise_error(Genova::Exceptions::InvalidArgumentError)
+          end
+        end
+      end
+
       describe 'pull' do
         it 'should get latest source' do
           allow(code_manager).to receive(:clone)
