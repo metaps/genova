@@ -224,7 +224,7 @@ module Genova
         end
 
         def allow_step?(permission, step)
-          permission.allow_cluster?(step[:cluster]) || permission.allow_repository?(step[:alias].presence || step[:repository])
+          permission.allow_cluster?(step[:cluster]) && permission.allow_repository?(step[:alias].presence || step[:repository])
         end
 
         # Branches are read from the message state rather than being stored each time a select

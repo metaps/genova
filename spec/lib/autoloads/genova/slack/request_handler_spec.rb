@@ -399,15 +399,22 @@ module Genova
                 .to raise_error(Genova::Exceptions::SlackPermissionDeniedError, /does not have permission to deploy hotfix to cluster/)
             end
 
-            it 'should allow deploying another branch with cluster permission' do
+            it 'should deny deploying another branch with cluster permission only' do
               allow(permission).to receive(:allow_cluster?).with('cluster').and_return(true)
 
-              Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('hotfix')))
-
-              expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
+              expect { Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('hotfix'))) }
+                .to raise_error(Genova::Exceptions::SlackPermissionDeniedError, /does not have permission to deploy hotfix to cluster/)
             end
 
-            it 'should allow deploying another branch with repository permission' do
+            it 'should deny deploying another branch with repository permission only' do
+              allow(permission).to receive(:allow_repository?).with('repository').and_return(true)
+
+              expect { Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('hotfix'))) }
+                .to raise_error(Genova::Exceptions::SlackPermissionDeniedError, /does not have permission to deploy hotfix to cluster/)
+            end
+
+            it 'should allow deploying another branch with cluster and repository permissions' do
+              allow(permission).to receive(:allow_cluster?).with('cluster').and_return(true)
               allow(permission).to receive(:allow_repository?).with('repository').and_return(true)
 
               Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('hotfix')))
@@ -561,7 +568,17 @@ module Genova
             session_store.merge({ name: 'production_release' })
 
             Settings.add_source!(
+              workflows: [
+                {
+                  name: 'production_release',
+                  steps: [
+                    { repository: 'repository', branch: 'branch', cluster: 'cluster', type: 'service', resources: ['resource'] }
+                  ]
+                }
+              ],
               slack: {
+                # A symbol keyed source replaces the whole slack section, and the session store needs the timeout.
+                interactive: { command_timeout: 1800 },
                 permissions: [{ policy: 'workflow', resources: ['production_release'], allow_users: ['allowed_user'] }]
               }
             )
