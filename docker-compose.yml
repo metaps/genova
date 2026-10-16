@@ -11,6 +11,8 @@ services:
     build:
       context: .
       dockerfile: docker/rails/Dockerfile
+      additional_contexts:
+        base: service:base
     env_file: .env
     volumes:
       - node_modules:/app/node_modules
@@ -30,6 +32,8 @@ services:
     build:
       context: .
       dockerfile: docker/slack/Dockerfile
+      additional_contexts:
+        base: service:base
     env_file: .env
     volumes:
       - cache:/app/tmp/cache
@@ -44,6 +48,8 @@ services:
     build:
       context: .
       dockerfile: docker/sidekiq/Dockerfile
+      additional_contexts:
+        base: service:base
     env_file: .env
     volumes:
       - repos:/app/tmp/repos
@@ -59,6 +65,8 @@ services:
     build:
       context: .
       dockerfile: docker/cron/Dockerfile
+      additional_contexts:
+        base: service:base
     env_file: .env
     volumes:
       - cache:/app/tmp/cache
