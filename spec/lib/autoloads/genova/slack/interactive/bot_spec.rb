@@ -88,23 +88,7 @@ module Genova
           let(:service) { double(Aws::ECS::Types::Service) }
           let(:describe_task_definition_response) { double(Aws::ECS::Types::DescribeTaskDefinitionResponse) }
 
-          it 'should not error' do
-            allow(code_manager).to receive(:origin_last_commit).and_return('xxx')
-            allow(code_manager).to receive(:find_commit).and_return('yyy')
-            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
-            allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client)
-            allow(describe_services_response).to receive(:services).and_return([service])
-            allow(ecs_client).to receive(:describe_services).and_return(describe_services_response)
-            allow(service).to receive(:task_definition)
-            allow(describe_task_definition_response).to receive(:[]).with(:tags).and_return([{
-                                                                                              key: 'genova.build'
-                                                                                            }])
-            allow(ecs_client).to receive(:describe_task_definition).and_return(describe_task_definition_response)
-
-            expect { bot.ask_confirm_deploy(params, show_target: true) }.not_to raise_error
-          end
-
-          it 'uses multiline note input when note is absent' do
+          before do
             allow(code_manager).to receive(:origin_last_commit).and_return('xxx')
             allow(code_manager).to receive(:find_commit).and_return('yyy')
             allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
@@ -114,26 +98,39 @@ module Genova
             allow(service).to receive(:task_definition)
             allow(describe_task_definition_response).to receive(:[]).with(:tags).and_return([{ key: 'genova.build' }])
             allow(ecs_client).to receive(:describe_task_definition).and_return(describe_task_definition_response)
+          end
 
+          it 'should not error' do
+            expect { bot.ask_confirm_deploy(params, show_target: true) }.not_to raise_error
+          end
+
+          it 'uses multiline note input when note is absent' do
             expect(client).to receive(:chat_postMessage) do |data|
               note_block = data[:blocks].find { |block| block[:block_id] == 'deploy_note' }
               expect(note_block[:element][:multiline]).to eq(true)
+              expect(note_block[:optional]).to eq(true)
             end
 
             bot.ask_confirm_deploy(params, show_target: false)
           end
 
-          it 'uses full-width section when note is present' do
-            allow(code_manager).to receive(:origin_last_commit).and_return('xxx')
-            allow(code_manager).to receive(:find_commit).and_return('yyy')
-            allow(Genova::CodeManager::Git).to receive(:new).and_return(code_manager)
-            allow(Aws::ECS::Client).to receive(:new).and_return(ecs_client)
-            allow(describe_services_response).to receive(:services).and_return([service])
-            allow(ecs_client).to receive(:describe_services).and_return(describe_services_response)
-            allow(service).to receive(:task_definition)
-            allow(describe_task_definition_response).to receive(:[]).with(:tags).and_return([{ key: 'genova.build' }])
-            allow(ecs_client).to receive(:describe_task_definition).and_return(describe_task_definition_response)
+          context 'when note is required' do
+            before do
+              allow(Settings.deploy).to receive(:note_required).and_return(true)
+            end
 
+            it 'uses a required note input' do
+              expect(client).to receive(:chat_postMessage) do |data|
+                note_block = data[:blocks].find { |block| block[:block_id] == 'deploy_note' }
+                expect(note_block[:label][:text]).to eq('Note')
+                expect(note_block[:optional]).to eq(false)
+              end
+
+              bot.ask_confirm_deploy(params, show_target: false)
+            end
+          end
+
+          it 'uses full-width section when note is present' do
             expect(client).to receive(:chat_postMessage) do |data|
               note_block = data[:blocks].find do |block|
                 block[:type] == 'section' && block.dig(:text, :text)&.include?('*Note:*')

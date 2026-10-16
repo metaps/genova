@@ -53,6 +53,10 @@ ecr:
   # If false is specified, an error is raised if the repository is unregistered.
   create_repository: true
 
+deploy:
+  # Specify `true` to require a note for user-initiated deployments.
+  note_required: false
+
 # Workflows can be defined to step through the deployment of tasks.
 # https://github.com/metaps/genova/wiki/Workflow
 workflows:

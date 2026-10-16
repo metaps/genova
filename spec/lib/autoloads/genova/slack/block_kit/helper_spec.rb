@@ -10,6 +10,12 @@ module Genova
 
             expect(block[:element][:multiline]).to eq(true)
           end
+
+          it 'supports optional input' do
+            block = Genova::Slack::BlockKit::Helper.plain_text_input('action', 'Label', placeholder: 'Input text', optional: true)
+
+            expect(block[:optional]).to eq(true)
+          end
         end
 
         describe 'escape_emoji' do
