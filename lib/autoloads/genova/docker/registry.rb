@@ -15,7 +15,15 @@ module Genova
         username = ENV['DOCKER_REGISTRY_USER'].presence || config_value(registry_config, :username) || secret_value(registry_config, :username_secret)
         password = ENV['DOCKER_REGISTRY_PASSWORD'].presence || config_value(registry_config, :password) || secret_value(registry_config, :password_secret)
 
-        return if url.blank? || username.blank? || password.blank?
+        pull_images = Array(config_value(registry_config, :pull_images))
+        if url.blank? || username.blank? || password.blank?
+          if pull_images.any? || [url, username, password].any?(&:present?)
+            @logger.warn('Docker registry login skipped because URL, username or password is missing.')
+          end
+          raise Exceptions::ValidationError, 'Docker registry URL, username and password are required to pull images.' if pull_images.any?
+
+          return
+        end
 
         login_command = %(echo #{Shellwords.escape(password)} | docker login #{url} -u #{Shellwords.escape(username)} --password-stdin)
         filtered_command = %(echo {FILTERED} | docker login #{url} -u {FILTERED} --password-stdin)
@@ -23,7 +31,7 @@ module Genova
 
         raise Exceptions::ValidationError, "Docker registry login failed. [#{url}]" unless exit_code.zero?
 
-        Array(config_value(registry_config, :pull_images)).each do |image|
+        pull_images.each do |image|
           exit_code = Genova::Command::Executor.call("docker pull #{image}", @logger)
           raise Exceptions::ValidationError, "Docker image pull failed. [#{image}]" unless exit_code.zero?
         end

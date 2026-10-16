@@ -97,15 +97,63 @@ describe Genova::Docker::Registry do
       end
     end
 
-    context 'when credentials are missing' do
-      before do
-        registry_settings.username = nil
-        registry_settings.password = nil
-      end
+    context 'when registry configuration is absent' do
+      let(:registry_settings) { nil }
 
       it 'skips login and pull' do
         registry.login_and_pull
+
         expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
+    context 'when credentials and pull images are missing' do
+      before do
+        registry_settings.pull_images = []
+      end
+
+      it 'logs a warning and skips login and pull' do
+        expect(logger).to receive(:warn).with('Docker registry login skipped because URL, username or password is missing.')
+
+        registry.login_and_pull
+        expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
+    context 'when registry settings are empty' do
+      before do
+        registry_settings.url = nil
+        registry_settings.pull_images = []
+      end
+
+      it 'skips login and pull without a warning' do
+        expect(logger).not_to receive(:warn)
+
+        registry.login_and_pull
+
+        expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
+    %i[url username password].each do |key|
+      [nil, '', '   '].each do |value|
+        context "when pulls are configured and #{key} is #{value.inspect}" do
+          before do
+            registry_settings.username = 'configured-user'
+            registry_settings.password = 'configured-password'
+            registry_settings[key] = value
+          end
+
+          it 'raises validation error without running Docker commands' do
+            expect(logger).to receive(:warn).with('Docker registry login skipped because URL, username or password is missing.')
+
+            expect { registry.login_and_pull }.to raise_error(
+              Genova::Exceptions::ValidationError,
+              'Docker registry URL, username and password are required to pull images.'
+            )
+            expect(Genova::Command::Executor).not_to have_received(:call)
+          end
+        end
       end
     end
 
