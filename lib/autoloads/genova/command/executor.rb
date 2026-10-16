@@ -19,9 +19,18 @@ module Genova
 
         private
 
+        def write_stdin(stdin, stdin_data)
+          begin
+            stdin.write(stdin_data) unless stdin_data.nil?
+          ensure
+            stdin.close_write
+          end
+        rescue Errno::EPIPE
+          # The child closed stdin early; still collect its output and exit status.
+        end
+
         def handle_io(stdin, stdout, stderr, logger, stdin_data)
-          stdin.write(stdin_data) unless stdin_data.nil?
-          stdin.close_write
+          write_stdin(stdin, stdin_data)
 
           loop do
             IO.select([stdout, stderr]).flatten.compact.each do |io|

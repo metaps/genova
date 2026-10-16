@@ -8,6 +8,20 @@ module Genova
   module Command
     describe Executor do
       describe 'command' do
+        [0, 7].each do |exit_status|
+          it "collects output and exit status #{exit_status} when the child exits without reading stdin" do
+            output = StringIO.new
+            command = [RbConfig.ruby, '-e', 'puts "early-stdout"; warn "early-stderr"; exit(Integer(ARGV.fetch(0)))', exit_status.to_s]
+
+            status = Timeout.timeout(10) do
+              Command::Executor.call(command, ::Logger.new(output), stdin_data: 'x' * (1024 * 1024))
+            end
+
+            expect(status).to eq(exit_status)
+            expect(output.string).to include('early-stdout', 'early-stderr')
+          end
+        end
+
         it 'keeps stdin and loggers separate when commands run concurrently' do
           login_output = StringIO.new
           other_output = StringIO.new
