@@ -42,7 +42,7 @@ class DeployJob
 
   validates :mode, :account, :repository, :cluster, presence: true
   validates :note, length: { maximum: NOTE_MAX_LENGTH }, allow_blank: true
-  validate :note_must_be_present, if: :note_required?
+  validate :note_must_be_present, if: :note_required?, on: :create
   validate :check_type
 
   before_validation :truncate_note

@@ -48,6 +48,19 @@ RSpec.describe DeployJob, type: :model do
 
         expect(deploy_job).to be_valid
       end
+
+      %i[manual slack].each do |mode|
+        it "allows status updates for an existing #{mode} deployment without a note" do
+          allow(Settings.deploy).to receive(:note_required).and_return(false)
+          deploy_job = DeployJob.create!(base_params.merge(mode: DeployJob.mode.find_value(mode), status: :initial))
+          allow(Settings.deploy).to receive(:note_required).and_return(true)
+
+          deploy_job.update!(status: :deploying)
+
+          expect(deploy_job.reload.status).to eq(DeployJob.status.find_value(:deploying))
+          expect(deploy_job.note).to be_nil
+        end
+      end
     end
   end
 end
