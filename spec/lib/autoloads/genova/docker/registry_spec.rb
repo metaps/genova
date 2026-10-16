@@ -1,0 +1,174 @@
+require 'rails_helper'
+
+describe Genova::Docker::Registry do
+  let(:logger) { Logger.new(nil) }
+  let(:registry_settings) do
+    OpenStruct.new(
+      url: 'dhi.io',
+      username_secret: nil,
+      password_secret: nil
+    )
+  end
+
+  subject(:registry) { described_class.new(logger) }
+
+  before do
+    allow(Settings).to receive(:dig).with(:docker, :registry).and_return(registry_settings)
+    allow(Genova::Command::Executor).to receive(:call).and_return(0)
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_URL').and_return(nil)
+    allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_USER').and_return(nil)
+    allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_PASSWORD').and_return(nil)
+  end
+
+  describe '#login' do
+    ['', '   '].each do |value|
+      context "when registry environment values are #{value.inspect}" do
+        before do
+          %w[DOCKER_REGISTRY_URL DOCKER_REGISTRY_USER DOCKER_REGISTRY_PASSWORD].each do |key|
+            allow(ENV).to receive(:[]).with(key).and_return(value)
+          end
+        end
+
+        it 'resolves secret references' do
+          registry_settings.username_secret = 'arn:aws:secretsmanager:ap-northeast-1:000000000000:secret:docker-user'
+          registry_settings.password_secret = '/docker/password'
+
+          registry.login
+
+          expect(Genova::Command::Executor).to have_received(:call).with(
+            ['docker', 'login', 'dhi.io', '-u', 'SecretStringType', '--password-stdin'],
+            logger,
+            hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'PSParameterValue')
+          )
+        end
+      end
+    end
+
+    context 'when credentials are provided via env' do
+      before do
+        allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_USER').and_return('user1')
+        allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_PASSWORD').and_return('pass1')
+      end
+
+      it 'executes only docker login with filtered credentials' do
+        registry_settings.username_secret = '/docker/username'
+        registry_settings.password_secret = '/docker/password'
+        expect(Genova::Utils::SecretFetcher).not_to receive(:call)
+
+        registry.login
+
+        expect(Genova::Command::Executor).to have_received(:call).with(
+          ['docker', 'login', 'dhi.io', '-u', 'user1', '--password-stdin'],
+          logger,
+          hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'pass1')
+        )
+        expect(Genova::Command::Executor).to have_received(:call).once
+      end
+    end
+
+    context 'when credentials are provided via Secrets Manager and SSM' do
+      before do
+        registry_settings.username_secret = 'arn:aws:secretsmanager:ap-northeast-1:000000000000:secret:docker-user'
+        registry_settings.password_secret = '/docker/password'
+      end
+
+      it 'resolves credentials and executes docker login' do
+        registry.login
+
+        expect(Genova::Command::Executor).to have_received(:call).with(
+          ['docker', 'login', 'dhi.io', '-u', 'SecretStringType', '--password-stdin'],
+          logger,
+          hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'PSParameterValue')
+        )
+      end
+    end
+
+    context 'when registry configuration is absent' do
+      let(:registry_settings) { nil }
+
+      it 'skips login' do
+        registry.login
+
+        expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
+    context 'when registry settings are empty' do
+      before do
+        registry_settings.url = nil
+      end
+
+      it 'skips login without a warning' do
+        expect(logger).not_to receive(:warn)
+
+        registry.login
+
+        expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
+    context 'when only the registry URL is configured' do
+      it 'logs a warning and rejects incomplete authentication settings' do
+        expect(logger).to receive(:warn).with('Docker registry login skipped because URL, username or password is missing.')
+
+        expect { registry.login }.to raise_error(
+          Genova::Exceptions::ValidationError,
+          'Docker registry URL, username and password are required to log in.'
+        )
+        expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
+    context 'when plaintext credentials are present in registry settings' do
+      before do
+        registry_settings.username = 'plaintext-user'
+        registry_settings.password = 'plaintext-password'
+      end
+
+      it 'does not use plaintext credentials' do
+        expect { registry.login }.to raise_error(Genova::Exceptions::ValidationError)
+        expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
+    %i[url username password].each do |key|
+      [nil, '', '   '].each do |value|
+        context "when registry authentication is configured and #{key} is #{value.inspect}" do
+          before do
+            allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_USER').and_return('user1')
+            allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_PASSWORD').and_return('pass1')
+            if key == :url
+              registry_settings.url = value
+            else
+              env_key = key == :username ? 'DOCKER_REGISTRY_USER' : 'DOCKER_REGISTRY_PASSWORD'
+              allow(ENV).to receive(:[]).with(env_key).and_return(value)
+            end
+          end
+
+          it 'raises validation error without running Docker commands' do
+            expect(logger).to receive(:warn).with('Docker registry login skipped because URL, username or password is missing.')
+
+            expect { registry.login }.to raise_error(
+              Genova::Exceptions::ValidationError,
+              'Docker registry URL, username and password are required to log in.'
+            )
+            expect(Genova::Command::Executor).not_to have_received(:call)
+          end
+        end
+      end
+    end
+
+    context 'when docker login fails' do
+      before do
+        allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_USER').and_return('user1')
+        allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_PASSWORD').and_return('pass1')
+        allow(Genova::Command::Executor).to receive(:call).and_return(1)
+      end
+
+      it 'raises validation error' do
+        expect { registry.login }.to raise_error(Genova::Exceptions::ValidationError, 'Docker registry login failed. [dhi.io]')
+      end
+    end
+  end
+end
