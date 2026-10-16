@@ -27,12 +27,7 @@ RSpec.describe DeployJob, type: :model do
 
     context 'when note is required' do
       before do
-        Settings.add_source!(deploy: { note_required: true })
-        Settings.reload!
-      end
-
-      after do
-        Settings.reload_from_files(Rails.root.join('config', 'settings.yml').to_s)
+        allow(Settings.deploy).to receive(:note_required).and_return(true)
       end
 
       it 'is invalid when note is blank' do
