@@ -1,10 +1,11 @@
 require 'rails_helper'
+require 'securerandom'
 
 RSpec.describe DeployJob, type: :model do
   describe 'note' do
     let(:base_params) do
       {
-        id: DeployJob.generate_id,
+        id: SecureRandom.uuid,
         mode: DeployJob.mode.find_value(:manual),
         type: DeployJob.type.find_value(:service),
         account: Settings.github.account,
