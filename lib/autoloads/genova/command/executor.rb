@@ -23,6 +23,7 @@ module Genova
         private
 
         def handle_io(stdin, stdout, stderr)
+          stdin.write(@options[:stdin_data]) unless @options[:stdin_data].nil?
           stdin.close_write
 
           loop do
@@ -43,7 +44,7 @@ module Genova
 
           exit_status = nil
 
-          Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
+          Open3.popen3(*Array(command)) do |stdin, stdout, stderr, wait_thr|
             handle_io(stdin, stdout, stderr)
             exit_status = wait_thr.value
           end

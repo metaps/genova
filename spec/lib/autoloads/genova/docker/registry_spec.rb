@@ -39,9 +39,9 @@ describe Genova::Docker::Registry do
           registry.login_and_pull
 
           expect(Genova::Command::Executor).to have_received(:call).with(
-            'echo configured-password | docker login dhi.io -u configured-user --password-stdin',
+            ['docker', 'login', 'dhi.io', '-u', 'configured-user', '--password-stdin'],
             logger,
-            hash_including(:filtered_command)
+            hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'configured-password')
           )
           expect(Genova::Command::Executor).to have_received(:call).with('docker pull dhi.io/org/app:base', logger)
         end
@@ -53,9 +53,9 @@ describe Genova::Docker::Registry do
           registry.login_and_pull
 
           expect(Genova::Command::Executor).to have_received(:call).with(
-            'echo PSParameterValue | docker login dhi.io -u SecretStringType --password-stdin',
+            ['docker', 'login', 'dhi.io', '-u', 'SecretStringType', '--password-stdin'],
             logger,
-            hash_including(:filtered_command)
+            hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'PSParameterValue')
           )
           expect(Genova::Command::Executor).to have_received(:call).with('docker pull dhi.io/org/app:base', logger)
         end
@@ -72,9 +72,9 @@ describe Genova::Docker::Registry do
         registry.login_and_pull
 
         expect(Genova::Command::Executor).to have_received(:call).with(
-          a_string_matching(/docker login dhi\.io/),
+          ['docker', 'login', 'dhi.io', '-u', 'user1', '--password-stdin'],
           logger,
-          hash_including(:filtered_command)
+          hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'pass1')
         )
         expect(Genova::Command::Executor).to have_received(:call).with('docker pull dhi.io/org/app:base', logger)
       end
@@ -90,9 +90,9 @@ describe Genova::Docker::Registry do
         registry.login_and_pull
 
         expect(Genova::Command::Executor).to have_received(:call).with(
-          "echo #{Shellwords.escape('PSParameterValue')} | docker login dhi.io -u #{Shellwords.escape('SecretStringType')} --password-stdin",
+          ['docker', 'login', 'dhi.io', '-u', 'SecretStringType', '--password-stdin'],
           logger,
-          hash_including(filtered_command: 'echo {FILTERED} | docker login dhi.io -u {FILTERED} --password-stdin')
+          hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'PSParameterValue')
         )
       end
     end

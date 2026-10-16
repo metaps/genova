@@ -1,5 +1,3 @@
-require 'shellwords'
-
 module Genova
   module Docker
     class Registry
@@ -25,9 +23,9 @@ module Genova
           return
         end
 
-        login_command = %(echo #{Shellwords.escape(password)} | docker login #{url} -u #{Shellwords.escape(username)} --password-stdin)
-        filtered_command = %(echo {FILTERED} | docker login #{url} -u {FILTERED} --password-stdin)
-        exit_code = Genova::Command::Executor.call(login_command, @logger, filtered_command:)
+        login_command = ['docker', 'login', url, '-u', username, '--password-stdin']
+        filtered_command = %(docker login #{url} -u {FILTERED} --password-stdin)
+        exit_code = Genova::Command::Executor.call(login_command, @logger, filtered_command:, stdin_data: password)
 
         raise Exceptions::ValidationError, "Docker registry login failed. [#{url}]" unless exit_code.zero?
 
