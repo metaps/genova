@@ -54,6 +54,25 @@ module Genova
             results = Genova::Slack::BlockKit::ElementObject.branch_options(account: 'account', repository: 'repository')
             expect(results.count).to eq(1)
           end
+
+          it 'should build option groups from a given branch list without fetching' do
+            allow(Genova::CodeManager::Git).to receive(:new)
+
+            results = Genova::Slack::BlockKit::ElementObject.branch_option_groups(%w[main release], 'release')
+
+            expect(results[0][:options]).to eq([Genova::Slack::BlockKit::ElementObject.branch_option('release')])
+            expect(results[1][:options].pluck(:value)).to eq(%w[main])
+            expect(Genova::CodeManager::Git).to_not have_received(:new)
+          end
+
+          it 'should not exceed the number of options Slack accepts' do
+            branches = Array.new(200) { |i| "branch#{i}" }
+
+            results = Genova::Slack::BlockKit::ElementObject.branch_option_groups(branches, 'default')
+            total = results.sum { |group| group[:options].size }
+
+            expect(total).to eq(Genova::Slack::BlockKit::ElementObject::MAX_SELECT_OPTIONS)
+          end
         end
 
         describe 'tag_options' do

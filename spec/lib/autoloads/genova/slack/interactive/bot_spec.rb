@@ -18,6 +18,54 @@ module Genova
           end
         end
 
+        describe 'start_deploy' do
+          let(:posted) { [] }
+
+          before do
+            allow(client).to receive(:chat_postMessage) { |params| posted << params }
+          end
+
+          def fields(deploy_job)
+            bot.start_deploy(deploy_job:)
+            posted.last[:blocks][1][:fields].map { |field| field[:text] }
+          end
+
+          it 'should show the deployed branch' do
+            deploy_job = DeployJob.new(
+              type: DeployJob.type.find_value(:service),
+              repository: 'repository',
+              branch: 'branch',
+              cluster: 'cluster',
+              service: 'service'
+            )
+
+            expect(fields(deploy_job).first).to include('*Branch:*', 'branch', 'tree/branch')
+          end
+
+          it 'should show the deployed tag' do
+            deploy_job = DeployJob.new(
+              type: DeployJob.type.find_value(:service),
+              repository: 'repository',
+              tag: 'tag',
+              cluster: 'cluster',
+              service: 'service'
+            )
+
+            expect(fields(deploy_job).first).to include('*Tag:*', 'releases/tag/tag')
+          end
+
+          it 'should not show a field when neither is set' do
+            deploy_job = DeployJob.new(
+              type: DeployJob.type.find_value(:service),
+              repository: 'repository',
+              cluster: 'cluster',
+              service: 'service'
+            )
+
+            expect(fields(deploy_job).first).to include('*Cluster:*')
+          end
+        end
+
         describe 'ask_history' do
           let(:array) { double(Array) }
 
@@ -151,6 +199,7 @@ module Genova
 
           before do
             allow(client).to receive(:chat_postMessage) { |params| posted << params }
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(double(origin_branches: ['branch']))
             allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository-alias').and_return(name: 'repository', alias: 'repository-alias')
             allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('unknown-alias').and_return(nil)
           end

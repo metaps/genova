@@ -64,6 +64,8 @@ workflows:
   #       # of `github.repositories` to identify which `deploy.yml` to use (Optional).
   #       alias:
   #
+  #       # Used as the default value of the branch select shown for this step
+  #       # before deploying from Slack.
   #       branch:
   #       cluster:
   #
