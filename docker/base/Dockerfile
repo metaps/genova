@@ -1,4 +1,4 @@
-FROM ruby:3.2-alpine
+FROM ruby:4.0-alpine
 
 RUN apk --update add build-base openssh docker git gcompat tzdata yaml-dev --no-cache
 ENV APP_HOME=/app

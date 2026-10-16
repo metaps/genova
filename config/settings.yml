@@ -63,6 +63,11 @@ workflows:
   # - name:
   #   steps:
   #     - repository:
+  #
+  #       # If the repository has multiple `base_path`, specify the alias name
+  #       # of `github.repositories` to identify which `deploy.yml` to use (Optional).
+  #       alias:
+  #
   #       branch:
   #       cluster:
   #
@@ -78,7 +83,6 @@ workflows:
 slack:
   api_token:
   signing_secret:
-  verification_token:
   client_id:
   client_secret:
   command:

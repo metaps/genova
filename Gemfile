@@ -5,6 +5,7 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
+gem 'abbrev'
 gem 'aws-sdk-core'
 gem 'aws-sdk-ecr'
 gem 'aws-sdk-ecs'
@@ -35,7 +36,7 @@ gem 'rails', '~> 8.1'
 gem 'redis'
 gem 'rest-client'
 gem 'sassc-rails'
-gem 'sidekiq'
+gem 'sidekiq', '~> 7.3.10'
 gem 'slack-ruby-bot-server-events'
 gem 'strings-truncation'
 

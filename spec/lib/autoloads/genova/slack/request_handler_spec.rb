@@ -34,19 +34,15 @@ module Genova
         end
 
         context 'when invoke selected_repository' do
-          it 'should execute selected_repository' do
-            Settings.add_source!(
-              github: {
-                repositories: [{
-                  name: 'repository'
-                }]
-              }
-            )
-            Settings.reload!
+          let(:messages) { [] }
 
+          before do
             allow(::Github::RetrieveBranchWorker).to receive(:perform_async)
+            allow(RestClient).to receive(:post) { |_url, body, _options| messages << JSON.parse(body).dig('blocks', 0, 'text', 'text') }
+          end
 
-            payload = {
+          def payload(value)
+            {
               container: {
                 thread_ts: id
               },
@@ -57,13 +53,45 @@ module Genova
                 {
                   action_id: 'selected_repository',
                   selected_option: {
-                    value: 'repository'
+                    value:
                   }
                 }
               ]
             }
+          end
 
-            expect { Genova::Slack::RequestHandler.call(payload) }.to_not raise_error
+          context 'when alias is not specified' do
+            it 'should show repository name' do
+              Settings.add_source!(
+                github: {
+                  repositories: [{
+                    name: 'repository'
+                  }]
+                }
+              )
+              Settings.reload!
+
+              expect { Genova::Slack::RequestHandler.call(payload('repository')) }.to_not raise_error
+              expect(messages.last).to eq("*Repository:*\nrepository\n")
+            end
+          end
+
+          context 'when alias is specified' do
+            it 'should show alias name' do
+              Settings.add_source!(
+                github: {
+                  repositories: [{
+                    name: 'repository',
+                    base_path: './backend',
+                    alias: 'repository - backend'
+                  }]
+                }
+              )
+              Settings.reload!
+
+              expect { Genova::Slack::RequestHandler.call(payload('repository - backend')) }.to_not raise_error
+              expect(messages.last).to eq("*Repository:*\nrepository - backend\n")
+            end
           end
         end
 
@@ -285,6 +313,154 @@ module Genova
                 'Note must be specified.'
               )
               expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+            end
+          end
+
+          context 'when permissions are configured' do
+            let(:payload) do
+              {
+                container: {
+                  thread_ts: id
+                },
+                user: {
+                  id: user
+                },
+                actions: [
+                  {
+                    action_id: 'submit_deploy'
+                  }
+                ]
+              }
+            end
+
+            before do
+              allow(::Slack::DeployWorker).to receive(:perform_async)
+              session_store.merge({ repository: 'genova', cluster: 'production' })
+            end
+
+            def add_permissions(*policies)
+              Settings.add_source!(
+                slack: {
+                  permissions: policies.map { |policy| { policy:, resources: ['*'], allow_users: ['allowed_user'] } }
+                }
+              )
+              Settings.reload!
+            end
+
+            context 'when only repository policy is configured' do
+              before { add_permissions('repository') }
+
+              context 'when user is allowed' do
+                let(:user) { 'allowed_user' }
+
+                it 'should execute deploy' do
+                  Genova::Slack::RequestHandler.call(payload)
+
+                  expect(::Slack::DeployWorker).to have_received(:perform_async)
+                end
+              end
+
+              context 'when user is not allowed' do
+                let(:user) { 'denied_user' }
+
+                it 'should raise error' do
+                  expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+                  expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+                end
+              end
+            end
+
+            context 'when only cluster policy is configured' do
+              before { add_permissions('cluster') }
+
+              context 'when user is allowed' do
+                let(:user) { 'allowed_user' }
+
+                it 'should execute deploy' do
+                  Genova::Slack::RequestHandler.call(payload)
+
+                  expect(::Slack::DeployWorker).to have_received(:perform_async)
+                end
+              end
+
+              context 'when user is not allowed' do
+                let(:user) { 'denied_user' }
+
+                it 'should raise error' do
+                  expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+                  expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+                end
+              end
+            end
+
+            context 'when user is allowed only by cluster policy' do
+              let(:user) { 'allowed_user' }
+
+              before do
+                Settings.add_source!(
+                  slack: {
+                    permissions: [
+                      { policy: 'repository', resources: ['*'], allow_users: ['other_user'] },
+                      { policy: 'cluster', resources: ['*'], allow_users: ['allowed_user'] }
+                    ]
+                  }
+                )
+                Settings.reload!
+              end
+
+              it 'should raise error' do
+                expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+                expect(::Slack::DeployWorker).not_to have_received(:perform_async)
+              end
+            end
+          end
+        end
+
+        context 'when invoke selected_workflow_deploy' do
+          let(:payload) do
+            {
+              container: {
+                thread_ts: id
+              },
+              user: {
+                id: user
+              },
+              actions: [
+                {
+                  action_id: 'selected_workflow_deploy'
+                }
+              ]
+            }
+          end
+
+          before do
+            allow(::Slack::WorkflowDeployWorker).to receive(:perform_async)
+            session_store.merge({ name: 'production_release' })
+
+            Settings.add_source!(
+              slack: {
+                permissions: [{ policy: 'workflow', resources: ['production_release'], allow_users: ['allowed_user'] }]
+              }
+            )
+            Settings.reload!
+          end
+
+          context 'when user is allowed' do
+            let(:user) { 'allowed_user' }
+
+            it 'should execute workflow deploy' do
+              Genova::Slack::RequestHandler.call(payload)
+
+              expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
+            end
+          end
+
+          context 'when user is not allowed' do
+            let(:user) { 'denied_user' }
+
+            it 'should raise error' do
+              expect { Genova::Slack::RequestHandler.call(payload) }.to raise_error(Genova::Exceptions::SlackPermissionDeniedError)
+              expect(::Slack::WorkflowDeployWorker).not_to have_received(:perform_async)
             end
           end
         end

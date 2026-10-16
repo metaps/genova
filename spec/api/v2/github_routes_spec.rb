@@ -5,39 +5,45 @@ module V2
     describe 'POST /api/v2/github/push' do
       let(:webhook_pushed_commit) do
         Oj.dump(
-          repository: {
-            name: 'repository',
-            owner: {
-              name: 'owner'
+          {
+            repository: {
+              name: 'repository',
+              owner: {
+                name: 'owner'
+              },
+              pushed_at: 'pushed_at'
             },
-            pushed_at: 'pushed_at'
-          },
-          ref: 'refs/heads/xxx',
-          head_commit: {
-            url: 'url',
-            author: {
-              username: 'username'
+            ref: 'refs/heads/xxx',
+            head_commit: {
+              url: 'url',
+              author: {
+                username: 'username'
+              }
             }
-          }
+          },
+          mode: :compat
         )
       end
 
       let(:webhook_pushed_tag) do
         Oj.dump(
-          repository: {
-            name: 'repository',
-            owner: {
-              name: 'owner'
+          {
+            repository: {
+              name: 'repository',
+              owner: {
+                name: 'owner'
+              },
+              pushed_at: 'pushed_at'
             },
-            pushed_at: 'pushed_at'
-          },
-          ref: 'refs/tags/xxx',
-          head_commit: {
-            url: 'url',
-            author: {
-              username: 'username'
+            ref: 'refs/tags/xxx',
+            head_commit: {
+              url: 'url',
+              author: {
+                username: 'username'
+              }
             }
-          }
+          },
+          mode: :compat
         )
       end
 
@@ -82,29 +88,87 @@ module V2
           post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden
         end
+
+        it 'should not parse payload' do
+          allow(Oj).to receive(:load).and_call_original
+
+          post('/api/v2/github/push', params: webhook_pushed_commit, headers:)
+
+          expect(Oj).not_to have_received(:load)
+        end
+      end
+
+      context 'when signature header is missing' do
+        it 'should return error' do
+          post('/api/v2/github/push', params: webhook_pushed_commit, headers: { 'CONTENT_TYPE' => 'application/json' })
+          expect(response).to have_http_status :forbidden
+        end
+      end
+
+      context 'when payload is not an object' do
+        let(:payload) { '[]' }
+        let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), Settings.github.secret_key, payload)}" }
+
+        it 'should return error' do
+          post('/api/v2/github/push', params: payload, headers: { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' })
+          expect(response).to have_http_status :bad_request
+        end
+      end
+
+      context 'when payload contains Oj object mode keys' do
+        let(:payload) do
+          Oj.dump(
+            {
+              repository: { name: 'repository', owner: { name: 'owner' }, pushed_at: 'pushed_at' },
+              ref: 'refs/heads/xxx',
+              head_commit: { url: 'url', author: { username: { '^o' => 'Object' } } }
+            },
+            mode: :compat
+          )
+        end
+        let(:signature) { "sha1=#{OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), Settings.github.secret_key, payload)}" }
+
+        it 'should keep them as plain hash' do
+          allow(Github::DeployWorker).to receive(:perform_async)
+
+          post('/api/v2/github/push', params: payload, headers: { 'HTTP_X_HUB_SIGNATURE' => signature, 'CONTENT_TYPE' => 'application/json' })
+
+          expect(response).to have_http_status :created
+
+          key = Genova::Sidekiq::JobStore.send(:generate_key, 'pushed_at:pushed_at')
+          value = Genova::Sidekiq::JobStore.find(key)
+
+          expect(value[:author]).to eq('^o': 'Object')
+        end
       end
     end
 
     describe 'POST /api/v2/github/actions/push' do
       let(:actions_pushed_commit) do
         Oj.dump(
-          account: 'account',
-          repository: 'repository',
-          ref: 'refs/heads/xxx',
-          commit_url: 'url',
-          author: 'author',
-          pushed_at: 'pushed_at'
+          {
+            account: 'account',
+            repository: 'repository',
+            ref: 'refs/heads/xxx',
+            commit_url: 'url',
+            author: 'author',
+            pushed_at: 'pushed_at'
+          },
+          mode: :compat
         )
       end
 
       let(:actions_pushed_tag) do
         Oj.dump(
-          account: 'account',
-          repository: 'repository',
-          ref: 'refs/tags/xxx',
-          commit_url: 'url',
-          author: 'author',
-          pushed_at: 'pushed_at'
+          {
+            account: 'account',
+            repository: 'repository',
+            ref: 'refs/tags/xxx',
+            commit_url: 'url',
+            author: 'author',
+            pushed_at: 'pushed_at'
+          },
+          mode: :compat
         )
       end
 
@@ -135,6 +199,14 @@ module V2
           allow(Github::DeployWorker).to receive(:perform_async)
           post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
           expect(response).to have_http_status :forbidden
+        end
+
+        it 'should not parse payload' do
+          allow(Oj).to receive(:load).and_call_original
+
+          post('/api/v2/github/actions/push', params: actions_pushed_commit, headers:)
+
+          expect(Oj).not_to have_received(:load)
         end
       end
     end

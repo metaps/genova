@@ -1,5 +1,28 @@
 # Upgrading
 
+## Upgrading from 5.3 to 5.4
+
+The evaluation of `slack.permissions` has changed.
+Previously, a Slack deployment was allowed if the user was permitted by either the `repository` or the `cluster` policy. Now the user must be permitted by every configured policy. A policy that is not configured is not evaluated.
+
+If you configure both policies with different users, add the users to both policies.
+
+```yaml
+# config/settings.local.yml
+
+slack:
+  permissions:
+    - policy: repository
+      resources:
+        - '*'
+      allow_users:
+        - U***
+```
+
+The `workflow` policy did not work correctly in previous versions. Workflow deployments from Slack were not restricted when the policy was not configured, and failed for all users when it was configured. After upgrading, configure the `workflow` policy if you want to restrict workflow deployments.
+
+After changing the settings, genova must be restarted.
+
 ## Upgrading from 4.2 to 5.0
 
 Contains updates to `node_modules`. Please update the package using the yarn command.

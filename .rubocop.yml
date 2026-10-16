@@ -5,7 +5,7 @@ AllCops:
     - 'etc/**/*'
     - 'node_modules/**/*'
     - 'tmp/**/*'
-  TargetRubyVersion: 3.2
+  TargetRubyVersion: 4.0
 
 AsciiComments:
   Enabled: false
@@ -17,7 +17,7 @@ Metrics/BlockLength:
   Enabled: false
 Metrics/ClassLength:
   Enabled: false
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 Metrics/MethodLength:
   CountComments: false

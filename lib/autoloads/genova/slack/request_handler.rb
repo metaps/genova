@@ -51,7 +51,7 @@ module Genova
           @session_store.merge(params)
           ::Github::RetrieveBranchWorker.perform_async(@thread_ts)
 
-          show_message(BlockKit::Helper.section_field('Repository', params[:repository]))
+          show_message(BlockKit::Helper.section_field('Repository', params[:alias].presence || params[:repository]))
         end
 
         def selected_workflow
@@ -156,7 +156,7 @@ module Genova
 
         def submit_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
-          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) || permission.allow_repository?(@session_store.params[:repository])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_cluster?(@session_store.params[:cluster]) && permission.allow_repository?(@session_store.params[:repository])
 
           merge_note
 
@@ -179,7 +179,7 @@ module Genova
 
         def selected_workflow_deploy
           permission = Interactive::Permission.new(@payload[:user][:id])
-          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:workflow])
+          raise Genova::Exceptions::SlackPermissionDeniedError, "User #{@payload[:user][:id]} does not have execute permission." unless permission.allow_workflow?(@session_store.params[:name])
 
           merge_note
 

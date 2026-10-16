@@ -85,11 +85,13 @@ module Genova
             results = Genova::Slack::BlockKit::ElementObject.cluster_options(
               acount: 'account',
               repository: 'repository',
+              alias: 'alias',
               branch: 'branch',
               tag: 'tag'
             )
 
             expect(results.count).to eq(1)
+            expect(Genova::CodeManager::Git).to have_received(:new).with('repository', alias: 'alias', branch: 'branch', tag: 'tag')
           end
         end
 

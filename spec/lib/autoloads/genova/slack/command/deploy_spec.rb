@@ -29,6 +29,31 @@ module Genova
           end
         end
 
+        context 'when repository name is invalid' do
+          it 'should raise error' do
+            allow(bot).to receive(:ask_confirm_deploy)
+            allow(Genova::Slack::Interactive::Bot).to receive(:new).and_return(bot)
+            allow(FileUtils).to receive(:rm_rf)
+            allow(::Git).to receive(:open)
+
+            statements = {
+              command: 'deploy',
+              params: {
+                repository: '../../..',
+                branch: 'master',
+                cluster: 'cluster',
+                service: 'service',
+                target: 'target'
+              }
+            }
+
+            expect { Genova::Slack::Command::Deploy.call(statements, 'user', Time.now.utc.to_f) }.to raise_error(Genova::Exceptions::InvalidArgumentError)
+            expect(FileUtils).not_to have_received(:rm_rf)
+            expect(::Git).not_to have_received(:open)
+            expect(bot).not_to have_received(:ask_confirm_deploy)
+          end
+        end
+
         context 'when interactive deploy' do
           it 'should return repositories' do
             allow(bot).to receive(:ask_repository)
