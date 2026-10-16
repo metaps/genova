@@ -24,6 +24,44 @@ describe Genova::Docker::Registry do
   end
 
   describe '#login_and_pull' do
+    ['', '   '].each do |value|
+      context "when registry environment values are #{value.inspect}" do
+        before do
+          %w[DOCKER_REGISTRY_URL DOCKER_REGISTRY_USER DOCKER_REGISTRY_PASSWORD].each do |key|
+            allow(ENV).to receive(:[]).with(key).and_return(value)
+          end
+        end
+
+        it 'uses configured credentials and pulls images' do
+          registry_settings.username = 'configured-user'
+          registry_settings.password = 'configured-password'
+
+          registry.login_and_pull
+
+          expect(Genova::Command::Executor).to have_received(:call).with(
+            'echo configured-password | docker login dhi.io -u configured-user --password-stdin',
+            logger,
+            hash_including(:filtered_command)
+          )
+          expect(Genova::Command::Executor).to have_received(:call).with('docker pull dhi.io/org/app:base', logger)
+        end
+
+        it 'resolves secret references and pulls images' do
+          registry_settings.username_secret = 'arn:aws:secretsmanager:ap-northeast-1:000000000000:secret:docker-user'
+          registry_settings.password_secret = '/docker/password'
+
+          registry.login_and_pull
+
+          expect(Genova::Command::Executor).to have_received(:call).with(
+            'echo PSParameterValue | docker login dhi.io -u SecretStringType --password-stdin',
+            logger,
+            hash_including(:filtered_command)
+          )
+          expect(Genova::Command::Executor).to have_received(:call).with('docker pull dhi.io/org/app:base', logger)
+        end
+      end
+    end
+
     context 'when credentials are provided via env' do
       before do
         allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_USER').and_return('user1')
