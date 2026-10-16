@@ -18,6 +18,7 @@ describe Genova::Docker::Registry do
   before do
     allow(Settings).to receive(:dig).with(:docker, :registry).and_return(registry_settings)
     allow(Genova::Command::Executor).to receive(:call).and_return(0)
+    allow(ENV).to receive(:[]).and_call_original
     allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_URL').and_return(nil)
     allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_USER').and_return(nil)
     allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_PASSWORD').and_return(nil)
