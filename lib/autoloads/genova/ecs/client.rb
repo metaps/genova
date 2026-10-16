@@ -123,7 +123,7 @@ module Genova
       private
 
       def ready(type)
-        @docker_registry.login_and_pull
+        @docker_registry.login
         @logger.info('Authenticate to ECR.')
 
         @ecr_client.authenticate
