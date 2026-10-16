@@ -5,25 +5,22 @@ module Genova
     class Executor
       class << self
         def call(command, logger, options = {})
-          @logger = logger
-          @options = options
-
           begin
-            status = wait_for_execute(command)
+            status = wait_for_execute(command, logger, options)
             status.exitstatus
           rescue Interrupt
-            @logger.error('Detected forced termination of program.')
+            logger.error('Detected forced termination of program.')
             raise Interrupt
           rescue => e
-            @logger.error(e.message)
+            logger.error(e.message)
             raise e
           end
         end
 
         private
 
-        def handle_io(stdin, stdout, stderr)
-          stdin.write(@options[:stdin_data]) unless @options[:stdin_data].nil?
+        def handle_io(stdin, stdout, stderr, logger, stdin_data)
+          stdin.write(stdin_data) unless stdin_data.nil?
           stdin.close_write
 
           loop do
@@ -31,7 +28,7 @@ module Genova
               io.each do |line|
                 next if line.nil? || line.empty?
 
-                @logger.info(line.chomp)
+                logger.info(line.chomp)
               end
             end
 
@@ -39,13 +36,13 @@ module Genova
           end
         end
 
-        def wait_for_execute(command)
-          @logger.info("Execute command. [#{@options[:filtered_command].presence || command}]")
+        def wait_for_execute(command, logger, options)
+          logger.info("Execute command. [#{options[:filtered_command].presence || command}]")
 
           exit_status = nil
 
           Open3.popen3(*Array(command)) do |stdin, stdout, stderr, wait_thr|
-            handle_io(stdin, stdout, stderr)
+            handle_io(stdin, stdout, stderr, logger, options[:stdin_data])
             exit_status = wait_thr.value
           end
 

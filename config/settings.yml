@@ -11,10 +11,8 @@ timezone: UTC
 docker:
   retention_days: 14
   registry:
-    # Private registry (e.g. dhi.io). Credentials are taken from DOCKER_REGISTRY_USER/PASSWORD if set.
+    # Private registry (e.g. dhi.io). Credentials use DOCKER_REGISTRY_USER/PASSWORD or the secret references below.
     url:
-    username:
-    password:
     # If specified, ARN uses Secrets Manager; otherwise SSM Parameter Store is used.
     username_secret:
     password_secret:

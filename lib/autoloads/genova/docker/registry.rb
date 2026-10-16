@@ -10,8 +10,8 @@ module Genova
         return if registry_config.blank?
 
         url = ENV['DOCKER_REGISTRY_URL'].presence || config_value(registry_config, :url)
-        username = ENV['DOCKER_REGISTRY_USER'].presence || config_value(registry_config, :username) || secret_value(registry_config, :username_secret)
-        password = ENV['DOCKER_REGISTRY_PASSWORD'].presence || config_value(registry_config, :password) || secret_value(registry_config, :password_secret)
+        username = ENV['DOCKER_REGISTRY_USER'].presence || secret_value(registry_config, :username_secret)
+        password = ENV['DOCKER_REGISTRY_PASSWORD'].presence || secret_value(registry_config, :password_secret)
 
         return if [url, username, password, config_value(registry_config, :username_secret), config_value(registry_config, :password_secret)].all?(&:blank?)
 

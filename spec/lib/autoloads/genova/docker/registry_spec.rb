@@ -5,8 +5,6 @@ describe Genova::Docker::Registry do
   let(:registry_settings) do
     OpenStruct.new(
       url: 'dhi.io',
-      username: nil,
-      password: nil,
       username_secret: nil,
       password_secret: nil
     )
@@ -32,19 +30,6 @@ describe Genova::Docker::Registry do
           end
         end
 
-        it 'uses configured credentials' do
-          registry_settings.username = 'configured-user'
-          registry_settings.password = 'configured-password'
-
-          registry.login
-
-          expect(Genova::Command::Executor).to have_received(:call).with(
-            ['docker', 'login', 'dhi.io', '-u', 'configured-user', '--password-stdin'],
-            logger,
-            hash_including(filtered_command: 'docker login dhi.io -u {FILTERED} --password-stdin', stdin_data: 'configured-password')
-          )
-        end
-
         it 'resolves secret references' do
           registry_settings.username_secret = 'arn:aws:secretsmanager:ap-northeast-1:000000000000:secret:docker-user'
           registry_settings.password_secret = '/docker/password'
@@ -67,6 +52,10 @@ describe Genova::Docker::Registry do
       end
 
       it 'executes only docker login with filtered credentials' do
+        registry_settings.username_secret = '/docker/username'
+        registry_settings.password_secret = '/docker/password'
+        expect(Genova::Utils::SecretFetcher).not_to receive(:call)
+
         registry.login
 
         expect(Genova::Command::Executor).to have_received(:call).with(
@@ -131,13 +120,30 @@ describe Genova::Docker::Registry do
       end
     end
 
+    context 'when plaintext credentials are present in registry settings' do
+      before do
+        registry_settings.username = 'plaintext-user'
+        registry_settings.password = 'plaintext-password'
+      end
+
+      it 'does not use plaintext credentials' do
+        expect { registry.login }.to raise_error(Genova::Exceptions::ValidationError)
+        expect(Genova::Command::Executor).not_to have_received(:call)
+      end
+    end
+
     %i[url username password].each do |key|
       [nil, '', '   '].each do |value|
         context "when registry authentication is configured and #{key} is #{value.inspect}" do
           before do
-            registry_settings.username = 'configured-user'
-            registry_settings.password = 'configured-password'
-            registry_settings[key] = value
+            allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_USER').and_return('user1')
+            allow(ENV).to receive(:[]).with('DOCKER_REGISTRY_PASSWORD').and_return('pass1')
+            if key == :url
+              registry_settings.url = value
+            else
+              env_key = key == :username ? 'DOCKER_REGISTRY_USER' : 'DOCKER_REGISTRY_PASSWORD'
+              allow(ENV).to receive(:[]).with(env_key).and_return(value)
+            end
           end
 
           it 'raises validation error without running Docker commands' do
