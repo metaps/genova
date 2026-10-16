@@ -211,7 +211,7 @@ class DeployJob
   end
 
   def note_must_be_present
-    errors.add(:note, :blank)
+    errors.add(:note, :blank) if note.blank?
   end
 
   def truncate_note
