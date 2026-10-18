@@ -1,5 +1,49 @@
 # Upgrading
 
+## Upgrading from 5.4 to 5.5
+
+### Docker Compose and Buildx
+
+`docker-compose.yml` now builds the `base` image as a dependency of the other services (`additional_contexts: base: service:base`). This requires Docker Compose v5 or later and Docker Buildx 0.17.0 or later. With older versions, `docker compose build` fails with an error such as `failed to get build context base` or `compose build requires buildx 0.17.0 or later`.
+
+```shell
+$ docker compose version
+$ docker buildx version
+```
+
+### Rebuild and restart
+
+The gem dependencies have been updated (e.g. Sidekiq 7.3.10), and new parameters have been added to `config/settings.yml`. Rebuild the images and restart all containers.
+
+```shell
+$ docker compose build
+$ docker compose up -d
+```
+
+If the containers are not restarted, errors such as `undefined method 'note_required' for nil` may occur because the new settings are not loaded.
+
+### New optional settings
+
+The following settings have been added. They are optional, and the behavior does not change if they are not set.
+
+```yaml
+# config/settings.local.yml
+
+# Require a note for deployments started by users.
+deploy:
+  note_required: true
+
+# Log in to a private Docker registry before building images.
+docker:
+  registry:
+    url: dhi.io
+    # Values starting with `arn:aws:secretsmanager:` are read from Secrets Manager, others from SSM Parameter Store.
+    username_secret: /genova/docker/username
+    password_secret: /genova/docker/password
+```
+
+The credentials of the private registry can also be set in `.env` with `DOCKER_REGISTRY_URL`, `DOCKER_REGISTRY_USER` and `DOCKER_REGISTRY_PASSWORD`.
+
 ## Upgrading from 5.3 to 5.4
 
 The evaluation of `slack.permissions` has changed.
