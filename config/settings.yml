@@ -10,6 +10,12 @@ timezone: UTC
 
 docker:
   retention_days: 14
+  registry:
+    # Private registry (e.g. dhi.io). Credentials use DOCKER_REGISTRY_USER/PASSWORD or the secret references below.
+    url:
+    # If specified, ARN uses Secrets Manager; otherwise SSM Parameter Store is used.
+    username_secret:
+    password_secret:
   # build:
   #   # Memory usage allowed at build time. For example `1024m`.
   #   # This option maps to `docker build --memory`.
@@ -52,6 +58,10 @@ ecr:
   # Specify true to create a repository if there is no repository.
   # If false is specified, an error is raised if the repository is unregistered.
   create_repository: true
+
+deploy:
+  # Specify `true` to require a note for user-initiated deployments.
+  note_required: false
 
 # Workflows can be defined to step through the deployment of tasks.
 # https://github.com/metaps/genova/wiki/Workflow
