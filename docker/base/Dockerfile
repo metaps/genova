@@ -1,6 +1,7 @@
 FROM ruby:4.0-alpine
 
-RUN apk --update add build-base openssh docker git gcompat tzdata yaml-dev --no-cache
+RUN apk upgrade --no-cache && \
+    apk add --no-cache build-base openssh docker git gcompat tzdata yaml-dev
 ENV APP_HOME=/app
 ENV RUBY_YJIT_ENABLE=1
 
