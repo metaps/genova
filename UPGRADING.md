@@ -1,5 +1,51 @@
 # Upgrading
 
+## Upgrading from 5.5 to 5.6
+
+### MongoDB 9.0
+
+The MongoDB image has been updated from 5.0 to 9.0. MongoDB can only be upgraded one major version at a time, so upgrade the data in the `db` volume through 6.0, 7.0 and 8.0 before starting 9.0.
+
+Stop genova and back up the data first.
+
+```shell
+$ docker compose stop rails sidekiq slack cron
+$ docker compose exec mongo mongodump --archive --gzip > mongodump.archive.gz
+$ docker compose stop mongo
+```
+
+Start each version with the `db` volume, and raise `featureCompatibilityVersion` to that version.
+
+```shell
+$ VOLUME=genova_db  # Check the name with `docker volume ls`
+
+$ docker run -d --name mongo-upgrade -v $VOLUME:/data/db mongo:6.0
+$ docker exec mongo-upgrade mongosh --quiet --eval 'db.adminCommand({ setFeatureCompatibilityVersion: "6.0" })'
+$ docker rm -f mongo-upgrade
+
+$ docker run -d --name mongo-upgrade -v $VOLUME:/data/db mongo:7.0
+$ docker exec mongo-upgrade mongosh --quiet --eval 'db.adminCommand({ setFeatureCompatibilityVersion: "7.0", confirm: true })'
+$ docker rm -f mongo-upgrade
+
+$ docker run -d --name mongo-upgrade -v $VOLUME:/data/db mongo:8.0
+$ docker exec mongo-upgrade mongosh --quiet --eval 'db.adminCommand({ setFeatureCompatibilityVersion: "8.0", confirm: true })'
+$ docker rm -f mongo-upgrade
+```
+
+Wait a few seconds after `docker run` until MongoDB accepts connections before running `docker exec`.
+
+Then start genova with MongoDB 9.0.
+
+```shell
+$ docker compose up -d
+```
+
+`featureCompatibilityVersion` stays at 8.0 at this point, so you can still go back to `mongo:8.0` if a problem occurs. After confirming that genova works, raise it to 9.0.
+
+```shell
+$ docker compose exec mongo mongosh --quiet --eval 'db.adminCommand({ setFeatureCompatibilityVersion: "9.0", confirm: true })'
+```
+
 ## Upgrading from 5.4 to 5.5
 
 ### Docker Compose and Buildx
