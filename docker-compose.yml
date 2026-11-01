@@ -76,7 +76,7 @@ services:
     depends_on:
       - base
   mongo:
-    image: mongo:5.0
+    image: mongo:9.0
     volumes:
       - db:/data/db
     restart: ${DOCKER_RESTART}
