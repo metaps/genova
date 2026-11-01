@@ -6,6 +6,8 @@ module Genova
       # GitHub repository names consist of alphanumerics, '-', '_' and '.', and cannot be '.' or '..'.
       REPOSITORY_NAME_PATTERN = /\A(?!\.{1,2}\z)[A-Za-z0-9_.-]+\z/
 
+      FETCH_ATTEMPTS = 3
+
       def initialize(repository, options = {})
         raise Exceptions::InvalidArgumentError, "Invalid repository name. [#{repository}]" unless repository.to_s.match?(REPOSITORY_NAME_PATTERN)
         raise Exceptions::InvalidArgumentError, "Invalid branch name. [#{options[:branch]}]" if options[:branch].to_s.start_with?('-')
@@ -69,7 +71,7 @@ module Genova
 
       def origin_branches
         git = client
-        git.fetch(prune: true)
+        fetch_with_retry(git)
 
         branches = []
 
@@ -146,6 +148,23 @@ module Genova
         @logger.info("Git clone: #{uri}")
 
         ::Git.clone(uri, '', branch: @branch, path: @repos_path, recursive: true)
+      end
+
+      # Branches are listed before a deployment is confirmed, which then fetches on its own. A
+      # transient failure here would block a deployment that could succeed, so it is retried.
+      def fetch_with_retry(git)
+        attempt = 0
+
+        begin
+          attempt += 1
+          git.fetch(prune: true)
+        rescue ::Git::Error => e
+          raise e if attempt >= FETCH_ATTEMPTS
+
+          @logger.warn("Git fetch failed, retrying (#{attempt}/#{FETCH_ATTEMPTS}): #{e.message}")
+          sleep(attempt)
+          retry
+        end
       end
 
       def client

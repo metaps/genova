@@ -2,6 +2,13 @@ module Genova
   module Slack
     module BlockKit
       class ElementObject
+        # Slack rejects a select menu holding more than 100 options. `branch_limit` caps how many
+        # branches are read from Git, but nothing stops it from being configured above that.
+        MAX_SELECT_OPTIONS = 100
+
+        # Slack rejects the whole message when the value of an option exceeds 150 characters.
+        MAX_OPTION_VALUE_LENGTH = 150
+
         class << self
           def repository_options(params)
             options = []
@@ -70,46 +77,56 @@ module Genova
 
           def branch_options(params)
             code_manager = Genova::CodeManager::Git.new(params[:repository])
-            default_branch = code_manager.default_branch
-            option_groups = []
 
-            if default_branch.present?
+            branch_option_groups(code_manager.origin_branches, code_manager.default_branch)
+          end
+
+          # Separated from `branch_options` so that a caller deploying several targets of one
+          # repository can fetch the branches once and build the options for each default branch.
+          def branch_option_groups(branches, default_branch)
+            option_groups = []
+            limit = MAX_SELECT_OPTIONS
+
+            if selectable_branch?(default_branch)
               option_groups << {
                 label: {
                   type: 'plain_text',
                   text: 'Default'
                 },
-                options: [
-                  {
-                    text: {
-                      type: 'plain_text',
-                      text: default_branch
-                    },
-                    value: default_branch
-                  }
-                ]
+                options: [branch_option(default_branch)]
+              }
+              limit -= 1
+            end
+
+            recently_options = branches.select { |branch| branch != default_branch && selectable_branch?(branch) }.first(limit).map { |branch| branch_option(branch) }
+
+            if recently_options.present?
+              option_groups << {
+                label: {
+                  type: 'plain_text',
+                  text: 'Recently'
+                },
+                options: recently_options
               }
             end
 
-            recently_options = []
-            code_manager.origin_branches.each do |branch|
-              recently_options.push(
-                text: {
-                  type: 'plain_text',
-                  text: middle_truncate(branch)
-                },
-                value: branch
-              )
-            end
-
-            option_groups << {
-              label: {
-                type: 'plain_text',
-                text: 'Recently'
-              },
-              options: recently_options
-            }
             option_groups
+          end
+
+          # A branch too long to be the value of an option is left out rather than truncated, which
+          # would deploy another Git reference. Git allows such a name, but it is rarely used.
+          def selectable_branch?(branch)
+            branch.present? && branch.length <= MAX_OPTION_VALUE_LENGTH
+          end
+
+          def branch_option(branch)
+            {
+              text: {
+                type: 'plain_text',
+                text: middle_truncate(branch)
+              },
+              value: branch
+            }
           end
 
           def tag_options(params)

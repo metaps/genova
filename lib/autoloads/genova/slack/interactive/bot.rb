@@ -2,6 +2,9 @@ module Genova
   module Slack
     module Interactive
       class Bot
+        # Slack rejects a message holding more than 50 blocks.
+        MAX_MESSAGE_BLOCKS = 50
+
         def initialize(params = {})
           @client = ::Slack::Web::Client.new(token: Settings.slack.api_token)
           @parent_message_ts = params[:parent_message_ts]
@@ -150,29 +153,32 @@ module Genova
           blocks << BlockKit::Helper.section('Ready to deploy!')
 
           steps = Settings.workflows.find { |k| k[:name] == params[:name] }[:steps]
-          steps.each.with_index(1) do |step, i|
-            # Raises when `alias` is unusable, so the mistake surfaces here rather than after the
-            # earlier steps of the workflow have already been deployed.
-            Genova::Config::SettingsHelper.find_step_repository(step)
+          branch_options = {}
 
-            blocks << BlockKit::Helper.header("Step ##{i}")
+          # Slack rejects a message with more than 50 blocks, so the step heading shares a block
+          # with the fields instead of taking a header block of its own.
+          steps.each.with_index(1) do |step, i|
             blocks << BlockKit::Helper.section_short_fieldset(
               [
                 BlockKit::Helper.section_short_field('Repository', step[:alias].presence || step[:repository]),
-                BlockKit::Helper.section_short_field('Branch', step[:branch]),
                 BlockKit::Helper.section_short_field('Cluster', step[:cluster]),
                 BlockKit::Helper.section_short_field('Type', step[:type]),
                 BlockKit::Helper.section_short_field('Resources', step[:resources].join(', '))
-              ]
+              ],
+              "*Step ##{i}*"
             )
+            blocks << workflow_branch_select(step, i, branch_options)
           end
 
+          blocks << BlockKit::Helper.divider
           blocks << note_input
 
           blocks << BlockKit::Helper.actions([
                                                BlockKit::Helper.primary_button('Deploy', 'deploy', 'selected_workflow_deploy'),
                                                BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')
                                              ])
+
+          raise Genova::Exceptions::ValidationError, "Workflow has too many steps to confirm in Slack. [#{params[:name]}: #{steps.size} steps]" if blocks.size > MAX_MESSAGE_BLOCKS
 
           send(blocks)
         end
@@ -257,15 +263,18 @@ module Genova
         end
 
         def start_deploy(params)
+          deploy_job = params[:deploy_job]
+
           fields = []
-          fields << BlockKit::Helper.section_short_field('Cluster', params[:deploy_job].cluster)
-          fields << BlockKit::Helper.section_short_field('Service', params[:deploy_job].service) if params[:deploy_job].type == DeployJob.type.find_value(:service)
-          fields << BlockKit::Helper.section_short_field('Run task', params[:deploy_job].run_task) if params[:deploy_job].type == DeployJob.type.find_value(:run_task)
-          fields << BlockKit::Helper.section_short_field('Deploy log', "#{Settings.console.url}/deploy_jobs/#{params[:deploy_job].id}")
+          fields << deploy_source_field(deploy_job)
+          fields << BlockKit::Helper.section_short_field('Cluster', deploy_job.cluster)
+          fields << BlockKit::Helper.section_short_field('Service', deploy_job.service) if deploy_job.type == DeployJob.type.find_value(:service)
+          fields << BlockKit::Helper.section_short_field('Run task', deploy_job.run_task) if deploy_job.type == DeployJob.type.find_value(:run_task)
+          fields << BlockKit::Helper.section_short_field('Deploy log', "#{Settings.console.url}/deploy_jobs/#{deploy_job.id}")
 
           send([
                  BlockKit::Helper.section('Start deployment.'),
-                 BlockKit::Helper.section_short_fieldset(fields)
+                 BlockKit::Helper.section_short_fieldset(fields.compact)
                ])
         end
 
@@ -301,6 +310,48 @@ module Genova
         end
 
         private
+
+        # Build a branch select for each step of the workflow.
+        # Branch defined in `settings.yml` is used as the default value.
+        def workflow_branch_select(step, index, cache)
+          # A branch such as `2026` is loaded from `settings.yml` as an Integer, which Slack rejects as an option value.
+          default_branch = step[:branch]&.to_s
+          # Raises when `alias` is unusable, so the mistake surfaces here rather than after the
+          # earlier steps of the workflow have already been deployed.
+          repository_settings = Genova::Config::SettingsHelper.find_step_repository(step)
+          repository = repository_settings.present? ? repository_settings[:name] : step[:repository]
+
+          # A repository is cloned once per name, so the branches of a monorepo are the same
+          # whichever `base_path` a step points at. Cache them by repository to fetch only once.
+          branches = cache[repository] ||= Genova::CodeManager::Git.new(repository, logger: @logger).origin_branches
+
+          params = {
+            groups: true,
+            block_id: "#{Genova::Slack::RequestHandler::WORKFLOW_BRANCH_BLOCK_PREFIX}#{index}"
+          }
+          # Left unselected when the branch cannot be an option. The step then deploys the branch
+          # defined in `settings.yml`, as it does whenever no branch is selected.
+          params[:initial_option] = BlockKit::ElementObject.branch_option(default_branch) if BlockKit::ElementObject.selectable_branch?(default_branch)
+
+          BlockKit::Helper.static_select_input(
+            Genova::Slack::RequestHandler::WORKFLOW_BRANCH_ACTION_ID,
+            'Branch',
+            BlockKit::ElementObject.branch_option_groups(branches, default_branch),
+            params
+          )
+        end
+
+        # The branch of a workflow step is chosen when deploying, so the message says which one is
+        # actually being deployed rather than leaving it to be looked up in the configuration file.
+        def deploy_source_field(deploy_job)
+          github_client = Genova::Github::Client.new(deploy_job.repository)
+
+          if deploy_job.branch.present?
+            BlockKit::Helper.section_short_field('Branch', "<#{github_client.build_branch_uri(deploy_job.branch)}|#{deploy_job.branch}>")
+          elsif deploy_job.tag.present?
+            BlockKit::Helper.section_short_field('Tag', "<#{github_client.build_tag_uri(deploy_job.tag)}|#{deploy_job.tag}>")
+          end
+        end
 
         def code(string)
           "```#{string.truncate(512)}```"

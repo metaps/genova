@@ -18,6 +18,54 @@ module Genova
           end
         end
 
+        describe 'start_deploy' do
+          let(:posted) { [] }
+
+          before do
+            allow(client).to receive(:chat_postMessage) { |params| posted << params }
+          end
+
+          def fields(deploy_job)
+            bot.start_deploy(deploy_job:)
+            posted.last[:blocks][1][:fields].map { |field| field[:text] }
+          end
+
+          it 'should show the deployed branch' do
+            deploy_job = DeployJob.new(
+              type: DeployJob.type.find_value(:service),
+              repository: 'repository',
+              branch: 'branch',
+              cluster: 'cluster',
+              service: 'service'
+            )
+
+            expect(fields(deploy_job).first).to include('*Branch:*', 'branch', 'tree/branch')
+          end
+
+          it 'should show the deployed tag' do
+            deploy_job = DeployJob.new(
+              type: DeployJob.type.find_value(:service),
+              repository: 'repository',
+              tag: 'tag',
+              cluster: 'cluster',
+              service: 'service'
+            )
+
+            expect(fields(deploy_job).first).to include('*Tag:*', 'releases/tag/tag')
+          end
+
+          it 'should not show a field when neither is set' do
+            deploy_job = DeployJob.new(
+              type: DeployJob.type.find_value(:service),
+              repository: 'repository',
+              cluster: 'cluster',
+              service: 'service'
+            )
+
+            expect(fields(deploy_job).first).to include('*Cluster:*')
+          end
+        end
+
         describe 'ask_history' do
           let(:array) { double(Array) }
 
@@ -148,8 +196,10 @@ module Genova
 
           before do
             allow(client).to receive(:chat_postMessage) { |params| posted << params }
+            allow(Genova::CodeManager::Git).to receive(:new).and_return(double(origin_branches: ['branch']))
             allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository-alias').and_return(name: 'repository', alias: 'repository-alias')
             allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('unknown-alias').and_return(nil)
+            allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository').and_return(nil)
           end
 
           def step(alias_name)
@@ -171,6 +221,35 @@ module Genova
             expect { ask([step('repository-alias'), step('unknown-alias')]) }
               .to raise_error(Genova::Exceptions::ValidationError, /Alias is undefined/)
             expect(posted).to be_empty
+          end
+
+          def branch_select(block_index)
+            posted.last[:blocks].select { |block| block[:block_id].to_s.start_with?(Genova::Slack::RequestHandler::WORKFLOW_BRANCH_BLOCK_PREFIX) }[block_index]
+          end
+
+          it 'should select a numeric branch defined in settings as a string' do
+            ask([step(nil).merge(branch: 2026)])
+
+            expect(branch_select(0).dig(:element, :initial_option, :value)).to eq('2026')
+          end
+
+          it 'should leave a branch too long to be an option unselected' do
+            ask([step(nil).merge(branch: 'a' * 151)])
+
+            expect(branch_select(0)[:element]).not_to have_key(:initial_option)
+            expect(branch_select(0).to_s).not_to include('a' * 151)
+          end
+
+          it 'should raise error before asking when the workflow exceeds the block limit' do
+            expect { ask(Array.new(24) { step(nil) }) }
+              .to raise_error(Genova::Exceptions::ValidationError, /too many steps/)
+            expect(posted).to be_empty
+          end
+
+          it 'should ask when the workflow fits in the block limit' do
+            ask(Array.new(23) { step(nil) })
+
+            expect(posted.last[:blocks].size).to eq(Genova::Slack::Interactive::Bot::MAX_MESSAGE_BLOCKS)
           end
         end
 
