@@ -421,6 +421,35 @@ module Genova
 
               expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
             end
+
+            it 'should allow deploying a numeric branch defined in settings' do
+              Settings.workflows[0][:steps][0][:branch] = 2026
+
+              Genova::Slack::RequestHandler.call(payload('workflow_branch:1': branch_value('2026')))
+
+              expect(::Slack::WorkflowDeployWorker).to have_received(:perform_async)
+            end
+          end
+        end
+
+        context 'when invoke an action the handler does not define' do
+          it 'should not dispatch a method inherited from Object' do
+            payload = {
+              container: {
+                thread_ts: id
+              },
+              user: {
+                id: 'user'
+              },
+              actions: [
+                {
+                  action_id: 'system'
+                }
+              ]
+            }
+
+            expect { Genova::Slack::RequestHandler.call(payload) }
+              .to raise_error(Genova::Exceptions::RoutingError, /`system` action does not exist/)
           end
         end
 

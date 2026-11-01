@@ -73,6 +73,14 @@ module Genova
 
             expect(total).to eq(Genova::Slack::BlockKit::ElementObject::MAX_SELECT_OPTIONS)
           end
+
+          it 'should leave out branches too long to be an option value' do
+            long_branch = 'a' * 151
+
+            results = Genova::Slack::BlockKit::ElementObject.branch_option_groups(['main', long_branch], long_branch)
+
+            expect(results.flat_map { |group| group[:options] }.pluck(:value)).to eq(%w[main])
+          end
         end
 
         describe 'tag_options' do

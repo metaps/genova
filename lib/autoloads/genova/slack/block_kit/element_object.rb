@@ -6,6 +6,9 @@ module Genova
         # branches are read from Git, but nothing stops it from being configured above that.
         MAX_SELECT_OPTIONS = 100
 
+        # Slack rejects the whole message when the value of an option exceeds 150 characters.
+        MAX_OPTION_VALUE_LENGTH = 150
+
         class << self
           def repository_options(params)
             options = []
@@ -84,7 +87,7 @@ module Genova
             option_groups = []
             limit = MAX_SELECT_OPTIONS
 
-            if default_branch.present?
+            if selectable_branch?(default_branch)
               option_groups << {
                 label: {
                   type: 'plain_text',
@@ -95,7 +98,7 @@ module Genova
               limit -= 1
             end
 
-            recently_options = branches.reject { |branch| branch == default_branch }.first(limit).map { |branch| branch_option(branch) }
+            recently_options = branches.select { |branch| branch != default_branch && selectable_branch?(branch) }.first(limit).map { |branch| branch_option(branch) }
 
             if recently_options.present?
               option_groups << {
@@ -108,6 +111,12 @@ module Genova
             end
 
             option_groups
+          end
+
+          # A branch too long to be the value of an option is left out rather than truncated, which
+          # would deploy another Git reference. Git allows such a name, but it is rarely used.
+          def selectable_branch?(branch)
+            branch.present? && branch.length <= MAX_OPTION_VALUE_LENGTH
           end
 
           def branch_option(branch)

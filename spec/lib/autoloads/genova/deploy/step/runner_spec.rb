@@ -189,6 +189,14 @@ module Genova
               expect(DeployJob.asc(:id).pluck(:branch)).to eq(%w[branch branch])
             end
 
+            it 'deploys a numeric branch defined in settings as a string' do
+              steps[0][:branch] = 2026
+
+              Runner.call(steps, StdoutHook.new, mode: DeployJob.mode.find_value(:manual).to_sym)
+
+              expect(DeployJob.asc(:id).pluck(:branch)).to eq(%w[2026 branch])
+            end
+
             it 'gives priority to branch option' do
               Runner.call(
                 steps,

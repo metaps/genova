@@ -71,7 +71,7 @@ module Genova
             return options[:branch] if options[:branch].present?
 
             override = (options[:branches] || []).find { |k| k[:step] == index }
-            override.present? && override[:branch].present? ? override[:branch] : step[:branch]
+            override.present? && override[:branch].present? ? override[:branch] : step[:branch]&.to_s
           end
 
           def extract_resources(type, resource)

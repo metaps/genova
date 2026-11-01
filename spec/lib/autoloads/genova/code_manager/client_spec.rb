@@ -92,6 +92,34 @@ module Genova
 
           expect(code_manager.origin_branches.size).to eq(1)
         end
+
+        context 'when fetch fails' do
+          let(:error) { ::Git::Error.new('fetch failed') }
+
+          before do
+            allow(code_manager).to receive(:clone)
+            allow(code_manager).to receive(:sleep)
+            allow(git).to receive(:branches).and_return(double(::Git::Branches, remote: []))
+          end
+
+          it 'should retry a transient failure' do
+            calls = 0
+            allow(git).to receive(:fetch) do
+              calls += 1
+              raise error if calls < Genova::CodeManager::Git::FETCH_ATTEMPTS
+            end
+
+            expect(code_manager.origin_branches).to eq([])
+            expect(git).to have_received(:fetch).exactly(Genova::CodeManager::Git::FETCH_ATTEMPTS).times
+          end
+
+          it 'should raise after the final attempt' do
+            allow(git).to receive(:fetch).and_raise(error)
+
+            expect { code_manager.origin_branches }.to raise_error(::Git::Error)
+            expect(git).to have_received(:fetch).exactly(Genova::CodeManager::Git::FETCH_ATTEMPTS).times
+          end
+        end
       end
 
       describe 'find_commit' do

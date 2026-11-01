@@ -199,6 +199,7 @@ module Genova
             allow(Genova::CodeManager::Git).to receive(:new).and_return(double(origin_branches: ['branch']))
             allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository-alias').and_return(name: 'repository', alias: 'repository-alias')
             allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('unknown-alias').and_return(nil)
+            allow(Genova::Config::SettingsHelper).to receive(:find_repository).with('repository').and_return(nil)
           end
 
           def step(alias_name)
@@ -220,6 +221,35 @@ module Genova
             expect { ask([step('repository-alias'), step('unknown-alias')]) }
               .to raise_error(Genova::Exceptions::ValidationError, /Alias is undefined/)
             expect(posted).to be_empty
+          end
+
+          def branch_select(block_index)
+            posted.last[:blocks].select { |block| block[:block_id].to_s.start_with?(Genova::Slack::RequestHandler::WORKFLOW_BRANCH_BLOCK_PREFIX) }[block_index]
+          end
+
+          it 'should select a numeric branch defined in settings as a string' do
+            ask([step(nil).merge(branch: 2026)])
+
+            expect(branch_select(0).dig(:element, :initial_option, :value)).to eq('2026')
+          end
+
+          it 'should leave a branch too long to be an option unselected' do
+            ask([step(nil).merge(branch: 'a' * 151)])
+
+            expect(branch_select(0)[:element]).not_to have_key(:initial_option)
+            expect(branch_select(0).to_s).not_to include('a' * 151)
+          end
+
+          it 'should raise error before asking when the workflow exceeds the block limit' do
+            expect { ask(Array.new(24) { step(nil) }) }
+              .to raise_error(Genova::Exceptions::ValidationError, /too many steps/)
+            expect(posted).to be_empty
+          end
+
+          it 'should ask when the workflow fits in the block limit' do
+            ask(Array.new(23) { step(nil) })
+
+            expect(posted.last[:blocks].size).to eq(Genova::Slack::Interactive::Bot::MAX_MESSAGE_BLOCKS)
           end
         end
 

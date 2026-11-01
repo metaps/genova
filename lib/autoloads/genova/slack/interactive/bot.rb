@@ -2,6 +2,9 @@ module Genova
   module Slack
     module Interactive
       class Bot
+        # Slack rejects a message holding more than 50 blocks.
+        MAX_MESSAGE_BLOCKS = 50
+
         def initialize(params = {})
           @client = ::Slack::Web::Client.new(token: Settings.slack.api_token)
           @parent_message_ts = params[:parent_message_ts]
@@ -175,6 +178,8 @@ module Genova
                                                BlockKit::Helper.button('Cancel', 'cancel', 'submit_cancel')
                                              ])
 
+          raise Genova::Exceptions::ValidationError, "Workflow has too many steps to confirm in Slack. [#{params[:name]}: #{steps.size} steps]" if blocks.size > MAX_MESSAGE_BLOCKS
+
           send(blocks)
         end
 
@@ -309,7 +314,8 @@ module Genova
         # Build a branch select for each step of the workflow.
         # Branch defined in `settings.yml` is used as the default value.
         def workflow_branch_select(step, index, cache)
-          default_branch = step[:branch]
+          # A branch such as `2026` is loaded from `settings.yml` as an Integer, which Slack rejects as an option value.
+          default_branch = step[:branch]&.to_s
           # Raises when `alias` is unusable, so the mistake surfaces here rather than after the
           # earlier steps of the workflow have already been deployed.
           repository_settings = Genova::Config::SettingsHelper.find_step_repository(step)
@@ -323,7 +329,9 @@ module Genova
             groups: true,
             block_id: "#{Genova::Slack::RequestHandler::WORKFLOW_BRANCH_BLOCK_PREFIX}#{index}"
           }
-          params[:initial_option] = BlockKit::ElementObject.branch_option(default_branch) if default_branch.present?
+          # Left unselected when the branch cannot be an option. The step then deploys the branch
+          # defined in `settings.yml`, as it does whenever no branch is selected.
+          params[:initial_option] = BlockKit::ElementObject.branch_option(default_branch) if BlockKit::ElementObject.selectable_branch?(default_branch)
 
           BlockKit::Helper.static_select_input(
             Genova::Slack::RequestHandler::WORKFLOW_BRANCH_ACTION_ID,
