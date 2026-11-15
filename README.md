@@ -25,11 +25,23 @@ genova has the following features.
   * GitHub Webhooks
 * Provides a web console to manage deployment status
 
-CLI deployments (including workflows) record the first field returned by `who am i`
-as `linux_user_name`. The command inherits the CLI's standard input to identify the
-login session before switching to the deployment account. If the command fails or
-returns no user, the recorded name is `unknown`. The deploy job page shows this name
-or the Slack user under **Executor**; older CLI records without a name show `unknown`.
+CLI deployments (including workflows) record `GENOVA_DEPLOY_USER` as `linux_user_name`
+when provided, with surrounding whitespace removed. If it is unset or blank, the CLI
+uses the first field returned by `who am i`. The command inherits the CLI's standard
+input to identify the login session before switching to the deployment account.
+If the command fails or returns no user, the recorded name is `unknown`. The deploy
+job page shows this name or the Slack user under **Executor**; older CLI records
+without a name show `unknown`.
+
+When running the CLI inside a container, run `who am i` on the host and pass the
+result explicitly, since the container normally cannot access the host login record:
+
+```sh
+deploy_user=$(who am i | awk '{print $1}')
+docker compose exec \
+  -e GENOVA_DEPLOY_USER="${deploy_user:-unknown}" \
+  rails bundle exec thor genova:deploy service --repository repository --service service
+```
 
 ## How Deployment Works
 

@@ -13,10 +13,15 @@ module GenovaCli
     no_commands do
       def linux_user_name
         @linux_user_name ||= begin
-          # Keep stdin attached to the caller's terminal: who am i uses it to
-          # find the original login session, even after switching users.
-          output = IO.popen(['who', 'am', 'i'], err: File::NULL, &:read)
-          $?.success? ? (output.split.first || 'unknown') : 'unknown'
+          user = ENV['GENOVA_DEPLOY_USER'].to_s.strip
+          if user.empty?
+            # Keep stdin attached to the caller's terminal: who am i uses it to
+            # find the original login session, even after switching users.
+            output = IO.popen(['who', 'am', 'i'], err: File::NULL, &:read)
+            $?.success? ? (output.split.first || 'unknown') : 'unknown'
+          else
+            user
+          end
         rescue SystemCallError, IOError
           'unknown'
         end
