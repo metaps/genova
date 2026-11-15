@@ -25,6 +25,12 @@ genova has the following features.
   * GitHub Webhooks
 * Provides a web console to manage deployment status
 
+CLI deployments (including workflows) record the first field returned by `who am i`
+as `linux_user_name`. The command inherits the CLI's standard input to identify the
+login session before switching to the deployment account. If the command fails or
+returns no user, the recorded name is `unknown`. The deploy job page shows this name
+or the Slack user under **Executor**; older CLI records without a name show `unknown`.
+
 ## How Deployment Works
 
 genova requires you to build and run a server in your local environment or in an AWS environment.
