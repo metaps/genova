@@ -11,6 +11,17 @@ module GenovaCli
     class_option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Outputting detailed logs.'
 
     no_commands do
+      def linux_user_name
+        @linux_user_name ||= begin
+          # Keep stdin attached to the caller's terminal: who am i uses it to
+          # find the original login session, even after switching users.
+          output = IO.popen(['who', 'am', 'i'], err: File::NULL, &:read)
+          $?.success? ? (output.split.first || 'unknown') : 'unknown'
+        rescue SystemCallError, IOError
+          'unknown'
+        end
+      end
+
       def prepare(options)
         options[:branch] = Settings.github.default_branch if options[:branch].nil? && options[:tag].nil?
         return if options[:repository].nil? || options[:target].nil?
@@ -25,6 +36,7 @@ module GenovaCli
       end
 
       def deploy(options)
+        executor = linux_user_name
         validate_note!(options[:note])
         return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
 
@@ -34,6 +46,7 @@ module GenovaCli
         deploy_job = DeployJob.new(
           id: DeployJob.generate_id,
           mode: DeployJob.mode.find_value(:manual).to_sym,
+          linux_user_name: executor,
           type: options[:type],
           alias: repository_settings.present? ? repository_settings[:alias] : nil,
           account: Settings.github.account,
@@ -116,12 +129,14 @@ module GenovaCli
     desc 'workflow', 'Execute step deployment using workflow.'
     option :name, requred: true, aliases: :n, desc: 'Workflow name to deploy.'
     def workflow
+      executor = linux_user_name
       validate_note!(options[:note])
 
       ::Genova::Deploy::Workflow::Runner.call(
         options[:name],
         ::Genova::Deploy::Step::StdoutHook.new,
         mode: DeployJob.mode.find_value(:manual),
+        linux_user_name: executor,
         force: options[:force],
         note: options[:note]
       )

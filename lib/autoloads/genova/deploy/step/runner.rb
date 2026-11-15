@@ -23,6 +23,7 @@ module Genova
                   mode: options[:mode],
                   slack_user_id: options[:slack_user_id],
                   slack_user_name: options[:slack_user_name],
+                  linux_user_name: options[:linux_user_name],
                   slack_timestamp: options[:slack_timestamp],
                   account: Settings.github.account,
                   repository: repository_settings.present? ? repository_settings[:name] : repository_name,
