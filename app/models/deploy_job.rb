@@ -16,6 +16,7 @@ class DeployJob
   field :mode, type: String
   field :slack_user_id, type: String
   field :slack_user_name, type: String
+  field :linux_user_name, type: String
   field :slack_timestamp, type: Float
   field :repository, type: String
   field :account, type: String
@@ -57,6 +58,11 @@ class DeployJob
 
   def label
     "build-#{id}"
+  end
+
+  def executor_name
+    name = mode == self.class.mode.find_value(:slack) ? slack_user_name : linux_user_name
+    name.presence || 'unknown'
   end
 
   def self.latest_deployments

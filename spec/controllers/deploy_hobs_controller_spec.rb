@@ -31,6 +31,32 @@ RSpec.describe DeployJobsController, type: :controller do
         expect(get(:show, params: { id: deploy_job.id })).to have_http_status(:ok)
       end
 
+      context 'when displaying the executor' do
+        render_views
+
+        it 'shows unknown for existing CLI records' do
+          get :show, params: { id: deploy_job.id }
+
+          expect(response.body).to include('Executor', 'unknown')
+        end
+
+        it 'escapes the CLI login user' do
+          deploy_job.update!(linux_user_name: '<b>alice</b>')
+          get :show, params: { id: deploy_job.id }
+
+          expect(response.body).to include('Executor', '&lt;b&gt;alice&lt;/b&gt;')
+          expect(response.body).not_to include('<b>alice</b>')
+        end
+
+        it 'shows the Slack user under the same label' do
+          deploy_job.update!(mode: :slack, slack_user_name: 'slack-alice')
+          get :show, params: { id: deploy_job.id }
+
+          expect(response.body).to include('Executor', 'slack-alice')
+          expect(response.body).not_to include('Slack user')
+        end
+      end
+
       context 'when note contains line breaks' do
         render_views
 

@@ -46,6 +46,12 @@ module Genova
               expect(DeployJob.last.note).to eq('note')
             end
 
+            it 'stores the CLI login user in the workflow deployment' do
+              Runner.call(steps, StdoutHook.new, mode: :manual, linux_user_name: 'alice')
+
+              expect(DeployJob.last.linux_user_name).to eq('alice')
+            end
+
             it 'truncates too long note before storing in deploy job' do
               Runner.call(
                 steps,
