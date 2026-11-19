@@ -43,6 +43,39 @@ docker compose exec \
   rails bundle exec thor genova:deploy service --repository repository --service service
 ```
 
+### Build and push without deploying
+
+Add `--build-only` to `service`, `run-task`, or `scheduled-task` to register the
+task definition, build images, and push them to ECR without updating an ECS
+service, running a task, or updating a schedule. Existing `deploy.yml` settings
+are used; no additional configuration is required.
+
+```sh
+docker compose run --rm rails bundle exec thor genova:deploy service \
+  --repository repository --cluster production --service api \
+  --branch develop --build-only
+
+docker compose run --rm rails bundle exec thor genova:deploy workflow \
+  --name release --build-only
+```
+
+For workflows, the option applies to every resource in every step, including
+run tasks such as database migrations: their images are built, but the tasks
+are not executed. Repeated build targets are processed in workflow order.
+
+Images are pushed with both `latest` and `build-<job ID>` tags, as in a normal
+deployment. `--tag` still selects a Git tag, not an ECR image tag. `--no-cache`
+can be used to disable the Docker build cache. Runtime options
+`--override-container` and `--override-command` cannot be combined with
+`--build-only`.
+
+Build-only jobs appear in deployment history with a **Build only** label and the
+registered task definition ARN. They do not update **Latest deployment** or
+create deployment tags in Git. Errors and cancellation follow the normal job
+handling, and the repository lock is held throughout the operation. A failed
+job may leave a registered task definition or partially pushed images; these
+are not rolled back. A subsequent normal deployment still performs its own build.
+
 ## How Deployment Works
 
 genova requires you to build and run a server in your local environment or in an AWS environment.

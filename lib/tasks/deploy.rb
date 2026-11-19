@@ -9,6 +9,7 @@ module GenovaCli
     class_option :tag, desc: 'Tag to deploy.'
     class_option :note, desc: 'Arbitrary text to attach to the deploy job.'
     class_option :verbose, default: false, type: :boolean, aliases: :v, desc: 'Outputting detailed logs.'
+    class_option :build_only, default: false, type: :boolean, desc: 'Register the task definition and push images without deploying.'
 
     no_commands do
       def linux_user_name
@@ -42,8 +43,12 @@ module GenovaCli
 
       def deploy(options)
         executor = linux_user_name
+        if options[:build_only] && (options[:override_container].present? || options[:override_command].present?)
+          raise ::Genova::Exceptions::InvalidArgumentError, '--build-only cannot be combined with --override-container or --override-command.'
+        end
         validate_note!(options[:note])
-        return if options[:interactive] && !HighLine.new.agree('> Do you want to deploy? (y/n): ', '')
+        prompt = options[:build_only] ? '> Do you want to build and push images without deploying? (y/n): ' : '> Do you want to deploy? (y/n): '
+        return if options[:interactive] && !HighLine.new.agree(prompt, '')
 
         prepare(options)
         repository_settings = ::Genova::Config::SettingsHelper.find_repository(options[:repository])
@@ -52,6 +57,7 @@ module GenovaCli
           id: DeployJob.generate_id,
           mode: DeployJob.mode.find_value(:manual).to_sym,
           linux_user_name: executor,
+          build_only: options[:build_only] == true,
           type: options[:type],
           alias: repository_settings.present? ? repository_settings[:alias] : nil,
           account: Settings.github.account,
@@ -143,6 +149,8 @@ module GenovaCli
         mode: DeployJob.mode.find_value(:manual),
         linux_user_name: executor,
         force: options[:force],
+        build_only: options[:build_only],
+        no_cache: options.key?(:'no-cache'),
         note: options[:note]
       )
     end

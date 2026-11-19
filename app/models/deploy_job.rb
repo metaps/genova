@@ -12,6 +12,7 @@ class DeployJob
 
   field :id, type: String
   field :type, type: String
+  field :build_only, type: Boolean, default: false
   field :status, type: String
   field :mode, type: String
   field :slack_user_id, type: String
@@ -73,6 +74,7 @@ class DeployJob
         { 'type': DeployJob.type.find_value(:scheduled_task) }
       ] } },
       { '$match' => { 'status': 'success' } },
+      { '$match' => { 'build_only': { '$ne': true } } },
       { '$group' => {
         '_id' => {
           'cluster': '$cluster',
@@ -183,6 +185,7 @@ class DeployJob
   end
 
   def finished
+    return if build_only?
     return unless Settings.github.deployment_tag && branch.present?
 
     logger.info("Push tags to Git. [#{label}]")

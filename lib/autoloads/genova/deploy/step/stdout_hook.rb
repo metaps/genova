@@ -14,8 +14,8 @@ module Genova
 
         def complete_deploy(_params); end
 
-        def complete_steps(_params)
-          @logger.info('All deployments are complete.')
+        def complete_steps(params)
+          @logger.info(params[:build_only] ? 'All builds and ECR pushes are complete. No deployment was performed.' : 'All deployments are complete.')
         end
       end
     end

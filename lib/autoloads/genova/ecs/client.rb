@@ -42,6 +42,7 @@ module Genova
         task_definition = create_task(task_definition_path, run_task_config[:task_overrides], @deploy_job.label)
 
         push_image(run_task_config[:containers], task_definition, @deploy_job.label)
+        return complete_build(task_definition) if @deploy_job.build_only?
 
         options = {
           desired_count: run_task_config[:desired_count],
@@ -71,6 +72,8 @@ module Genova
         task_definition = create_task(task_definition_path, service_config[:task_overrides], @deploy_job.label)
 
         push_image(service_config[:containers], task_definition, @deploy_job.label)
+        return complete_build(task_definition) if @deploy_job.build_only?
+
         service_client = Deployer::Service::Client.new(@deploy_job, @logger, async_wait: @options[:async_wait])
 
         raise Exceptions::ValidationError, "Service is not registered. [#{@deploy_job.service}]" unless service_client.exist?
@@ -105,6 +108,8 @@ module Genova
         @deploy_job.task_definition_arn = task_definition.task_definition_arn
 
         push_image(target_config[:containers], task_definition, @deploy_job.label)
+        return complete_build(task_definition) if @deploy_job.build_only?
+
         rule_config = deploy_config.find_scheduled_task_rule(@deploy_job.cluster, @deploy_job.scheduled_task_rule)
         deploy_pre_hook
 
@@ -121,6 +126,14 @@ module Genova
       end
 
       private
+
+      def complete_build(task_definition)
+        @deploy_job.reload
+        raise Interrupt if @deploy_job.status == DeployJob.status.find_value(:reserved_cancel)
+
+        @deploy_job.update_status_complate(task_definition_arn: task_definition.task_definition_arn)
+        @logger.info('Build and ECR push are complete. The task definition was registered; no deployment was performed.')
+      end
 
       def ready(type)
         @docker_registry.login
@@ -170,6 +183,10 @@ module Genova
         task_client = Ecs::Task::Client.new(@logger)
 
         @task_definitions[task_definition_path] = task_client.register(task_definition_path, task_overrides, tag:) unless @task_definitions.include?(task_definition_path)
+        if @deploy_job.build_only?
+          @deploy_job.update!(task_definition_arn: @task_definitions[task_definition_path].task_definition_arn)
+        end
+
         @task_definitions[task_definition_path]
       end
 

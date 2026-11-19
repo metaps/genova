@@ -216,6 +216,33 @@ module Genova
             end
           end
 
+          context 'when building a workflow without deploying' do
+            let(:type) { 'service' }
+            let(:resources) { ['resource'] }
+            let(:steps) do
+              [
+                { type: 'service', resources: ['api'], cluster: 'cluster', repository: 'repository', branch: 'develop' },
+                { type: 'run_task', resources: ['migration'], cluster: 'cluster', repository: 'repository', branch: 'develop' },
+                { type: 'scheduled_task', resources: ['rule:target'], cluster: 'cluster', repository: 'repository', branch: 'develop' }
+              ]
+            end
+
+            it 'marks every job as build-only and forwards build options without using Slack' do
+              allow(DeployJob).to receive(:generate_id) { SecureRandom.uuid }
+              expect(Slack::Interactive::Bot).not_to receive(:new)
+              expect(Genova::Deploy::Runner).to receive(:new).exactly(3).times do |job, options|
+                expect(job.build_only?).to be(true)
+                expect(options[:no_cache]).to be(true)
+                runner
+              end
+
+              Runner.call(steps, StdoutHook.new, mode: :manual, build_only: true, no_cache: true)
+
+              expect(DeployJob.count).to eq(3)
+              expect(DeployJob.all.map(&:build_only?)).to all(be(true))
+            end
+          end
+
           context 'when update run task' do
             let(:type) { 'run_task' }
             let(:resources) { ['resource'] }

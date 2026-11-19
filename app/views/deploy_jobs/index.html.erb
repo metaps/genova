@@ -62,7 +62,12 @@
               <% end %>
             </td>
             <td><%= deploy_job.mode %></td>
-            <td><%= type_tag(deploy_job.type).html_safe %></td>
+            <td>
+              <%= type_tag(deploy_job.type).html_safe %>
+              <% if deploy_job.build_only? %>
+                <span class="tag is-info">Build only</span>
+              <% end %>
+            </td>
             <td><%= deploy_job.cluster %></td>
             <td><%= deploy_job.created_at %></td>
           </tr>

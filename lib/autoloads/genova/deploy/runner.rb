@@ -14,7 +14,7 @@ module Genova
         transaction = Genova::Deploy::Transaction.new(@deploy_job.repository, logger: @logger, force: @options[:force])
         transaction.begin
 
-        @logger.info('Start deployment.')
+        @logger.info(@deploy_job.build_only? ? 'Start build-only job.' : 'Start deployment.')
         ecs = Ecs::Client.new(@deploy_job, @options, @logger)
 
         @deploy_job.reload

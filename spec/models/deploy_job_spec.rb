@@ -2,6 +2,40 @@ require 'rails_helper'
 require 'securerandom'
 
 RSpec.describe DeployJob, type: :model do
+  describe 'build-only jobs' do
+    let(:params) do
+      { mode: :manual, type: :service, account: Settings.github.account,
+        repository: 'repository', cluster: 'cluster', service: 'api', branch: 'develop', status: :success }
+    end
+
+    before { DeployJob.collection.drop }
+
+    it 'keeps the last actual deployment when a newer build-only job succeeds' do
+      deployed = DeployJob.create!(params.merge(id: 'deployed', created_at: 2.minutes.ago))
+      # Simulate records created before the build_only field was added.
+      DeployJob.collection.find('_id' => deployed.id).update_one('$unset' => { 'build_only' => '' })
+      DeployJob.create!(params.merge(id: 'built', created_at: 1.minute.ago, build_only: true))
+
+      expect(DeployJob.latest_deployments['cluster'].map { |item| item[:id] }).to eq(['deployed'])
+    end
+
+    it 'does not show a build-only target as a deployed target' do
+      DeployJob.create!(params.merge(id: 'built', build_only: true))
+
+      expect(DeployJob.latest_deployments).to eq({})
+    end
+
+    it 'never creates Git deployment tags for build-only jobs' do
+      job = DeployJob.create!(params.merge(id: 'built', build_only: true))
+      allow(Settings.github).to receive(:deployment_tag).and_return(true)
+      expect(Genova::CodeManager::Git).not_to receive(:new)
+
+      job.finished
+
+      expect(job.reload.deployment_tag).to be_nil
+    end
+  end
+
   describe '#executor_name' do
     it 'shows the CLI login user' do
       expect(DeployJob.new(mode: :manual, linux_user_name: 'alice').executor_name).to eq('alice')

@@ -24,6 +24,7 @@ module Genova
                   slack_user_id: options[:slack_user_id],
                   slack_user_name: options[:slack_user_name],
                   linux_user_name: options[:linux_user_name],
+                  build_only: options[:build_only] == true,
                   slack_timestamp: options[:slack_timestamp],
                   account: Settings.github.account,
                   repository: repository_settings.present? ? repository_settings[:name] : repository_name,
@@ -39,17 +40,19 @@ module Genova
 
                 callback.start_deploy(deploy_job:)
 
-                bot = Slack::Interactive::Bot.new(parent_message_ts: options[:slack_timestamp])
-                canceller = bot.show_stop_button(deploy_job.id).ts
+                if options[:slack_timestamp].present?
+                  bot = Slack::Interactive::Bot.new(parent_message_ts: options[:slack_timestamp])
+                  canceller = bot.show_stop_button(deploy_job.id).ts
+                end
 
-                Deploy::Runner.new(deploy_job, force: options[:force], async_wait: step[:async_wait]).run
+                Deploy::Runner.new(deploy_job, force: options[:force], async_wait: step[:async_wait], no_cache: options[:no_cache]).run
 
-                bot.delete_message(canceller)
+                bot.delete_message(canceller) if bot
                 callback.complete_deploy(deploy_job:)
               end
             end
 
-            callback.complete_steps(user: options[:slack_user_id])
+            callback.complete_steps(user: options[:slack_user_id], build_only: options[:build_only])
           end
 
           # Resolved up front so that a step defined with an unusable `alias` is rejected before

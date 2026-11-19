@@ -19,6 +19,19 @@ RSpec.describe DeployJobsController, type: :controller do
       get :index
       expect(response).to have_http_status(:ok)
     end
+
+    context 'when displaying build-only jobs' do
+      render_views
+
+      it 'labels the job as build-only in the list' do
+        DeployJob.collection.drop
+        deploy_job.update!(build_only: true, branch: 'develop')
+
+        get :index
+
+        expect(response.body).to include('Build only')
+      end
+    end
   end
 
   describe 'GET #show' do
@@ -33,6 +46,14 @@ RSpec.describe DeployJobsController, type: :controller do
 
       context 'when displaying the executor' do
         render_views
+
+        it 'labels a build-only job and displays its registered task definition' do
+          deploy_job.update!(build_only: true)
+
+          get :show, params: { id: deploy_job.id }
+
+          expect(response.body).to include('Build only', 'new_task_definition_arn')
+        end
 
         it 'shows unknown for existing CLI records' do
           get :show, params: { id: deploy_job.id }
